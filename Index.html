@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NetEpic Gold - Phase 1 Prototype</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: #111418; overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
+    }
+    #game-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+    
+    /* HUD Overlay */
+    #hud {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; display: flex; flex-direction: column;
+      justify-content: space-between; padding: 10px;
+    }
+    .panel {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      pointer-events: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    #top-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
+    }
+    .phase-badge {
+      background: #d97706; color: #fff; font-weight: 800;
+      padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .status-text { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
+    .sub-text { font-size: 0.8rem; color: #94a3b8; }
+
+    #bottom-bar {
+      display: flex; flex-direction: column; gap: 8px;
+      max-width: 650px; width: 100%; margin: 0 auto;
+    }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    button {
+      background: #1e293b; color: #f8fafc; border: 1px solid #475569;
+      padding: 10px 14px; border-radius: 6px; font-weight: 700;
+      font-size: 0.85rem; cursor: pointer; transition: 0.15s;
+      flex: 1; min-width: 100px; text-align: center;
+    }
+    button:hover:not(:disabled) { background: #334155; border-color: #94a3b8; }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    
+    .btn-ff { border-left: 4px solid #ef4444; }
+    .btn-adv { border-left: 4px solid #22c55e; }
+    .btn-chg { border-left: 4px solid #3b82f6; }
+    .btn-primary { background: #2563eb; border-color: #3b82f6; }
+    .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+    .btn-confirm { background: #16a34a; border-color: #22c55e; }
+    .btn-warn { background: #dc2626; border-color: #ef4444; }
+
+    .coherency-alert {
+      background: rgba(220, 38, 38, 0.9); color: white;
+      padding: 6px 12px; border-radius: 6px; text-align: center;
+      font-weight: 700; font-size: 0.85rem; display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-container"></div>
+
+<div id="hud">
+  <div id="top-bar" class="panel">
+    <div>
+      <span id="phase-badge" class="phase-badge">I. Orders Phase</span>
+      <span id="turn-text" class="status-text" style="margin-left:8px;">Turn 1</span>
+    </div>
+    <div id="prompt-text" class="status-text">Tap a detachment to assign hidden orders</div>
+    <div style="display:flex; gap:6px;">
+      <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
+    </div>
+  </div>
+
+  <div id="bottom-bar">
+    <div id="coherency-alert" class="coherency-alert">
+      ⚠️ OUT OF COHERENCY! All stands must form an unbroken chain within 6 cm.
+    </div>
+
+    <div id="selection-panel" class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div>
+          <div id="sel-title" class="status-text">No Detachment Selected</div>
+          <div id="sel-stats" class="sub-text">Tap any unit stand on the battlefield (Drag empty space or pinch to pan/zoom)</div>
+        </div>
+        <div id="sel-order-badge" class="sub-text" style="font-weight:bold;"></div>
+      </div>
+
+      <!-- Orders Phase Controls -->
+      <div id="orders-controls" class="btn-row" style="display:none;">
+        <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0 cm)</button>
+        <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x)</button>
+        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x)</button>
+      </div>
+
+      <!-- Lock In Orders Button -->
+      <div id="lock-orders-row" class="btn-row" style="margin-top:6px; display:none;">
+        <button class="btn-primary" onclick="window.gameScene.finishOrdersPhase()">All Orders Placed — Roll Initiative (D6)!</button>
+      </div>
+
+      <!-- Movement Phase Controls -->
+      <div id="movement-controls" class="btn-row" style="display:none;">
+        <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
+        <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Positions</button>
+        <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- SCALE & CONSTANTS ---
+// NetEpic Table: 185cm x 125cm. 10 pixels = 1 cm.
+const PX_PER_CM = 10;
+const BOARD_W = 185 * PX_PER_CM; // 1850 px
+const BOARD_H = 125 * PX_PER_CM; // 1250 px
+const COHERENCY_CM = 6;
+const COHERENCY_PX = COHERENCY_CM * PX_PER_CM; // 60 px
+
+const ORDER_INFO = {
+  FIRST_FIRE: { label: 'FIRST FIRE', mult: 0, color: 0xef4444, hex: '#ef4444' },
+  ADVANCE:    { label: 'ADVANCE',    mult: 1, color: 0x22c55e, hex: '#22c55e' },
+  CHARGE:     { label: 'CHARGE',     mult: 2, color: 0x3b82f6, hex: '#3b82f6' }
+};
+
+class NetEpicScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'NetEpicScene' });
+  }
+
+  create() {
+    window.gameScene = this;
+    this.turn = 1;
+    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT'
+    this.activePlayer = 'IMPERIUM'; // Alternates during Movement
+    this.selectedDetachment = null;
+    this.activatingDetachment = null; // Currently moving detachment
+    this.isDraggingStand = false;
+
+    // Graphics Layers
+    this.boardGfx = this.add.graphics();
+    this.zoneGfx = this.add.graphics();
+    this.overlayGfx = this.add.graphics();
+
+    this.drawBattlefield();
+    this.spawnDemoArmies();
+    this.setupCameraAndInput();
+    this.resetCamera();
+    this.updateUI();
+  }
+
+  drawBattlefield() {
+    // Base tabletop surface
+    this.boardGfx.fillStyle(0x1e261d, 1);
+    this.boardGfx.fillRect(0, 0, BOARD_W, BOARD_H);
+
+    // 10 cm Grid lines
+    this.boardGfx.lineStyle(1, 0x2e3b2b, 0.8);
+    for (let x = 0; x <= BOARD_W; x += 10 * PX_PER_CM) {
+      this.boardGfx.lineBetween(x, 0, x, BOARD_H);
+    }
+    for (let y = 0; y <= BOARD_H; y += 10 * PX_PER_CM) {
+      this.boardGfx.lineBetween(0, y, BOARD_W, y);
+    }
+
+    // Centerline & Deployment Zones (40 cm from centerline = 80 cm between armies)
+    const centerY = BOARD_H / 2;
+    this.boardGfx.lineStyle(2, 0x475569, 0.5);
+    this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
+
+    this.boardGfx.lineStyle(2, 0x3b82f6, 0.35);
+    this.boardGfx.lineBetween(0, centerY + 40 * PX_PER_CM, BOARD_W, centerY + 40 * PX_PER_CM);
+    this.boardGfx.lineStyle(2, 0xef4444, 0.35);
+    this.boardGfx.lineBetween(0, centerY - 40 * PX_PER_CM, BOARD_W, centerY - 40 * PX_PER_CM);
+
+    // Sample Terrain Features (Visual reference for Phase 1)
+    this.boardGfx.fillStyle(0x143318, 0.85);
+    this.boardGfx.lineStyle(2, 0x225428, 1);
+    this.boardGfx.fillCircle(550, 625, 110);
+    this.boardGfx.strokeCircle(550, 625, 110);
+    this.add.text(550, 625, 'WOODS\n(Half Move)', { fontSize: '13px', color: '#86efac', align: 'center' }).setOrigin(0.5);
+
+    this.boardGfx.fillStyle(0x334155, 0.9);
+    this.boardGfx.lineStyle(2, 0x64748b, 1);
+    this.boardGfx.fillRect(1150, 540, 180, 140);
+    this.boardGfx.strokeRect(1150, 540, 180, 140);
+    this.add.text(1240, 610, 'MANUFACTORUM\n(Standard Building)', { fontSize: '13px', color: '#cbd5e1', align: 'center' }).setOrigin(0.5);
+
+    // Objectives (15cm Control Radius)
+    const objectives = [{ x: 550, y: 625 }, { x: 925, y: 625 }, { x: 1240, y: 610 }];
+    objectives.forEach((obj, idx) => {
+      this.boardGfx.lineStyle(1, 0xfbbf24, 0.3);
+      this.boardGfx.strokeCircle(obj.x, obj.y, 15 * PX_PER_CM);
+      this.boardGfx.fillStyle(0xfbbf24, 1);
+      this.boardGfx.fillCircle(obj.x, obj.y, 6);
+      this.add.text(obj.x, obj.y - 16, `OBJ ${idx + 1} (5 VP)`, { fontSize: '11px', color: '#fbbf24', fontStyle: 'bold' }).setOrigin(0.5);
+    });
+
+    // Border
+    this.boardGfx.lineStyle(4, 0x94a3b8, 1);
+    this.boardGfx.strokeRect(0, 0, BOARD_W, BOARD_H);
+  }
+
+  spawnDemoArmies() {
+    this.detachments = [];
+
+    // Imperium (Bottom Deployment Zone > 1025px)
+    this.createDetachment({
+      id: 'sm_tac_1', faction: 'IMPERIUM', name: 'Tactical Detachment 1',
+      moveCm: 10, save: '5+', caf: '+2', color: 0x2563eb,
+      standsCount: 6, startX: 650, startY: 1060, baseW: 20, baseH: 20
+    });
+    this.createDetachment({
+      id: 'sm_rhino_1', faction: 'IMPERIUM', name: 'Rhino Squadron (Transport)',
+      moveCm: 25, save: '4+', caf: '+0', color: 0x60a5fa,
+      standsCount: 3, startX: 1100, startY: 1060, baseW: 24, baseH: 32
+    });
+
+    // Orks (Top Deployment Zone < 225px)
+    this.createDetachment({
+      id: 'ork_boyz_1', faction: 'ORKS', name: 'Ork Boyz Mob 1',
+      moveCm: 10, save: '6+', caf: '+1', color: 0x16a34a,
+      standsCount: 6, startX: 650, startY: 180, baseW: 20, baseH: 20
+    });
+    this.createDetachment({
+      id: 'ork_bikes_1', faction: 'ORKS', name: 'Warbuggy Squadron',
+      moveCm: 30, save: '5+', caf: '+1', color: 0x4ade80,
+      standsCount: 4, startX: 1100, startY: 180, baseW: 22, baseH: 30
+    });
+  }
+
+  createDetachment(cfg) {
+    const det = {
+      ...cfg,
+      order: null,
+      orderRevealed: false,
+      activated: false,
+      stands: []
+    };
+
+    const spacing = 36; // 3.6 cm apart (well within 6cm coherency)
+    for (let i = 0; i < cfg.standsCount; i++) {
+      const sx = cfg.startX + (i % 3) * spacing;
+      const sy = cfg.startY + Math.floor(i / 3) * spacing;
+
+      const container = this.add.container(sx, sy);
+      container.setSize(cfg.baseW + 10, cfg.baseH + 10);
+      container.setInteractive({ draggable: true });
+
+      const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color)
+        .setStrokeStyle(2, 0xffffff);
+      
+      // Direction indicator dots
+      const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, 0xffffff);
+      container.add([baseBg, pip]);
+
+      const standObj = {
+        id: `${cfg.id}_s${i}`,
+        detachment: det,
+        container,
+        baseBg,
+        originX: sx,
+        originY: sy
+      };
+
+      container.standData = standObj;
+      det.stands.push(standObj);
+    }
+
+    // Order Counter Badge (floating near leader stand)
+    det.badge = this.add.text(cfg.startX, cfg.startY - 26, 'NO ORDER', {
+      fontSize: '11px', fontStyle: 'bold', backgroundColor: '#1e293b',
+      color: '#94a3b8', padding: { x: 5, y: 2 }
+    }).setOrigin(0.5);
+
+    this.detachments.push(det);
+  }
+
+  setupCameraAndInput() {
+    this.input.addPointer(1); // Support 2-finger pinch on Android
+    const cam = this.cameras.main;
+
+    // Mouse Wheel Zoom (PC)
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+      const newZoom = Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5);
+      cam.setZoom(newZoom);
+    });
+
+    // Stand Selection & Dragging
+    this.input.on('gameobjectdown', (pointer, gameObject) => {
+      if (gameObject.standData) {
+        const det = gameObject.standData.detachment;
+        // If we are currently moving a specific detachment, only allow selecting that detachment
+        if (this.activatingDetachment && this.activatingDetachment !== det) return;
+        this.selectDetachment(det);
+      }
+    });
+
+    this.input.on('dragstart', (pointer, gameObject) => {
+      if (!gameObject.standData) return;
+      const det = gameObject.standData.detachment;
+      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det) {
+        this.isDraggingStand = true;
+      }
+    });
+
+    this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+      if (!gameObject.standData) return;
+      const stand = gameObject.standData;
+      const det = stand.detachment;
+
+      if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det) return;
+
+      const maxMoveCm = det.moveCm * ORDER_INFO[det.order].mult;
+      const maxMovePx = maxMoveCm * PX_PER_CM;
+
+      // Clamp within allowed movement radius from origin
+      const dist = Phaser.Math.Distance.Between(stand.originX, stand.originY, dragX, dragY);
+      if (dist <= maxMovePx) {
+        gameObject.x = Phaser.Math.Clamp(dragX, 15, BOARD_W - 15);
+        gameObject.y = Phaser.Math.Clamp(dragY, 15, BOARD_H - 15);
+      } else {
+        const angle = Phaser.Math.Angle.Between(stand.originX, stand.originY, dragX, dragY);
+        gameObject.x = Phaser.Math.Clamp(stand.originX + Math.cos(angle) * maxMovePx, 15, BOARD_W - 15);
+        gameObject.y = Phaser.Math.Clamp(stand.originY + Math.sin(angle) * maxMovePx, 15, BOARD_H - 15);
+      }
+
+      this.updateDetachmentBadgePos(det);
+      this.drawOverlays();
+    });
+
+    this.input.on('dragend', () => {
+      this.isDraggingStand = false;
+      this.drawOverlays();
+    });
+
+    // Pan & Pinch-Zoom on empty space
+    this.lastPinchDist = 0;
+    this.input.on('pointermove', (pointer) => {
+      if (this.isDraggingStand) return;
+
+      const p1 = this.input.pointer1;
+      const p2 = this.input.pointer2;
+
+      // 2-Finger Pinch Zoom (Android)
+      if (p1.isDown && p2.isDown) {
+        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        if (this.lastPinchDist > 0) {
+          const delta = dist - this.lastPinchDist;
+          cam.setZoom(Phaser.Math.Clamp(cam.zoom + delta * 0.005, 0.35, 2.5));
+        }
+        this.lastPinchDist = dist;
+        return;
+      }
+      this.lastPinchDist = 0;
+
+      // 1-Finger or Mouse Drag Pan
+      if (pointer.isDown) {
+        cam.scrollX -= (pointer.x - pointer.prevPosition.x) / cam.zoom;
+        cam.scrollY -= (pointer.y - pointer.prevPosition.y) / cam.zoom;
+      }
+    });
+  }
+
+  resetCamera() {
+    const cam = this.cameras.main;
+    const zoomX = this.scale.width / (BOARD_W + 80);
+    const zoomY = this.scale.height / (BOARD_H + 140);
+    cam.setZoom(Math.min(zoomX, zoomY));
+    cam.centerOn(BOARD_W / 2, BOARD_H / 2);
+  }
+
+  selectDetachment(det) {
+    this.selectedDetachment = det;
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  assignOrder(orderKey) {
+    if (!this.selectedDetachment || this.phase !== 'ORDERS') return;
+    this.selectedDetachment.order = orderKey;
+    this.selectedDetachment.orderRevealed = false;
+    this.updateDetachmentBadge(this.selectedDetachment);
+    this.updateUI();
+  }
+
+  finishOrdersPhase() {
+    // Roll Initiative (D6 each, re-roll ties)
+    let impRoll = 0, orkRoll = 0;
+    while (impRoll === orkRoll) {
+      impRoll = Phaser.Math.Between(1, 6);
+      orkRoll = Phaser.Math.Between(1, 6);
+    }
+
+    this.activePlayer = impRoll > orkRoll ? 'IMPERIUM' : 'ORKS';
+    this.phase = 'MOVEMENT';
+    this.selectedDetachment = null;
+
+    alert(`🎲 INITIATIVE ROLL!\nImperium rolled: ${impRoll}\nOrks rolled: ${orkRoll}\n\n${this.activePlayer} wins Initiative and activates first!`);
+    this.updateUI();
+    this.drawOverlays();
+  }
+
+  activateSelectedDetachment() {
+    const det = this.selectedDetachment;
+    if (!det || det.activated || det.faction !== this.activePlayer) return;
+
+    det.orderRevealed = true;
+    this.activatingDetachment = det;
+
+    // Save origin positions for movement ruler & reset
+    det.stands.forEach(s => {
+      s.originX = s.container.x;
+      s.originY = s.container.y;
+    });
+
+    this.updateDetachmentBadge(det);
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  undoDetachmentMove() {
+    const det = this.activatingDetachment;
+    if (!det) return;
+    det.stands.forEach(s => {
+      s.container.x = s.originX;
+      s.container.y = s.originY;
+    });
+    this.updateDetachmentBadgePos(det);
+    this.drawOverlays();
+  }
+
+  confirmDetachmentMove() {
+    const det = this.activatingDetachment;
+    if (!det) return;
+
+    // Verify 6 cm Coherency (Exception: First Fire units that don't move)
+    if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) {
+      return;
+    }
+
+    det.stands.forEach(s => {
+      s.originX = s.container.x;
+      s.originY = s.container.y;
+    });
+
+    det.activated = true;
+    this.activatingDetachment = null;
+    this.selectedDetachment = null;
+    this.updateDetachmentBadge(det);
+
+    // Alternate to other player if they have unactivated units
+    const otherFaction = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const otherHasUnits = this.detachments.some(d => d.faction === otherFaction && !d.activated);
+    const currentHasUnits = this.detachments.some(d => d.faction === this.activePlayer && !d.activated);
+
+    if (otherHasUnits) {
+      this.activePlayer = otherFaction;
+    } else if (!currentHasUnits) {
+      // All detachments have activated -> End of Movement Phase!
+      this.startNextTurn();
+      return;
+    }
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  startNextTurn() {
+    alert(`Turn ${this.turn} Movement Phase Complete!\nResetting orders for Turn ${this.turn + 1}.`);
+    this.turn++;
+    this.phase = 'ORDERS';
+    this.detachments.forEach(d => {
+      d.order = null;
+      d.orderRevealed = false;
+      d.activated = false;
+      this.updateDetachmentBadge(d);
+    });
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  // NetEpic Coherency Rule (p. 20-21): All models in a detachment must form a single connected graph within 6 cm
+  checkCoherency(det) {
+    const stands = det.stands;
+    if (stands.length <= 1) return true;
+
+    const visited = new Set([0]);
+    const queue = [0];
+
+    while (queue.length > 0) {
+      const currIdx = queue.shift();
+      const s1 = stands[currIdx].container;
+      for (let i = 0; i < stands.length; i++) {
+        if (!visited.has(i)) {
+          const s2 = stands[i].container;
+          const dist = Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y);
+          if (dist <= COHERENCY_PX + 1) { // +1px tolerance
+            visited.add(i);
+            queue.push(i);
+          }
+        }
+      }
+    }
+    return visited.size === stands.length;
+  }
+
+  drawOverlays() {
+    this.overlayGfx.clear();
+    const det = this.selectedDetachment;
+    if (!det) {
+      document.getElementById('coherency-alert').style.display = 'none';
+      return;
+    }
+
+    const isCoherent = this.checkCoherency(det);
+    document.getElementById('coherency-alert').style.display = isCoherent ? 'none' : 'block';
+
+    // Draw 6 cm Coherency Links between stands
+    for (let i = 0; i < det.stands.length; i++) {
+      for (let j = i + 1; j < det.stands.length; j++) {
+        const s1 = det.stands[i].container;
+        const s2 = det.stands[j].container;
+        const dist = Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y);
+        if (dist <= COHERENCY_PX + 1) {
+          this.overlayGfx.lineStyle(2, isCoherent ? 0x22c55e : 0xf59e0b, 0.65);
+          this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
+        }
+      }
+    }
+
+    // Highlight selected stands & movement envelopes if currently moving
+    const maxMoveCm = det.order ? det.moveCm * ORDER_INFO[det.order].mult : 0;
+    const maxMovePx = maxMoveCm * PX_PER_CM;
+
+    det.stands.forEach(s => {
+      // Selection ring
+      this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
+      this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
+
+      if (this.activatingDetachment === det && maxMovePx > 0) {
+        // Movement envelope circle from origin
+        this.overlayGfx.lineStyle(1, ORDER_INFO[det.order].color, 0.3);
+        this.overlayGfx.strokeCircle(s.originX, s.originY, maxMovePx);
+
+        // Path line from origin to current position
+        this.overlayGfx.lineStyle(2, 0xffffff, 0.8);
+        this.overlayGfx.lineBetween(s.originX, s.originY, s.container.x, s.container.y);
+      }
+    });
+
+    // Enable/Disable Confirm Move button based on coherency
+    const confirmBtn = document.getElementById('btn-confirm-move');
+    if (confirmBtn) confirmBtn.disabled = !isCoherent;
+  }
+
+  updateDetachmentBadgePos(det) {
+    let avgX = 0, minY = Infinity;
+    det.stands.forEach(s => {
+      avgX += s.container.x;
+      if (s.container.y < minY) minY = s.container.y;
+    });
+    avgX /= det.stands.length;
+    det.badge.setPosition(avgX, minY - 26);
+  }
+
+  updateDetachmentBadge(det) {
+    this.updateDetachmentBadgePos(det);
+    if (!det.order) {
+      det.badge.setText('NO ORDER');
+      det.badge.setBackgroundColor('#1e293b');
+      det.badge.setColor('#94a3b8');
+    } else if (!det.orderRevealed) {
+      det.badge.setText('🔒 ORDER SET');
+      det.badge.setBackgroundColor('#d97706');
+      det.badge.setColor('#ffffff');
+    } else {
+      const info = ORDER_INFO[det.order];
+      det.badge.setText(det.activated ? `✓ ${info.label}` : `▶ ${info.label}`);
+      det.badge.setBackgroundColor(info.hex);
+      det.badge.setColor('#ffffff');
+    }
+  }
+
+  updateUI() {
+    const phaseBadge = document.getElementById('phase-badge');
+    const turnText = document.getElementById('turn-text');
+    const promptText = document.getElementById('prompt-text');
+    const selTitle = document.getElementById('sel-title');
+    const selStats = document.getElementById('sel-stats');
+    const selOrderBadge = document.getElementById('sel-order-badge');
+
+    const ordersControls = document.getElementById('orders-controls');
+    const lockOrdersRow = document.getElementById('lock-orders-row');
+    const moveControls = document.getElementById('movement-controls');
+    const btnActivate = document.getElementById('btn-activate');
+    const btnUndo = document.getElementById('btn-undo-move');
+    const btnConfirm = document.getElementById('btn-confirm-move');
+
+    turnText.innerText = `Turn ${this.turn}`;
+
+    if (this.phase === 'ORDERS') {
+      phaseBadge.innerText = 'I. Orders Phase';
+      phaseBadge.style.background = '#d97706';
+      const remaining = this.detachments.filter(d => !d.order).length;
+      promptText.innerText = remaining > 0
+        ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
+        : 'All Orders placed! Ready to roll for Initiative.';
+
+      ordersControls.style.display = this.selectedDetachment ? 'flex' : 'none';
+      lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
+      moveControls.style.display = 'none';
+    } else {
+      phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
+      phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
+      promptText.innerText = this.activatingDetachment
+        ? `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm (Keep within 6 cm coherency)`
+        : `${this.activePlayer}: Select one of your unactivated detachments to reveal its Order`;
+
+      ordersControls.style.display = 'none';
+      lockOrdersRow.style.display = 'none';
+      moveControls.style.display = this.selectedDetachment ? 'flex' : 'none';
+
+      if (this.selectedDetachment) {
+        const isCurrentActivating = this.activatingDetachment === this.selectedDetachment;
+        const canActivate = !this.activatingDetachment &&
+                            !this.selectedDetachment.activated &&
+                            this.selectedDetachment.faction === this.activePlayer;
+
+        btnActivate.style.display = isCurrentActivating ? 'none' : 'block';
+        btnActivate.disabled = !canActivate;
+        btnActivate.innerText = this.selectedDetachment.activated
+          ? 'Already Activated'
+          : (this.selectedDetachment.faction !== this.activePlayer ? `Waiting for ${this.activePlayer}` : 'Reveal Order & Activate');
+
+        btnUndo.style.display = isCurrentActivating ? 'block' : 'none';
+        btnConfirm.style.display = isCurrentActivating ? 'block' : 'none';
+      }
+    }
+
+    if (this.selectedDetachment) {
+      const d = this.selectedDetachment;
+      selTitle.innerText = `[${d.faction}] ${d.name}`;
+      selStats.innerText = `Base Move: ${d.moveCm} cm | Armour Save: ${d.save} | CAF: ${d.caf} | Stands: ${d.stands.length}`;
+      selOrderBadge.innerText = d.order
+        ? (d.orderRevealed ? `Order: ${ORDER_INFO[d.order].label}` : `Hidden Order: ${ORDER_INFO[d.order].label}`)
+        : 'No Order Assigned';
+    } else {
+      selTitle.innerText = 'No Detachment Selected';
+      selStats.innerText = 'Tap any unit stand on the battlefield (Drag empty space or pinch to pan/zoom)';
+      selOrderBadge.innerText = '';
+    }
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  parent: 'game-container',
+  width: window.innerWidth,
+  height: window.innerHeight,
+  backgroundColor: '#111418',
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  scene: [NetEpicScene]
+};
+
+new Phaser.Game(config);
+</script>
+</body>
+</html>
