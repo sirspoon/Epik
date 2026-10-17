@@ -3,31 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NetEpic Gold - Phase 1 Prototype</title>
+  <title>NetEpic Gold - Phase 2 (LoS, Snap Fire & Ranged Combat)</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body, html {
       margin: 0; padding: 0; width: 100%; height: 100%;
-      background-color: #111418; overflow: hidden;
+      background-color: #0f172a; overflow: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #e2e8f0;
     }
     #game-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
     
-    /* HUD Overlay */
     #hud {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       pointer-events: none; display: flex; flex-direction: column;
-      justify-content: space-between; padding: 10px;
+      justify-content: space-between; padding: 8px;
     }
     .panel {
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.94);
       border: 1px solid #334155;
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       pointer-events: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
     }
     #top-bar {
       display: flex; justify-content: space-between; align-items: center;
@@ -35,39 +34,59 @@
     }
     .phase-badge {
       background: #d97706; color: #fff; font-weight: 800;
-      padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;
+      padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;
       letter-spacing: 0.5px; text-transform: uppercase;
     }
-    .status-text { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
-    .sub-text { font-size: 0.8rem; color: #94a3b8; }
+    .status-text { font-size: 0.9rem; font-weight: 600; color: #f8fafc; }
+    .sub-text { font-size: 0.78rem; color: #94a3b8; }
+    .vp-box {
+      font-size: 0.8rem; font-weight: 700; padding: 4px 8px;
+      border-radius: 4px; background: #1e293b; border: 1px solid #475569;
+    }
+
+    #mid-area {
+      display: flex; justify-content: flex-end; align-items: flex-start;
+      flex: 1; margin: 8px 0; overflow: hidden; pointer-events: none;
+    }
+    #combat-log {
+      width: 310px; max-height: 220px; overflow-y: auto;
+      font-size: 0.76rem; line-height: 1.35; pointer-events: auto;
+      background: rgba(15, 23, 42, 0.88);
+    }
+    .log-entry { margin-bottom: 5px; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
+    .log-hit { color: #fde047; }
+    .log-kill { color: #f87171; font-weight: bold; }
+    .log-save { color: #4ade80; }
 
     #bottom-bar {
-      display: flex; flex-direction: column; gap: 8px;
-      max-width: 650px; width: 100%; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 6px;
+      max-width: 720px; width: 100%; margin: 0 auto;
     }
-    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
     button {
       background: #1e293b; color: #f8fafc; border: 1px solid #475569;
-      padding: 10px 14px; border-radius: 6px; font-weight: 700;
-      font-size: 0.85rem; cursor: pointer; transition: 0.15s;
-      flex: 1; min-width: 100px; text-align: center;
+      padding: 9px 12px; border-radius: 6px; font-weight: 700;
+      font-size: 0.82rem; cursor: pointer; transition: 0.15s;
+      flex: 1; min-width: 105px; text-align: center;
     }
     button:hover:not(:disabled) { background: #334155; border-color: #94a3b8; }
-    button:active:not(:disabled) { transform: translateY(1px); }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
     
     .btn-ff { border-left: 4px solid #ef4444; }
     .btn-adv { border-left: 4px solid #22c55e; }
     .btn-chg { border-left: 4px solid #3b82f6; }
     .btn-primary { background: #2563eb; border-color: #3b82f6; }
-    .btn-primary:hover:not(:disabled) { background: #1d4ed8; }
     .btn-confirm { background: #16a34a; border-color: #22c55e; }
-    .btn-warn { background: #dc2626; border-color: #ef4444; }
+    .btn-fire { background: #dc2626; border-color: #f87171; }
+    .btn-fire:hover:not(:disabled) { background: #b91c1c; }
 
-    .coherency-alert {
-      background: rgba(220, 38, 38, 0.9); color: white;
+    .alert-banner {
+      background: rgba(220, 38, 38, 0.92); color: white;
       padding: 6px 12px; border-radius: 6px; text-align: center;
-      font-weight: 700; font-size: 0.85rem; display: none;
+      font-weight: 700; font-size: 0.82rem; display: none; pointer-events: auto;
+    }
+    .snap-banner {
+      background: rgba(217, 119, 6, 0.95); border: 2px solid #fde047;
     }
   </style>
 </head>
@@ -77,9 +96,10 @@
 
 <div id="hud">
   <div id="top-bar" class="panel">
-    <div>
+    <div style="display:flex; align-items:center; gap:8px;">
       <span id="phase-badge" class="phase-badge">I. Orders Phase</span>
-      <span id="turn-text" class="status-text" style="margin-left:8px;">Turn 1</span>
+      <span id="turn-text" class="status-text">Turn 1</span>
+      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP</span>
     </div>
     <div id="prompt-text" class="status-text">Tap a detachment to assign hidden orders</div>
     <div style="display:flex; gap:6px;">
@@ -87,37 +107,56 @@
     </div>
   </div>
 
+  <div id="mid-area">
+    <div id="combat-log" class="panel">
+      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (LoS & Dice)</div>
+      <div id="log-content">
+        <div class="log-entry">Welcome to Phase 2! Place Orders to begin.</div>
+      </div>
+    </div>
+  </div>
+
   <div id="bottom-bar">
-    <div id="coherency-alert" class="coherency-alert">
+    <div id="coherency-alert" class="alert-banner">
       ⚠️ OUT OF COHERENCY! All stands must form an unbroken chain within 6 cm.
     </div>
 
+    <div id="snapfire-banner" class="alert-banner snap-banner">
+      <div id="snapfire-text" style="margin-bottom:6px;">⚡ SNAP FIRE OPPORTUNITY! Enemy moved into LoS!</div>
+      <div id="snapfire-buttons" class="btn-row"></div>
+    </div>
+
     <div id="selection-panel" class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <div>
           <div id="sel-title" class="status-text">No Detachment Selected</div>
-          <div id="sel-stats" class="sub-text">Tap any unit stand on the battlefield (Drag empty space or pinch to pan/zoom)</div>
+          <div id="sel-stats" class="sub-text">Tap any stand on the battlefield (Drag empty space or pinch to pan/zoom)</div>
         </div>
         <div id="sel-order-badge" class="sub-text" style="font-weight:bold;"></div>
       </div>
 
-      <!-- Orders Phase Controls -->
+      <!-- I. Orders Phase Controls -->
       <div id="orders-controls" class="btn-row" style="display:none;">
-        <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0 cm)</button>
-        <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x)</button>
-        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x)</button>
+        <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0x Move, Shoot Early/Snap)</button>
+        <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x Move, Shoot Late)</button>
+        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x Move, No Ranged)</button>
       </div>
-
-      <!-- Lock In Orders Button -->
       <div id="lock-orders-row" class="btn-row" style="margin-top:6px; display:none;">
         <button class="btn-primary" onclick="window.gameScene.finishOrdersPhase()">All Orders Placed — Roll Initiative (D6)!</button>
       </div>
 
-      <!-- Movement Phase Controls -->
+      <!-- II. Movement Phase Controls -->
       <div id="movement-controls" class="btn-row" style="display:none;">
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
-        <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Positions</button>
+        <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Move</button>
         <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
+      </div>
+
+      <!-- III. Combat Phase Controls -->
+      <div id="combat-controls" class="btn-row" style="display:none;">
+        <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget()" disabled>Select an Enemy Detachment to Fire</button>
+        <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;">Hold Fire (Switch to Advance)</button>
+        <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Skip / End Firing</button>
       </div>
     </div>
   </div>
@@ -125,17 +164,16 @@
 
 <script>
 // --- SCALE & CONSTANTS ---
-// NetEpic Table: 185cm x 125cm. 10 pixels = 1 cm.
 const PX_PER_CM = 10;
-const BOARD_W = 185 * PX_PER_CM; // 1850 px
-const BOARD_H = 125 * PX_PER_CM; // 1250 px
-const COHERENCY_CM = 6;
-const COHERENCY_PX = COHERENCY_CM * PX_PER_CM; // 60 px
+const BOARD_W = 185 * PX_PER_CM;
+const BOARD_H = 125 * PX_PER_CM;
+const COHERENCY_PX = 6 * PX_PER_CM; // 6 cm
 
 const ORDER_INFO = {
   FIRST_FIRE: { label: 'FIRST FIRE', mult: 0, color: 0xef4444, hex: '#ef4444' },
   ADVANCE:    { label: 'ADVANCE',    mult: 1, color: 0x22c55e, hex: '#22c55e' },
-  CHARGE:     { label: 'CHARGE',     mult: 2, color: 0x3b82f6, hex: '#3b82f6' }
+  CHARGE:     { label: 'CHARGE',     mult: 2, color: 0x3b82f6, hex: '#3b82f6' },
+  FALL_BACK:  { label: 'FALL BACK',  mult: 2, color: 0xf59e0b, hex: '#f59e0b' }
 };
 
 class NetEpicScene extends Phaser.Scene {
@@ -146,15 +184,28 @@ class NetEpicScene extends Phaser.Scene {
   create() {
     window.gameScene = this;
     this.turn = 1;
-    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT'
-    this.activePlayer = 'IMPERIUM'; // Alternates during Movement
+    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT' | 'SNAP_INTERRUPT' | 'COMBAT_FIRST' | 'COMBAT_ADVANCE'
+    this.initiativeWinner = 'IMPERIUM';
+    this.activePlayer = 'IMPERIUM';
+
     this.selectedDetachment = null;
-    this.activatingDetachment = null; // Currently moving detachment
+    this.activatingDetachment = null; // Moving or Shooting detachment
+    this.targetDetachment = null;     // Enemy target in Combat Phase
     this.isDraggingStand = false;
 
-    // Graphics Layers
+    this.vp = { IMPERIUM: 0, ORKS: 0 };
+
+    // Terrain Definitions for LoS & Cover
+    this.woods = [
+      { x: 580, y: 625, r: 120 },
+      { x: 1380, y: 625, r: 110 }
+    ];
+    this.buildings = [
+      { x: 890, y: 555, w: 170, h: 140, name: 'Manufactorum' }
+    ];
+
     this.boardGfx = this.add.graphics();
-    this.zoneGfx = this.add.graphics();
+    this.losGfx = this.add.graphics();
     this.overlayGfx = this.add.graphics();
 
     this.drawBattlefield();
@@ -164,96 +215,103 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
+  log(htmlMsg) {
+    const container = document.getElementById('log-content');
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = htmlMsg;
+    container.prepend(div);
+  }
+
   drawBattlefield() {
-    // Base tabletop surface
-    this.boardGfx.fillStyle(0x1e261d, 1);
+    this.boardGfx.fillStyle(0x1a2219, 1);
     this.boardGfx.fillRect(0, 0, BOARD_W, BOARD_H);
 
-    // 10 cm Grid lines
-    this.boardGfx.lineStyle(1, 0x2e3b2b, 0.8);
-    for (let x = 0; x <= BOARD_W; x += 10 * PX_PER_CM) {
-      this.boardGfx.lineBetween(x, 0, x, BOARD_H);
-    }
-    for (let y = 0; y <= BOARD_H; y += 10 * PX_PER_CM) {
-      this.boardGfx.lineBetween(0, y, BOARD_W, y);
-    }
+    // 10 cm Grid
+    this.boardGfx.lineStyle(1, 0x293627, 0.8);
+    for (let x = 0; x <= BOARD_W; x += 10 * PX_PER_CM) this.boardGfx.lineBetween(x, 0, x, BOARD_H);
+    for (let y = 0; y <= BOARD_H; y += 10 * PX_PER_CM) this.boardGfx.lineBetween(0, y, BOARD_W, y);
 
-    // Centerline & Deployment Zones (40 cm from centerline = 80 cm between armies)
+    // Centerline
     const centerY = BOARD_H / 2;
-    this.boardGfx.lineStyle(2, 0x475569, 0.5);
+    this.boardGfx.lineStyle(2, 0x475569, 0.4);
     this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
 
-    this.boardGfx.lineStyle(2, 0x3b82f6, 0.35);
-    this.boardGfx.lineBetween(0, centerY + 40 * PX_PER_CM, BOARD_W, centerY + 40 * PX_PER_CM);
-    this.boardGfx.lineStyle(2, 0xef4444, 0.35);
-    this.boardGfx.lineBetween(0, centerY - 40 * PX_PER_CM, BOARD_W, centerY - 40 * PX_PER_CM);
-
-    // Sample Terrain Features (Visual reference for Phase 1)
-    this.boardGfx.fillStyle(0x143318, 0.85);
-    this.boardGfx.lineStyle(2, 0x225428, 1);
-    this.boardGfx.fillCircle(550, 625, 110);
-    this.boardGfx.strokeCircle(550, 625, 110);
-    this.add.text(550, 625, 'WOODS\n(Half Move)', { fontSize: '13px', color: '#86efac', align: 'center' }).setOrigin(0.5);
-
-    this.boardGfx.fillStyle(0x334155, 0.9);
-    this.boardGfx.lineStyle(2, 0x64748b, 1);
-    this.boardGfx.fillRect(1150, 540, 180, 140);
-    this.boardGfx.strokeRect(1150, 540, 180, 140);
-    this.add.text(1240, 610, 'MANUFACTORUM\n(Standard Building)', { fontSize: '13px', color: '#cbd5e1', align: 'center' }).setOrigin(0.5);
-
-    // Objectives (15cm Control Radius)
-    const objectives = [{ x: 550, y: 625 }, { x: 925, y: 625 }, { x: 1240, y: 610 }];
-    objectives.forEach((obj, idx) => {
-      this.boardGfx.lineStyle(1, 0xfbbf24, 0.3);
-      this.boardGfx.strokeCircle(obj.x, obj.y, 15 * PX_PER_CM);
-      this.boardGfx.fillStyle(0xfbbf24, 1);
-      this.boardGfx.fillCircle(obj.x, obj.y, 6);
-      this.add.text(obj.x, obj.y - 16, `OBJ ${idx + 1} (5 VP)`, { fontSize: '11px', color: '#fbbf24', fontStyle: 'bold' }).setOrigin(0.5);
+    // Woods (Outer 2cm gives -1 cover; >2cm blocks LoS)
+    this.woods.forEach(w => {
+      this.boardGfx.fillStyle(0x143318, 0.9);
+      this.boardGfx.lineStyle(2, 0x22c55e, 0.7);
+      this.boardGfx.fillCircle(w.x, w.y, w.r);
+      this.boardGfx.strokeCircle(w.x, w.y, w.r);
+      // Inner 2cm deep-woods indicator
+      this.boardGfx.lineStyle(1, 0x86efac, 0.35);
+      this.boardGfx.strokeCircle(w.x, w.y, w.r - 20);
+      this.add.text(w.x, w.y, 'WOODS\n(-1 Cover / >2cm Blocks LoS)', { fontSize: '11px', color: '#86efac', align: 'center' }).setOrigin(0.5);
     });
 
-    // Border
+    // Buildings (Blocks LoS)
+    this.buildings.forEach(b => {
+      this.boardGfx.fillStyle(0x334155, 0.95);
+      this.boardGfx.lineStyle(2, 0x94a3b8, 1);
+      this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
+      this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
+      this.add.text(b.x + b.w/2, b.y + b.h/2, `${b.name.toUpperCase()}\n(Blocks LoS)`, { fontSize: '12px', color: '#e2e8f0', align: 'center', fontStyle: 'bold' }).setOrigin(0.5);
+    });
+
     this.boardGfx.lineStyle(4, 0x94a3b8, 1);
     this.boardGfx.strokeRect(0, 0, BOARD_W, BOARD_H);
   }
 
   spawnDemoArmies() {
     this.detachments = [];
-
-    // Imperium (Bottom Deployment Zone > 1025px)
+    // Placed 42cm apart across the center so weapons (30-50cm range) and Snap Fire can be tested immediately!
     this.createDetachment({
-      id: 'sm_tac_1', faction: 'IMPERIUM', name: 'Tactical Detachment 1',
-      moveCm: 10, save: '5+', caf: '+2', color: 0x2563eb,
-      standsCount: 6, startX: 650, startY: 1060, baseW: 20, baseH: 20
-    });
-    this.createDetachment({
-      id: 'sm_rhino_1', faction: 'IMPERIUM', name: 'Rhino Squadron (Transport)',
-      moveCm: 25, save: '4+', caf: '+0', color: 0x60a5fa,
-      standsCount: 3, startX: 1100, startY: 1060, baseW: 24, baseH: 32
+      id: 'sm_tac', faction: 'IMPERIUM', name: 'Space Marine Tactical Squad',
+      moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
+      weapon: { name: 'Bolters', rangeCm: 30, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 3, color: 0x2563eb,
+      standsCount: 6, startX: 520, startY: 820, baseW: 20, baseH: 20
     });
 
-    // Orks (Top Deployment Zone < 225px)
     this.createDetachment({
-      id: 'ork_boyz_1', faction: 'ORKS', name: 'Ork Boyz Mob 1',
-      moveCm: 10, save: '6+', caf: '+1', color: 0x16a34a,
-      standsCount: 6, startX: 650, startY: 180, baseW: 20, baseH: 20
+      id: 'sm_pred', faction: 'IMPERIUM', name: 'Predator Tank Squadron',
+      moveCm: 25, save: 3, caf: 1, morale: 2, pinningClass: 3,
+      weapon: { name: 'Autocannon & Heavy Bolters', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
+      breakPoint: 2, vpValue: 4, color: 0x60a5fa,
+      standsCount: 3, startX: 1120, startY: 820, baseW: 24, baseH: 32
     });
+
     this.createDetachment({
-      id: 'ork_bikes_1', faction: 'ORKS', name: 'Warbuggy Squadron',
-      moveCm: 30, save: '5+', caf: '+1', color: 0x4ade80,
-      standsCount: 4, startX: 1100, startY: 180, baseW: 22, baseH: 30
+      id: 'ork_boyz', faction: 'ORKS', name: 'Ork Boyz Mob',
+      moveCm: 10, save: 6, caf: 1, morale: 4, pinningClass: 1,
+      weapon: { name: 'Shootas', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0x16a34a,
+      standsCount: 6, startX: 520, startY: 420, baseW: 20, baseH: 20
+    });
+
+    this.createDetachment({
+      id: 'ork_buggies', faction: 'ORKS', name: 'Warbuggy Squadron',
+      moveCm: 30, save: 5, caf: 1, morale: 4, pinningClass: 3,
+      weapon: { name: 'Twin Autos', rangeCm: 35, dice: 2, toHit: 5, tsm: 0 },
+      breakPoint: 2, vpValue: 3, color: 0x4ade80,
+      standsCount: 4, startX: 1120, startY: 420, baseW: 22, baseH: 30
     });
   }
 
   createDetachment(cfg) {
     const det = {
       ...cfg,
+      initialCount: cfg.standsCount,
+      casualties: 0,
+      broken: false,
       order: null,
       orderRevealed: false,
-      activated: false,
+      moved: false,
+      fired: false,
       stands: []
     };
 
-    const spacing = 36; // 3.6 cm apart (well within 6cm coherency)
+    const spacing = 36;
     for (let i = 0; i < cfg.standsCount; i++) {
       const sx = cfg.startX + (i % 3) * spacing;
       const sy = cfg.startY + Math.floor(i / 3) * spacing;
@@ -262,27 +320,15 @@ class NetEpicScene extends Phaser.Scene {
       container.setSize(cfg.baseW + 10, cfg.baseH + 10);
       container.setInteractive({ draggable: true });
 
-      const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color)
-        .setStrokeStyle(2, 0xffffff);
-      
-      // Direction indicator dots
+      const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color).setStrokeStyle(2, 0xffffff);
       const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, 0xffffff);
       container.add([baseBg, pip]);
 
-      const standObj = {
-        id: `${cfg.id}_s${i}`,
-        detachment: det,
-        container,
-        baseBg,
-        originX: sx,
-        originY: sy
-      };
-
+      const standObj = { id: `${cfg.id}_s${i}`, detachment: det, container, baseBg, originX: sx, originY: sy };
       container.standData = standObj;
       det.stands.push(standObj);
     }
 
-    // Order Counter Badge (floating near leader stand)
     det.badge = this.add.text(cfg.startX, cfg.startY - 26, 'NO ORDER', {
       fontSize: '11px', fontStyle: 'bold', backgroundColor: '#1e293b',
       color: '#94a3b8', padding: { x: 5, y: 2 }
@@ -291,24 +337,218 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.push(det);
   }
 
-  setupCameraAndInput() {
-    this.input.addPointer(1); // Support 2-finger pinch on Android
-    const cam = this.cameras.main;
+  // --- LINE OF SIGHT & TERRAIN RAYCASTER (NetEpic Rules p. 28 & 33) ---
+  checkStandLoS(shooterStand, targetStand) {
+    const p1 = { x: shooterStand.container.x, y: shooterStand.container.y };
+    const p2 = { x: targetStand.container.x, y: targetStand.container.y };
+    const distPx = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+    const distCm = distPx / PX_PER_CM;
 
-    // Mouse Wheel Zoom (PC)
-    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
-      const newZoom = Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5);
-      cam.setZoom(newZoom);
+    const wpn = shooterStand.detachment.weapon;
+    if (distCm > wpn.rangeCm) {
+      return { valid: false, reason: 'Out of Range', distCm, coverMod: 0 };
+    }
+
+    const line = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
+
+    // 1. Check Buildings (Block LoS completely)
+    for (const b of this.buildings) {
+      const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
+      if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
+        return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0 };
+      }
+    }
+
+    // 2. Check Woods (More than 2 cm = 20px of woods blocks LoS; edge <=2cm grants -1 cover)
+    const steps = Math.max(10, Math.ceil(distPx / 4));
+    let woodPixels = 0;
+    let targetInWood = false;
+
+    for (const w of this.woods) {
+      if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
+    }
+
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const sx = p1.x + (p2.x - p1.x) * t;
+      const sy = p1.y + (p2.y - p1.y) * t;
+      for (const w of this.woods) {
+        if (Phaser.Math.Distance.Between(sx, sy, w.x, w.y) <= w.r) {
+          woodPixels += (distPx / steps);
+          break;
+        }
+      }
+    }
+
+    if (woodPixels > 20) {
+      return { valid: false, reason: 'Blocked (>2 cm Woods)', distCm, coverMod: 0 };
+    }
+
+    // 3. Pinning Class Occlusion: Units block LoS to units of their pinning class or smaller
+    const maxPin = Math.max(shooterStand.detachment.pinningClass, targetStand.detachment.pinningClass);
+    for (const det of this.detachments) {
+      if (det === shooterStand.detachment || det === targetStand.detachment) continue;
+      if (det.pinningClass >= maxPin) {
+        for (const s of det.stands) {
+          const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
+          if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
+            return { valid: false, reason: `Blocked by ${det.name}`, distCm, coverMod: 0 };
+          }
+        }
+      }
+    }
+
+    const coverMod = (targetInWood || woodPixels > 0) ? -1 : 0;
+    return { valid: true, reason: 'Clear LoS', distCm, coverMod };
+  }
+
+  // Evaluate all stands from firerDet shooting at targetDet
+  evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
+    const validPairs = [];
+    for (const shooter of firerDet.stands) {
+      let bestTarget = null;
+      for (const target of targetDet.stands) {
+        const res = this.checkStandLoS(shooter, target);
+        if (res.valid) {
+          if (!bestTarget || res.distCm < bestTarget.res.distCm) {
+            bestTarget = { shooter, target, res };
+          }
+        }
+      }
+      if (bestTarget) validPairs.push(bestTarget);
+    }
+    return { validPairs, isSnapFire };
+  }
+
+  // --- RANGED COMBAT RESOLUTION ENGINE ---
+  executeRangedAttack(firerDet, targetDet, isSnapFire = false) {
+    const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
+    if (sol.validPairs.length === 0) {
+      this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS of <b>${targetDet.name}</b>.`);
+      return;
+    }
+
+    const wpn = firerDet.weapon;
+    const snapMod = isSnapFire ? -1 : 0;
+    let totalDice = 0, hits = 0, saves = 0, kills = 0;
+
+    this.log(`🔥 <b>${firerDet.name}</b> fires <i>${wpn.name}</i> (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}) at <b>${targetDet.name}</b>!`);
+
+    sol.validPairs.forEach(pair => {
+      if (targetDet.stands.length === 0) return;
+      const coverMod = pair.res.coverMod;
+      // Modifiers penalize the shooter by increasing the needed To-Hit roll
+      const neededToHit = wpn.toHit - snapMod - coverMod;
+
+      for (let d = 0; d < wpn.dice; d++) {
+        totalDice++;
+        const roll = Phaser.Math.Between(1, 6);
+        let hitSuccess = false;
+
+        if (roll === 1) {
+          hitSuccess = false; // Natural 1 always misses (p. 33)
+        } else if (neededToHit <= 6) {
+          hitSuccess = roll >= neededToHit;
+        } else if (roll === 6) {
+          // To-Hit Roll Greater Than 6 (p. 34): 7 needs 6 then 4+, 8 needs 6 then 5+, 9 needs 6 then 6
+          const extraRoll = Phaser.Math.Between(1, 6);
+          const extraNeeded = neededToHit - 3;
+          hitSuccess = extraRoll >= extraNeeded;
+        }
+
+        if (hitSuccess) {
+          hits++;
+          // Armour Save modified by TSM (p. 37)
+          const saveRoll = Phaser.Math.Between(1, 6);
+          const neededSave = targetDet.save - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
+          if (saveRoll >= neededSave && neededSave <= 6) {
+            saves++;
+          } else {
+            kills++;
+            this.removeCasualty(targetDet);
+          }
+        }
+      }
     });
 
-    // Stand Selection & Dragging
-    this.input.on('gameobjectdown', (pointer, gameObject) => {
-      if (gameObject.standData) {
-        const det = gameObject.standData.detachment;
-        // If we are currently moving a specific detachment, only allow selecting that detachment
-        if (this.activatingDetachment && this.activatingDetachment !== det) return;
-        this.selectDetachment(det);
+    this.log(
+      `🎲 Rolled <b>${totalDice}D6</b>: <span class="log-hit">${hits} Hit(s)</span> | ` +
+      `<span class="log-save">${saves} Saved</span> | <span class="log-kill">${kills} Killed</span>`
+    );
+
+    firerDet.fired = true;
+    this.updateDetachmentBadge(firerDet);
+    this.checkBreakPoint(targetDet);
+  }
+
+  removeCasualty(det) {
+    if (det.stands.length === 0) return;
+    const victim = det.stands.pop();
+    victim.container.destroy();
+    det.casualties++;
+
+    if (det.stands.length === 0) {
+      det.badge.setVisible(false);
+      this.log(`💀 <b>${det.name}</b> has been completely wiped out!`);
+    } else {
+      this.updateDetachmentBadgePos(det);
+    }
+  }
+
+  checkBreakPoint(det) {
+    if (!det.broken && det.casualties >= det.breakPoint) {
+      det.broken = true;
+      const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      this.vp[scoringSide] += det.vpValue;
+
+      // Morale Check (p. 41-42)
+      const moraleRoll = Phaser.Math.Between(1, 6);
+      if (moraleRoll < det.morale && det.stands.length > 0) {
+        det.order = 'FALL_BACK';
+        det.orderRevealed = true;
+        this.updateDetachmentBadge(det);
+        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) -> <b>FALL BACK!</b> (+${det.vpValue} VP to ${scoringSide})`);
+      } else {
+        this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringSide}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
       }
+    }
+  }
+
+  // --- CAMERA & INPUT ---
+  setupCameraAndInput() {
+    this.input.addPointer(1);
+    const cam = this.cameras.main;
+
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5));
+    });
+
+    this.input.on('gameobjectdown', (pointer, gameObject) => {
+      if (!gameObject.standData) return;
+      const clickedDet = gameObject.standData.detachment;
+
+      if (this.phase === 'SNAP_INTERRUPT') return;
+
+      // In Combat Phase: if we already have an active friendly firing detachment, clicking an enemy selects it as Target!
+      if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
+          this.activatingDetachment && clickedDet.faction !== this.activePlayer) {
+        this.targetDetachment = clickedDet;
+        this.drawOverlays();
+        this.updateUI();
+        return;
+      }
+
+      if (this.phase === 'MOVEMENT' && this.activatingDetachment && this.activatingDetachment !== clickedDet) return;
+
+      this.selectedDetachment = clickedDet;
+      if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
+        if (clickedDet.faction === this.activePlayer && !clickedDet.fired && this.isEligibleInCombatPhase(clickedDet)) {
+          this.activatingDetachment = clickedDet;
+          this.targetDetachment = null;
+        }
+      }
+      this.drawOverlays();
+      this.updateUI();
     });
 
     this.input.on('dragstart', (pointer, gameObject) => {
@@ -323,14 +563,11 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const stand = gameObject.standData;
       const det = stand.detachment;
-
       if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det) return;
 
-      const maxMoveCm = det.moveCm * ORDER_INFO[det.order].mult;
-      const maxMovePx = maxMoveCm * PX_PER_CM;
-
-      // Clamp within allowed movement radius from origin
+      const maxMovePx = det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM;
       const dist = Phaser.Math.Distance.Between(stand.originX, stand.originY, dragX, dragY);
+
       if (dist <= maxMovePx) {
         gameObject.x = Phaser.Math.Clamp(dragX, 15, BOARD_W - 15);
         gameObject.y = Phaser.Math.Clamp(dragY, 15, BOARD_H - 15);
@@ -349,27 +586,19 @@ class NetEpicScene extends Phaser.Scene {
       this.drawOverlays();
     });
 
-    // Pan & Pinch-Zoom on empty space
     this.lastPinchDist = 0;
     this.input.on('pointermove', (pointer) => {
       if (this.isDraggingStand) return;
-
-      const p1 = this.input.pointer1;
-      const p2 = this.input.pointer2;
-
-      // 2-Finger Pinch Zoom (Android)
+      const p1 = this.input.pointer1, p2 = this.input.pointer2;
       if (p1.isDown && p2.isDown) {
         const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
         if (this.lastPinchDist > 0) {
-          const delta = dist - this.lastPinchDist;
-          cam.setZoom(Phaser.Math.Clamp(cam.zoom + delta * 0.005, 0.35, 2.5));
+          cam.setZoom(Phaser.Math.Clamp(cam.zoom + (dist - this.lastPinchDist) * 0.005, 0.35, 2.5));
         }
         this.lastPinchDist = dist;
         return;
       }
       this.lastPinchDist = 0;
-
-      // 1-Finger or Mouse Drag Pan
       if (pointer.isDown) {
         cam.scrollX -= (pointer.x - pointer.prevPosition.x) / cam.zoom;
         cam.scrollY -= (pointer.y - pointer.prevPosition.y) / cam.zoom;
@@ -379,20 +608,16 @@ class NetEpicScene extends Phaser.Scene {
 
   resetCamera() {
     const cam = this.cameras.main;
-    const zoomX = this.scale.width / (BOARD_W + 80);
-    const zoomY = this.scale.height / (BOARD_H + 140);
+    const zoomX = this.scale.width / (BOARD_W + 60);
+    const zoomY = this.scale.height / (BOARD_H + 120);
     cam.setZoom(Math.min(zoomX, zoomY));
     cam.centerOn(BOARD_W / 2, BOARD_H / 2);
   }
 
-  selectDetachment(det) {
-    this.selectedDetachment = det;
-    this.drawOverlays();
-    this.updateUI();
-  }
-
+  // --- PHASE TRANSITIONS & TURN LOGIC ---
   assignOrder(orderKey) {
     if (!this.selectedDetachment || this.phase !== 'ORDERS') return;
+    if (this.selectedDetachment.order === 'FALL_BACK') return;
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     this.updateDetachmentBadge(this.selectedDetachment);
@@ -400,34 +625,28 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   finishOrdersPhase() {
-    // Roll Initiative (D6 each, re-roll ties)
     let impRoll = 0, orkRoll = 0;
     while (impRoll === orkRoll) {
       impRoll = Phaser.Math.Between(1, 6);
       orkRoll = Phaser.Math.Between(1, 6);
     }
-
-    this.activePlayer = impRoll > orkRoll ? 'IMPERIUM' : 'ORKS';
+    this.initiativeWinner = impRoll > orkRoll ? 'IMPERIUM' : 'ORKS';
+    this.activePlayer = this.initiativeWinner;
     this.phase = 'MOVEMENT';
     this.selectedDetachment = null;
 
-    alert(`🎲 INITIATIVE ROLL!\nImperium rolled: ${impRoll}\nOrks rolled: ${orkRoll}\n\n${this.activePlayer} wins Initiative and activates first!`);
+    this.log(`🎲 <b>Initiative Roll:</b> Imperium ${impRoll} vs Orks ${orkRoll}. <b>${this.initiativeWinner}</b> wins Initiative!`);
     this.updateUI();
     this.drawOverlays();
   }
 
   activateSelectedDetachment() {
     const det = this.selectedDetachment;
-    if (!det || det.activated || det.faction !== this.activePlayer) return;
+    if (!det || det.moved || det.faction !== this.activePlayer) return;
 
     det.orderRevealed = true;
     this.activatingDetachment = det;
-
-    // Save origin positions for movement ruler & reset
-    det.stands.forEach(s => {
-      s.originX = s.container.x;
-      s.originY = s.container.y;
-    });
+    det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
 
     this.updateDetachmentBadge(det);
     this.drawOverlays();
@@ -437,10 +656,7 @@ class NetEpicScene extends Phaser.Scene {
   undoDetachmentMove() {
     const det = this.activatingDetachment;
     if (!det) return;
-    det.stands.forEach(s => {
-      s.container.x = s.originX;
-      s.container.y = s.originY;
-    });
+    det.stands.forEach(s => { s.container.x = s.originX; s.container.y = s.originY; });
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
   }
@@ -448,32 +664,84 @@ class NetEpicScene extends Phaser.Scene {
   confirmDetachmentMove() {
     const det = this.activatingDetachment;
     if (!det) return;
+    if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
 
-    // Verify 6 cm Coherency (Exception: First Fire units that don't move)
-    if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) {
-      return;
-    }
-
-    det.stands.forEach(s => {
-      s.originX = s.container.x;
-      s.originY = s.container.y;
-    });
-
-    det.activated = true;
-    this.activatingDetachment = null;
-    this.selectedDetachment = null;
+    // Check if the unit actually moved
+    const didMove = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
+    det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
+    det.moved = true;
     this.updateDetachmentBadge(det);
 
-    // Alternate to other player if they have unactivated units
-    const otherFaction = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-    const otherHasUnits = this.detachments.some(d => d.faction === otherFaction && !d.activated);
-    const currentHasUnits = this.detachments.some(d => d.faction === this.activePlayer && !d.activated);
+    // Check for Enemy Snap Fire Interrupts (p. 19): Any enemy unit on First Fire that hasn't fired and has LoS
+    if (didMove) {
+      const enemySide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      const snapCandidates = this.detachments.filter(d =>
+        d.faction === enemySide &&
+        d.stands.length > 0 &&
+        d.order === 'FIRST_FIRE' &&
+        !d.fired &&
+        this.evaluateFireSolution(d, det, true).validPairs.length > 0
+      );
 
-    if (otherHasUnits) {
-      this.activePlayer = otherFaction;
-    } else if (!currentHasUnits) {
-      // All detachments have activated -> End of Movement Phase!
-      this.startNextTurn();
+      if (snapCandidates.length > 0) {
+        this.triggerSnapFirePrompt(det, snapCandidates);
+        return;
+      }
+    }
+
+    this.finishMovementActivation();
+  }
+
+  triggerSnapFirePrompt(movingDet, snapCandidates) {
+    this.phase = 'SNAP_INTERRUPT';
+    this.snapTarget = movingDet;
+    this.snapCandidates = snapCandidates;
+    this.updateUI();
+    this.drawOverlays();
+  }
+
+  resolveSnapFireChoice(firerId) {
+    if (firerId) {
+      const firer = this.detachments.find(d => d.id === firerId);
+      if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
+        firer.orderRevealed = true;
+        this.executeRangedAttack(firer, this.snapTarget, true);
+      }
+      // Re-check if more First Fire detachments can still Snap Fire at the surviving stands
+      const enemySide = this.snapTarget.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      this.snapCandidates = this.detachments.filter(d =>
+        d.faction === enemySide &&
+        d.stands.length > 0 &&
+        this.snapTarget.stands.length > 0 &&
+        d.order === 'FIRST_FIRE' &&
+        !d.fired &&
+        this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
+      );
+      if (this.snapCandidates.length > 0) {
+        this.updateUI();
+        this.drawOverlays();
+        return;
+      }
+    }
+
+    this.phase = 'MOVEMENT';
+    this.snapTarget = null;
+    this.snapCandidates = [];
+    this.finishMovementActivation();
+  }
+
+  finishMovementActivation() {
+    this.activatingDetachment = null;
+    this.selectedDetachment = null;
+
+    const otherSide = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const otherHasMove = this.detachments.some(d => d.faction === otherSide && d.stands.length > 0 && !d.moved);
+    const currHasMove = this.detachments.some(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+
+    if (otherHasMove) {
+      this.activePlayer = otherSide;
+    } else if (!currHasMove) {
+      this.startCombatSegment('COMBAT_FIRST');
       return;
     }
 
@@ -481,36 +749,123 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
-  startNextTurn() {
-    alert(`Turn ${this.turn} Movement Phase Complete!\nResetting orders for Turn ${this.turn + 1}.`);
-    this.turn++;
-    this.phase = 'ORDERS';
+  // --- III. COMBAT PHASE (FIRST FIRE & ADVANCE FIRE SEGMENTS) ---
+  isEligibleInCombatPhase(det) {
+    if (det.stands.length === 0 || det.fired) return false;
+    if (this.phase === 'COMBAT_FIRST') return det.order === 'FIRST_FIRE';
+    if (this.phase === 'COMBAT_ADVANCE') return det.order === 'ADVANCE';
+    return false;
+  }
+
+  startCombatSegment(segment) {
+    this.phase = segment;
+    this.activePlayer = this.initiativeWinner;
+    this.selectedDetachment = null;
+    this.activatingDetachment = null;
+    this.targetDetachment = null;
+
+    // Reveal all orders for eligible units in this segment
     this.detachments.forEach(d => {
-      d.order = null;
-      d.orderRevealed = false;
-      d.activated = false;
-      this.updateDetachmentBadge(d);
+      if (this.isEligibleInCombatPhase(d)) {
+        d.orderRevealed = true;
+        this.updateDetachmentBadge(d);
+      }
     });
+
+    const segName = segment === 'COMBAT_FIRST' ? '1) First Fire Segment' : '3) Advance Fire Segment';
+    this.log(`⚔️ Entering <b>${segName}</b>! (${this.activePlayer} has Initiative)`);
+    this.advanceCombatTurn();
+  }
+
+  advanceCombatTurn() {
+    const currEligible = this.detachments.some(d => d.faction === this.activePlayer && this.isEligibleInCombatPhase(d));
+    const otherSide = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const otherEligible = this.detachments.some(d => d.faction === otherSide && this.isEligibleInCombatPhase(d));
+
+    if (!currEligible && otherEligible) {
+      this.activePlayer = otherSide;
+    } else if (!currEligible && !otherEligible) {
+      if (this.phase === 'COMBAT_FIRST') {
+        this.startCombatSegment('COMBAT_ADVANCE');
+      } else {
+        this.endTurn();
+      }
+      return;
+    }
+
+    // Auto-select first eligible unit for convenience
+    const firstUnit = this.detachments.find(d => d.faction === this.activePlayer && this.isEligibleInCombatPhase(d));
+    this.selectedDetachment = firstUnit || null;
+    this.activatingDetachment = firstUnit || null;
+    this.targetDetachment = null;
+
     this.drawOverlays();
     this.updateUI();
   }
 
-  // NetEpic Coherency Rule (p. 20-21): All models in a detachment must form a single connected graph within 6 cm
+  fireAtSelectedTarget() {
+    if (!this.activatingDetachment || !this.targetDetachment) return;
+    this.executeRangedAttack(this.activatingDetachment, this.targetDetachment, false);
+    this.finishCombatActivation();
+  }
+
+  holdFireDetachment() {
+    if (!this.activatingDetachment || this.phase !== 'COMBAT_FIRST') return;
+    this.activatingDetachment.order = 'ADVANCE';
+    this.updateDetachmentBadge(this.activatingDetachment);
+    this.log(`⏳ <b>${this.activatingDetachment.name}</b> Holds Fire until the Advance Fire Segment.`);
+    this.finishCombatActivation();
+  }
+
+  skipFireDetachment() {
+    if (!this.activatingDetachment) return;
+    this.activatingDetachment.fired = true;
+    this.updateDetachmentBadge(this.activatingDetachment);
+    this.log(`⏭️ <b>${this.activatingDetachment.name}</b> holds/skips firing.`);
+    this.finishCombatActivation();
+  }
+
+  finishCombatActivation() {
+    const otherSide = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    if (this.detachments.some(d => d.faction === otherSide && this.isEligibleInCombatPhase(d))) {
+      this.activePlayer = otherSide;
+    }
+    this.advanceCombatTurn();
+  }
+
+  endTurn() {
+    this.log(`🏁 <b>End of Turn ${this.turn}!</b> Preparing Turn ${this.turn + 1} Orders Phase.`);
+    this.turn++;
+    this.phase = 'ORDERS';
+    this.selectedDetachment = null;
+    this.activatingDetachment = null;
+    this.targetDetachment = null;
+
+    this.detachments.forEach(d => {
+      if (d.stands.length === 0) return;
+      if (d.order !== 'FALL_BACK') d.order = null;
+      d.orderRevealed = (d.order === 'FALL_BACK');
+      d.moved = false;
+      d.fired = false;
+      this.updateDetachmentBadge(d);
+    });
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
   checkCoherency(det) {
     const stands = det.stands;
     if (stands.length <= 1) return true;
-
     const visited = new Set([0]);
     const queue = [0];
-
     while (queue.length > 0) {
       const currIdx = queue.shift();
       const s1 = stands[currIdx].container;
       for (let i = 0; i < stands.length; i++) {
         if (!visited.has(i)) {
           const s2 = stands[i].container;
-          const dist = Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y);
-          if (dist <= COHERENCY_PX + 1) { // +1px tolerance
+          if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
             visited.add(i);
             queue.push(i);
           }
@@ -522,64 +877,85 @@ class NetEpicScene extends Phaser.Scene {
 
   drawOverlays() {
     this.overlayGfx.clear();
+    this.losGfx.clear();
+
     const det = this.selectedDetachment;
-    if (!det) {
+    if (!det || det.stands.length === 0) {
       document.getElementById('coherency-alert').style.display = 'none';
       return;
     }
 
     const isCoherent = this.checkCoherency(det);
-    document.getElementById('coherency-alert').style.display = isCoherent ? 'none' : 'block';
+    document.getElementById('coherency-alert').style.display = (this.phase === 'MOVEMENT' && !isCoherent) ? 'block' : 'none';
 
-    // Draw 6 cm Coherency Links between stands
+    // Coherency web
     for (let i = 0; i < det.stands.length; i++) {
       for (let j = i + 1; j < det.stands.length; j++) {
-        const s1 = det.stands[i].container;
-        const s2 = det.stands[j].container;
-        const dist = Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y);
-        if (dist <= COHERENCY_PX + 1) {
-          this.overlayGfx.lineStyle(2, isCoherent ? 0x22c55e : 0xf59e0b, 0.65);
+        const s1 = det.stands[i].container, s2 = det.stands[j].container;
+        if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
+          this.overlayGfx.lineStyle(2, isCoherent ? 0x22c55e : 0xf59e0b, 0.55);
           this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
         }
       }
     }
 
-    // Highlight selected stands & movement envelopes if currently moving
-    const maxMoveCm = det.order ? det.moveCm * ORDER_INFO[det.order].mult : 0;
-    const maxMovePx = maxMoveCm * PX_PER_CM;
-
+    const maxMovePx = det.order ? det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
     det.stands.forEach(s => {
-      // Selection ring
       this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
       this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
 
-      if (this.activatingDetachment === det && maxMovePx > 0) {
-        // Movement envelope circle from origin
+      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0) {
         this.overlayGfx.lineStyle(1, ORDER_INFO[det.order].color, 0.3);
         this.overlayGfx.strokeCircle(s.originX, s.originY, maxMovePx);
-
-        // Path line from origin to current position
         this.overlayGfx.lineStyle(2, 0xffffff, 0.8);
         this.overlayGfx.lineBetween(s.originX, s.originY, s.container.x, s.container.y);
       }
     });
 
-    // Enable/Disable Confirm Move button based on coherency
+    // Draw Live Line of Sight Rays when targeting an enemy in Combat Phase
+    if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
+        this.activatingDetachment && this.targetDetachment) {
+      const firer = this.activatingDetachment;
+      const target = this.targetDetachment;
+
+      target.stands.forEach(ts => {
+        this.overlayGfx.lineStyle(2, 0xef4444, 0.9);
+        this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 20);
+      });
+
+      firer.stands.forEach(shooter => {
+        // Check ray to closest target stand
+        let chosen = target.stands[0];
+        let bestCheck = this.checkStandLoS(shooter, chosen);
+        for (const ts of target.stands) {
+          const chk = this.checkStandLoS(shooter, ts);
+          if (chk.valid && (!bestCheck.valid || chk.distCm < bestCheck.distCm)) {
+            chosen = ts;
+            bestCheck = chk;
+          }
+        }
+        const color = bestCheck.valid ? (bestCheck.coverMod < 0 ? 0xfacc15 : 0x22c55e) : 0xef4444;
+        this.losGfx.lineStyle(2, color, 0.85);
+        this.losGfx.lineBetween(shooter.container.x, shooter.container.y, chosen.container.x, chosen.container.y);
+      });
+    }
+
     const confirmBtn = document.getElementById('btn-confirm-move');
     if (confirmBtn) confirmBtn.disabled = !isCoherent;
   }
 
   updateDetachmentBadgePos(det) {
+    if (det.stands.length === 0) return;
     let avgX = 0, minY = Infinity;
     det.stands.forEach(s => {
       avgX += s.container.x;
       if (s.container.y < minY) minY = s.container.y;
     });
-    avgX /= det.stands.length;
-    det.badge.setPosition(avgX, minY - 26);
+    det.badge.setPosition(avgX / det.stands.length, minY - 26);
   }
 
   updateDetachmentBadge(det) {
+    if (det.stands.length === 0) return;
     this.updateDetachmentBadgePos(det);
     if (!det.order) {
       det.badge.setText('NO ORDER');
@@ -591,7 +967,8 @@ class NetEpicScene extends Phaser.Scene {
       det.badge.setColor('#ffffff');
     } else {
       const info = ORDER_INFO[det.order];
-      det.badge.setText(det.activated ? `✓ ${info.label}` : `▶ ${info.label}`);
+      const status = det.fired ? '🔥 FIRED' : (det.moved ? `✓ ${info.label}` : `▶ ${info.label}`);
+      det.badge.setText(status);
       det.badge.setBackgroundColor(info.hex);
       det.badge.setColor('#ffffff');
     }
@@ -600,6 +977,7 @@ class NetEpicScene extends Phaser.Scene {
   updateUI() {
     const phaseBadge = document.getElementById('phase-badge');
     const turnText = document.getElementById('turn-text');
+    const vpScore = document.getElementById('vp-score');
     const promptText = document.getElementById('prompt-text');
     const selTitle = document.getElementById('sel-title');
     const selStats = document.getElementById('sel-stats');
@@ -608,61 +986,102 @@ class NetEpicScene extends Phaser.Scene {
     const ordersControls = document.getElementById('orders-controls');
     const lockOrdersRow = document.getElementById('lock-orders-row');
     const moveControls = document.getElementById('movement-controls');
-    const btnActivate = document.getElementById('btn-activate');
-    const btnUndo = document.getElementById('btn-undo-move');
-    const btnConfirm = document.getElementById('btn-confirm-move');
+    const combatControls = document.getElementById('combat-controls');
+    const snapBanner = document.getElementById('snapfire-banner');
 
     turnText.innerText = `Turn ${this.turn}`;
+    vpScore.innerText = `IMP: ${this.vp.IMPERIUM} VP | ORK: ${this.vp.ORKS} VP`;
+
+    ordersControls.style.display = 'none';
+    lockOrdersRow.style.display = 'none';
+    moveControls.style.display = 'none';
+    combatControls.style.display = 'none';
+    snapBanner.style.display = 'none';
 
     if (this.phase === 'ORDERS') {
       phaseBadge.innerText = 'I. Orders Phase';
       phaseBadge.style.background = '#d97706';
-      const remaining = this.detachments.filter(d => !d.order).length;
+      const remaining = this.detachments.filter(d => d.stands.length > 0 && !d.order).length;
       promptText.innerText = remaining > 0
         ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
-        : 'All Orders placed! Ready to roll for Initiative.';
-
+        : 'All Orders placed! Roll Initiative to start Movement.';
       ordersControls.style.display = this.selectedDetachment ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
-      moveControls.style.display = 'none';
-    } else {
+    } 
+    else if (this.phase === 'SNAP_INTERRUPT') {
+      phaseBadge.innerText = '⚡ SNAP FIRE INTERRUPT';
+      phaseBadge.style.background = '#dc2626';
+      promptText.innerText = `Enemy ${this.snapTarget.name} moved into sight!`;
+      snapBanner.style.display = 'block';
+
+      const btnContainer = document.getElementById('snapfire-buttons');
+      btnContainer.innerHTML = '';
+      this.snapCandidates.forEach(cand => {
+        const sol = this.evaluateFireSolution(cand, this.snapTarget, true);
+        const b = document.createElement('button');
+        b.className = 'btn-fire';
+        b.innerText = `Snap Fire with ${cand.name} (${sol.validPairs.length} stands in LoS, -1 To-Hit)`;
+        b.onclick = () => this.resolveSnapFireChoice(cand.id);
+        btnContainer.appendChild(b);
+      });
+      const passBtn = document.createElement('button');
+      passBtn.innerText = 'Pass / Hold Fire';
+      passBtn.onclick = () => this.resolveSnapFireChoice(null);
+      btnContainer.appendChild(passBtn);
+    }
+    else if (this.phase === 'MOVEMENT') {
       phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
       phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
       promptText.innerText = this.activatingDetachment
-        ? `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm (Keep within 6 cm coherency)`
-        : `${this.activePlayer}: Select one of your unactivated detachments to reveal its Order`;
+        ? `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm`
+        : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order`;
 
-      ordersControls.style.display = 'none';
-      lockOrdersRow.style.display = 'none';
       moveControls.style.display = this.selectedDetachment ? 'flex' : 'none';
-
       if (this.selectedDetachment) {
-        const isCurrentActivating = this.activatingDetachment === this.selectedDetachment;
-        const canActivate = !this.activatingDetachment &&
-                            !this.selectedDetachment.activated &&
-                            this.selectedDetachment.faction === this.activePlayer;
+        const isAct = this.activatingDetachment === this.selectedDetachment;
+        const canAct = !this.activatingDetachment && !this.selectedDetachment.moved && this.selectedDetachment.faction === this.activePlayer;
+        const btnAct = document.getElementById('btn-activate');
+        btnAct.style.display = isAct ? 'none' : 'block';
+        btnAct.disabled = !canAct;
+        btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
+        document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
+        document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
+      }
+    }
+    else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
+      const segTitle = this.phase === 'COMBAT_FIRST' ? 'III. First Fire' : 'III. Advance Fire';
+      phaseBadge.innerText = `${segTitle} (${this.activePlayer})`;
+      phaseBadge.style.background = '#dc2626';
+      combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
 
-        btnActivate.style.display = isCurrentActivating ? 'none' : 'block';
-        btnActivate.disabled = !canActivate;
-        btnActivate.innerText = this.selectedDetachment.activated
-          ? 'Already Activated'
-          : (this.selectedDetachment.faction !== this.activePlayer ? `Waiting for ${this.activePlayer}` : 'Reveal Order & Activate');
+      const btnFire = document.getElementById('btn-fire-target');
+      const btnHold = document.getElementById('btn-hold-fire');
+      btnHold.style.display = this.phase === 'COMBAT_FIRST' ? 'block' : 'none';
 
-        btnUndo.style.display = isCurrentActivating ? 'block' : 'none';
-        btnConfirm.style.display = isCurrentActivating ? 'block' : 'none';
+      if (this.activatingDetachment && this.targetDetachment) {
+        const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
+        btnFire.disabled = sol.validPairs.length === 0;
+        btnFire.innerText = sol.validPairs.length > 0
+          ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
+          : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+        promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/Out of Range`;
+      } else if (this.activatingDetachment) {
+        btnFire.disabled = true;
+        btnFire.innerText = 'Tap an Enemy Stand on the map to check LoS & Fire';
+        promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm range) — Tap an enemy unit!`;
       }
     }
 
-    if (this.selectedDetachment) {
+    if (this.selectedDetachment && this.selectedDetachment.stands.length > 0) {
       const d = this.selectedDetachment;
-      selTitle.innerText = `[${d.faction}] ${d.name}`;
-      selStats.innerText = `Base Move: ${d.moveCm} cm | Armour Save: ${d.save} | CAF: ${d.caf} | Stands: ${d.stands.length}`;
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint})`;
+      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | Weapon: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
       selOrderBadge.innerText = d.order
         ? (d.orderRevealed ? `Order: ${ORDER_INFO[d.order].label}` : `Hidden Order: ${ORDER_INFO[d.order].label}`)
         : 'No Order Assigned';
     } else {
       selTitle.innerText = 'No Detachment Selected';
-      selStats.innerText = 'Tap any unit stand on the battlefield (Drag empty space or pinch to pan/zoom)';
+      selStats.innerText = 'Tap any unit stand on the battlefield';
       selOrderBadge.innerText = '';
     }
   }
@@ -673,11 +1092,8 @@ const config = {
   parent: 'game-container',
   width: window.innerWidth,
   height: window.innerHeight,
-  backgroundColor: '#111418',
-  scale: {
-    mode: Phaser.Scale.RESIZE,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
+  backgroundColor: '#0f172a',
+  scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [NetEpicScene]
 };
 
