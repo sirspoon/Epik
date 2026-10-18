@@ -202,8 +202,8 @@
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — ARMY, MAP & AI SETUP</div>
-        <div class="sub-text">Titans & Gargants (Void Shields / Power Fields), Skimmers (Pop-Up), Deep Strike & Transports!</div>
+        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — 6 FACTIONS, ARMY & AI SETUP</div>
+        <div class="sub-text">Choose from 6 Armies: 🛡️ Imperium, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats!</div>
       </div>
       <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
         <span class="sub-text" style="font-weight:700;">Map:</span>
@@ -212,8 +212,8 @@
         <button id="map-preset-FOREST" onclick="window.setMapPreset('FOREST')" style="min-width:auto; padding:5px 8px;">🌲 Forest</button>
         <button id="map-preset-RANDOM" onclick="window.setMapPreset('RANDOM')" style="min-width:auto; padding:5px 8px;">🎲 Random</button>
         <span class="sub-text" style="font-weight:700; margin-left:4px;">Mode:</span>
-        <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="min-width:auto; padding:5px 8px;">🤖 vs Ork AI</button>
-        <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="min-width:auto; padding:5px 8px;">🤖 vs Imperium AI</button>
+        <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="min-width:auto; padding:5px 8px;">🤖 vs North AI</button>
+        <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="min-width:auto; padding:5px 8px;">🤖 vs South AI</button>
         <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="min-width:auto; padding:5px 8px;">👥 2P Hotseat</button>
         <span class="sub-text" style="font-weight:700; margin-left:4px;">Pts:</span>
         <button id="pts-750" onclick="window.setPointsBudget(750)" style="min-width:auto; padding:5px 8px;">750</button>
@@ -224,33 +224,38 @@
     </div>
 
     <div class="modal-cols">
-      <!-- Imperium Column -->
-      <div class="faction-col" style="border-top: 3px solid #3b82f6;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-weight:800; color:#60a5fa;">🛡️ IMPERIUM (Astartes & Titan Legions)</span>
+      <!-- South Force (Player 1) Column -->
+      <div id="imp-col-card" class="faction-col" style="border-top: 3px solid #3b82f6;">
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="imp-faction-tabs"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+          <span id="imp-col-title" style="font-weight:800; color:#60a5fa;">🛡️ IMPERIUM (South Force)</span>
           <span id="imp-pts-badge" class="vp-box">1500 / 1500 pts</span>
         </div>
+        <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd;">Faction Rules: Void Shields (4+ Repair), Terminators (4+/6+f) & Combined Arms</div>
         <div class="sub-text" style="margin-bottom:4px; font-weight:700;">Available Detachments (Click + Add):</div>
         <div id="imp-catalog"></div>
-        <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Mustered Imperium Roster:</div>
+        <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Mustered South Roster:</div>
         <div id="imp-roster"></div>
       </div>
 
-      <!-- Orks Column -->
-      <div class="faction-col" style="border-top: 3px solid #22c55e;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-weight:800; color:#4ade80;">🟢 ORK HORDE & GARGANT MOB</span>
+      <!-- North Force (Player 2 / AI) Column -->
+      <div id="ork-col-card" class="faction-col" style="border-top: 3px solid #22c55e;">
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="ork-faction-tabs"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+          <span id="ork-col-title" style="font-weight:800; color:#4ade80;">🟢 ORK HORDE (North Force)</span>
           <span id="ork-pts-badge" class="vp-box">1475 / 1500 pts</span>
         </div>
+        <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac;">Faction Rules: Power Fields (4+ Flicker Save), Huge Mobs & Gargants</div>
         <div class="sub-text" style="margin-bottom:4px; font-weight:700;">Available Detachments (Click + Add):</div>
         <div id="ork-catalog"></div>
-        <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Mustered Ork Roster:</div>
+        <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Mustered North Roster:</div>
         <div id="ork-roster"></div>
       </div>
     </div>
 
     <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px;">
       <button onclick="window.resetDefaultArmies()" style="flex:0 0 auto;">↺ Reset Lists</button>
+      <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto;">🎲 Random Factions</button>
       <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)">📍 Proceed to Deployment Phase (Place Units in Zones)</button>
       <button class="btn-primary" onclick="window.startBattleFromBuilder(false)">⚡ Quick Start (Forward Skirmish Deployment)</button>
     </div>
@@ -270,7 +275,7 @@
       <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:6px 10px;" title="Automatically pan camera to follow AI actions and Snap Fire targets">🎥 Follow Cam</button>
       <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:6px 10px;" title="Click to switch Battlefield Map Preset or Generate Random Map">🗺️ Map: Industrial</button>
       <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
-      <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Army Setup</button>
+      <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Armies (6 Factions)</button>
       <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
     </div>
   </div>
@@ -279,14 +284,14 @@
     <div id="combat-log" class="panel">
       <div id="log-header">
         <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
-        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 10! Titans & Gargants (Void Shields / Power Fields), Skimmer Pop-Up Attacks & Deep Strike!</div>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">6 Playable Factions Live! Imperium, Orks, Eldar, Chaos, Tyranids & Squats (🛠️ Armies button)!</div>
         <div style="display:flex; gap:4px;">
           <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
           <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
         </div>
       </div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 10! <b>Titans & Gargants (Void Shields & Power Fields), Super-Heavy Damage Tables, Skimmer Pop-Up Attacks, and Deep Strike / Teleportation</b> are live!</div>
+        <div class="log-entry">Welcome to Phase 11! <b>6 Playable Factions (🛡️ Imperium, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats)</b> with Holo-Fields, Hive Mind Synapse, Daemonic Terror, Regeneration & Squat CC Mastery are live! Click <b>🛠️ Armies (6 Factions)</b> to switch armies!</div>
       </div>
       <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
         <span id="log-corner-grip">⤡</span>
@@ -594,89 +599,130 @@ window.toggleAICam = function() {
   }
 };
 
-// --- PHASE 5–10: NETEPIC GOLD v5 ARMY CATALOG (TITANS, GARGANS, SKIMMERS, DEEP STRIKE, ARTILLERY & TRANSPORTS) ---
+// --- PHASE 5–11: NETEPIC GOLD v5 6-FACTION CATALOG (IMPERIUM, ORKS, ELDAR, CHAOS, TYRANIDS & SQUATS) ---
+const FACTION_META = {
+  IMPERIUM: {
+    key: 'IMPERIUM', short: 'IMP', icon: '🛡️', name: 'Imperium',
+    fullTitle: '🛡️ IMPERIUM (Astartes & Titan Legions)',
+    colorHex: '#60a5fa', borderHex: '#3b82f6', phaserColor: 0x3b82f6,
+    traitDesc: 'Void Shields (4+ Repair), Terminators (4+/6+f Fixed Save) & Combined Arms'
+  },
+  ORKS: {
+    key: 'ORKS', short: 'ORK', icon: '🟢', name: 'Orks',
+    fullTitle: '🟢 ORK HORDE & GARGANT MOB',
+    colorHex: '#4ade80', borderHex: '#22c55e', phaserColor: 0x22c55e,
+    traitDesc: 'Power Fields (4+ Flicker Save), Huge Mobs, Tellyportas & Gargants'
+  },
+  ELDAR: {
+    key: 'ELDAR', short: 'ELD', icon: '💎', name: 'Eldar',
+    fullTitle: '💎 CRAFTWORLD ELDAR WARHOST',
+    colorHex: '#fbbf24', borderHex: '#f59e0b', phaserColor: 0xf59e0b,
+    traitDesc: 'Holo-Fields (Speed Save: 5+ FF / 4+ Adv / 3+ Chg; Titans 4+/3+/2+) & Banshee Scream (+1D6 CC)'
+  },
+  CHAOS: {
+    key: 'CHAOS', short: 'CHS', icon: '🔥', name: 'Chaos',
+    fullTitle: '🔥 CHAOS HORDES & TRAITOR LEGIONS',
+    colorHex: '#f87171', borderHex: '#ef4444', phaserColor: 0xef4444,
+    traitDesc: 'Daemonic Terror (-2 Enemy CC CAF), Nurgle Regeneration (5+ Save) & Greater Daemons'
+  },
+  TYRANIDS: {
+    key: 'TYRANIDS', short: 'TYR', icon: '🧬', name: 'Tyranids',
+    fullTitle: '🧬 TYRANID HIVE FLEET SWARM',
+    colorHex: '#c084fc', borderHex: '#a855f7', phaserColor: 0xa855f7,
+    traitDesc: 'Hive Mind Synapse (25cm Fearless & +1 CAF Aura), Bio-Regeneration (5+) & Chitin Bio-Titans'
+  },
+  SQUATS: {
+    key: 'SQUATS', short: 'SQT', icon: '⚒️', name: 'Squats',
+    fullTitle: '⚒️ SQUAT HOMEWORLD BROTHERHOOD',
+    colorHex: '#facc15', borderHex: '#eab308', phaserColor: 0xeab308,
+    traitDesc: 'CC Mastery (Infantry re-roll 1s in Melee; 1-2 vs Orks!), Subterranean Tunnelers & Praetorians'
+  }
+};
+
+const FACTION_KEYS = ['IMPERIUM', 'ORKS', 'ELDAR', 'CHAOS', 'TYRANIDS', 'SQUATS'];
+
 const UNIT_CATALOG = {
   IMPERIUM: [
     {
-      key: 'sm_tac', faction: 'IMPERIUM', name: 'Space Marine Tactical Squad', points: 200,
+      key: 'sm_tac', armyBook: 'IMPERIUM', name: 'Space Marine Tactical Squad', points: 200,
       moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
       weapon: { name: 'Bolters', rangeCm: 30, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x2563eb, standsCount: 6, baseW: 20, baseH: 20
     },
     {
-      key: 'sm_rhino', faction: 'IMPERIUM', name: 'Rhino APC Transport Squadron', points: 100,
+      key: 'sm_rhino', armyBook: 'IMPERIUM', name: 'Rhino APC Transport Squadron', points: 100,
       moveCm: 25, save: 4, caf: 0, morale: 2, pinningClass: 2, transportCapacity: 2,
       weapon: { name: 'Storm Bolters', rangeCm: 15, dice: 1, toHit: 6, tsm: 0 },
       breakPoint: 2, vpValue: 1, color: 0x38bdf8, standsCount: 3, baseW: 22, baseH: 30
     },
     {
-      key: 'sm_terminators', faction: 'IMPERIUM', name: 'Terminator Teleport Squad', points: 250,
+      key: 'sm_terminators', armyBook: 'IMPERIUM', name: 'Terminator Teleport Squad', points: 250,
       moveCm: 10, save: 4, fixedSave: 6, caf: 6, morale: 1, pinningClass: 1, deepStrike: true,
       weapon: { name: 'Storm Bolters & Power Fists', rangeCm: 35, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 3, vpValue: 3, color: 0x1e40af, standsCount: 4, baseW: 22, baseH: 22
     },
     {
-      key: 'sm_landspeeder', faction: 'IMPERIUM', name: 'Land Speeder Skimmer Squadron', points: 200,
+      key: 'sm_landspeeder', armyBook: 'IMPERIUM', name: 'Land Speeder Skimmer Squadron', points: 200,
       moveCm: 30, save: 6, caf: 3, morale: 2, pinningClass: 2, skimmer: true, jump: true,
       weapon: { name: 'Multi-Melta & Assault Cannon', rangeCm: 35, dice: 2, toHit: 4, tsm: -2 },
       breakPoint: 3, vpValue: 2, color: 0x06b6d4, standsCount: 5, baseW: 22, baseH: 26
     },
     {
-      key: 'sm_assault', faction: 'IMPERIUM', name: 'Space Marine Assault Squad', points: 200,
+      key: 'sm_assault', armyBook: 'IMPERIUM', name: 'Space Marine Assault Squad', points: 200,
       moveCm: 15, save: 5, caf: 3, morale: 2, pinningClass: 1, jump: true,
       weapon: { name: 'Bolt Pistols', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 2, vpValue: 2, color: 0x3b82f6, standsCount: 4, baseW: 20, baseH: 20
     },
     {
-      key: 'sm_dev', faction: 'IMPERIUM', name: 'Space Marine Devastator Squad', points: 250,
+      key: 'sm_dev', armyBook: 'IMPERIUM', name: 'Space Marine Devastator Squad', points: 250,
       moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
       weapon: { name: 'Missile Launchers', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x1d4ed8, standsCount: 4, baseW: 20, baseH: 20
     },
     {
-      key: 'sm_pred', faction: 'IMPERIUM', name: 'Predator Tank Squadron', points: 250,
+      key: 'sm_pred', armyBook: 'IMPERIUM', name: 'Predator Tank Squadron', points: 250,
       moveCm: 25, save: 3, caf: 1, morale: 2, pinningClass: 2,
       weapon: { name: 'Autocannon & Lascannons', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x60a5fa, standsCount: 3, baseW: 24, baseH: 32
     },
     {
-      key: 'sm_whirlwind', faction: 'IMPERIUM', name: 'Whirlwind Artillery Battery', points: 250,
+      key: 'sm_whirlwind', armyBook: 'IMPERIUM', name: 'Whirlwind Artillery Battery', points: 250,
       moveCm: 20, save: 4, caf: 0, morale: 2, pinningClass: 2,
       weapon: { name: 'Whirlwind Multiple Launchers', rangeCm: 80, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
       breakPoint: 2, vpValue: 3, color: 0x0284c7, standsCount: 3, baseW: 24, baseH: 30
     },
     {
-      key: 'ig_basilisk', faction: 'IMPERIUM', name: 'Imperial Basilisk Battery', points: 275,
+      key: 'ig_basilisk', armyBook: 'IMPERIUM', name: 'Imperial Basilisk Battery', points: 275,
       moveCm: 15, save: 4, caf: 0, morale: 3, pinningClass: 2,
       weapon: { name: 'Earthshaker Heavy Artillery', rangeCm: 120, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
       breakPoint: 2, vpValue: 3, color: 0x0ea5e9, standsCount: 3, baseW: 26, baseH: 34
     },
     {
-      key: 'sm_dread', faction: 'IMPERIUM', name: 'Space Marine Dreadnought Talon', points: 200,
+      key: 'sm_dread', armyBook: 'IMPERIUM', name: 'Space Marine Dreadnought Talon', points: 200,
       moveCm: 10, save: 3, caf: 4, morale: 2, pinningClass: 2,
       weapon: { name: 'Twin Lascannon & Power Fist', rangeCm: 45, dice: 1, toHit: 4, tsm: -2 },
       breakPoint: 2, vpValue: 2, color: 0x93c5fd, standsCount: 3, baseW: 22, baseH: 22
     },
     {
-      key: 'sm_landraider', faction: 'IMPERIUM', name: 'Land Raider Squadron', points: 350,
+      key: 'sm_landraider', armyBook: 'IMPERIUM', name: 'Land Raider Squadron', points: 350,
       moveCm: 20, save: 2, caf: 3, morale: 2, pinningClass: 3, transportCapacity: 2,
       weapon: { name: 'Twin Lascannons & Heavy Bolters', rangeCm: 55, dice: 2, toHit: 4, tsm: -2 },
       breakPoint: 2, vpValue: 4, color: 0x38bdf8, standsCount: 3, baseW: 26, baseH: 34
     },
     {
-      key: 'ig_baneblade', faction: 'IMPERIUM', name: 'Baneblade Super-Heavy Tank', points: 250,
+      key: 'ig_baneblade', armyBook: 'IMPERIUM', name: 'Baneblade Super-Heavy Tank', points: 250,
       moveCm: 15, save: 2, caf: 6, morale: 2, pinningClass: 3, superHeavy: true,
       weapon: { name: 'Baneblade Cannon & Lascannons', rangeCm: 75, dice: 4, toHit: 4, tsm: -2 },
       breakPoint: 1, vpValue: 3, color: 0x0369a1, standsCount: 1, baseW: 32, baseH: 40
     },
     {
-      key: 'sm_warhound', faction: 'IMPERIUM', name: 'Warhound Scout Titan', points: 250,
+      key: 'sm_warhound', armyBook: 'IMPERIUM', name: 'Warhound Scout Titan', points: 250,
       moveCm: 25, save: 2, caf: 8, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 2,
       weapon: { name: 'Plasma Blastgun & Mega-Bolter', rangeCm: 65, dice: 5, toHit: 3, tsm: -2 },
       breakPoint: 1, vpValue: 3, color: 0x1d4ed8, standsCount: 1, baseW: 34, baseH: 38
     },
     {
-      key: 'sm_reaver', faction: 'IMPERIUM', name: 'Reaver Battle Titan', points: 400,
+      key: 'sm_reaver', armyBook: 'IMPERIUM', name: 'Reaver Battle Titan', points: 400,
       moveCm: 20, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4,
       weapon: { name: 'Gatling Blaster & Turbo-Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
       breakPoint: 1, vpValue: 5, color: 0x1e3a8a, standsCount: 1, baseW: 38, baseH: 42
@@ -684,93 +730,457 @@ const UNIT_CATALOG = {
   ],
   ORKS: [
     {
-      key: 'ork_boyz', faction: 'ORKS', name: 'Ork Boyz Mob', points: 150,
+      key: 'ork_boyz', armyBook: 'ORKS', name: 'Ork Boyz Mob', points: 150,
       moveCm: 10, save: 6, caf: 1, morale: 4, pinningClass: 1,
       weapon: { name: 'Shootas', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x16a34a, standsCount: 6, baseW: 20, baseH: 20
     },
     {
-      key: 'ork_nobz', faction: 'ORKS', name: 'Ork Nobz Mob', points: 225,
+      key: 'ork_nobz', armyBook: 'ORKS', name: 'Ork Nobz Mob', points: 225,
       moveCm: 10, save: 5, caf: 3, morale: 3, pinningClass: 1,
       weapon: { name: 'Heavy Shootas', rangeCm: 25, dice: 1, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x15803d, standsCount: 4, baseW: 22, baseH: 22
     },
     {
-      key: 'ork_kommandos', faction: 'ORKS', name: 'Tellyporta Kommando Mob', points: 200,
+      key: 'ork_kommandos', armyBook: 'ORKS', name: 'Tellyporta Kommando Mob', points: 200,
       moveCm: 12, save: 5, caf: 4, morale: 3, pinningClass: 1, deepStrike: true,
       weapon: { name: 'Kustom Shootas & Tankbusta Bombs', rangeCm: 25, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 3, vpValue: 2, color: 0x166534, standsCount: 5, baseW: 21, baseH: 21
     },
     {
-      key: 'ork_deffkoptas', faction: 'ORKS', name: 'Deffkopta Skimmer Squadron', points: 200,
+      key: 'ork_deffkoptas', armyBook: 'ORKS', name: 'Deffkopta Skimmer Squadron', points: 200,
       moveCm: 30, save: 5, caf: 2, morale: 3, pinningClass: 2, skimmer: true, jump: true,
       weapon: { name: 'Twin Rokkit Launchas', rangeCm: 45, dice: 2, toHit: 5, tsm: -1 },
       breakPoint: 3, vpValue: 2, color: 0x10b981, standsCount: 5, baseW: 22, baseH: 26
     },
     {
-      key: 'ork_stormboyz', faction: 'ORKS', name: 'Stormboyz Jump-Mob', points: 175,
+      key: 'ork_stormboyz', armyBook: 'ORKS', name: 'Stormboyz Jump-Mob', points: 175,
       moveCm: 15, save: 6, caf: 2, morale: 3, pinningClass: 1, jump: true,
       weapon: { name: 'Sluggas & Rokkit Pack', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x22c55e, standsCount: 5, baseW: 20, baseH: 20
     },
     {
-      key: 'ork_buggies', faction: 'ORKS', name: 'Warbuggy Squadron', points: 200,
+      key: 'ork_buggies', armyBook: 'ORKS', name: 'Warbuggy Squadron', points: 200,
       moveCm: 30, save: 5, caf: 1, morale: 4, pinningClass: 2,
       weapon: { name: 'Twin Autos', rangeCm: 35, dice: 2, toHit: 5, tsm: 0 },
       breakPoint: 2, vpValue: 2, color: 0x4ade80, standsCount: 4, baseW: 22, baseH: 30
     },
     {
-      key: 'ork_wagons', faction: 'ORKS', name: 'Battlewagon Transport Squadron', points: 250,
+      key: 'ork_wagons', armyBook: 'ORKS', name: 'Battlewagon Transport Squadron', points: 250,
       moveCm: 25, save: 4, caf: 2, morale: 3, pinningClass: 2, transportCapacity: 2,
       weapon: { name: 'Kannon & Twin Shootas', rangeCm: 45, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x86efac, standsCount: 3, baseW: 24, baseH: 34
     },
     {
-      key: 'ork_biggunz', faction: 'ORKS', name: 'Ork Big Gunz Battery', points: 175,
+      key: 'ork_biggunz', armyBook: 'ORKS', name: 'Ork Big Gunz Battery', points: 175,
       moveCm: 10, save: 6, caf: 0, morale: 4, pinningClass: 1,
       weapon: { name: 'Lobba & Smasha Gunz', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
       breakPoint: 2, vpValue: 2, color: 0x65a30d, standsCount: 4, baseW: 22, baseH: 22
     },
     {
-      key: 'ork_pulsa', faction: 'ORKS', name: 'Ork Pulsa Rokkit Battery', points: 225,
+      key: 'ork_pulsa', armyBook: 'ORKS', name: 'Ork Pulsa Rokkit Battery', points: 225,
       moveCm: 10, save: 5, caf: 0, morale: 4, pinningClass: 2,
       weapon: { name: 'Pulsa Rokkit Barrage', rangeCm: 90, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
       breakPoint: 2, vpValue: 3, color: 0x84cc16, standsCount: 3, baseW: 24, baseH: 28
     },
     {
-      key: 'ork_stompas', faction: 'ORKS', name: 'Ork Stompa Mob', points: 350,
+      key: 'ork_stompas', armyBook: 'ORKS', name: 'Ork Stompa Mob', points: 350,
       moveCm: 15, save: 2, caf: 4, morale: 3, pinningClass: 3,
       weapon: { name: 'Gatling Cannon & Belly Gun', rangeCm: 50, dice: 3, toHit: 4, tsm: -2 },
       breakPoint: 2, vpValue: 4, color: 0xa3e635, standsCount: 3, baseW: 28, baseH: 28
     },
     {
-      key: 'ork_gutrippa', faction: 'ORKS', name: 'Gutrippa Super-Heavy Tank', points: 225,
+      key: 'ork_gutrippa', armyBook: 'ORKS', name: 'Gutrippa Super-Heavy Tank', points: 225,
       moveCm: 15, save: 2, caf: 7, morale: 3, pinningClass: 3, superHeavy: true,
       weapon: { name: 'Heavy Battlekannon & Shootas', rangeCm: 70, dice: 4, toHit: 4, tsm: -2 },
       breakPoint: 1, vpValue: 3, color: 0x4d7c0f, standsCount: 1, baseW: 32, baseH: 40
     },
     {
-      key: 'ork_mekgargant', faction: 'ORKS', name: 'Mekboy Gargant', points: 275,
+      key: 'ork_mekgargant', armyBook: 'ORKS', name: 'Mekboy Gargant', points: 275,
       moveCm: 15, save: 2, caf: 9, morale: 2, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'POWER', maxShields: 3,
       weapon: { name: 'Deth Kannon & Gatling Blaster', rangeCm: 65, dice: 5, toHit: 4, tsm: -2 },
       breakPoint: 1, vpValue: 3, color: 0x15803d, standsCount: 1, baseW: 34, baseH: 38
     },
     {
-      key: 'ork_gargant', faction: 'ORKS', name: 'Slasher Great Gargant', points: 400,
+      key: 'ork_gargant', armyBook: 'ORKS', name: 'Slasher Great Gargant', points: 400,
       moveCm: 15, save: 2, caf: 12, morale: 2, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'POWER', maxShields: 4,
       weapon: { name: 'Soopa-Gatling & Gutbuster Kannon', rangeCm: 75, dice: 6, toHit: 4, tsm: -3 },
       breakPoint: 1, vpValue: 5, color: 0x14532d, standsCount: 1, baseW: 38, baseH: 42
     }
+  ],
+  ELDAR: [
+    {
+      key: 'eld_guardians', armyBook: 'ELDAR', name: 'Eldar Guardian Defenders', points: 150,
+      moveCm: 10, save: 6, caf: 0, morale: 3, pinningClass: 1,
+      weapon: { name: 'Shuriken Catapults', rangeCm: 50, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0xf59e0b, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'eld_avengers', armyBook: 'ELDAR', name: 'Dire Avenger Aspect Squad', points: 150,
+      moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
+      weapon: { name: 'Avenger Shuriken Storm', rangeCm: 50, dice: 2, toHit: 4, tsm: 0 },
+      breakPoint: 2, vpValue: 2, color: 0x0284c7, standsCount: 4, baseW: 20, baseH: 20
+    },
+    {
+      key: 'eld_banshees', armyBook: 'ELDAR', name: 'Howling Banshee Aspect Squad', points: 150,
+      moveCm: 15, save: 5, caf: 6, morale: 2, pinningClass: 1, bansheeMask: true,
+      weapon: { name: 'Banshee Scream & Power Swords', rangeCm: 25, dice: 1, toHit: 5, tsm: -1 },
+      breakPoint: 2, vpValue: 2, color: 0xfde047, standsCount: 4, baseW: 20, baseH: 20
+    },
+    {
+      key: 'eld_reapers', armyBook: 'ELDAR', name: 'Dark Reaper Aspect Squad', points: 250,
+      moveCm: 10, save: 5, caf: 1, morale: 2, pinningClass: 1,
+      weapon: { name: 'Reaper Missile Launchers', rangeCm: 75, dice: 2, toHit: 4, tsm: -1 },
+      breakPoint: 2, vpValue: 3, color: 0x475569, standsCount: 4, baseW: 21, baseH: 21
+    },
+    {
+      key: 'eld_hawks', armyBook: 'ELDAR', name: 'Swooping Hawk Aspect Squad', points: 175,
+      moveCm: 25, save: 5, caf: 2, morale: 2, pinningClass: 1, jump: true, deepStrike: true,
+      weapon: { name: 'Lasblasters & Grenade Pack', rangeCm: 25, dice: 2, toHit: 5, tsm: 0 },
+      breakPoint: 2, vpValue: 2, color: 0x38bdf8, standsCount: 4, baseW: 20, baseH: 20
+    },
+    {
+      key: 'eld_jetbikes', armyBook: 'ELDAR', name: 'Wind Rider Jetbike Squadron', points: 200,
+      moveCm: 35, save: 5, caf: 3, morale: 3, pinningClass: 2, skimmer: true, jump: true,
+      weapon: { name: 'Twin Shuriken Catapults', rangeCm: 25, dice: 2, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0xd97706, standsCount: 5, baseW: 22, baseH: 26
+    },
+    {
+      key: 'eld_falcon', armyBook: 'ELDAR', name: 'Falcon Grav-Tank Squadron', points: 200,
+      moveCm: 25, save: 3, caf: 1, morale: 3, pinningClass: 2, skimmer: true, jump: true, transportCapacity: 2,
+      weapon: { name: 'Pulse Laser & Scatter Laser', rangeCm: 75, dice: 2, toHit: 4, tsm: -2 },
+      breakPoint: 2, vpValue: 2, color: 0xfbbf24, standsCount: 3, baseW: 24, baseH: 32
+    },
+    {
+      key: 'eld_waveserpent', armyBook: 'ELDAR', name: 'Wave Serpent Shield-Transports', points: 175,
+      moveCm: 25, save: 3, fixedSave: 5, caf: 1, morale: 3, pinningClass: 2, skimmer: true, jump: true, transportCapacity: 3,
+      weapon: { name: 'Warp-Wave Energy Pulse', rangeCm: 30, dice: 2, toHit: 4, tsm: -1 },
+      breakPoint: 1, vpValue: 2, color: 0x06b6d4, standsCount: 2, baseW: 26, baseH: 34
+    },
+    {
+      key: 'eld_fireprism', armyBook: 'ELDAR', name: 'Fire Prism Grav-Tank Squadron', points: 225,
+      moveCm: 25, save: 3, caf: 1, morale: 3, pinningClass: 2, skimmer: true, jump: true,
+      weapon: { name: 'Focused Prism Cannon', rangeCm: 75, dice: 2, toHit: 3, tsm: -2 },
+      breakPoint: 2, vpValue: 3, color: 0xea580c, standsCount: 3, baseW: 24, baseH: 32
+    },
+    {
+      key: 'eld_doomweaver', armyBook: 'ELDAR', name: 'Doomweaver Web Artillery Battery', points: 175,
+      moveCm: 25, save: 3, caf: 1, morale: 3, pinningClass: 2, skimmer: true, jump: true,
+      weapon: { name: 'Monofilament Web Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 3, indirect: true },
+      breakPoint: 1, vpValue: 2, color: 0xeab308, standsCount: 2, baseW: 24, baseH: 32
+    },
+    {
+      key: 'eld_wraithlord', armyBook: 'ELDAR', name: 'Wraithlord Spirit-Walker Talon', points: 200,
+      moveCm: 12, save: 4, caf: 4, morale: 1, pinningClass: 2,
+      weapon: { name: 'Eldar Lascannon & Shuriken Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -2 },
+      breakPoint: 3, vpValue: 2, color: 0xfef08a, standsCount: 4, baseW: 22, baseH: 22
+    },
+    {
+      key: 'eld_avatar', armyBook: 'ELDAR', name: 'Avatar of Khaine (War God)', points: 225,
+      moveCm: 15, save: 2, fixedSave: 2, caf: 10, morale: 1, pinningClass: 3, superHeavy: true, daemonicTerror: true,
+      weapon: { name: 'Wailing Doom Molten Spear', rangeCm: 25, dice: 2, toHit: 2, tsm: -3 },
+      breakPoint: 1, vpValue: 3, color: 0xdc2626, standsCount: 1, baseW: 28, baseH: 28
+    },
+    {
+      key: 'eld_revenant', armyBook: 'ELDAR', name: 'Revenant Scout Titan', points: 275,
+      moveCm: 30, save: 3, caf: 7, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, holoField: true, skimmer: true, jump: true,
+      weapon: { name: 'Twin Pulse Lasers & Missile Launcher', rangeCm: 75, dice: 5, toHit: 3, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0xf59e0b, standsCount: 1, baseW: 34, baseH: 38
+    },
+    {
+      key: 'eld_phantom', armyBook: 'ELDAR', name: 'Phantom Battle Titan', points: 425,
+      moveCm: 20, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, holoField: true,
+      weapon: { name: 'Distortion Cannon & Pulse Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      breakPoint: 1, vpValue: 5, color: 0xb45309, standsCount: 1, baseW: 38, baseH: 42
+    }
+  ],
+  CHAOS: [
+    {
+      key: 'chs_cultists', armyBook: 'CHAOS', name: 'Chaos Cultist Rabble', points: 125,
+      moveCm: 10, save: 6, caf: 0, morale: 4, pinningClass: 1,
+      weapon: { name: 'Lasguns & Autopistols', rangeCm: 45, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0x991b1b, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'chs_marines', armyBook: 'CHAOS', name: 'Chaos Space Marine Legionaries', points: 200,
+      moveCm: 10, save: 5, caf: 3, morale: 2, pinningClass: 1,
+      weapon: { name: 'Missile Launchers & Bolters', rangeCm: 50, dice: 1, toHit: 4, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0xdc2626, standsCount: 5, baseW: 20, baseH: 20
+    },
+    {
+      key: 'chs_rhino', armyBook: 'CHAOS', name: 'Chaos Rhino APC Squadron', points: 100,
+      moveCm: 25, save: 4, caf: 0, morale: 3, pinningClass: 2, transportCapacity: 2,
+      weapon: { name: 'Combi-Bolters', rangeCm: 15, dice: 1, toHit: 6, tsm: 0 },
+      breakPoint: 2, vpValue: 1, color: 0xb91c1c, standsCount: 3, baseW: 22, baseH: 30
+    },
+    {
+      key: 'chs_berserkers', armyBook: 'CHAOS', name: 'Khorne Berzerker Assault Pack', points: 200,
+      moveCm: 15, save: 5, caf: 6, morale: 1, pinningClass: 1,
+      weapon: { name: 'Chainaxes & Bolt Pistols', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0xef4444, standsCount: 5, baseW: 20, baseH: 20
+    },
+    {
+      key: 'chs_plaguemarines', armyBook: 'CHAOS', name: 'Nurgle Plague Marine Squad', points: 225,
+      moveCm: 10, save: 3, caf: 2, morale: 1, pinningClass: 1, regeneration: true,
+      weapon: { name: 'Blight Bolters & Plague Knives', rangeCm: 50, dice: 1, toHit: 5, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0x65a30d, standsCount: 5, baseW: 20, baseH: 20
+    },
+    {
+      key: 'chs_noisemarines', armyBook: 'CHAOS', name: 'Slaanesh Noise Marine Squad', points: 225,
+      moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
+      weapon: { name: 'Sonic Blasters & Blastmasters', rangeCm: 50, dice: 1, toHit: 5, tsm: -2, barrage: true, barrageBp: 2 },
+      breakPoint: 3, vpValue: 2, color: 0xec4899, standsCount: 5, baseW: 20, baseH: 20
+    },
+    {
+      key: 'chs_terminators', armyBook: 'CHAOS', name: 'Chaos Terminator Teleport Retinue', points: 250,
+      moveCm: 10, save: 4, fixedSave: 6, caf: 6, morale: 1, pinningClass: 1, deepStrike: true,
+      weapon: { name: 'Reaper Autocannons & Power Claws', rangeCm: 35, dice: 2, toHit: 4, tsm: -1 },
+      breakPoint: 3, vpValue: 3, color: 0x7f1d1d, standsCount: 4, baseW: 22, baseH: 22
+    },
+    {
+      key: 'chs_juggernauts', armyBook: 'CHAOS', name: 'Juggernauts of Khorne Cavalry', points: 200,
+      moveCm: 20, save: 4, caf: 5, morale: 1, pinningClass: 2,
+      weapon: { name: 'Brazen Horns & Bolters', rangeCm: 25, dice: 1, toHit: 5, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0xf87171, standsCount: 5, baseW: 22, baseH: 26
+    },
+    {
+      key: 'chs_discriders', armyBook: 'CHAOS', name: 'Tzeentch Disc Rider Skimmers', points: 200,
+      moveCm: 25, save: 5, fixedSave: 6, caf: 2, morale: 2, pinningClass: 2, skimmer: true, jump: true,
+      weapon: { name: 'Warpfire Lascannons', rangeCm: 50, dice: 1, toHit: 4, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0x38bdf8, standsCount: 5, baseW: 22, baseH: 26
+    },
+    {
+      key: 'chs_slaughterer', armyBook: 'CHAOS', name: 'Blood Slaughterer Daemon Engines', points: 225,
+      moveCm: 15, save: 3, caf: 5, morale: 1, pinningClass: 2, daemonicTerror: true,
+      weapon: { name: 'Impaler Harpoon & Missile Launcher', rangeCm: 65, dice: 2, toHit: 5, tsm: -1 },
+      breakPoint: 2, vpValue: 2, color: 0xdc2626, standsCount: 4, baseW: 24, baseH: 24
+    },
+    {
+      key: 'chs_doomblaster', armyBook: 'CHAOS', name: 'Doom Blaster of Khorne Artillery', points: 250,
+      moveCm: 15, save: 2, caf: 4, morale: 1, pinningClass: 2,
+      weapon: { name: 'Twin Doom Mortars', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 3, indirect: true },
+      breakPoint: 2, vpValue: 3, color: 0x991b1b, standsCount: 3, baseW: 26, baseH: 32
+    },
+    {
+      key: 'chs_bloodthirster', armyBook: 'CHAOS', name: 'Bloodthirster (Greater Daemon)', points: 300,
+      moveCm: 20, save: 2, fixedSave: 4, caf: 12, morale: 1, pinningClass: 3, superHeavy: true, skimmer: true, jump: true, daemonicTerror: true, regeneration: true,
+      weapon: { name: 'Axe of Khorne & Hellfire Whip', rangeCm: 25, dice: 3, toHit: 3, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0xef4444, standsCount: 1, baseW: 32, baseH: 32
+    },
+    {
+      key: 'chs_subjugator', armyBook: 'CHAOS', name: 'Slaanesh Subjugator Scout Titan', points: 275,
+      moveCm: 30, save: 2, caf: 7, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 2, daemonicTerror: true,
+      weapon: { name: 'Psi-Pulse & Tormentor Lascannons', rangeCm: 75, dice: 4, toHit: 3, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0xdb2777, standsCount: 1, baseW: 34, baseH: 38
+    },
+    {
+      key: 'chs_banelord', armyBook: 'CHAOS', name: 'Banelord Battle Titan of Khorne', points: 425,
+      moveCm: 15, save: 2, caf: 14, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4, daemonicTerror: true,
+      weapon: { name: 'Hellstrike Cannon, Havoc Rack & Doomfist', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      breakPoint: 1, vpValue: 5, color: 0x7f1d1d, standsCount: 1, baseW: 38, baseH: 42
+    }
+  ],
+  TYRANIDS: [
+    {
+      key: 'tyr_hormagaunts', armyBook: 'TYRANIDS', name: 'Hormagaunt Slasher Brood', points: 125,
+      moveCm: 15, save: 6, caf: 2, morale: 3, pinningClass: 1,
+      weapon: { name: 'Razor Scything Talons', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 1, color: 0x9333ea, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'tyr_termagants', armyBook: 'TYRANIDS', name: 'Termagant Swarm Brood', points: 150,
+      moveCm: 10, save: 6, caf: 1, morale: 3, pinningClass: 1,
+      weapon: { name: 'Fleshborer Beetles', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0xa855f7, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'tyr_genestealers', armyBook: 'TYRANIDS', name: 'Genestealer Vanguard Brood', points: 200,
+      moveCm: 15, save: 5, fixedSave: 6, caf: 6, morale: 1, pinningClass: 1,
+      weapon: { name: 'Rending Claws', rangeCm: 15, dice: 1, toHit: 5, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0xc084fc, standsCount: 5, baseW: 20, baseH: 20
+    },
+    {
+      key: 'tyr_lictors', armyBook: 'TYRANIDS', name: 'Lictor Chameleon Ambush Brood', points: 200,
+      moveCm: 15, save: 5, fixedSave: 6, caf: 4, morale: 1, pinningClass: 1, deepStrike: true,
+      weapon: { name: 'Flesh Hooks & Mantis Claws', rangeCm: 25, dice: 2, toHit: 5, tsm: 0 },
+      breakPoint: 2, vpValue: 2, color: 0x7e22ce, standsCount: 4, baseW: 21, baseH: 21
+    },
+    {
+      key: 'tyr_gargoyles', armyBook: 'TYRANIDS', name: 'Gargoyle Winged Brood', points: 175,
+      moveCm: 25, save: 6, caf: 2, morale: 3, pinningClass: 1, skimmer: true, jump: true,
+      weapon: { name: 'Bio-Plasma Flamespurt', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 3, vpValue: 2, color: 0xd8b4fe, standsCount: 5, baseW: 20, baseH: 22
+    },
+    {
+      key: 'tyr_warriors', armyBook: 'TYRANIDS', name: 'Tyranid Warrior Synapse Brood', points: 200,
+      moveCm: 12, save: 5, fixedSave: 6, caf: 5, morale: 1, pinningClass: 1, synapse: true,
+      weapon: { name: 'Deathspitters & Boneswords', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0xec4899, standsCount: 5, baseW: 22, baseH: 22
+    },
+    {
+      key: 'tyr_malefactor', armyBook: 'TYRANIDS', name: 'Malefactor Bio-Transport Brood', points: 175,
+      moveCm: 20, save: 3, caf: 5, morale: 2, pinningClass: 2, transportCapacity: 2,
+      weapon: { name: 'Frag Spines Cluster', rangeCm: 25, dice: 2, toHit: 5, tsm: 0 },
+      breakPoint: 2, vpValue: 2, color: 0x86198f, standsCount: 3, baseW: 24, baseH: 32
+    },
+    {
+      key: 'tyr_carnifex', armyBook: 'TYRANIDS', name: 'Carnifex Screamer-Killer Brood', points: 225,
+      moveCm: 12, save: 3, caf: 6, morale: 1, pinningClass: 2, regeneration: true,
+      weapon: { name: 'Bio-Plasma Scream & Talons', rangeCm: 35, dice: 2, toHit: 4, tsm: -2 },
+      breakPoint: 2, vpValue: 2, color: 0x6b21a8, standsCount: 3, baseW: 24, baseH: 24
+    },
+    {
+      key: 'tyr_biovores', armyBook: 'TYRANIDS', name: 'Biovore Spore-Mine Battery', points: 200,
+      moveCm: 10, save: 4, caf: 1, morale: 2, pinningClass: 2,
+      weapon: { name: 'Acid Spore Mine Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -2, barrage: true, barrageBp: 2, indirect: true },
+      breakPoint: 2, vpValue: 2, color: 0xa21caf, standsCount: 3, baseW: 22, baseH: 26
+    },
+    {
+      key: 'tyr_exocrine', armyBook: 'TYRANIDS', name: 'Exocrine Bio-Cannon Brood', points: 250,
+      moveCm: 10, save: 2, caf: 3, morale: 2, pinningClass: 2,
+      weapon: { name: 'High-Velocity Bio-Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3 },
+      breakPoint: 2, vpValue: 3, color: 0xbe185d, standsCount: 3, baseW: 24, baseH: 30
+    },
+    {
+      key: 'tyr_hivetyrant', armyBook: 'TYRANIDS', name: 'Hive Tyrant Synapse Brood', points: 250,
+      moveCm: 15, save: 3, fixedSave: 5, caf: 7, morale: 1, pinningClass: 2, synapse: true, daemonicTerror: true,
+      weapon: { name: 'Venom Cannon & Lash Whips', rangeCm: 50, dice: 2, toHit: 4, tsm: -2 },
+      breakPoint: 2, vpValue: 3, color: 0xf43f5e, standsCount: 3, baseW: 24, baseH: 24
+    },
+    {
+      key: 'tyr_trygon', armyBook: 'TYRANIDS', name: 'Trygon Deep-Tunneler Bio-Beast', points: 225,
+      moveCm: 20, save: 2, caf: 8, morale: 1, pinningClass: 3, superHeavy: true, deepStrike: true, regeneration: true,
+      weapon: { name: 'Bio-Electric Shock Discharge', rangeCm: 40, dice: 4, toHit: 3, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0x701a75, standsCount: 1, baseW: 30, baseH: 38
+    },
+    {
+      key: 'tyr_hierodule', armyBook: 'TYRANIDS', name: 'Hierodule Bio-Titan', points: 300,
+      moveCm: 25, save: 2, caf: 10, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, synapse: true, regeneration: true, daemonicTerror: true, shieldType: 'CHITIN', maxShields: 2,
+      weapon: { name: 'Pyro-Acid Spray & Razor Claws', rangeCm: 60, dice: 5, toHit: 3, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0x9333ea, standsCount: 1, baseW: 34, baseH: 38
+    },
+    {
+      key: 'tyr_hierophant', armyBook: 'TYRANIDS', name: 'Hierophant Bio-Titan', points: 425,
+      moveCm: 25, save: 2, caf: 14, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, synapse: true, regeneration: true, daemonicTerror: true, shieldType: 'CHITIN', maxShields: 4,
+      weapon: { name: 'Bile Launcher, Bio-Cannons & Tentacles', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      breakPoint: 1, vpValue: 5, color: 0x581c87, standsCount: 1, baseW: 38, baseH: 42
+    }
+  ],
+  SQUATS: [
+    {
+      key: 'sqt_warriors', armyBook: 'SQUATS', name: 'Squat Warrior Brotherhood Squad', points: 175,
+      moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1, squatMastery: true,
+      weapon: { name: 'Lasguns & Brotherhood Bolters', rangeCm: 50, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 4, vpValue: 2, color: 0xd97706, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'sqt_hearthguard', armyBook: 'SQUATS', name: 'Hearthguard Exo-Armor Retinue', points: 225,
+      moveCm: 10, save: 4, fixedSave: 6, caf: 6, morale: 1, pinningClass: 1, squatMastery: true,
+      weapon: { name: 'Master-Crafted Plasma & Bolt Guns', rangeCm: 50, dice: 2, toHit: 4, tsm: -2 },
+      breakPoint: 3, vpValue: 3, color: 0xf59e0b, standsCount: 4, baseW: 22, baseH: 22
+    },
+    {
+      key: 'sqt_thunderers', armyBook: 'SQUATS', name: 'Squat Thunderer Heavy Squad', points: 250,
+      moveCm: 10, save: 5, caf: 1, morale: 2, pinningClass: 1, squatMastery: true,
+      weapon: { name: 'Heavy Lascannons & Autocannons', rangeCm: 75, dice: 3, toHit: 5, tsm: -1 },
+      breakPoint: 3, vpValue: 3, color: 0xb45309, standsCount: 4, baseW: 20, baseH: 20
+    },
+    {
+      key: 'sqt_termites', armyBook: 'SQUATS', name: 'Termite Subterranean Tunneler Squad', points: 200,
+      moveCm: 12, save: 4, caf: 3, morale: 2, pinningClass: 1, deepStrike: true, squatMastery: true,
+      weapon: { name: 'Subterranean Melta-Cutters & Bolters', rangeCm: 35, dice: 2, toHit: 5, tsm: -1 },
+      breakPoint: 3, vpValue: 2, color: 0xeab308, standsCount: 5, baseW: 21, baseH: 21
+    },
+    {
+      key: 'sqt_ironshield', armyBook: 'SQUATS', name: 'Ironshield APC Transport Squadron', points: 150,
+      moveCm: 20, save: 3, caf: 1, morale: 2, pinningClass: 2, transportCapacity: 2,
+      weapon: { name: 'Autocannon & Heavy Bolters', rangeCm: 50, dice: 2, toHit: 5, tsm: -1 },
+      breakPoint: 2, vpValue: 2, color: 0xfacc15, standsCount: 3, baseW: 22, baseH: 30
+    },
+    {
+      key: 'sqt_bikers', armyBook: 'SQUATS', name: 'Guild Biker & Trike Outriders', points: 200,
+      moveCm: 30, save: 5, caf: 4, morale: 2, pinningClass: 2,
+      weapon: { name: 'Trike Twin Multi-Meltas', rangeCm: 25, dice: 1, toHit: 3, tsm: -2 },
+      breakPoint: 3, vpValue: 2, color: 0xfbbf24, standsCount: 5, baseW: 22, baseH: 26
+    },
+    {
+      key: 'sqt_gyrocopters', armyBook: 'SQUATS', name: 'Iron Eagle Attack Gyrocopters', points: 225,
+      moveCm: 40, save: 4, caf: 3, morale: 2, pinningClass: 2, skimmer: true, jump: true,
+      weapon: { name: 'Turret Battlecannon & Autocannon', rangeCm: 50, dice: 3, toHit: 5, tsm: -2 },
+      breakPoint: 2, vpValue: 3, color: 0x38bdf8, standsCount: 3, baseW: 24, baseH: 28
+    },
+    {
+      key: 'sqt_ironhammer', armyBook: 'SQUATS', name: 'Ironhammer Main Battle Tanks', points: 250,
+      moveCm: 20, save: 2, caf: 2, morale: 2, pinningClass: 2,
+      weapon: { name: 'Mega-Thunderer Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3 },
+      breakPoint: 2, vpValue: 3, color: 0xca8a04, standsCount: 3, baseW: 24, baseH: 32
+    },
+    {
+      key: 'sqt_molemortar', armyBook: 'SQUATS', name: 'Mole Mortar & Thudd Gun Battery', points: 175,
+      moveCm: 10, save: 5, caf: 0, morale: 2, pinningClass: 1,
+      weapon: { name: 'Subterranean Torpedo Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      breakPoint: 3, vpValue: 2, color: 0xa16207, standsCount: 4, baseW: 22, baseH: 22
+    },
+    {
+      key: 'sqt_goliath', armyBook: 'SQUATS', name: 'Goliath Mega-Cannon Siege Battery', points: 250,
+      moveCm: 5, save: 3, caf: 0, morale: 2, pinningClass: 3, superHeavy: true,
+      weapon: { name: 'Super-Heavy Siege Howitzer', rangeCm: 140, dice: 1, toHit: 3, tsm: -3, barrage: true, barrageBp: 5, indirect: true },
+      breakPoint: 1, vpValue: 3, color: 0x854d0e, standsCount: 2, baseW: 28, baseH: 34
+    },
+    {
+      key: 'sqt_overlord', armyBook: 'SQUATS', name: 'Overlord Armored Airship', points: 250,
+      moveCm: 25, save: 2, caf: 5, morale: 2, pinningClass: 3, superHeavy: true, skimmer: true, jump: true,
+      weapon: { name: 'Dirigible Battlecannons & Melta Bombs', rangeCm: 75, dice: 5, toHit: 4, tsm: -2 },
+      breakPoint: 1, vpValue: 3, color: 0xfde047, standsCount: 1, baseW: 32, baseH: 40
+    },
+    {
+      key: 'sqt_leviathan', armyBook: 'SQUATS', name: 'Leviathan Mobile Fortress Praetorian', points: 350,
+      moveCm: 12, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4, transportCapacity: 4,
+      weapon: { name: 'Doomsday Cannon & 6 Lascannons', rangeCm: 90, dice: 5, toHit: 4, tsm: -2 },
+      breakPoint: 1, vpValue: 4, color: 0xd97706, standsCount: 1, baseW: 36, baseH: 42
+    },
+    {
+      key: 'sqt_cyclops', armyBook: 'SQUATS', name: 'Cyclops Titan-Killer Praetorian', points: 425,
+      moveCm: 12, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 5,
+      weapon: { name: 'Hellfury Titan-Killer Beam & Melta Cannon', rangeCm: 100, dice: 6, toHit: 3, tsm: -4 },
+      breakPoint: 1, vpValue: 5, color: 0x92400e, standsCount: 1, baseW: 38, baseH: 42
+    }
   ]
 };
 
-// --- ARMY BUILDER, MAP PRESETS & SOLO AI STATE & UI FUNCTIONS ---
-window.mapPreset = 'INDUSTRIAL'; // 'INDUSTRIAL' | 'RIVER' | 'FOREST' | 'RANDOM'
-window.aiFaction = 'ORKS'; // 'ORKS' | 'IMPERIUM' | 'NONE'
-window.pointsBudget = 1500;
-window.armyRosters = {
+const DEFAULT_ROSTERS = {
   IMPERIUM: ['sm_tac', 'sm_rhino', 'sm_terminators', 'sm_landspeeder', 'sm_pred', 'sm_whirlwind', 'sm_warhound'],
-  ORKS: ['ork_boyz', 'ork_nobz', 'ork_wagons', 'ork_deffkoptas', 'ork_kommandos', 'ork_biggunz', 'ork_mekgargant']
+  ORKS:     ['ork_boyz', 'ork_nobz', 'ork_wagons', 'ork_deffkoptas', 'ork_kommandos', 'ork_biggunz', 'ork_mekgargant'],
+  ELDAR:    ['eld_guardians', 'eld_banshees', 'eld_hawks', 'eld_falcon', 'eld_jetbikes', 'eld_fireprism', 'eld_doomweaver', 'eld_revenant'],
+  CHAOS:    ['chs_marines', 'chs_rhino', 'chs_berserkers', 'chs_plaguemarines', 'chs_terminators', 'chs_discriders', 'chs_bloodthirster'],
+  TYRANIDS: ['tyr_hormagaunts', 'tyr_genestealers', 'tyr_lictors', 'tyr_warriors', 'tyr_gargoyles', 'tyr_biovores', 'tyr_carnifex', 'tyr_hierodule'],
+  SQUATS:   ['sqt_warriors', 'sqt_ironshield', 'sqt_hearthguard', 'sqt_termites', 'sqt_gyrocopters', 'sqt_molemortar', 'sqt_leviathan']
+};
+
+// --- ARMY BUILDER, FACTION SELECTOR, MAP PRESETS & SOLO AI STATE ---
+window.mapPreset = 'INDUSTRIAL'; // 'INDUSTRIAL' | 'RIVER' | 'FOREST' | 'RANDOM'
+window.aiFaction = 'ORKS'; // 'ORKS' (North AI) | 'IMPERIUM' (South AI) | 'NONE'
+window.pointsBudget = 1500;
+window.sideFaction = {
+  IMPERIUM: 'IMPERIUM', // South Force chosen Army Book
+  ORKS: 'ORKS'          // North Force chosen Army Book
+};
+window.armyRosters = {
+  IMPERIUM: [...DEFAULT_ROSTERS.IMPERIUM],
+  ORKS:     [...DEFAULT_ROSTERS.ORKS]
+};
+
+window.findCatalogUnit = function(key) {
+  for (const fKey of FACTION_KEYS) {
+    const found = UNIT_CATALOG[fKey].find(u => u.key === key);
+    if (found) return found;
+  }
+  return null;
+};
+
+window.getSideMeta = function(side) {
+  const fKey = (window.sideFaction && window.sideFaction[side]) || side;
+  return FACTION_META[fKey] || FACTION_META.IMPERIUM;
 };
 
 const MAP_LABELS = {
@@ -797,10 +1207,32 @@ window.setMapPreset = function(preset) {
 
 window.cycleMapPreset = function() {
   const order = ['INDUSTRIAL', 'RIVER', 'FOREST', 'RANDOM'];
-  // If already on RANDOM, clicking again generates a fresh random map!
   const idx = order.indexOf(window.mapPreset);
   const next = order[(idx + 1) % order.length];
   window.setMapPreset(next);
+};
+
+window.updateAIModeLabels = function() {
+  const southMeta = window.getSideMeta('IMPERIUM');
+  const northMeta = window.getSideMeta('ORKS');
+  const btnOrks = document.getElementById('ai-mode-ORKS');
+  const btnImp = document.getElementById('ai-mode-IMPERIUM');
+  if (btnOrks) btnOrks.innerText = `🤖 vs ${northMeta.name} AI`;
+  if (btnImp) btnImp.innerText = `🤖 vs ${southMeta.name} AI`;
+
+  const topBtn = document.getElementById('btn-ai-toggle');
+  if (topBtn) {
+    if (window.aiFaction === 'ORKS') {
+      topBtn.innerText = `🤖 AI: ${northMeta.name.toUpperCase()}`;
+      topBtn.className = 'btn-confirm';
+    } else if (window.aiFaction === 'IMPERIUM') {
+      topBtn.innerText = `🤖 AI: ${southMeta.name.toUpperCase()}`;
+      topBtn.className = 'btn-primary';
+    } else {
+      topBtn.innerText = '👥 2P Hotseat';
+      topBtn.className = '';
+    }
+  }
 };
 
 window.setAIMode = function(mode) {
@@ -809,19 +1241,7 @@ window.setAIMode = function(mode) {
     const b = document.getElementById(`ai-mode-${m}`);
     if (b) b.className = (m === mode) ? 'btn-confirm' : '';
   });
-  const topBtn = document.getElementById('btn-ai-toggle');
-  if (topBtn) {
-    if (mode === 'ORKS') {
-      topBtn.innerText = '🤖 AI: ORKS';
-      topBtn.className = 'btn-confirm';
-    } else if (mode === 'IMPERIUM') {
-      topBtn.innerText = '🤖 AI: IMPERIUM';
-      topBtn.className = 'btn-primary';
-    } else {
-      topBtn.innerText = '👥 2P Hotseat';
-      topBtn.className = '';
-    }
-  }
+  window.updateAIModeLabels();
   if (window.gameScene) {
     window.gameScene.onAIModeChanged();
   }
@@ -833,9 +1253,30 @@ window.cycleAIMode = function() {
   window.setAIMode(next);
 };
 
-window.getRosterPoints = function(faction) {
-  return window.armyRosters[faction].reduce((sum, key) => {
-    const item = UNIT_CATALOG[faction].find(u => u.key === key);
+window.setSideFaction = function(side, factionKey) {
+  if (!FACTION_META[factionKey]) return;
+  window.sideFaction[side] = factionKey;
+  window.armyRosters[side] = [...(DEFAULT_ROSTERS[factionKey] || [])];
+  window.updateAIModeLabels();
+  window.renderArmyModal();
+};
+
+window.randomizeMatchup = function() {
+  const pool = [...FACTION_KEYS];
+  const idx1 = Math.floor(Math.random() * pool.length);
+  const f1 = pool.splice(idx1, 1)[0];
+  const f2 = pool[Math.floor(Math.random() * pool.length)];
+  window.sideFaction.IMPERIUM = f1;
+  window.sideFaction.ORKS = f2;
+  window.armyRosters.IMPERIUM = [...DEFAULT_ROSTERS[f1]];
+  window.armyRosters.ORKS = [...DEFAULT_ROSTERS[f2]];
+  window.updateAIModeLabels();
+  window.renderArmyModal();
+};
+
+window.getRosterPoints = function(side) {
+  return window.armyRosters[side].reduce((sum, key) => {
+    const item = window.findCatalogUnit(key);
     return sum + (item ? item.points : 0);
   }, 0);
 };
@@ -850,45 +1291,94 @@ window.setPointsBudget = function(pts) {
 };
 
 window.resetDefaultArmies = function() {
-  window.armyRosters.IMPERIUM = ['sm_tac', 'sm_rhino', 'sm_terminators', 'sm_landspeeder', 'sm_pred', 'sm_whirlwind', 'sm_warhound'];
-  window.armyRosters.ORKS = ['ork_boyz', 'ork_nobz', 'ork_wagons', 'ork_deffkoptas', 'ork_kommandos', 'ork_biggunz', 'ork_mekgargant'];
+  const fSouth = window.sideFaction.IMPERIUM || 'IMPERIUM';
+  const fNorth = window.sideFaction.ORKS || 'ORKS';
+  window.armyRosters.IMPERIUM = [...DEFAULT_ROSTERS[fSouth]];
+  window.armyRosters.ORKS = [...DEFAULT_ROSTERS[fNorth]];
   window.renderArmyModal();
 };
 
-window.addDetachmentToRoster = function(faction, key) {
-  const unit = UNIT_CATALOG[faction].find(u => u.key === key);
+window.addDetachmentToRoster = function(side, key) {
+  const unit = window.findCatalogUnit(key);
   if (!unit) return;
-  if (window.getRosterPoints(faction) + unit.points > window.pointsBudget) return;
-  window.armyRosters[faction].push(key);
+  if (window.getRosterPoints(side) + unit.points > window.pointsBudget) return;
+  window.armyRosters[side].push(key);
   window.renderArmyModal();
 };
 
-window.removeDetachmentFromRoster = function(faction, index) {
-  if (window.armyRosters[faction].length <= 1) return; // Keep at least 1 detachment per army
-  window.armyRosters[faction].splice(index, 1);
+window.removeDetachmentFromRoster = function(side, index) {
+  if (window.armyRosters[side].length <= 1) return; // Keep at least 1 detachment per army
+  window.armyRosters[side].splice(index, 1);
   window.renderArmyModal();
 };
 
 window.renderArmyModal = function() {
-  ['IMPERIUM', 'ORKS'].forEach(faction => {
-    const prefix = faction === 'IMPERIUM' ? 'imp' : 'ork';
-    const spent = window.getRosterPoints(faction);
+  window.updateAIModeLabels();
+  ['IMPERIUM', 'ORKS'].forEach(side => {
+    const prefix = side === 'IMPERIUM' ? 'imp' : 'ork';
+    const sideLabel = side === 'IMPERIUM' ? 'South Force / P1' : 'North Force / P2-AI';
+    const activeBook = window.sideFaction[side] || side;
+    const meta = FACTION_META[activeBook];
+
+    // Update Column Border, Header & Trait Description
+    const colCard = document.getElementById(`${prefix}-col-card`);
+    if (colCard) colCard.style.borderTop = `3px solid ${meta.borderHex}`;
+    const colTitle = document.getElementById(`${prefix}-col-title`);
+    if (colTitle) {
+      colTitle.innerText = `${meta.fullTitle} (${sideLabel})`;
+      colTitle.style.color = meta.colorHex;
+    }
+    const colTrait = document.getElementById(`${prefix}-col-trait`);
+    if (colTrait) {
+      colTrait.innerText = `✨ Faction Rules: ${meta.traitDesc}`;
+      colTrait.style.color = meta.colorHex;
+    }
+
+    // Render 6-Faction selector tabs
+    const tabsEl = document.getElementById(`${prefix}-faction-tabs`);
+    if (tabsEl) {
+      tabsEl.innerHTML = '';
+      FACTION_KEYS.forEach(fKey => {
+        const fm = FACTION_META[fKey];
+        const isSel = (fKey === activeBook);
+        const btn = document.createElement('button');
+        btn.style.minWidth = 'auto';
+        btn.style.padding = '4px 8px';
+        btn.style.fontSize = '0.74rem';
+        btn.style.borderColor = isSel ? fm.colorHex : '#334155';
+        if (isSel) {
+          btn.style.background = fm.borderHex;
+          btn.style.color = '#ffffff';
+        }
+        btn.innerText = `${fm.icon} ${fm.name}`;
+        btn.onclick = () => window.setSideFaction(side, fKey);
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    const spent = window.getRosterPoints(side);
     const badge = document.getElementById(`${prefix}-pts-badge`);
     if (badge) {
-      badge.innerText = `${spent} / ${window.pointsBudget} pts (${window.armyRosters[faction].length} units)`;
+      badge.innerText = `${spent} / ${window.pointsBudget} pts (${window.armyRosters[side].length} units)`;
       badge.style.borderColor = spent > window.pointsBudget ? '#ef4444' : '#475569';
     }
 
     const catEl = document.getElementById(`${prefix}-catalog`);
     if (catEl) {
       catEl.innerHTML = '';
-      UNIT_CATALOG[faction].forEach(u => {
+      UNIT_CATALOG[activeBook].forEach(u => {
         const canAfford = (spent + u.points) <= window.pointsBudget;
         const transNote = u.transportCapacity ? ` | 🚐 Carries ${u.standsCount * u.transportCapacity} Inf` : '';
-        const shieldNote = u.maxShields ? ` | 🛡️ ${u.maxShields} ${u.shieldType === 'VOID' ? 'Void Shields' : 'Power Fields'}` : (u.superHeavy ? ' | 🛡️ Super-Heavy' : '');
+        const shieldLabel = u.shieldType === 'VOID' ? 'Void Shields' : (u.shieldType === 'CHITIN' ? 'Chitin Bio-Shields' : 'Power Fields');
+        const shieldNote = u.maxShields ? ` | 🛡️ ${u.maxShields} ${shieldLabel}` : (u.holoField ? ' | 💎 Holo-Field (2+ to 4+ Save)' : (u.superHeavy ? ' | 🛡️ Super-Heavy' : ''));
         const skimNote = u.skimmer ? ' | 🚀 Skimmer (Pop-Up)' : '';
-        const dsNote = u.deepStrike ? ' | ☄️ Deep Strike / Teleport' : '';
-        const saveDesc = u.fixedSave ? `${u.save}+ (${u.fixedSave}+f)` : `${u.save}+`;
+        const dsNote = u.deepStrike ? ' | ☄️ Deep Strike / Tunneler' : '';
+        const synNote = u.synapse ? ' | 🧬 Synapse Aura (+1 CAF)' : '';
+        const regNote = u.regeneration ? ' | 💚 Regenerates (5+)' : '';
+        const terNote = u.daemonicTerror ? ' | 😱 Terror (-2 Enemy CAF)' : '';
+        const masNote = u.squatMastery ? ' | ⚒️ CC Mastery (Re-roll 1s)' : '';
+        const banNote = u.bansheeMask ? ' | 🔊 Banshee Mask (+1D6 CC)' : '';
+        const saveDesc = u.holoField ? `${u.save}+ (💎 Holo)` : (u.fixedSave ? `${u.save}+ (${u.fixedSave}+f)` : `${u.save}+`);
         const wpnDesc = u.weapon.barrage
           ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
           : `${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)`;
@@ -897,9 +1387,9 @@ window.renderArmyModal = function() {
         row.innerHTML = `
           <div>
             <div style="font-weight:700; color:#f8fafc;">${u.name} <span style="color:#fde047;">(${u.points} pts / ${u.vpValue} VP)</span></div>
-            <div class="sub-text">${u.standsCount} ${u.isTitan ? 'Titan' : (u.superHeavy ? 'Model' : 'stands')} | Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${shieldNote}${skimNote}${dsNote}${transNote} | ${wpnDesc}</div>
+            <div class="sub-text">${u.standsCount} ${u.isTitan ? 'Titan' : (u.superHeavy ? 'Model' : 'stands')} | Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${transNote} | ${wpnDesc}</div>
           </div>
-          <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${faction}', '${u.key}')">+ Add</button>
+          <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${side}', '${u.key}')">+ Add</button>
         `;
         catEl.appendChild(row);
       });
@@ -908,8 +1398,8 @@ window.renderArmyModal = function() {
     const rosEl = document.getElementById(`${prefix}-roster`);
     if (rosEl) {
       rosEl.innerHTML = '';
-      window.armyRosters[faction].forEach((key, idx) => {
-        const u = UNIT_CATALOG[faction].find(item => item.key === key);
+      window.armyRosters[side].forEach((key, idx) => {
+        const u = window.findCatalogUnit(key);
         if (!u) return;
         const row = document.createElement('div');
         row.className = 'roster-item';
@@ -917,7 +1407,7 @@ window.renderArmyModal = function() {
           <div>
             <b>#${idx + 1} ${u.name}</b> <span class="sub-text">(${u.standsCount} ${u.isTitan ? 'Titan' : 'stands'}, ${u.points} pts)</span>
           </div>
-          <button class="btn-fire" ${window.armyRosters[faction].length <= 1 ? 'disabled' : ''} onclick="window.removeDetachmentFromRoster('${faction}', ${idx})">✕</button>
+          <button class="btn-fire" ${window.armyRosters[side].length <= 1 ? 'disabled' : ''} onclick="window.removeDetachmentFromRoster('${side}', ${idx})">✕</button>
         `;
         rosEl.appendChild(row);
       });
@@ -1349,34 +1839,111 @@ class NetEpicScene extends Phaser.Scene {
 
     // Deployment Zone Labels
     if (!this.orkDeployLabel) {
-      this.orkDeployLabel = this.add.text(BOARD_W / 2, DEPLOY_DEPTH_PX - 18, '▲ ORK DEPLOYMENT ZONE (NORTH 35 CM) — Drag units to position ▲', {
+      this.orkDeployLabel = this.add.text(BOARD_W / 2, DEPLOY_DEPTH_PX - 18, '▲ NORTH DEPLOYMENT ZONE (35 CM) — Drag units to position ▲', {
         fontSize: '12px', fontStyle: 'bold', color: '#4ade80', backgroundColor: 'rgba(15, 23, 42, 0.8)'
       }).setOrigin(0.5);
     }
     if (!this.impDeployLabel) {
-      this.impDeployLabel = this.add.text(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18, '▼ IMPERIUM DEPLOYMENT ZONE (SOUTH 35 CM) — Drag units to position ▼', {
+      this.impDeployLabel = this.add.text(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18, '▼ SOUTH DEPLOYMENT ZONE (35 CM) — Drag units to position ▼', {
         fontSize: '12px', fontStyle: 'bold', color: '#60a5fa', backgroundColor: 'rgba(15, 23, 42, 0.8)'
       }).setOrigin(0.5);
     }
   }
 
+  getSideMeta(side) {
+    return window.getSideMeta ? window.getSideMeta(side) : FACTION_META.IMPERIUM;
+  }
+
+  getSideName(side) {
+    const m = this.getSideMeta(side);
+    const otherSide = side === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const otherM = this.getSideMeta(otherSide);
+    if (m.key === otherM.key) {
+      return `${m.name.toUpperCase()} (${side === 'IMPERIUM' ? 'SOUTH' : 'NORTH'})`;
+    }
+    return m.name.toUpperCase();
+  }
+
+  getSideShort(side) {
+    const m = this.getSideMeta(side);
+    const otherSide = side === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const otherM = this.getSideMeta(otherSide);
+    if (m.key === otherM.key) {
+      return `${m.short}-${side === 'IMPERIUM' ? 'S' : 'N'}`;
+    }
+    return m.short;
+  }
+
+  // Eldar Holo-Fields (07_eldar_army_book_v5 p. 4): Save improves with movement speed!
+  getHoloFieldSave(det) {
+    if (!det || !det.holoField) return null;
+    if (det.isTitan) {
+      if (det.order === 'CHARGE') return 2;
+      if (det.order === 'ADVANCE' || det.order === 'FALL_BACK') return 3;
+      return 4;
+    } else {
+      if (det.order === 'CHARGE') return 3;
+      if (det.order === 'ADVANCE' || det.order === 'FALL_BACK') return 4;
+      return 5;
+    }
+  }
+
+  // Tyranid Hive Mind Synapse Aura (06_tyranid_army_book_v5 p. 4): Within 25cm (250px) of an unbroken Synapse creature
+  hasSynapseAura(det) {
+    if (!det || det.stands.length === 0 || det.armyBook !== 'TYRANIDS') return false;
+    if (det.synapse && !det.broken) return true;
+    const dc = this.getDetachmentCenter(det);
+    return this.detachments.some(other =>
+      other.faction === det.faction &&
+      other.synapse &&
+      !other.broken &&
+      other.stands.length > 0 &&
+      !other.inReserve &&
+      Phaser.Math.Distance.Between(dc.x, dc.y, this.getDetachmentCenter(other).x, this.getDetachmentCenter(other).y) <= 25 * PX_PER_CM
+    );
+  }
+
+  // Chaos Nurgle / Daemonic & Tyranid Bio-Regeneration (5+ Feel No Pain save on failed armor save)
+  rollRegenerationSave(det, vx, vy) {
+    if (!det || !det.regeneration) return false;
+    const regRoll = Phaser.Math.Between(1, 6);
+    if (regRoll >= 5) {
+      window.sfx.playSave();
+      this.spawnFloatingText(vx, vy - 10, `💚 REGENERATED! (${regRoll})`, '#4ade80', '11px');
+      this.log(`💚 <b>${det.name}</b> shrugs off the wound with <b>Regeneration</b> (rolled <b>${regRoll}</b> on 5+)!`);
+      return true;
+    }
+    return false;
+  }
+
   drawDeploymentZones() {
     this.deployGfx.clear();
     const inDeploy = this.phase === 'DEPLOYMENT';
-    if (this.orkDeployLabel) this.orkDeployLabel.setVisible(inDeploy);
-    if (this.impDeployLabel) this.impDeployLabel.setVisible(inDeploy);
+    const southMeta = this.getSideMeta('IMPERIUM');
+    const northMeta = this.getSideMeta('ORKS');
+
+    if (this.orkDeployLabel) {
+      this.orkDeployLabel.setVisible(inDeploy);
+      this.orkDeployLabel.setText(`▲ ${northMeta.icon} ${this.getSideName('ORKS')} DEPLOYMENT ZONE (NORTH 35 CM) — Drag units to position ▲`);
+      this.orkDeployLabel.setColor(northMeta.colorHex);
+    }
+    if (this.impDeployLabel) {
+      this.impDeployLabel.setVisible(inDeploy);
+      this.impDeployLabel.setText(`▼ ${southMeta.icon} ${this.getSideName('IMPERIUM')} DEPLOYMENT ZONE (SOUTH 35 CM) — Drag units to position ▼`);
+      this.impDeployLabel.setColor(southMeta.colorHex);
+    }
     if (!inDeploy) return;
 
-    // Ork North Deployment Zone (0 .. DEPLOY_DEPTH_PX)
-    this.deployGfx.fillStyle(0x22c55e, 0.08);
+    // North Deployment Zone (0 .. DEPLOY_DEPTH_PX)
+    this.deployGfx.fillStyle(northMeta.phaserColor, 0.08);
     this.deployGfx.fillRect(0, 0, BOARD_W, DEPLOY_DEPTH_PX);
-    this.deployGfx.lineStyle(2, 0x22c55e, 0.7);
+    this.deployGfx.lineStyle(2, northMeta.phaserColor, 0.7);
     this.deployGfx.lineBetween(0, DEPLOY_DEPTH_PX, BOARD_W, DEPLOY_DEPTH_PX);
 
-    // Imperium South Deployment Zone (BOARD_H - DEPLOY_DEPTH_PX .. BOARD_H)
-    this.deployGfx.fillStyle(0x3b82f6, 0.08);
+    // South Deployment Zone (BOARD_H - DEPLOY_DEPTH_PX .. BOARD_H)
+    this.deployGfx.fillStyle(southMeta.phaserColor, 0.08);
     this.deployGfx.fillRect(0, BOARD_H - DEPLOY_DEPTH_PX, BOARD_W, DEPLOY_DEPTH_PX);
-    this.deployGfx.lineStyle(2, 0x3b82f6, 0.7);
+    this.deployGfx.lineStyle(2, southMeta.phaserColor, 0.7);
     this.deployGfx.lineBetween(0, BOARD_H - DEPLOY_DEPTH_PX, BOARD_W, BOARD_H - DEPLOY_DEPTH_PX);
   }
 
@@ -1398,9 +1965,13 @@ class NetEpicScene extends Phaser.Scene {
 
   drawObjectives() {
     this.objGfx.clear();
+    const southMeta = this.getSideMeta('IMPERIUM');
+    const northMeta = this.getSideMeta('ORKS');
+
     this.objectives.forEach(obj => {
-      const color = obj.owner === 'IMPERIUM' ? 0x3b82f6 : (obj.owner === 'ORKS' ? 0x22c55e : 0xfacc15);
-      const hex = obj.owner === 'IMPERIUM' ? '#60a5fa' : (obj.owner === 'ORKS' ? '#4ade80' : '#fde047');
+      const color = obj.owner === 'IMPERIUM' ? southMeta.phaserColor : (obj.owner === 'ORKS' ? northMeta.phaserColor : 0xfacc15);
+      const hex = obj.owner === 'IMPERIUM' ? southMeta.colorHex : (obj.owner === 'ORKS' ? northMeta.colorHex : '#fde047');
+      const ownerLabel = obj.owner === 'NEUTRAL' ? 'NEUTRAL' : this.getSideName(obj.owner);
 
       // 15cm capture zone ring
       this.objGfx.lineStyle(1, color, 0.35);
@@ -1415,7 +1986,7 @@ class NetEpicScene extends Phaser.Scene {
       this.objGfx.strokeCircle(obj.x, obj.y, 9);
 
       if (obj.label) {
-        obj.label.setText(`🚩 OBJ #${obj.id} (5 VP)\n[${obj.owner}]`);
+        obj.label.setText(`🚩 OBJ #${obj.id} (5 VP)\n[${ownerLabel}]`);
         obj.label.setColor(hex);
       }
     });
@@ -1447,8 +2018,10 @@ class NetEpicScene extends Phaser.Scene {
       }
 
       if (logChanges && obj.owner !== prevOwner) {
-        this.log(`🚩 <b>${obj.name}</b> captured by <b>${obj.owner}</b>! (+5 VP)`);
-        this.spawnFloatingText(obj.x, obj.y - 16, `🚩 ${obj.owner} +5 VP!`, obj.owner === 'IMPERIUM' ? '#60a5fa' : '#4ade80', '13px');
+        const ownerName = this.getSideName(obj.owner);
+        const ownerMeta = this.getSideMeta(obj.owner);
+        this.log(`🚩 <b>${obj.name}</b> captured by <b>${ownerName}</b>! (+5 VP)`);
+        this.spawnFloatingText(obj.x, obj.y - 16, `🚩 ${ownerName} +5 VP!`, ownerMeta.colorHex, '13px');
         window.sfx.playHorn();
       }
 
@@ -1647,12 +2220,14 @@ class NetEpicScene extends Phaser.Scene {
 
     const impCount = impKeys.length;
     impKeys.forEach((key, idx) => {
-      const template = UNIT_CATALOG.IMPERIUM.find(u => u.key === key);
+      const template = window.findCatalogUnit(key);
       if (!template) return;
       const spanX = Math.min(1400, Math.max(400, (impCount - 1) * 240));
       const startX = (BOARD_W / 2) - (spanX / 2) + (impCount > 1 ? (idx * (spanX / (impCount - 1))) : 0) - 36;
       this.createDetachment({
         ...template,
+        faction: 'IMPERIUM',
+        armyBook: template.armyBook || window.sideFaction.IMPERIUM || 'IMPERIUM',
         id: `imp_${idx}_${key}`,
         name: `${template.name} #${idx + 1}`,
         startX: Math.round(startX),
@@ -1662,12 +2237,14 @@ class NetEpicScene extends Phaser.Scene {
 
     const orkCount = orkKeys.length;
     orkKeys.forEach((key, idx) => {
-      const template = UNIT_CATALOG.ORKS.find(u => u.key === key);
+      const template = window.findCatalogUnit(key);
       if (!template) return;
       const spanX = Math.min(1400, Math.max(400, (orkCount - 1) * 240));
       const startX = (BOARD_W / 2) - (spanX / 2) + (orkCount > 1 ? (idx * (spanX / (orkCount - 1))) : 0) - 36;
       this.createDetachment({
         ...template,
+        faction: 'ORKS',
+        armyBook: template.armyBook || window.sideFaction.ORKS || 'ORKS',
         id: `ork_${idx}_${key}`,
         name: `${template.name} #${idx + 1}`,
         startX: Math.round(startX),
@@ -1680,17 +2257,20 @@ class NetEpicScene extends Phaser.Scene {
     this.activatingDetachment = null;
     this.targetDetachment = null;
 
+    const southName = this.getSideName('IMPERIUM');
+    const northName = this.getSideName('ORKS');
+
     if (useDeploymentPhase) {
       this.phase = 'DEPLOYMENT';
       this.groupMoveMode = true; // Default to Group Move ON during Deployment for fast positioning!
       this.autoDeployAIFaction();
-      const aiNote = window.aiFaction !== 'NONE' ? ` (🤖 <b>${window.aiFaction} AI</b> has deployed its forces)` : '';
-      this.log(`📍 <b>Deployment Phase Started!</b>${aiNote} Drag your units inside your Deployment Zone, 🚐 Embark into Transports, or hold ☄️ Deep Strike units in Orbital Reserve!`);
+      const aiNote = window.aiFaction !== 'NONE' ? ` (🤖 <b>${this.getSideName(window.aiFaction)} AI</b> has deployed its forces)` : '';
+      this.log(`📍 <b>Deployment Phase: ${southName} vs ${northName}!</b>${aiNote} Drag your units inside your Deployment Zone, 🚐 Embark into Transports, or hold ☄️ Deep Strike units in Orbital Reserve!`);
     } else {
       this.phase = 'ORDERS';
       this.groupMoveMode = false;
       this.assignAIOrders();
-      this.log(`⚡ <b>Quick Skirmish Started — Turn 1 Orders Phase!</b> Titans, Skimmers (Pop-Up), and Deep Strike units are ready for action!`);
+      this.log(`⚡ <b>Quick Skirmish (${southName} vs ${northName}) — Turn 1 Orders Phase!</b> Place hidden orders for your army!`);
     }
 
     this.drawDeploymentZones();
@@ -1826,8 +2406,8 @@ class NetEpicScene extends Phaser.Scene {
       const items = [];
 
       let shieldRing = null;
-      if (cfg.maxShields) {
-        const ringColor = cfg.shieldType === 'VOID' ? 0x38bdf8 : 0x4ade80;
+      if (cfg.maxShields || cfg.holoField) {
+        const ringColor = cfg.holoField ? 0xfbbf24 : (cfg.shieldType === 'VOID' ? 0x38bdf8 : (cfg.shieldType === 'CHITIN' ? 0xc084fc : 0x4ade80));
         shieldRing = this.add.circle(0, 0, Math.max(cfg.baseW, cfg.baseH) * 0.68, ringColor, 0.16).setStrokeStyle(2.5, ringColor, 0.9);
         items.push(shieldRing);
       }
@@ -1848,12 +2428,13 @@ class NetEpicScene extends Phaser.Scene {
         const podY = cfg.faction === 'IMPERIUM' ? -4 : 4;
         const leftPod = this.add.rectangle(-cfg.baseW * 0.36, podY, 8, 16, 0x0f172a).setStrokeStyle(1.5, 0xfde047);
         const rightPod = this.add.rectangle(cfg.baseW * 0.36, podY, 8, 16, 0x0f172a).setStrokeStyle(1.5, 0xfde047);
-        const core = this.add.circle(0, 0, 6, cfg.shieldType === 'VOID' ? 0x38bdf8 : 0xfacc15).setStrokeStyle(1.5, 0xffffff);
+        const coreColor = cfg.holoField ? 0xfbbf24 : (cfg.shieldType === 'VOID' ? 0x38bdf8 : (cfg.shieldType === 'CHITIN' ? 0xc084fc : 0xfacc15));
+        const core = this.add.circle(0, 0, 6, coreColor).setStrokeStyle(1.5, 0xffffff);
         items.push(leftPod, rightPod, core);
 
         const pipCount = cfg.maxShields || 0;
         const pipY = cfg.faction === 'IMPERIUM' ? (cfg.baseH / 2 - 5) : (-cfg.baseH / 2 + 5);
-        const pipColor = cfg.shieldType === 'VOID' ? 0x38bdf8 : 0x4ade80;
+        const pipColor = cfg.shieldType === 'VOID' ? 0x38bdf8 : (cfg.shieldType === 'CHITIN' ? 0xc084fc : 0x4ade80);
         for (let p = 0; p < pipCount; p++) {
           const px = (p - (pipCount - 1) / 2) * 8;
           const sPip = this.add.circle(px, pipY, 3.2, pipColor).setStrokeStyle(1, 0xffffff);
@@ -1866,6 +2447,9 @@ class NetEpicScene extends Phaser.Scene {
       } else if (cfg.deepStrike) {
         const crux = this.add.rectangle(0, 0, 7, 7, 0xc084fc).setAngle(45).setStrokeStyle(1, 0xffffff);
         items.push(crux);
+      } else if (cfg.synapse) {
+        const synGem = this.add.circle(0, 0, 4.5, 0xf43f5e).setStrokeStyle(1, 0xffffff);
+        items.push(synGem);
       }
 
       let hatchBar = null;
@@ -1901,10 +2485,10 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.push(det);
   }
 
-  // --- PHASE 10: TITANS, VOID SHIELDS / POWER FIELDS, SKIMMER POP-UP & DEEP STRIKE ---
+  // --- PHASE 10–11: TITANS, VOID SHIELDS, ORK POWER FIELDS, BIO-CHITIN, SKIMMER POP-UP & DEEP STRIKE ---
   updateTitanShieldVisuals(det) {
     if (!det || !det.maxShields) return;
-    const activeCol = det.shieldType === 'VOID' ? 0x38bdf8 : 0x4ade80;
+    const activeCol = det.shieldType === 'VOID' ? 0x38bdf8 : (det.shieldType === 'CHITIN' ? 0xc084fc : 0x4ade80);
     det.stands.forEach(s => {
       if (s.shieldRing) {
         s.shieldRing.setVisible(det.shields > 0);
@@ -1924,12 +2508,24 @@ class NetEpicScene extends Phaser.Scene {
 
   absorbTitanShield(det, hitX, hitY) {
     if (!det || det.shields <= 0) return false;
-    det.shields--;
     window.sfx.playShieldHit();
+
+    // Ork Power Fields flicker-save on a 4+ before burning out!
+    if (det.shieldType === 'POWER') {
+      const flickerRoll = Phaser.Math.Between(1, 6);
+      if (flickerRoll >= 4) {
+        this.spawnExplosionFX(hitX, hitY, 14, false);
+        this.spawnFloatingText(hitX, hitY - 12, `⚡ POWER FIELD FLICKER SAVED! (${flickerRoll})`, '#4ade80', '12px');
+        this.log(`⚡ <b>${det.name}</b>'s <b>Ork Power Field</b> flickers and deflects the shot without collapsing (rolled <b>${flickerRoll}</b> on 4+)! (<b>${det.shields}/${det.maxShields}</b> active)`);
+        return true;
+      }
+    }
+
+    det.shields--;
     this.updateTitanShieldVisuals(det);
 
-    const shieldName = det.shieldType === 'VOID' ? 'VOID SHIELD' : 'POWER FIELD';
-    const colHex = det.shieldType === 'VOID' ? '#38bdf8' : '#4ade80';
+    const shieldName = det.shieldType === 'VOID' ? 'VOID SHIELD' : (det.shieldType === 'CHITIN' ? 'CHITIN BIO-SHIELD' : 'POWER FIELD');
+    const colHex = det.shieldType === 'VOID' ? '#38bdf8' : (det.shieldType === 'CHITIN' ? '#c084fc' : '#4ade80');
     this.spawnExplosionFX(hitX, hitY, 16, false);
     this.spawnFloatingText(hitX, hitY - 12, `🛡️ ${shieldName} HIT! (${det.shields}/${det.maxShields} left)`, colHex, '12px');
     this.log(`🛡️ <b>${det.name}</b> absorbs the hit with its <b>${shieldName}</b>! (<b>${det.shields}/${det.maxShields}</b> shields remaining)`);
@@ -2626,7 +3222,7 @@ class NetEpicScene extends Phaser.Scene {
 
         if (hitSuccess) {
           hits++;
-          // Check Titan Void Shields / Ork Power Fields first!
+          // Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields first!
           if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
             saves++;
             return;
@@ -2639,6 +3235,8 @@ class NetEpicScene extends Phaser.Scene {
             saves++;
             window.sfx.playSave();
             this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : (vDet.fixedSave && saveRoll === vDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`, '#38bdf8', '11px');
+          } else if (this.rollRegenerationSave(vDet, vx, vy)) {
+            saves++;
           } else if (vDet.superHeavy) {
             if (this.applySuperHeavyDamage(vDet, victimStand, false)) kills++;
           } else {
@@ -2661,7 +3259,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // --- B) STANDARD DIRECT RANGED ATTACK RESOLUTION ---
     window.sfx.playLaser(wpn.tsm <= -1);
-    const beamColor = firerDet.faction === 'IMPERIUM' ? 0x38bdf8 : 0xfacc15;
+    const beamColor = this.getSideMeta(firerDet.faction).phaserColor || 0x38bdf8;
     sol.validPairs.forEach(pair => {
       this.spawnLaserFX(
         pair.shooter.container.x, pair.shooter.container.y,
@@ -2703,23 +3301,32 @@ class NetEpicScene extends Phaser.Scene {
           const vx = victimRef ? victimRef.container.x : pair.target.container.x;
           const vy = victimRef ? victimRef.container.y : pair.target.container.y;
 
-          // 1. Check Titan Void Shields / Ork Power Fields before rolling Armor Save!
+          // 1. Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields before rolling Armor Save!
           if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
             saves++;
             continue;
           }
 
-          // 2. Armour Save modified by TSM (p. 37), Building Garrison 4+ Save (p. 26), and Fixed Save (e.g. Terminators 4+/6+f)
+          // 2. Armour Save modified by TSM (p. 37), Building Garrison 4+ Save (p. 26), Fixed Save, and Eldar Holo-Fields!
           const saveRoll = Phaser.Math.Between(1, 6);
           const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
           const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
           let neededSave = baseSave - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
           if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave);
+          const holoSave = this.getHoloFieldSave(targetDet);
+          if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
 
           if (saveRoll >= neededSave && neededSave <= 6) {
             saves++;
             window.sfx.playSave();
-            this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : (targetDet.fixedSave && saveRoll === targetDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`, '#38bdf8', '11px');
+            const isHolo = (holoSave !== null && neededSave === holoSave);
+            this.spawnFloatingText(
+              vx, vy,
+              isHolo ? `💎 HOLO-FIELD (${saveRoll} vs ${holoSave}+)` : `🛡️ ${garrisoned ? 'FORTIFIED ' : (targetDet.fixedSave && saveRoll === targetDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`,
+              isHolo ? '#fbbf24' : '#38bdf8', '11px'
+            );
+          } else if (this.rollRegenerationSave(targetDet, vx, vy)) {
+            saves++;
           } else if (targetDet.superHeavy) {
             if (this.applySuperHeavyDamage(targetDet, victimRef, false)) kills++;
           } else {
@@ -2810,9 +3417,17 @@ class NetEpicScene extends Phaser.Scene {
     if (!det.broken && det.casualties >= det.breakPoint) {
       det.broken = true;
       const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      const scoringName = this.getSideName(scoringSide);
       this.vp[scoringSide] += det.vpValue;
       const dc = this.getDetachmentCenter(det);
       window.sfx.playHorn();
+
+      // Tyranid Hive Mind Synapse (06_tyranid_army_book_v5 p. 4-5): Units within Synapse Aura automatically pass Morale!
+      if (this.hasSynapseAura(det)) {
+        this.spawnFloatingText(dc.x, dc.y - 22, `🧬 BROKEN (+${det.vpValue} VP) — SYNAPSE FEARLESS!`, '#c084fc', '13px');
+        this.log(`🧬 <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringName}), but <b>Hive Mind Synapse</b> keeps the brood Fearless!`);
+        return;
+      }
 
       // Morale Check (p. 41-42)
       const moraleRoll = Phaser.Math.Between(1, 6);
@@ -2827,10 +3442,10 @@ class NetEpicScene extends Phaser.Scene {
 
         this.updateDetachmentBadge(det);
         this.spawnFloatingText(dc.x, dc.y - 22, `🏳️ BROKEN! FALL BACK (+${det.vpValue} VP)`, '#f59e0b', '13px');
-        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) → <b>FALL BACK!</b>${routNote} (+${det.vpValue} VP to ${scoringSide})`);
+        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) → <b>FALL BACK!</b>${routNote} (+${det.vpValue} VP to ${scoringName})`);
       } else {
         this.spawnFloatingText(dc.x, dc.y - 22, `⚔️ BROKEN (+${det.vpValue} VP) — MORALE HELD!`, '#fde047', '13px');
-        this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringSide}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
+        this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringName}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
       }
     }
   }
@@ -3797,7 +4412,10 @@ class NetEpicScene extends Phaser.Scene {
     this.phase = 'MOVEMENT';
     this.selectedDetachment = null;
 
-    this.log(`🎲 <b>Initiative Roll:</b> Imperium ${impRoll} vs Orks ${orkRoll}. <b>${this.initiativeWinner}</b> wins Initiative!`);
+    const southName = this.getSideName('IMPERIUM');
+    const northName = this.getSideName('ORKS');
+    const winName = this.getSideName(this.initiativeWinner);
+    this.log(`🎲 <b>Initiative Roll:</b> ${southName} ${impRoll} vs ${northName} ${orkRoll}. <b>${winName}</b> wins Initiative!`);
     this.updateUI();
     this.drawOverlays();
     this.checkAndRunAITurn();
@@ -4046,7 +4664,7 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     const segName = segment === 'COMBAT_FIRST' ? '1) First Fire Segment' : '3) Advance Fire Segment';
-    this.log(`🎯 Entering <b>${segName}</b>! (${this.activePlayer} has Initiative)`);
+    this.log(`🎯 Entering <b>${segName}</b>! (${this.getSideName(this.activePlayer)} has Initiative)`);
     this.advanceCombatTurn();
   }
 
@@ -4077,12 +4695,12 @@ class NetEpicScene extends Phaser.Scene {
     this.checkAndRunAITurn();
   }
 
-  // --- III-2. CLOSE COMBAT SEGMENT (NetEpic Rules p. 38-40) ---
+  // --- III-2. CLOSE COMBAT SEGMENT (NetEpic Rules p. 38-40 + Faction Melee Rules) ---
   buildCloseCombatBouts() {
     const bouts = [];
     const pairedStands = new Set();
 
-    // Collect all engaged Imperium and Ork stands
+    // Collect all engaged South (IMPERIUM) and North (ORKS) stands
     const impEngaged = [];
     const orkEngaged = [];
     this.detachments.forEach(d => {
@@ -4165,7 +4783,6 @@ class NetEpicScene extends Phaser.Scene {
       if (impAlive && orkAlive) break;
 
       this.ccBouts.shift();
-      // If one stand survived and hasn't fought yet, check if it touches another living enemy stand
       if (impAlive && !(this.defenderFoughtCounts.get(top.impStand) > 0)) {
         const alt = this.getEngagedEnemies(top.impStand)[0];
         if (alt) {
@@ -4194,29 +4811,69 @@ class NetEpicScene extends Phaser.Scene {
     const impFought = this.defenderFoughtCounts.get(impStand) || 0;
     const orkFought = this.defenderFoughtCounts.get(orkStand) || 0;
 
-    // Multiple attackers rule (NetEpic p. 38): Ganging up on an already-fought defender grants +1D6 per previous attacker!
-    const impDiceCount = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
-    const orkDiceCount = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+    // Multiple attackers rule (NetEpic p. 38) + Eldar Banshee Mask (+1D6 vs Infantry)
+    const impBansheeBonus = (impDet.bansheeMask && orkDet.pinningClass === 1) ? 1 : 0;
+    const orkBansheeBonus = (orkDet.bansheeMask && impDet.pinningClass === 1) ? 1 : 0;
+    const impDiceCount = ((orkFought > 0 && impFought === 0) ? 2 + orkFought : 2) + impBansheeBonus;
+    const orkDiceCount = ((impFought > 0 && orkFought === 0) ? 2 + impFought : 2) + orkBansheeBonus;
 
     this.defenderFoughtCounts.set(impStand, impFought + 1);
     this.defenderFoughtCounts.set(orkStand, orkFought + 1);
 
+    // Roll Close Combat Dice + Squat Close Combat Mastery re-rolls (08_squat_army_book_v5 p. 4: Re-roll 1s, or 1-2 vs Orks!)
+    let impRerollNote = '';
     const impRolls = [];
-    for (let i = 0; i < impDiceCount; i++) impRolls.push(Phaser.Math.Between(1, 6));
+    for (let i = 0; i < impDiceCount; i++) {
+      let r = Phaser.Math.Between(1, 6);
+      if (impDet.squatMastery && (r === 1 || (r === 2 && orkDet.armyBook === 'ORKS'))) {
+        const rr = Phaser.Math.Between(1, 6);
+        impRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
+        r = rr;
+      }
+      impRolls.push(r);
+    }
+
+    let orkRerollNote = '';
     const orkRolls = [];
-    for (let i = 0; i < orkDiceCount; i++) orkRolls.push(Phaser.Math.Between(1, 6));
+    for (let i = 0; i < orkDiceCount; i++) {
+      let r = Phaser.Math.Between(1, 6);
+      if (orkDet.squatMastery && (r === 1 || (r === 2 && impDet.armyBook === 'ORKS'))) {
+        const rr = Phaser.Math.Between(1, 6);
+        orkRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
+        r = rr;
+      }
+      orkRolls.push(r);
+    }
 
     const impSum = impRolls.reduce((a, b) => a + b, 0);
     const orkSum = orkRolls.reduce((a, b) => a + b, 0);
     const impGarrisonBonus = this.isStandGarrisoned(impStand) ? 2 : 0;
     const orkGarrisonBonus = this.isStandGarrisoned(orkStand) ? 2 : 0;
+    const impSynapseBonus = this.hasSynapseAura(impDet) ? 1 : 0;
+    const orkSynapseBonus = this.hasSynapseAura(orkDet) ? 1 : 0;
+    const impTerrorPen = (orkDet.daemonicTerror && impDet.morale > 1 && !impSynapseBonus) ? -2 : 0;
+    const orkTerrorPen = (impDet.daemonicTerror && orkDet.morale > 1 && !orkSynapseBonus) ? -2 : 0;
+
     const impBaseCaf = impDet.damageState === 'HEAVY' ? Math.floor(impDet.caf / 2) : impDet.caf;
     const orkBaseCaf = orkDet.damageState === 'HEAVY' ? Math.floor(orkDet.caf / 2) : orkDet.caf;
-    const impTotal = impSum + impBaseCaf + impGarrisonBonus;
-    const orkTotal = orkSum + orkBaseCaf + orkGarrisonBonus;
+    const impModCaf = impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen;
+    const orkModCaf = orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen;
+    const impTotal = impSum + impModCaf;
+    const orkTotal = orkSum + orkModCaf;
 
-    const gangTagImp = (impDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${impDiceCount}D6!]</span>` : '') + (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 Fortified +2 CAF]</span>` : '');
-    const gangTagOrk = (orkDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${orkDiceCount}D6!]</span>` : '') + (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 Fortified +2 CAF]</span>` : '');
+    const gangTagImp =
+      (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : 'Gang-Up '}${impDiceCount}D6!]</span>` : '') +
+      (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
+      (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
+      (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
+      impRerollNote;
+
+    const gangTagOrk =
+      (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : 'Gang-Up '}${orkDiceCount}D6!]</span>` : '') +
+      (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
+      (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
+      (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
+      orkRerollNote;
 
     window.sfx.playMelee();
     const midX = (impStand.container.x + orkStand.container.x) / 2;
@@ -4224,8 +4881,12 @@ class NetEpicScene extends Phaser.Scene {
 
     let outcomeHtml = '';
     if (impTotal > orkTotal) {
-      this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, '#60a5fa', '12px');
-      if (orkDet.superHeavy) {
+      this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
+      // Avatar of Khaine 2+ Fixed Save applies even in Close Combat!
+      if (orkDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
+        window.sfx.playSave();
+        outcomeHtml = `<span class="log-save">🔥 ${orkDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
+      } else if (orkDet.superHeavy) {
         const destroyed = this.applySuperHeavyDamage(orkDet, orkStand, true);
         outcomeHtml = destroyed
           ? `<span class="log-kill">💥 ${orkDet.name} Destroyed in Melee!</span>`
@@ -4236,8 +4897,11 @@ class NetEpicScene extends Phaser.Scene {
       }
       this.checkBreakPoint(orkDet);
     } else if (orkTotal > impTotal) {
-      this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, '#4ade80', '12px');
-      if (impDet.superHeavy) {
+      this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
+      if (impDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
+        window.sfx.playSave();
+        outcomeHtml = `<span class="log-save">🔥 ${impDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
+      } else if (impDet.superHeavy) {
         const destroyed = this.applySuperHeavyDamage(impDet, impStand, true);
         outcomeHtml = destroyed
           ? `<span class="log-kill">💥 ${impDet.name} Destroyed in Melee!</span>`
@@ -4253,8 +4917,8 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this.log(
-      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impBaseCaf + impGarrisonBonus} = <b>${impTotal}</b>) vs ` +
-      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkBaseCaf + orkGarrisonBonus} = <b>${orkTotal}</b>) → ${outcomeHtml}`
+      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impModCaf} = <b>${impTotal}</b>) vs ` +
+      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkModCaf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
     );
 
     // Filter remaining bouts to ensure both participants are still alive
@@ -4321,7 +4985,7 @@ class NetEpicScene extends Phaser.Scene {
 
     const impTot = this.getTotalVP('IMPERIUM');
     const orkTot = this.getTotalVP('ORKS');
-    this.log(`🏁 Entering <b>IV. End Phase (Turn ${this.turn})</b> — Score: Imperium <b>${impTot} VP</b> | Orks <b>${orkTot} VP</b>.`);
+    this.log(`🏁 Entering <b>IV. End Phase (Turn ${this.turn})</b> — Score: ${this.getSideName('IMPERIUM')} <b>${impTot} VP</b> | ${this.getSideName('ORKS')} <b>${orkTot} VP</b>.`);
 
     this.drawOverlays();
     this.updateUI();
@@ -4330,7 +4994,7 @@ class NetEpicScene extends Phaser.Scene {
   resolveEndPhase() {
     if (this.phase !== 'END_PHASE') return;
 
-    // 0. Recharge downed Titan Void Shields & Ork Power Fields (4+ per downed shield) and drop Popped-Up Skimmers back to low hover!
+    // 0. Recharge downed Titan Void Shields, Ork Power Fields & Tyranid Chitin Bio-Shields (4+ per downed shield) and drop Popped-Up Skimmers!
     this.detachments.forEach(d => {
       if (d.stands.length === 0) return;
       if (d.poppedUp) {
@@ -4349,7 +5013,7 @@ class NetEpicScene extends Phaser.Scene {
           d.shields += repaired;
           this.updateTitanShieldVisuals(d);
           const dc = this.getDetachmentCenter(d);
-          const sLabel = d.shieldType === 'VOID' ? 'VOID SHIELD(S)' : 'POWER FIELD(S)';
+          const sLabel = d.shieldType === 'VOID' ? 'VOID SHIELD(S)' : (d.shieldType === 'CHITIN' ? 'CHITIN BIO-SHIELD(S)' : 'POWER FIELD(S)');
           window.sfx.playSave();
           this.spawnFloatingText(dc.x, dc.y - 18, `⚡ +${repaired} ${sLabel} RECHARGED! (${d.shields}/${d.maxShields})`, '#38bdf8', '12px');
           this.log(`⚡ <b>${d.name}</b> recharges <b>+${repaired} ${sLabel}</b> in the End Phase! (Now <b>${d.shields}/${d.maxShields}</b> active)`);
@@ -4362,13 +5026,14 @@ class NetEpicScene extends Phaser.Scene {
     fallBackUnits.forEach(d => {
       const roll = Phaser.Math.Between(1, 6);
       const dc = this.getDetachmentCenter(d);
-      if (roll >= d.morale) {
+      const inSynapse = this.hasSynapseAura(d);
+      if (inSynapse || roll >= d.morale) {
         d.order = null;
         d.orderRevealed = false;
         this.updateDetachmentBadge(d);
         window.sfx.playHorn();
-        this.spawnFloatingText(dc.x, dc.y - 16, `🎺 RALLIED! (${roll})`, '#4ade80', '13px');
-        this.log(`🎺 <b>RALLY! ${d.name}</b> rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied from Fall Back!`);
+        this.spawnFloatingText(dc.x, dc.y - 16, inSynapse ? `🧬 SYNAPSE RALLIED!` : `🎺 RALLIED! (${roll})`, '#4ade80', '13px');
+        this.log(`🎺 <b>RALLY! ${d.name}</b> ${inSynapse ? 'automatically Rallies via <b>Hive Mind Synapse</b>' : `rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied from Fall Back`}!`);
       } else {
         // Failed Rally: remains on FALL_BACK and makes a compulsory 1x Move withdrawal toward home edge
         const retreatPx = d.moveCm * PX_PER_CM;
@@ -4393,19 +5058,21 @@ class NetEpicScene extends Phaser.Scene {
     const orkAlive = this.detachments.some(d => d.faction === 'ORKS' && d.stands.length > 0);
     const impTot = this.getTotalVP('IMPERIUM');
     const orkTot = this.getTotalVP('ORKS');
+    const southName = this.getSideName('IMPERIUM');
+    const northName = this.getSideName('ORKS');
 
     let winner = null;
-    if (!orkAlive && impAlive) winner = 'IMPERIUM (Total Annihilation)';
-    else if (!impAlive && orkAlive) winner = 'ORKS (Total Annihilation)';
+    if (!orkAlive && impAlive) winner = `${southName} (Total Annihilation)`;
+    else if (!impAlive && orkAlive) winner = `${northName} (Total Annihilation)`;
     else if ((impTot >= VICTORY_VP_TARGET || orkTot >= VICTORY_VP_TARGET) && impTot !== orkTot) {
-      winner = impTot > orkTot ? `IMPERIUM (${impTot} vs ${orkTot} VP)` : `ORKS (${orkTot} vs ${impTot} VP)`;
+      winner = impTot > orkTot ? `${southName} (${impTot} vs ${orkTot} VP)` : `${northName} (${orkTot} vs ${impTot} VP)`;
     }
 
     const vicBanner = document.getElementById('victory-alert');
     if (winner) {
       window.sfx.playHorn();
       vicBanner.style.display = 'block';
-      vicBanner.innerText = `🏆 VICTORY FOR ${winner}! (You may continue playing or open Army Setup)`;
+      vicBanner.innerText = `🏆 VICTORY FOR ${winner}! (You may continue playing or open Armies Setup)`;
       this.log(`🏆 <b>VICTORY ACHIEVED: ${winner}!</b>`);
       document.getElementById('btn-restart-game').style.display = 'block';
     }
@@ -4634,6 +5301,10 @@ class NetEpicScene extends Phaser.Scene {
 
     const maxMovePx = det.order ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
     det.stands.forEach(s => {
+      if (det.synapse && det.order !== 'FALL_BACK') {
+        this.overlayGfx.lineStyle(1.5, 0xd946ef, 0.35);
+        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 25 * PX_PER_CM);
+      }
       if (det.deepStrikeActive) {
         this.overlayGfx.lineStyle(3, 0xc084fc, 1);
         this.overlayGfx.strokeCircle(s.container.x, s.container.y, 22);
@@ -4681,12 +5352,13 @@ class NetEpicScene extends Phaser.Scene {
 
     const anyEngaged = det.stands.some(s => this.isStandEngaged(s));
     const anyGarrisoned = det.stands.some(s => this.isStandGarrisoned(s));
-    const shieldSuffix = det.maxShields ? ` 🛡️${det.shields}/${det.maxShields}` : '';
+    const shieldSuffix = det.maxShields ? ` 🛡️${det.shields}/${det.maxShields}` : (det.holoField ? ` 🔮${this.getHoloFieldSave(det)}+` : '');
     const dmgSuffix = det.damageState === 'HEAVY' ? ' 🔥HEAVY-DMG' : (det.damageState === 'LIGHT' ? ' ⚠️LIGHT-DMG' : '');
     const popSuffix = det.poppedUp ? ' 🚀POP-UP' : '';
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
-    const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
+    const synSuffix = det.synapse ? ' 🧠SYN' : '';
+    const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
 
     // Highlight Snap Target and Snap Fire Shooters unmistakably during SNAP_INTERRUPT!
     if (this.phase === 'SNAP_INTERRUPT') {
@@ -4749,7 +5421,9 @@ class NetEpicScene extends Phaser.Scene {
     turnText.innerText = this.phase === 'DEPLOYMENT' ? 'Setup' : `Turn ${this.turn}`;
     const impTot = this.getTotalVP('IMPERIUM');
     const orkTot = this.getTotalVP('ORKS');
-    vpScore.innerText = `IMP: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ORK: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${VICTORY_VP_TARGET}]`;
+    const sShort = this.getSideShort('IMPERIUM');
+    const nShort = this.getSideShort('ORKS');
+    vpScore.innerText = `${sShort}: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ${nShort}: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${VICTORY_VP_TARGET}]`;
 
     deployControls.style.display = 'none';
     ordersControls.style.display = 'none';
@@ -4846,10 +5520,11 @@ class NetEpicScene extends Phaser.Scene {
       btnContainer.appendChild(passBtn);
     }
     else if (this.phase === 'MOVEMENT') {
-      phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
-      phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
+      const actSideName = this.getSideName(this.activePlayer);
+      phaseBadge.innerText = `II. Movement (${actSideName})`;
+      phaseBadge.style.background = this.getSideMeta(this.activePlayer).borderHex;
       if (this.isFactionAI(this.activePlayer)) {
-        const aiUnit = this.activatingDetachment ? `${this.activatingDetachment.name} (${ORDER_INFO[this.activatingDetachment.order].label})` : `${this.activePlayer} AI Commander`;
+        const aiUnit = this.activatingDetachment ? `${this.activatingDetachment.name} (${ORDER_INFO[this.activatingDetachment.order].label})` : `${actSideName} AI Commander`;
         promptText.innerText = `🤖 ${aiUnit} is manoeuvring across the battlefield...`;
         moveControls.style.display = 'none';
       } else {
@@ -4864,7 +5539,7 @@ class NetEpicScene extends Phaser.Scene {
                   : (this.activatingDetachment.order === 'FALL_BACK'
                       ? `FALL BACK! Retreat up to ${effMove * 2} cm${roadTag} toward your home board edge (or click Auto-Retreat)`
                       : `Drag stands up to ${effMove * ORDER_INFO[this.activatingDetachment.order].mult} cm${roadTag}${grpHint}`)))
-          : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
+          : `${actSideName}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
 
         moveControls.style.display = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
         if (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) {
@@ -4930,25 +5605,32 @@ class NetEpicScene extends Phaser.Scene {
         const b = this.ccBouts[0];
         const impFought = this.defenderFoughtCounts.get(b.impStand) || 0;
         const orkFought = this.defenderFoughtCounts.get(b.orkStand) || 0;
-        const impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
-        const orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+        let impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
+        let orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+        if (b.impStand.detachment.bansheeMask && b.orkStand.detachment.pinningClass === 1) impDice += 1;
+        if (b.orkStand.detachment.bansheeMask && b.impStand.detachment.pinningClass === 1) orkDice += 1;
         const impBase = b.impStand.detachment.damageState === 'HEAVY' ? Math.floor(b.impStand.detachment.caf / 2) : b.impStand.detachment.caf;
         const orkBase = b.orkStand.detachment.damageState === 'HEAVY' ? Math.floor(b.orkStand.detachment.caf / 2) : b.orkStand.detachment.caf;
-        const impCaf = impBase + (this.isStandGarrisoned(b.impStand) ? 2 : 0);
-        const orkCaf = orkBase + (this.isStandGarrisoned(b.orkStand) ? 2 : 0);
+        const impSyn = (b.impStand.detachment.armyBook === 'TYRANIDS' && this.hasSynapseAura(b.impStand.detachment)) ? 1 : 0;
+        const orkSyn = (b.orkStand.detachment.armyBook === 'TYRANIDS' && this.hasSynapseAura(b.orkStand.detachment)) ? 1 : 0;
+        const impTer = (b.orkStand.detachment.daemonicTerror && !b.impStand.detachment.fearless && !b.impStand.detachment.daemonicTerror && !impSyn) ? -2 : 0;
+        const orkTer = (b.impStand.detachment.daemonicTerror && !b.orkStand.detachment.fearless && !b.orkStand.detachment.daemonicTerror && !orkSyn) ? -2 : 0;
+        const impCaf = impBase + (this.isStandGarrisoned(b.impStand) ? 2 : 0) + impSyn + impTer;
+        const orkCaf = orkBase + (this.isStandGarrisoned(b.orkStand) ? 2 : 0) + orkSyn + orkTer;
 
         promptText.innerText = `⚔️ Next Bout: ${b.impStand.detachment.name} ${b.impStand.label} (${impDice}D6+${impCaf}) vs ${b.orkStand.detachment.name} ${b.orkStand.label} (${orkDice}D6+${orkCaf})`;
         document.getElementById('btn-cc-next').innerText = `⚔️ Fight Bout (${impDice}D6+${impCaf} vs ${orkDice}D6+${orkCaf})`;
       }
     }
     else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
+      const actSideName = this.getSideName(this.activePlayer);
       const segTitle = this.phase === 'COMBAT_FIRST' ? 'III-1. First Fire' : 'III-3. Advance Fire';
-      phaseBadge.innerText = `${segTitle} (${this.activePlayer})`;
+      phaseBadge.innerText = `${segTitle} (${actSideName})`;
       phaseBadge.style.background = '#dc2626';
 
       if (this.isFactionAI(this.activePlayer)) {
         combatControls.style.display = 'none';
-        const aiShooter = this.activatingDetachment ? this.activatingDetachment.name : `${this.activePlayer} AI`;
+        const aiShooter = this.activatingDetachment ? this.activatingDetachment.name : `${actSideName} AI`;
         const aiTgt = this.targetDetachment ? ` ➔ 🎯 ${this.targetDetachment.name}` : ' is acquiring targets...';
         promptText.innerText = `🤖 ${aiShooter}${aiTgt}`;
       } else {
@@ -4989,7 +5671,7 @@ class NetEpicScene extends Phaser.Scene {
           const isArt = this.activatingDetachment.weapon.barrage;
           const isSkim = this.activatingDetachment.skimmer && this.phase === 'COMBAT_FIRST';
           btnFire.innerText = isArt ? 'Tap an Enemy Stand to place 6cm Barrage Template' : 'Tap an Enemy Stand on the map to check LoS & Fire';
-          promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}${isSkim ? ', 🚀 Pop-Up available!' : ''}) — Tap an enemy unit!`;
+          promptText.innerText = `${actSideName}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}${isSkim ? ', 🚀 Pop-Up available!' : ''}) — Tap an enemy unit!`;
         }
       }
     }
@@ -5013,9 +5695,10 @@ class NetEpicScene extends Phaser.Scene {
       const garrisonCount = d.stands.filter(s => this.isStandGarrisoned(s)).length;
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
       const garBadge = garrisonCount > 0 ? ` | 🏰 ${garrisonCount} Garrisoned (4+ Save, -2 Hit, +2 CAF)` : '';
+      const shieldLabel = d.shieldType === 'VOID' ? 'Void Shields' : (d.shieldType === 'CHITIN' ? 'Chitin Bio-Shields' : 'Power Fields');
       const shieldBadge = d.maxShields
-        ? ` | 🛡️ ${d.shields}/${d.maxShields} ${d.shieldType === 'VOID' ? 'Void Shields' : 'Power Fields'}`
-        : '';
+        ? ` | 🛡️ ${d.shields}/${d.maxShields} ${shieldLabel}`
+        : (d.holoField ? ` | 🔮 Holo-Field (${this.getHoloFieldSave(d)}+ Fixed Save)` : '');
       const dmgBadge = d.damageState !== 'NONE'
         ? ` | 🔥 ${d.damageState} DAMAGE (-1 Hit${d.damageState === 'HEAVY' ? ', ½ CAF' : ''})`
         : '';
@@ -5024,15 +5707,24 @@ class NetEpicScene extends Phaser.Scene {
       const transBadge = d.passengerDet
         ? ` | 🚐 Carrying: ${d.passengerDet.name} (${d.passengerDet.stands.length} stands)`
         : (d.transportCapacity ? ` | 🚐 Transport (Cap: ${d.stands.length * d.transportCapacity} Inf)` : '');
+      const synBadge = d.synapse
+        ? ' | 🧠 Synapse Node (25cm Aura)'
+        : (d.armyBook === 'TYRANIDS' && this.hasSynapseAura(d) ? ' | 🧠 In Synapse (+1 CAF, Fearless)' : '');
+      const regenBadge = d.regeneration ? ' | 💚 5+ Regen' : '';
+      const terrorBadge = d.daemonicTerror ? ' | 😱 Daemonic Terror (-2 Enemy CAF)' : '';
+      const bansheeBadge = d.bansheeMask ? ' | 🎭 Banshee Mask (+1D6 vs Inf)' : '';
+      const squatBadge = d.squatMastery ? ' | ⚒️ CC Mastery (Re-roll 1s)' : '';
       const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
       const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
-      const saveStr = d.fixedSave ? `${d.save}+ (${d.fixedSave}+ Fixed)` : `${d.save}+`;
+      const holoSave = this.getHoloFieldSave(d);
+      const saveStr = holoSave ? `${d.save}+ (🔮${holoSave}+ Holo)` : (d.fixedSave ? `${d.save}+ (${d.fixedSave}+ Fixed)` : `${d.save}+`);
       const effCaf = d.damageState === 'HEAVY' ? `${Math.floor(d.caf / 2)} (½ of +${d.caf})` : `+${d.caf}`;
       const wpnInfo = d.weapon.barrage
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit - (d.toHitPenalty || 0)}+, TSM ${d.weapon.tsm})`;
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
+      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? (d.inReserve ? 'Status: ☄️ Orbital Reserve' : 'Phase: Deployment')
