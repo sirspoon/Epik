@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NetEpic Gold - Phase 2 (LoS, Snap Fire & Ranged Combat)</title>
+  <title>NetEpic Gold - Phase 3 (Close Combat, Pinning, LoS & Ranged Combat)</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -49,7 +49,7 @@
       flex: 1; margin: 8px 0; overflow: hidden; pointer-events: none;
     }
     #combat-log {
-      width: 310px; max-height: 220px; overflow-y: auto;
+      width: 330px; max-height: 240px; overflow-y: auto;
       font-size: 0.76rem; line-height: 1.35; pointer-events: auto;
       background: rgba(15, 23, 42, 0.88);
     }
@@ -57,10 +57,11 @@
     .log-hit { color: #fde047; }
     .log-kill { color: #f87171; font-weight: bold; }
     .log-save { color: #4ade80; }
+    .log-cc { color: #fb923c; font-weight: bold; }
 
     #bottom-bar {
       display: flex; flex-direction: column; gap: 6px;
-      max-width: 720px; width: 100%; margin: 0 auto;
+      max-width: 740px; width: 100%; margin: 0 auto;
     }
     .btn-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
     button {
@@ -79,6 +80,8 @@
     .btn-confirm { background: #16a34a; border-color: #22c55e; }
     .btn-fire { background: #dc2626; border-color: #f87171; }
     .btn-fire:hover:not(:disabled) { background: #b91c1c; }
+    .btn-cc { background: #9333ea; border-color: #c084fc; }
+    .btn-cc:hover:not(:disabled) { background: #7e22ce; }
 
     .alert-banner {
       background: rgba(220, 38, 38, 0.92); color: white;
@@ -109,9 +112,9 @@
 
   <div id="mid-area">
     <div id="combat-log" class="panel">
-      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (LoS & Dice)</div>
+      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (LoS, Pinning & Dice)</div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 2! Place Orders to begin.</div>
+        <div class="log-entry">Welcome to Phase 3! Charge into base contact to Pin & fight Close Combat (2D6 + CAF).</div>
       </div>
     </div>
   </div>
@@ -119,6 +122,10 @@
   <div id="bottom-bar">
     <div id="coherency-alert" class="alert-banner">
       ⚠️ OUT OF COHERENCY! All stands must form an unbroken chain within 6 cm.
+    </div>
+
+    <div id="engagement-alert" class="alert-banner">
+      ⚠️ TOO CLOSE TO ENEMY! Only units on CHARGE orders may move into Close Combat.
     </div>
 
     <div id="snapfire-banner" class="alert-banner snap-banner">
@@ -139,7 +146,7 @@
       <div id="orders-controls" class="btn-row" style="display:none;">
         <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0x Move, Shoot Early/Snap)</button>
         <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x Move, Shoot Late)</button>
-        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x Move, No Ranged)</button>
+        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x Move, Enter Close Combat)</button>
       </div>
       <div id="lock-orders-row" class="btn-row" style="margin-top:6px; display:none;">
         <button class="btn-primary" onclick="window.gameScene.finishOrdersPhase()">All Orders Placed — Roll Initiative (D6)!</button>
@@ -152,11 +159,17 @@
         <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
       </div>
 
-      <!-- III. Combat Phase Controls -->
+      <!-- III. Ranged Combat Controls (First Fire & Advance Fire) -->
       <div id="combat-controls" class="btn-row" style="display:none;">
         <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget()" disabled>Select an Enemy Detachment to Fire</button>
         <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;">Hold Fire (Switch to Advance)</button>
         <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Skip / End Firing</button>
+      </div>
+
+      <!-- III-2. Close Combat Segment Controls -->
+      <div id="cc-controls" class="btn-row" style="display:none;">
+        <button id="btn-cc-next" class="btn-cc" onclick="window.gameScene.resolveNextCloseCombatBout()">⚔️ Fight Next Bout (2D6 + CAF)</button>
+        <button id="btn-cc-all" class="btn-fire" onclick="window.gameScene.resolveAllCloseCombats()">⚡ Auto-Resolve All Bouts</button>
       </div>
     </div>
   </div>
@@ -168,6 +181,15 @@ const PX_PER_CM = 10;
 const BOARD_W = 185 * PX_PER_CM;
 const BOARD_H = 125 * PX_PER_CM;
 const COHERENCY_PX = 6 * PX_PER_CM; // 6 cm
+const ENGAGE_PX = 32;               // Base-to-base contact threshold (~3.2 cm center-to-center)
+const MIN_ENEMY_GAP_PX = 34;        // Minimum distance for non-charging units
+
+const PIN_CLASS_NAMES = {
+  1: 'Infantry (Class 1)',
+  2: 'Vehicle (Class 2)',
+  3: 'Super-Heavy (Class 3)',
+  4: 'Titan (Class 4)'
+};
 
 const ORDER_INFO = {
   FIRST_FIRE: { label: 'FIRST FIRE', mult: 0, color: 0xef4444, hex: '#ef4444' },
@@ -184,7 +206,7 @@ class NetEpicScene extends Phaser.Scene {
   create() {
     window.gameScene = this;
     this.turn = 1;
-    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT' | 'SNAP_INTERRUPT' | 'COMBAT_FIRST' | 'COMBAT_ADVANCE'
+    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT' | 'SNAP_INTERRUPT' | 'COMBAT_FIRST' | 'COMBAT_CC' | 'COMBAT_ADVANCE'
     this.initiativeWinner = 'IMPERIUM';
     this.activePlayer = 'IMPERIUM';
 
@@ -192,6 +214,9 @@ class NetEpicScene extends Phaser.Scene {
     this.activatingDetachment = null; // Moving or Shooting detachment
     this.targetDetachment = null;     // Enemy target in Combat Phase
     this.isDraggingStand = false;
+
+    this.ccBouts = [];
+    this.defenderFoughtCounts = new Map();
 
     this.vp = { IMPERIUM: 0, ORKS: 0 };
 
@@ -264,37 +289,54 @@ class NetEpicScene extends Phaser.Scene {
 
   spawnDemoArmies() {
     this.detachments = [];
-    // Placed 42cm apart across the center so weapons (30-50cm range) and Snap Fire can be tested immediately!
+    // Imperium Forces
     this.createDetachment({
       id: 'sm_tac', faction: 'IMPERIUM', name: 'Space Marine Tactical Squad',
       moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
       weapon: { name: 'Bolters', rangeCm: 30, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 3, color: 0x2563eb,
-      standsCount: 6, startX: 520, startY: 820, baseW: 20, baseH: 20
+      standsCount: 6, startX: 460, startY: 790, baseW: 20, baseH: 20
+    });
+
+    this.createDetachment({
+      id: 'sm_assault', faction: 'IMPERIUM', name: 'Space Marine Assault Squad',
+      moveCm: 15, save: 5, caf: 3, morale: 2, pinningClass: 1,
+      weapon: { name: 'Bolt Pistols', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
+      breakPoint: 2, vpValue: 3, color: 0x3b82f6,
+      standsCount: 4, startX: 760, startY: 730, baseW: 20, baseH: 20
     });
 
     this.createDetachment({
       id: 'sm_pred', faction: 'IMPERIUM', name: 'Predator Tank Squadron',
-      moveCm: 25, save: 3, caf: 1, morale: 2, pinningClass: 3,
+      moveCm: 25, save: 3, caf: 1, morale: 2, pinningClass: 2,
       weapon: { name: 'Autocannon & Heavy Bolters', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 4, color: 0x60a5fa,
-      standsCount: 3, startX: 1120, startY: 820, baseW: 24, baseH: 32
+      standsCount: 3, startX: 1160, startY: 800, baseW: 24, baseH: 32
     });
 
+    // Ork Forces
     this.createDetachment({
       id: 'ork_boyz', faction: 'ORKS', name: 'Ork Boyz Mob',
       moveCm: 10, save: 6, caf: 1, morale: 4, pinningClass: 1,
       weapon: { name: 'Shootas', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x16a34a,
-      standsCount: 6, startX: 520, startY: 420, baseW: 20, baseH: 20
+      standsCount: 6, startX: 460, startY: 450, baseW: 20, baseH: 20
+    });
+
+    this.createDetachment({
+      id: 'ork_nobz', faction: 'ORKS', name: 'Ork Nobz Mob',
+      moveCm: 10, save: 5, caf: 3, morale: 3, pinningClass: 1,
+      weapon: { name: 'Heavy Shootas', rangeCm: 25, dice: 1, toHit: 4, tsm: -1 },
+      breakPoint: 2, vpValue: 3, color: 0x15803d,
+      standsCount: 4, startX: 760, startY: 490, baseW: 22, baseH: 22
     });
 
     this.createDetachment({
       id: 'ork_buggies', faction: 'ORKS', name: 'Warbuggy Squadron',
-      moveCm: 30, save: 5, caf: 1, morale: 4, pinningClass: 3,
+      moveCm: 30, save: 5, caf: 1, morale: 4, pinningClass: 2,
       weapon: { name: 'Twin Autos', rangeCm: 35, dice: 2, toHit: 5, tsm: 0 },
       breakPoint: 2, vpValue: 3, color: 0x4ade80,
-      standsCount: 4, startX: 1120, startY: 420, baseW: 22, baseH: 30
+      standsCount: 4, startX: 1160, startY: 440, baseW: 22, baseH: 30
     });
   }
 
@@ -324,7 +366,7 @@ class NetEpicScene extends Phaser.Scene {
       const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, 0xffffff);
       container.add([baseBg, pip]);
 
-      const standObj = { id: `${cfg.id}_s${i}`, detachment: det, container, baseBg, originX: sx, originY: sy };
+      const standObj = { id: `${cfg.id}_s${i}`, label: `#${i + 1}`, detachment: det, container, baseBg, originX: sx, originY: sy };
       container.standData = standObj;
       det.stands.push(standObj);
     }
@@ -337,8 +379,60 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.push(det);
   }
 
+  // --- PINNING & CLOSE COMBAT ENGAGEMENT HELPERS (NetEpic Rules p. 20 & 38) ---
+  getEngagedEnemies(stand) {
+    const enemies = [];
+    for (const det of this.detachments) {
+      if (det.faction === stand.detachment.faction || det.stands.length === 0) continue;
+      for (const es of det.stands) {
+        const d = Phaser.Math.Distance.Between(stand.container.x, stand.container.y, es.container.x, es.container.y);
+        if (d <= ENGAGE_PX) enemies.push(es);
+      }
+    }
+    return enemies;
+  }
+
+  isStandEngaged(stand) {
+    return this.getEngagedEnemies(stand).length > 0;
+  }
+
+  // A stand is Pinned if an engaged enemy has >= Pinning Class, OR if this stand's detachment already moved this turn
+  isStandPinned(stand) {
+    const enemies = this.getEngagedEnemies(stand);
+    if (enemies.length === 0) return false;
+    if (stand.detachment.moved) return true;
+    return enemies.some(e => e.detachment.pinningClass >= stand.detachment.pinningClass);
+  }
+
+  // Non-charging units may not move within MIN_ENEMY_GAP_PX of an enemy stand
+  checkEngagementMoveRule(det) {
+    if (!det || det.order === 'CHARGE' || det.order === 'FIRST_FIRE') return true;
+    for (const s of det.stands) {
+      // If stand was already pinned at start of move and hasn't moved, allow it
+      const movedDist = Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y);
+      if (movedDist <= 1) continue;
+      for (const enemyDet of this.detachments) {
+        if (enemyDet.faction === det.faction) continue;
+        for (const es of enemyDet.stands) {
+          const d = Phaser.Math.Distance.Between(s.container.x, s.container.y, es.container.x, es.container.y);
+          if (d < MIN_ENEMY_GAP_PX) return false;
+        }
+      }
+    }
+    return true;
+  }
+
   // --- LINE OF SIGHT & TERRAIN RAYCASTER (NetEpic Rules p. 28 & 33) ---
-  checkStandLoS(shooterStand, targetStand) {
+  checkStandLoS(shooterStand, targetStand, isSnapFire = false) {
+    // Stands locked in Close Combat cannot fire ranged weapons
+    if (this.isStandEngaged(shooterStand)) {
+      return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0 };
+    }
+    // Stands locked in Close Combat cannot be targeted by normal ranged fire (Snap Fire happens right before contact)
+    if (!isSnapFire && this.isStandEngaged(targetStand)) {
+      return { valid: false, reason: 'Target in Close Combat', distCm: 0, coverMod: 0 };
+    }
+
     const p1 = { x: shooterStand.container.x, y: shooterStand.container.y };
     const p2 = { x: targetStand.container.x, y: targetStand.container.y };
     const distPx = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
@@ -408,7 +502,7 @@ class NetEpicScene extends Phaser.Scene {
     for (const shooter of firerDet.stands) {
       let bestTarget = null;
       for (const target of targetDet.stands) {
-        const res = this.checkStandLoS(shooter, target);
+        const res = this.checkStandLoS(shooter, target, isSnapFire);
         if (res.valid) {
           if (!bestTarget || res.distCm < bestTarget.res.distCm) {
             bestTarget = { shooter, target, res };
@@ -481,9 +575,16 @@ class NetEpicScene extends Phaser.Scene {
     this.checkBreakPoint(targetDet);
   }
 
-  removeCasualty(det) {
+  removeCasualty(det, specificStand = null) {
     if (det.stands.length === 0) return;
-    const victim = det.stands.pop();
+    let victim = specificStand;
+    if (victim) {
+      const idx = det.stands.indexOf(victim);
+      if (idx !== -1) det.stands.splice(idx, 1);
+      else victim = det.stands.pop();
+    } else {
+      victim = det.stands.pop();
+    }
     victim.container.destroy();
     det.casualties++;
 
@@ -527,7 +628,7 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const clickedDet = gameObject.standData.detachment;
 
-      if (this.phase === 'SNAP_INTERRUPT') return;
+      if (this.phase === 'SNAP_INTERRUPT' || this.phase === 'COMBAT_CC') return;
 
       // In Combat Phase: if we already have an active friendly firing detachment, clicking an enemy selects it as Target!
       if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
@@ -553,8 +654,13 @@ class NetEpicScene extends Phaser.Scene {
 
     this.input.on('dragstart', (pointer, gameObject) => {
       if (!gameObject.standData) return;
-      const det = gameObject.standData.detachment;
+      const stand = gameObject.standData;
+      const det = stand.detachment;
       if (this.phase === 'MOVEMENT' && this.activatingDetachment === det) {
+        if (stand.pinnedAtStart) {
+          this.log(`📌 <b>${det.name} (${stand.label})</b> is Pinned in Close Combat and cannot move!`);
+          return;
+        }
         this.isDraggingStand = true;
       }
     });
@@ -563,19 +669,41 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const stand = gameObject.standData;
       const det = stand.detachment;
-      if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det) return;
+      if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det || stand.pinnedAtStart) return;
 
       const maxMovePx = det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM;
       const dist = Phaser.Math.Distance.Between(stand.originX, stand.originY, dragX, dragY);
 
-      if (dist <= maxMovePx) {
-        gameObject.x = Phaser.Math.Clamp(dragX, 15, BOARD_W - 15);
-        gameObject.y = Phaser.Math.Clamp(dragY, 15, BOARD_H - 15);
-      } else {
+      let targetX = dragX;
+      let targetY = dragY;
+      if (dist > maxMovePx) {
         const angle = Phaser.Math.Angle.Between(stand.originX, stand.originY, dragX, dragY);
-        gameObject.x = Phaser.Math.Clamp(stand.originX + Math.cos(angle) * maxMovePx, 15, BOARD_W - 15);
-        gameObject.y = Phaser.Math.Clamp(stand.originY + Math.sin(angle) * maxMovePx, 15, BOARD_H - 15);
+        targetX = stand.originX + Math.cos(angle) * maxMovePx;
+        targetY = stand.originY + Math.sin(angle) * maxMovePx;
       }
+
+      // Snap-to-base-contact helper when on CHARGE orders and dragging onto an enemy stand
+      if (det.order === 'CHARGE') {
+        for (const enemyDet of this.detachments) {
+          if (enemyDet.faction === det.faction) continue;
+          for (const es of enemyDet.stands) {
+            const dEnemy = Phaser.Math.Distance.Between(targetX, targetY, es.container.x, es.container.y);
+            if (dEnemy < 22) {
+              const ang = Phaser.Math.Angle.Between(es.container.x, es.container.y, stand.originX, stand.originY);
+              const snapX = es.container.x + Math.cos(ang) * 24;
+              const snapY = es.container.y + Math.sin(ang) * 24;
+              if (Phaser.Math.Distance.Between(stand.originX, stand.originY, snapX, snapY) <= maxMovePx + 2) {
+                targetX = snapX;
+                targetY = snapY;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      gameObject.x = Phaser.Math.Clamp(targetX, 15, BOARD_W - 15);
+      gameObject.y = Phaser.Math.Clamp(targetY, 15, BOARD_H - 15);
 
       this.updateDetachmentBadgePos(det);
       this.drawOverlays();
@@ -646,7 +774,17 @@ class NetEpicScene extends Phaser.Scene {
 
     det.orderRevealed = true;
     this.activatingDetachment = det;
-    det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
+    let pinnedCount = 0;
+    det.stands.forEach(s => {
+      s.originX = s.container.x;
+      s.originY = s.container.y;
+      s.pinnedAtStart = this.isStandPinned(s);
+      if (s.pinnedAtStart) pinnedCount++;
+    });
+
+    if (pinnedCount > 0) {
+      this.log(`📌 <b>${det.name}</b> activates (${pinnedCount}/${det.stands.length} stands Pinned in Close Combat).`);
+    }
 
     this.updateDetachmentBadge(det);
     this.drawOverlays();
@@ -665,11 +803,36 @@ class NetEpicScene extends Phaser.Scene {
     const det = this.activatingDetachment;
     if (!det) return;
     if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
+    if (!this.checkEngagementMoveRule(det)) return;
 
     // Check if the unit actually moved
     const didMove = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     det.moved = true;
+
+    // Log any new Charge engagements & Pinning status
+    if (det.order === 'CHARGE') {
+      const engagedTargets = new Set();
+      let pinnedEnemyCount = 0;
+      det.stands.forEach(s => {
+        this.getEngagedEnemies(s).forEach(es => {
+          engagedTargets.add(es.detachment);
+          if (det.pinningClass >= es.detachment.pinningClass || es.detachment.moved) {
+            pinnedEnemyCount++;
+          }
+        });
+      });
+      engagedTargets.forEach(tDet => {
+        const canPin = det.pinningClass >= tDet.pinningClass || tDet.moved;
+        this.log(
+          `⚔️ <b>${det.name}</b> charges into Close Combat with <b>${tDet.name}</b>! ` +
+          (canPin
+            ? `<span class="log-cc">(PINNED — Class ${det.pinningClass} vs Class ${tDet.pinningClass})</span>`
+            : `<span class="log-hit">(Unmoved Class ${tDet.pinningClass} can still move away from Class ${det.pinningClass}!)</span>`)
+        );
+      });
+    }
+
     this.updateDetachmentBadge(det);
 
     // Check for Enemy Snap Fire Interrupts (p. 19): Any enemy unit on First Fire that hasn't fired and has LoS
@@ -749,9 +912,12 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
-  // --- III. COMBAT PHASE (FIRST FIRE & ADVANCE FIRE SEGMENTS) ---
+  // --- III. COMBAT PHASE (1: FIRST FIRE, 2: CLOSE COMBAT, 3: ADVANCE FIRE) ---
   isEligibleInCombatPhase(det) {
     if (det.stands.length === 0 || det.fired) return false;
+    // Must have at least one stand NOT locked in Close Combat
+    const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s));
+    if (!hasUnengagedStand) return false;
     if (this.phase === 'COMBAT_FIRST') return det.order === 'FIRST_FIRE';
     if (this.phase === 'COMBAT_ADVANCE') return det.order === 'ADVANCE';
     return false;
@@ -773,7 +939,7 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     const segName = segment === 'COMBAT_FIRST' ? '1) First Fire Segment' : '3) Advance Fire Segment';
-    this.log(`⚔️ Entering <b>${segName}</b>! (${this.activePlayer} has Initiative)`);
+    this.log(`🎯 Entering <b>${segName}</b>! (${this.activePlayer} has Initiative)`);
     this.advanceCombatTurn();
   }
 
@@ -786,7 +952,7 @@ class NetEpicScene extends Phaser.Scene {
       this.activePlayer = otherSide;
     } else if (!currEligible && !otherEligible) {
       if (this.phase === 'COMBAT_FIRST') {
-        this.startCombatSegment('COMBAT_ADVANCE');
+        this.startCloseCombatSegment();
       } else {
         this.endTurn();
       }
@@ -801,6 +967,184 @@ class NetEpicScene extends Phaser.Scene {
 
     this.drawOverlays();
     this.updateUI();
+  }
+
+  // --- III-2. CLOSE COMBAT SEGMENT (NetEpic Rules p. 38-40) ---
+  buildCloseCombatBouts() {
+    const bouts = [];
+    const pairedStands = new Set();
+
+    // Collect all engaged Imperium and Ork stands
+    const impEngaged = [];
+    const orkEngaged = [];
+    this.detachments.forEach(d => {
+      d.stands.forEach(s => {
+        if (this.isStandEngaged(s)) {
+          if (d.faction === 'IMPERIUM') impEngaged.push(s);
+          else orkEngaged.push(s);
+        }
+      });
+    });
+
+    // Pass 1: 1-on-1 pairings between engaged stands in base contact
+    for (const impS of impEngaged) {
+      if (pairedStands.has(impS)) continue;
+      const contacts = this.getEngagedEnemies(impS);
+      const unpairedOrk = contacts.find(o => !pairedStands.has(o));
+      if (unpairedOrk) {
+        pairedStands.add(impS);
+        pairedStands.add(unpairedOrk);
+        bouts.push({ impStand: impS, orkStand: unpairedOrk });
+      }
+    }
+
+    // Pass 2: Any remaining engaged stands gang up on an enemy stand they are in base contact with
+    for (const impS of impEngaged) {
+      if (pairedStands.has(impS)) continue;
+      const contacts = this.getEngagedEnemies(impS);
+      if (contacts.length > 0) {
+        pairedStands.add(impS);
+        bouts.push({ impStand: impS, orkStand: contacts[0] });
+      }
+    }
+    for (const orkS of orkEngaged) {
+      if (pairedStands.has(orkS)) continue;
+      const contacts = this.getEngagedEnemies(orkS);
+      if (contacts.length > 0) {
+        pairedStands.add(orkS);
+        bouts.push({ impStand: contacts[0], orkStand: orkS });
+      }
+    }
+
+    return bouts;
+  }
+
+  startCloseCombatSegment() {
+    this.phase = 'COMBAT_CC';
+    this.selectedDetachment = null;
+    this.activatingDetachment = null;
+    this.targetDetachment = null;
+    this.defenderFoughtCounts = new Map();
+
+    // Reveal orders of any units engaged in Close Combat
+    this.detachments.forEach(d => {
+      if (d.stands.some(s => this.isStandEngaged(s))) {
+        d.orderRevealed = true;
+        this.updateDetachmentBadge(d);
+      }
+    });
+
+    this.ccBouts = this.buildCloseCombatBouts();
+    if (this.ccBouts.length === 0) {
+      this.log(`⚔️ <b>2) Close Combat Segment:</b> No units engaged in Close Combat.`);
+      this.startCombatSegment('COMBAT_ADVANCE');
+      return;
+    }
+
+    this.log(`⚔️ Entering <b>2) Close Combat Segment</b>! (${this.ccBouts.length} melee bout${this.ccBouts.length > 1 ? 's' : ''} to resolve — No Armour Saves!)`);
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  resolveNextCloseCombatBout() {
+    if (this.phase !== 'COMBAT_CC') return;
+
+    // Clean out any bouts where a stand died, or re-target if still touching another enemy
+    while (this.ccBouts.length > 0) {
+      const top = this.ccBouts[0];
+      const impAlive = top.impStand.detachment.stands.includes(top.impStand);
+      const orkAlive = top.orkStand.detachment.stands.includes(top.orkStand);
+      if (impAlive && orkAlive) break;
+
+      this.ccBouts.shift();
+      // If one stand survived and hasn't fought yet, check if it touches another living enemy stand
+      if (impAlive && !(this.defenderFoughtCounts.get(top.impStand) > 0)) {
+        const alt = this.getEngagedEnemies(top.impStand)[0];
+        if (alt) {
+          this.ccBouts.unshift({ impStand: top.impStand, orkStand: alt });
+          break;
+        }
+      } else if (orkAlive && !(this.defenderFoughtCounts.get(top.orkStand) > 0)) {
+        const alt = this.getEngagedEnemies(top.orkStand)[0];
+        if (alt) {
+          this.ccBouts.unshift({ impStand: alt, orkStand: top.orkStand });
+          break;
+        }
+      }
+    }
+
+    if (this.ccBouts.length === 0) {
+      this.startCombatSegment('COMBAT_ADVANCE');
+      return;
+    }
+
+    const bout = this.ccBouts.shift();
+    const { impStand, orkStand } = bout;
+    const impDet = impStand.detachment;
+    const orkDet = orkStand.detachment;
+
+    const impFought = this.defenderFoughtCounts.get(impStand) || 0;
+    const orkFought = this.defenderFoughtCounts.get(orkStand) || 0;
+
+    // Multiple attackers rule (NetEpic p. 38): Ganging up on an already-fought defender grants +1D6 per previous attacker!
+    const impDiceCount = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
+    const orkDiceCount = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+
+    this.defenderFoughtCounts.set(impStand, impFought + 1);
+    this.defenderFoughtCounts.set(orkStand, orkFought + 1);
+
+    const impRolls = [];
+    for (let i = 0; i < impDiceCount; i++) impRolls.push(Phaser.Math.Between(1, 6));
+    const orkRolls = [];
+    for (let i = 0; i < orkDiceCount; i++) orkRolls.push(Phaser.Math.Between(1, 6));
+
+    const impSum = impRolls.reduce((a, b) => a + b, 0);
+    const orkSum = orkRolls.reduce((a, b) => a + b, 0);
+    const impTotal = impSum + impDet.caf;
+    const orkTotal = orkSum + orkDet.caf;
+
+    const gangTagImp = impDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${impDiceCount}D6!]</span>` : '';
+    const gangTagOrk = orkDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${orkDiceCount}D6!]</span>` : '';
+
+    let outcomeHtml = '';
+    if (impTotal > orkTotal) {
+      outcomeHtml = `<span class="log-kill">💥 ${orkDet.name} (${orkStand.label}) Destroyed! (No Save)</span>`;
+      this.removeCasualty(orkDet, orkStand);
+      this.checkBreakPoint(orkDet);
+    } else if (orkTotal > impTotal) {
+      outcomeHtml = `<span class="log-kill">💥 ${impDet.name} (${impStand.label}) Destroyed! (No Save)</span>`;
+      this.removeCasualty(impDet, impStand);
+      this.checkBreakPoint(impDet);
+    } else {
+      outcomeHtml = `<span class="log-cc">🤝 Tie (${impTotal} vs ${orkTotal})! Both survive & remain locked in melee!</span>`;
+    }
+
+    this.log(
+      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impDet.caf} = <b>${impTotal}</b>) vs ` +
+      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkDet.caf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
+    );
+
+    // Filter remaining bouts to ensure both participants are still alive
+    this.ccBouts = this.ccBouts.filter(b =>
+      b.impStand.detachment.stands.includes(b.impStand) &&
+      b.orkStand.detachment.stands.includes(b.orkStand)
+    );
+
+    if (this.ccBouts.length === 0) {
+      this.log(`✅ All Close Combat bouts resolved!`);
+      this.startCombatSegment('COMBAT_ADVANCE');
+      return;
+    }
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  resolveAllCloseCombats() {
+    let safety = 50;
+    while (this.phase === 'COMBAT_CC' && this.ccBouts.length > 0 && safety-- > 0) {
+      this.resolveNextCloseCombatBout();
+    }
   }
 
   fireAtSelectedTarget() {
@@ -879,14 +1223,47 @@ class NetEpicScene extends Phaser.Scene {
     this.overlayGfx.clear();
     this.losGfx.clear();
 
+    // 1. Always draw red/orange Close Combat engagement links & Pinned rings for any stands in base contact
+    this.detachments.forEach(d => {
+      d.stands.forEach(s => {
+        const engagedEnemies = this.getEngagedEnemies(s);
+        if (engagedEnemies.length > 0) {
+          const pinned = this.isStandPinned(s);
+          this.overlayGfx.lineStyle(2, pinned ? 0xef4444 : 0xf97316, 0.85);
+          this.overlayGfx.strokeCircle(s.container.x, s.container.y, 15);
+          if (d.faction === 'IMPERIUM') {
+            engagedEnemies.forEach(es => {
+              this.overlayGfx.lineStyle(2, 0xf97316, 0.75);
+              this.overlayGfx.lineBetween(s.container.x, s.container.y, es.container.x, es.container.y);
+            });
+          }
+        }
+      });
+    });
+
+    // 2. Highlight active Close Combat bout during COMBAT_CC
+    if (this.phase === 'COMBAT_CC' && this.ccBouts.length > 0) {
+      const currentBout = this.ccBouts[0];
+      const p1 = currentBout.impStand.container;
+      const p2 = currentBout.orkStand.container;
+      this.overlayGfx.lineStyle(4, 0xc084fc, 1);
+      this.overlayGfx.strokeCircle(p1.x, p1.y, 22);
+      this.overlayGfx.strokeCircle(p2.x, p2.y, 22);
+      this.overlayGfx.lineStyle(3, 0xfde047, 1);
+      this.overlayGfx.lineBetween(p1.x, p1.y, p2.x, p2.y);
+    }
+
     const det = this.selectedDetachment;
     if (!det || det.stands.length === 0) {
       document.getElementById('coherency-alert').style.display = 'none';
+      document.getElementById('engagement-alert').style.display = 'none';
       return;
     }
 
     const isCoherent = this.checkCoherency(det);
+    const isEngageValid = this.checkEngagementMoveRule(det);
     document.getElementById('coherency-alert').style.display = (this.phase === 'MOVEMENT' && !isCoherent) ? 'block' : 'none';
+    document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
 
     // Coherency web
     for (let i = 0; i < det.stands.length; i++) {
@@ -904,7 +1281,7 @@ class NetEpicScene extends Phaser.Scene {
       this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
       this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
 
-      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0) {
+      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0 && !s.pinnedAtStart) {
         this.overlayGfx.lineStyle(1, ORDER_INFO[det.order].color, 0.3);
         this.overlayGfx.strokeCircle(s.originX, s.originY, maxMovePx);
         this.overlayGfx.lineStyle(2, 0xffffff, 0.8);
@@ -941,7 +1318,7 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const confirmBtn = document.getElementById('btn-confirm-move');
-    if (confirmBtn) confirmBtn.disabled = !isCoherent;
+    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid;
   }
 
   updateDetachmentBadgePos(det) {
@@ -957,18 +1334,21 @@ class NetEpicScene extends Phaser.Scene {
   updateDetachmentBadge(det) {
     if (det.stands.length === 0) return;
     this.updateDetachmentBadgePos(det);
+    const anyEngaged = det.stands.some(s => this.isStandEngaged(s));
+    const ccSuffix = anyEngaged ? ' ⚔️CC' : '';
+
     if (!det.order) {
-      det.badge.setText('NO ORDER');
+      det.badge.setText('NO ORDER' + ccSuffix);
       det.badge.setBackgroundColor('#1e293b');
       det.badge.setColor('#94a3b8');
     } else if (!det.orderRevealed) {
-      det.badge.setText('🔒 ORDER SET');
+      det.badge.setText('🔒 ORDER SET' + ccSuffix);
       det.badge.setBackgroundColor('#d97706');
       det.badge.setColor('#ffffff');
     } else {
       const info = ORDER_INFO[det.order];
       const status = det.fired ? '🔥 FIRED' : (det.moved ? `✓ ${info.label}` : `▶ ${info.label}`);
-      det.badge.setText(status);
+      det.badge.setText(status + ccSuffix);
       det.badge.setBackgroundColor(info.hex);
       det.badge.setColor('#ffffff');
     }
@@ -987,6 +1367,7 @@ class NetEpicScene extends Phaser.Scene {
     const lockOrdersRow = document.getElementById('lock-orders-row');
     const moveControls = document.getElementById('movement-controls');
     const combatControls = document.getElementById('combat-controls');
+    const ccControls = document.getElementById('cc-controls');
     const snapBanner = document.getElementById('snapfire-banner');
 
     turnText.innerText = `Turn ${this.turn}`;
@@ -996,6 +1377,7 @@ class NetEpicScene extends Phaser.Scene {
     lockOrdersRow.style.display = 'none';
     moveControls.style.display = 'none';
     combatControls.style.display = 'none';
+    ccControls.style.display = 'none';
     snapBanner.style.display = 'none';
 
     if (this.phase === 'ORDERS') {
@@ -1033,7 +1415,9 @@ class NetEpicScene extends Phaser.Scene {
       phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
       phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
       promptText.innerText = this.activatingDetachment
-        ? `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm`
+        ? (this.activatingDetachment.order === 'CHARGE'
+            ? `CHARGE! Drag stands up to ${this.activatingDetachment.moveCm * 2} cm — Drag onto enemy stands to Pin & enter Close Combat!`
+            : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm`)
         : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order`;
 
       moveControls.style.display = this.selectedDetachment ? 'flex' : 'none';
@@ -1048,8 +1432,24 @@ class NetEpicScene extends Phaser.Scene {
         document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
       }
     }
+    else if (this.phase === 'COMBAT_CC') {
+      phaseBadge.innerText = `III-2. Close Combat (${this.ccBouts.length} Left)`;
+      phaseBadge.style.background = '#9333ea';
+      ccControls.style.display = 'flex';
+
+      if (this.ccBouts.length > 0) {
+        const b = this.ccBouts[0];
+        const impFought = this.defenderFoughtCounts.get(b.impStand) || 0;
+        const orkFought = this.defenderFoughtCounts.get(b.orkStand) || 0;
+        const impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
+        const orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+
+        promptText.innerText = `⚔️ Next Bout: ${b.impStand.detachment.name} ${b.impStand.label} (${impDice}D6+${b.impStand.detachment.caf}) vs ${b.orkStand.detachment.name} ${b.orkStand.label} (${orkDice}D6+${b.orkStand.detachment.caf})`;
+        document.getElementById('btn-cc-next').innerText = `⚔️ Fight Bout (${impDice}D6+${b.impStand.detachment.caf} vs ${orkDice}D6+${b.orkStand.detachment.caf})`;
+      }
+    }
     else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
-      const segTitle = this.phase === 'COMBAT_FIRST' ? 'III. First Fire' : 'III. Advance Fire';
+      const segTitle = this.phase === 'COMBAT_FIRST' ? 'III-1. First Fire' : 'III-3. Advance Fire';
       phaseBadge.innerText = `${segTitle} (${this.activePlayer})`;
       phaseBadge.style.background = '#dc2626';
       combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
@@ -1064,7 +1464,7 @@ class NetEpicScene extends Phaser.Scene {
         btnFire.innerText = sol.validPairs.length > 0
           ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
           : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
-        promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/Out of Range`;
+        promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
       } else if (this.activatingDetachment) {
         btnFire.disabled = true;
         btnFire.innerText = 'Tap an Enemy Stand on the map to check LoS & Fire';
@@ -1074,8 +1474,10 @@ class NetEpicScene extends Phaser.Scene {
 
     if (this.selectedDetachment && this.selectedDetachment.stands.length > 0) {
       const d = this.selectedDetachment;
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint})`;
-      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | Weapon: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
+      const pinnedCount = d.stands.filter(s => this.isStandPinned(s)).length;
+      const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}${pinBadge})`;
+      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
       selOrderBadge.innerText = d.order
         ? (d.orderRevealed ? `Order: ${ORDER_INFO[d.order].label}` : `Hidden Order: ${ORDER_INFO[d.order].label}`)
         : 'No Order Assigned';
