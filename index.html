@@ -45,8 +45,56 @@
     }
 
     #mid-area {
-      display: flex; justify-content: flex-end; align-items: flex-start;
-      flex: 1; margin: 6px 0; overflow: hidden; pointer-events: none;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex: 1; margin: 6px 0; overflow: hidden; pointer-events: none; gap: 8px;
+    }
+    #left-hud-stack {
+      display: flex; flex-direction: column; gap: 6px;
+      max-width: 350px; width: 100%; pointer-events: none;
+    }
+    #dice-tray, #titan-hud {
+      pointer-events: auto;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.74rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+    }
+    .dice-row {
+      display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+      margin-top: 4px; padding-top: 3px; border-top: 1px dashed #334155;
+    }
+    .die-box {
+      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 26px; height: 26px; padding: 0 4px; border-radius: 5px;
+      font-weight: 800; font-size: 0.82rem; line-height: 1;
+      background: #1e293b; border: 2px solid #64748b; color: #f8fafc;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .die-pass { background: rgba(22, 163, 74, 0.32); border-color: #22c55e; color: #86efac; }
+    .die-fail { background: rgba(220, 38, 38, 0.32); border-color: #ef4444; color: #fca5a5; }
+    .die-crit { background: rgba(217, 119, 6, 0.38); border-color: #facc15; color: #fef08a; }
+    .die-shield { background: rgba(2, 132, 199, 0.35); border-color: #38bdf8; color: #bae6fd; }
+    .titan-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;
+    }
+    .titan-loc-box {
+      background: #0f172a; border: 1px solid #334155; border-radius: 5px;
+      padding: 4px 6px; font-size: 0.69rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .loc-ok { border-left: 3px solid #22c55e; color: #bbf7d0; }
+    .loc-dmg { border-left: 3px solid #f59e0b; color: #fde68a; background: rgba(217, 119, 6, 0.15); }
+    .loc-crit { border-left: 3px solid #ef4444; color: #fecaca; background: rgba(220, 38, 38, 0.22); }
+    .shield-pip-row {
+      display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-top: 4px;
+    }
+    .shield-cell {
+      padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.68rem;
+      border: 1px solid #38bdf8; background: rgba(2, 132, 199, 0.28); color: #e0f2fe;
+    }
+    .shield-cell.down {
+      border-color: #475569; background: rgba(30, 41, 59, 0.6); color: #64748b; text-decoration: line-through;
     }
     #combat-log {
       width: 340px; height: 190px; min-width: 180px; min-height: 34px;
@@ -176,7 +224,8 @@
       .status-text { font-size: 0.78rem; }
       .sub-text { font-size: 0.68rem; }
       .vp-box { font-size: 0.7rem; padding: 2px 6px; }
-      #mid-area { margin: 3px 0; justify-content: stretch; }
+      #mid-area { margin: 3px 0; flex-direction: column; justify-content: flex-start; }
+      #left-hud-stack { max-width: 100%; }
       #combat-log {
         width: 100%;
         height: 96px;
@@ -246,7 +295,7 @@
           <span id="ork-pts-badge" class="vp-box">1475 / 1500 pts</span>
         </div>
         <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac;">Faction Rules: Power Fields (4+ Flicker Save), Huge Mobs & Gargants</div>
-        <div class="sub-text" style="margin-bottom:4px; font-weight:700;">Available Detachments (Click + Add):</div>
+        <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Available Detachments (Click + Add):</div>
         <div id="ork-catalog"></div>
         <div class="sub-text" style="margin:6px 0 4px; font-weight:700;">Mustered North Roster:</div>
         <div id="ork-roster"></div>
@@ -281,17 +330,39 @@
   </div>
 
   <div id="mid-area">
+    <div id="left-hud-stack">
+      <!-- Live 3D/2D Visual Dice Tray -->
+      <div id="dice-tray" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span id="dice-tray-title" style="font-weight:800; color:#fde047;">🎲 DICE ROLLS</span>
+          <button class="log-ctrl-btn" onclick="document.getElementById('dice-tray').style.display='none'" title="Hide Dice Tray">✕</button>
+        </div>
+        <div id="dice-tray-body"></div>
+      </div>
+
+      <!-- Titan & Super-Heavy Status & Hit Location Damage Sheet -->
+      <div id="titan-hud" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:4px;">
+          <span id="titan-hud-title" style="font-weight:800; color:#38bdf8;">🤖 TITAN DATA SHEET</span>
+          <span id="titan-hud-status" class="vp-box" style="font-size:0.68rem; padding:1px 6px;">ONLINE</span>
+        </div>
+        <div id="titan-hud-shields" class="shield-pip-row"></div>
+        <div id="titan-hud-grid" class="titan-grid"></div>
+        <div id="titan-hud-weapons" class="sub-text" style="margin-top:5px; border-top:1px dashed #334155; padding-top:4px;"></div>
+      </div>
+    </div>
+
     <div id="combat-log" class="panel">
       <div id="log-header">
         <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
-        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">6 Playable Factions Live! Imperium, Orks, Eldar, Chaos, Tyranids & Squats (🛠️ Armies button)!</div>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Phase 12: Dice Roll Tray, Titan Damage HUD, Detailed Terrain & Split Fire Live!</div>
         <div style="display:flex; gap:4px;">
           <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
           <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
         </div>
       </div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 11! <b>6 Playable Factions (🛡️ Imperium, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats)</b> with Holo-Fields, Hive Mind Synapse, Daemonic Terror, Regeneration & Squat CC Mastery are live! Click <b>🛠️ Armies (6 Factions)</b> to switch armies!</div>
+        <div class="log-entry">Welcome to Phase 12! <b>🎲 Live Dice Tray</b>, <b>🤖 Titan Hit Location & Damage HUD</b>, <b>🌲 Detailed Terrain</b>, <b>🧭 180° Facing Arcs</b> & <b>🎯 Split Fire</b> across multiple targets are live!</div>
       </div>
       <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
         <span id="log-corner-grip">⤡</span>
@@ -338,6 +409,7 @@
       <div id="deployment-controls" class="btn-row" style="display:none;">
         <button id="btn-deploy-group" onclick="window.gameScene.toggleGroupMove()">🔗 Group Move: ON (Double-Click)</button>
         <button onclick="window.gameScene.compactSelectedDetachment()">📐 Tight Formation</button>
+        <button onclick="window.gameScene.rotateSelectedFacing()" title="Rotate unit 45° to orient 180° Forward Firing Arc">🔄 Rotate Facing (45°)</button>
         <button id="btn-deploy-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-deploy-reserve" class="btn-cc" onclick="window.gameScene.toggleReserveStatus()" style="display:none;">☄️ Hold in Orbital Reserve (Deep Strike)</button>
         <button class="btn-confirm" onclick="window.gameScene.finishDeploymentPhase()">⚔️ Lock Deployment & Start Turn 1 (Orders Phase)</button>
@@ -358,6 +430,7 @@
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
         <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔗 Group Move: OFF (Double-Click)</button>
         <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight Formation</button>
+        <button id="btn-move-rotate" onclick="window.gameScene.rotateSelectedFacing()" style="display:none;" title="Pivot unit 45° to orient 180° Forward Firing Arc">🔄 Pivot Facing (45°)</button>
         <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-move-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
         <button id="btn-move-deepstrike" class="btn-cc" onclick="window.gameScene.triggerDeepStrikeMode()" style="display:none;">☄️ Deep Strike / Teleport Anywhere!</button>
@@ -368,10 +441,11 @@
 
       <!-- III. Ranged Combat Controls (First Fire & Advance Fire) -->
       <div id="combat-controls" class="btn-row" style="display:none;">
-        <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget()" disabled>Select an Enemy Detachment to Fire</button>
+        <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget(false)" disabled>Select an Enemy Detachment to Fire</button>
+        <button id="btn-split-fire" class="btn-cc" onclick="window.gameScene.fireAtSelectedTarget(true)" style="display:none;" disabled title="Fire 1 Stand (or 1 Titan Weapon System) at this target and keep remaining stands/weapons ready for other targets!">🎯 Split Fire (1 Stand / Weapon)</button>
         <button id="btn-combat-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
         <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;">Hold Fire (Switch to Advance)</button>
-        <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Skip / End Firing</button>
+        <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Done / Skip Firing</button>
       </div>
 
       <!-- III-2. Close Combat Segment Controls -->
@@ -1740,44 +1814,95 @@ class NetEpicScene extends Phaser.Scene {
     }
     this.terrainLabels = [];
 
-    this.boardGfx.fillStyle(0x1a2219, 1);
+    // Base battlefield turf
+    this.boardGfx.fillStyle(0x1b261a, 1);
     this.boardGfx.fillRect(0, 0, BOARD_W, BOARD_H);
 
-    // 10 cm Grid
-    this.boardGfx.lineStyle(1, 0x293627, 0.8);
+    // Subtle organic ground patches & moss/soil contours (deterministic pseudo-random so it stays consistent)
+    for (let i = 0; i < 38; i++) {
+      const gx = ((i * 271 + 97) % (BOARD_W - 160)) + 80;
+      const gy = ((i * 193 + 53) % (BOARD_H - 120)) + 60;
+      const gr = 45 + (i % 5) * 22;
+      this.boardGfx.fillStyle(i % 3 === 0 ? 0x222f1f : (i % 3 === 1 ? 0x162015 : 0x24281e), 0.55);
+      this.boardGfx.fillCircle(gx, gy, gr);
+    }
+
+    // Scattered battlefield shell craters & scorch marks
+    const craters = [
+      { x: 240, y: 420, r: 16 }, { x: 470, y: 760, r: 13 }, { x: 690, y: 380, r: 18 },
+      { x: 820, y: 740, r: 15 }, { x: 1060, y: 420, r: 17 }, { x: 1210, y: 690, r: 14 },
+      { x: 1390, y: 430, r: 16 }, { x: 1620, y: 770, r: 15 }, { x: 960, y: 580, r: 12 }
+    ];
+    craters.forEach(c => {
+      this.boardGfx.fillStyle(0x0f172a, 0.42);
+      this.boardGfx.fillCircle(c.x, c.y, c.r + 5);
+      this.boardGfx.fillStyle(0x292524, 0.78);
+      this.boardGfx.fillCircle(c.x, c.y, c.r);
+      this.boardGfx.lineStyle(1.5, 0x57534e, 0.65);
+      this.boardGfx.strokeCircle(c.x, c.y, c.r);
+      this.boardGfx.fillStyle(0x1c1917, 0.85);
+      this.boardGfx.fillCircle(c.x + 1, c.y + 1, c.r * 0.52);
+    });
+
+    // 10 cm Tactical Grid
+    this.boardGfx.lineStyle(1, 0x2a3928, 0.62);
     for (let x = 0; x <= BOARD_W; x += 10 * PX_PER_CM) this.boardGfx.lineBetween(x, 0, x, BOARD_H);
     for (let y = 0; y <= BOARD_H; y += 10 * PX_PER_CM) this.boardGfx.lineBetween(0, y, BOARD_W, y);
 
     // Centerline
     const centerY = BOARD_H / 2;
-    this.boardGfx.lineStyle(2, 0x475569, 0.35);
+    this.boardGfx.lineStyle(2, 0x475569, 0.32);
     this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
 
-    // 1. Rivers (Deep water channel + bank foam)
+    // 1. Rivers (Muddy banks + shallow & deep water channels + current ripples)
     this.rivers.forEach(rv => {
-      this.boardGfx.fillStyle(0x0c4a6e, 0.92);
+      // Muddy/rocky outer shoreline banks
+      this.boardGfx.fillStyle(0x44403c, 0.85);
+      this.boardGfx.fillRect(0, rv.y - 7, BOARD_W, rv.h + 14);
+      // Outer shallow water
+      this.boardGfx.fillStyle(0x0369a1, 0.94);
       this.boardGfx.fillRect(0, rv.y, BOARD_W, rv.h);
-      this.boardGfx.fillStyle(0x0284c7, 0.55);
-      this.boardGfx.fillRect(0, rv.y + 12, BOARD_W, rv.h - 24);
-      this.boardGfx.lineStyle(2, 0x38bdf8, 0.7);
-      this.boardGfx.lineBetween(0, rv.y, BOARD_W, rv.y);
-      this.boardGfx.lineBetween(0, rv.y + rv.h, BOARD_W, rv.y + rv.h);
+      // Mid channel
+      this.boardGfx.fillStyle(0x075985, 0.92);
+      this.boardGfx.fillRect(0, rv.y + 10, BOARD_W, rv.h - 20);
+      // Deep central channel
+      this.boardGfx.fillStyle(0x0c4a6e, 0.95);
+      this.boardGfx.fillRect(0, rv.y + 22, BOARD_W, rv.h - 44);
+      // Shoreline foam & water current ripples
+      this.boardGfx.lineStyle(2, 0x7dd3fc, 0.65);
+      this.boardGfx.lineBetween(0, rv.y + 1, BOARD_W, rv.y + 1);
+      this.boardGfx.lineBetween(0, rv.y + rv.h - 1, BOARD_W, rv.y + rv.h - 1);
+      this.boardGfx.lineStyle(1.2, 0xbae6fd, 0.35);
+      for (let rx = 40; rx < BOARD_W - 40; rx += 95) {
+        const ryOff = (rx % 3) * 14 + 18;
+        this.boardGfx.lineBetween(rx, rv.y + ryOff, rx + 42, rv.y + ryOff);
+        this.boardGfx.lineBetween(rx + 25, rv.y + rv.h - ryOff, rx + 60, rv.y + rv.h - ryOff);
+      }
       const lbl = this.add.text(210, rv.y + rv.h / 2, `🌊 ${rv.name.toUpperCase()}`, {
-        fontSize: '11px', color: '#7dd3fc', fontStyle: 'bold'
+        fontSize: '10px', color: '#bae6fd', fontStyle: 'bold', backgroundColor: 'rgba(12, 74, 110, 0.78)', padding: { x: 4, y: 1 }
       }).setOrigin(0.5);
       this.terrainLabels.push(lbl);
     });
 
-    // 2. Roads (+5cm Bonus Movement along road corridors)
+    // 2. Roads (+5cm Bonus Movement — gravel roadbed, paved stone/tarmac surface, curb stones & dashed yellow lane line)
     this.roads.forEach(rd => {
-      this.boardGfx.lineStyle(rd.width || 32, 0x334155, 0.9);
+      const rw = rd.width || 32;
+      // Gravel shoulder bed
+      this.boardGfx.lineStyle(rw + 8, 0x44403c, 0.72);
       this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
-      this.boardGfx.lineStyle((rd.width || 32) - 6, 0x475569, 0.85);
+      // Outer curb
+      this.boardGfx.lineStyle(rw + 2, 0x64748b, 0.85);
+      this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
+      // Paved ferrocrete surface
+      this.boardGfx.lineStyle(rw - 4, 0x334155, 0.95);
+      this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
+      // Subtle wheel tracks
+      this.boardGfx.lineStyle(rw * 0.45, 0x475569, 0.45);
       this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
       // Dashed yellow road centerline
       const dist = Phaser.Math.Distance.Between(rd.x1, rd.y1, rd.x2, rd.y2);
-      const steps = Math.floor(dist / 28);
-      this.boardGfx.lineStyle(2, 0xfacc15, 0.55);
+      const steps = Math.floor(dist / 26);
+      this.boardGfx.lineStyle(2, 0xfacc15, 0.65);
       for (let i = 0; i < steps; i += 2) {
         const t1 = i / steps;
         const t2 = Math.min(1, (i + 1) / steps);
@@ -1786,50 +1911,200 @@ class NetEpicScene extends Phaser.Scene {
           rd.x1 + (rd.x2 - rd.x1) * t2, rd.y1 + (rd.y2 - rd.y1) * t2
         );
       }
-      const lx = (rd.x1 + rd.x2) / 2 + (rd.x1 === rd.x2 ? 58 : 0);
-      const ly = (rd.y1 + rd.y2) / 2 + (rd.y1 === rd.y2 ? -22 : -180);
+      const lx = (rd.x1 + rd.x2) / 2 + (rd.x1 === rd.x2 ? 64 : 0);
+      const ly = (rd.y1 + rd.y2) / 2 + (rd.y1 === rd.y2 ? -24 : -180);
       const lbl = this.add.text(lx, Phaser.Math.Clamp(ly, 380, 860), '🛣️ ROAD (+5cm Move)', {
-        fontSize: '10px', color: '#fde047', backgroundColor: 'rgba(15, 23, 42, 0.7)', padding: { x: 3, y: 1 }
+        fontSize: '10px', color: '#fde047', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: { x: 3, y: 1 }
       }).setOrigin(0.5);
       this.terrainLabels.push(lbl);
     });
 
     // 3. Bridges & Shallow Fords across Rivers
     this.bridges.forEach(br => {
-      this.boardGfx.fillStyle(br.isFord ? 0x38bdf8 : 0x64748b, br.isFord ? 0.45 : 0.96);
-      this.boardGfx.fillRect(br.x, br.y, br.w, br.h);
-      this.boardGfx.lineStyle(3, br.isFord ? 0xbae6fd : 0xe2e8f0, 0.95);
-      this.boardGfx.strokeRect(br.x, br.y, br.w, br.h);
+      if (br.isFord) {
+        // Shallow stepping-stone & gravel ford with white water foam
+        this.boardGfx.fillStyle(0x38bdf8, 0.42);
+        this.boardGfx.fillRect(br.x, br.y, br.w, br.h);
+        for (let fy = br.y + 8; fy < br.y + br.h - 6; fy += 14) {
+          for (let fx = br.x + 10; fx < br.x + br.w - 8; fx += 18) {
+            this.boardGfx.fillStyle(0x78716c, 0.85);
+            this.boardGfx.fillCircle(fx + (fy % 4), fy, 5);
+            this.boardGfx.lineStyle(1, 0xe0f2fe, 0.7);
+            this.boardGfx.strokeCircle(fx + (fy % 4), fy, 6.5);
+          }
+        }
+        this.boardGfx.lineStyle(2, 0xbae6fd, 0.85);
+        this.boardGfx.strokeRect(br.x, br.y, br.w, br.h);
+      } else {
+        // Heavy stone/steel bridge with piers, roadway decking & armored parapets
+        this.boardGfx.fillStyle(0x020617, 0.45);
+        this.boardGfx.fillRect(br.x + 5, br.y + 4, br.w, br.h);
+        this.boardGfx.fillStyle(0x475569, 0.98);
+        this.boardGfx.fillRect(br.x, br.y, br.w, br.h);
+        // Inner roadbed
+        this.boardGfx.fillStyle(0x334155, 0.98);
+        this.boardGfx.fillRect(br.x + 8, br.y + 2, br.w - 16, br.h - 4);
+        // Decking cross-beams
+        this.boardGfx.lineStyle(1.5, 0x64748b, 0.75);
+        for (let py = br.y + 10; py < br.y + br.h - 6; py += 12) {
+          this.boardGfx.lineBetween(br.x + 6, py, br.x + br.w - 6, py);
+        }
+        // Stone buttress piers & side parapets
+        this.boardGfx.fillStyle(0x94a3b8, 1);
+        this.boardGfx.fillRect(br.x, br.y, 7, br.h);
+        this.boardGfx.fillRect(br.x + br.w - 7, br.y, 7, br.h);
+        for (let ty = br.y + 6; ty < br.y + br.h - 8; ty += 24) {
+          this.boardGfx.fillStyle(0xcbd5e1, 1);
+          this.boardGfx.fillRect(br.x - 3, ty, 10, 10);
+          this.boardGfx.fillRect(br.x + br.w - 7, ty, 10, 10);
+        }
+      }
       const lbl = this.add.text(br.x + br.w / 2, br.y + br.h / 2, br.name.toUpperCase(), {
-        fontSize: '10px', color: '#ffffff', fontStyle: 'bold', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: { x: 3, y: 1 }
+        fontSize: '10px', color: '#ffffff', fontStyle: 'bold', backgroundColor: 'rgba(15, 23, 42, 0.78)', padding: { x: 3, y: 1 }
       }).setOrigin(0.5);
       this.terrainLabels.push(lbl);
     });
 
-    // 4. Woods (Outer 2cm gives -1 cover; >2cm blocks LoS)
+    // 4. Woods (Rich forest floor + fallen logs + 18-24 multi-layered tree canopies per wood!)
     this.woods.forEach(w => {
-      this.boardGfx.fillStyle(0x143318, 0.9);
-      this.boardGfx.lineStyle(2, 0x22c55e, 0.7);
+      // Soft outer forest shadow
+      this.boardGfx.fillStyle(0x09190c, 0.55);
+      this.boardGfx.fillCircle(w.x + 4, w.y + 5, w.r + 4);
+      // Earthy mossy forest floor base
+      this.boardGfx.fillStyle(0x132a17, 0.92);
       this.boardGfx.fillCircle(w.x, w.y, w.r);
+      this.boardGfx.lineStyle(2, 0x22c55e, 0.65);
       this.boardGfx.strokeCircle(w.x, w.y, w.r);
-      // Inner 2cm deep-woods indicator
-      this.boardGfx.lineStyle(1, 0x86efac, 0.35);
+
+      // Inner 2cm deep-woods boundary ring (NetEpic LoS rule: >2cm blocks LoS)
+      this.boardGfx.lineStyle(1.2, 0x86efac, 0.32);
       this.boardGfx.strokeCircle(w.x, w.y, w.r - 20);
-      const lbl = this.add.text(w.x, w.y, '🌲 WOODS\n(-1 Cover / >2cm Blocks LoS)', { fontSize: '10px', color: '#86efac', align: 'center' }).setOrigin(0.5);
+
+      // Fallen logs / undergrowth clearings
+      this.boardGfx.lineStyle(4, 0x5c4033, 0.75);
+      this.boardGfx.lineBetween(w.x - w.r * 0.35, w.y + w.r * 0.2, w.x - w.r * 0.1, w.y + w.r * 0.32);
+      this.boardGfx.lineBetween(w.x + w.r * 0.15, w.y - w.r * 0.28, w.x + w.r * 0.42, w.y - w.r * 0.18);
+
+      // Multi-layered Tree Canopies (outer ring + inner ring + center cluster)
+      const treePositions = [];
+      const outerCount = 11;
+      for (let i = 0; i < outerCount; i++) {
+        const ang = (i / outerCount) * Math.PI * 2 + (w.x % 7) * 0.2;
+        const dist = w.r * (0.64 + ((i * 3) % 3) * 0.05);
+        treePositions.push({
+          tx: w.x + Math.cos(ang) * dist,
+          ty: w.y + Math.sin(ang) * dist,
+          tr: 16 + (i % 3) * 4,
+          shade: i % 3
+        });
+      }
+      const innerCount = 7;
+      for (let i = 0; i < innerCount; i++) {
+        const ang = (i / innerCount) * Math.PI * 2 + 0.5;
+        const dist = w.r * (0.31 + (i % 2) * 0.07);
+        treePositions.push({
+          tx: w.x + Math.cos(ang) * dist,
+          ty: w.y + Math.sin(ang) * dist,
+          tr: 18 + (i % 2) * 4,
+          shade: (i + 1) % 3
+        });
+      }
+      treePositions.push({ tx: w.x - 6, ty: w.y + 4, tr: 19, shade: 0 });
+
+      treePositions.forEach(t => {
+        // Tree drop shadow
+        this.boardGfx.fillStyle(0x051107, 0.55);
+        this.boardGfx.fillCircle(t.tx + 3, t.ty + 4, t.tr);
+        // Main tree crown
+        const crownCol = t.shade === 0 ? 0x166534 : (t.shade === 1 ? 0x15803d : 0x14532d);
+        this.boardGfx.fillStyle(crownCol, 0.92);
+        this.boardGfx.fillCircle(t.tx, t.ty, t.tr);
+        this.boardGfx.lineStyle(1.2, 0x052e16, 0.75);
+        this.boardGfx.strokeCircle(t.tx, t.ty, t.tr);
+        // Mid foliage layer
+        const midCol = t.shade === 0 ? 0x22c55e : (t.shade === 1 ? 0x16a34a : 0x15803d);
+        this.boardGfx.fillStyle(midCol, 0.75);
+        this.boardGfx.fillCircle(t.tx - 2, t.ty - 2, t.tr * 0.66);
+        // Sunlit top canopy highlight
+        this.boardGfx.fillStyle(0x4ade80, 0.55);
+        this.boardGfx.fillCircle(t.tx - 4, t.ty - 4, t.tr * 0.34);
+      });
+
+      const lbl = this.add.text(w.x, w.y, '🌲 WOODS\n(-1 Cover / >2cm Blocks LoS)', {
+        fontSize: '10px', color: '#bbf7d0', align: 'center', fontStyle: 'bold',
+        backgroundColor: 'rgba(5, 46, 22, 0.78)', padding: { x: 4, y: 2 }
+      }).setOrigin(0.5);
       this.terrainLabels.push(lbl);
     });
 
-    // 5. Buildings (Blocks LoS; Infantry can Garrison inside for -2 Hit, 4+ Save & +2 CAF!)
+    // 5. Buildings (Architectural fortified complexes: Courtyard slab, perimeter walls, corner bastions, pitched roof wings, windows & rubble)
     this.buildings.forEach(b => {
-      this.boardGfx.fillStyle(0x334155, 0.95);
-      this.boardGfx.lineStyle(2.5, 0xcbd5e1, 1);
+      // Building drop shadow
+      this.boardGfx.fillStyle(0x020617, 0.65);
+      this.boardGfx.fillRect(b.x + 6, b.y + 7, b.w, b.h);
+
+      // Outer ferrocrete compound courtyard slab
+      this.boardGfx.fillStyle(0x1e293b, 0.98);
       this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
+      this.boardGfx.lineStyle(3, 0x94a3b8, 1);
       this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
-      // Inner fortified battlement border
-      this.boardGfx.lineStyle(1, 0x64748b, 0.8);
-      this.boardGfx.strokeRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
+
+      // Courtyard paving grid lines
+      this.boardGfx.lineStyle(1, 0x334155, 0.7);
+      for (let gx = b.x + 20; gx < b.x + b.w; gx += 20) this.boardGfx.lineBetween(gx, b.y + 4, gx, b.y + b.h - 4);
+      for (let gy = b.y + 20; gy < b.y + b.h; gy += 20) this.boardGfx.lineBetween(b.x + 4, gy, b.x + b.w - 4, gy);
+
+      // West & East Structural Roof Wings + Central Hall
+      const pad = 10;
+      const wingW = Math.floor((b.w - pad * 2) * 0.32);
+      const wingH = b.h - pad * 2;
+      // Main roof structure
+      this.boardGfx.fillStyle(0x334155, 0.98);
+      this.boardGfx.fillRect(b.x + pad, b.y + pad, b.w - pad * 2, wingH);
+      this.boardGfx.lineStyle(2, 0xcbd5e1, 0.95);
+      this.boardGfx.strokeRect(b.x + pad, b.y + pad, b.w - pad * 2, wingH);
+
+      // Sloped roof ridges & Darker North/South roof pitches
+      this.boardGfx.fillStyle(0x475569, 0.95);
+      this.boardGfx.fillRect(b.x + pad + 2, b.y + pad + 2, b.w - pad * 2 - 4, Math.floor(wingH / 2) - 2);
+      this.boardGfx.lineStyle(2, 0xe2e8f0, 0.85);
+      this.boardGfx.lineBetween(b.x + pad, b.y + b.h / 2, b.x + b.w - pad, b.y + b.h / 2);
+
+      // Rooftop skylights / armour vents / buttress ribs
+      for (let rx = b.x + pad + 14; rx < b.x + b.w - pad - 12; rx += 22) {
+        this.boardGfx.lineStyle(1.2, 0x64748b, 0.8);
+        this.boardGfx.lineBetween(rx, b.y + pad, rx, b.y + b.h - pad);
+        this.boardGfx.fillStyle(0x0f172a, 0.85);
+        this.boardGfx.fillRect(rx - 5, b.y + pad + 8, 8, 10);
+        this.boardGfx.fillRect(rx - 5, b.y + b.h - pad - 18, 8, 10);
+      }
+
+      // 4 Corner Bastion Towers (fortified bunker corners)
+      const bw = 14, bh = 14;
+      const corners = [
+        { cx: b.x - 2, cy: b.y - 2 },
+        { cx: b.x + b.w - bw + 2, cy: b.y - 2 },
+        { cx: b.x - 2, cy: b.y + b.h - bh + 2 },
+        { cx: b.x + b.w - bw + 2, cy: b.y + b.h - bh + 2 }
+      ];
+      corners.forEach(c => {
+        this.boardGfx.fillStyle(0x475569, 1);
+        this.boardGfx.fillRect(c.cx, c.cy, bw, bh);
+        this.boardGfx.lineStyle(1.8, 0xe2e8f0, 1);
+        this.boardGfx.strokeRect(c.cx, c.cy, bw, bh);
+        this.boardGfx.fillStyle(0x0f172a, 0.9);
+        this.boardGfx.fillCircle(c.cx + bw / 2, c.cy + bh / 2, 3);
+      });
+
+      // Battle-damaged rubble pile on one side
+      this.boardGfx.fillStyle(0x64748b, 0.8);
+      this.boardGfx.fillCircle(b.x + b.w - 18, b.y + b.h - 14, 9);
+      this.boardGfx.fillStyle(0x94a3b8, 0.75);
+      this.boardGfx.fillCircle(b.x + b.w - 23, b.y + b.h - 11, 5);
+
       const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `🏰 ${b.name.toUpperCase()}\n(Infantry Garrison: -2 Hit / 4+ Sv)`, {
-        fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold'
+        fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold',
+        backgroundColor: 'rgba(15, 23, 42, 0.84)', padding: { x: 4, y: 2 }
       }).setOrigin(0.5);
       this.terrainLabels.push(lbl);
     });
@@ -1848,6 +2123,110 @@ class NetEpicScene extends Phaser.Scene {
         fontSize: '12px', fontStyle: 'bold', color: '#60a5fa', backgroundColor: 'rgba(15, 23, 42, 0.8)'
       }).setOrigin(0.5);
     }
+  }
+
+  // --- PHASE 12: VISUAL 3D/2D DICE ROLL TRAY & TITAN / SUPER-HEAVY STATUS DATA SHEET ---
+  showDiceRollTray(title, rows = []) {
+    const tray = document.getElementById('dice-tray');
+    const titleEl = document.getElementById('dice-tray-title');
+    const bodyEl = document.getElementById('dice-tray-body');
+    if (!tray || !titleEl || !bodyEl) return;
+
+    const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    titleEl.innerHTML = title;
+    bodyEl.innerHTML = rows.map(r => {
+      const diceHtml = (r.dice || []).map(d => {
+        const val = typeof d === 'object' ? d.val : d;
+        const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
+        const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
+        const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
+        return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
+      }).join('');
+      const summaryHtml = r.summary ? `<span style="margin-left:auto; font-weight:700; color:#e2e8f0;">${r.summary}</span>` : '';
+      return `<div class="dice-row"><span style="color:#94a3b8; font-weight:700; margin-right:4px;">${r.label}:</span>${diceHtml}${summaryHtml}</div>`;
+    }).join('');
+    tray.style.display = 'block';
+  }
+
+  updateTitanHUD(det) {
+    const hud = document.getElementById('titan-hud');
+    if (!hud) return;
+
+    // Show Titan HUD if the selected detachment OR current target detachment is a Titan or Super-Heavy!
+    let focusTitan = null;
+    if (det && (det.isTitan || det.superHeavy) && det.stands.length > 0) {
+      focusTitan = det;
+    } else if (this.targetDetachment && (this.targetDetachment.isTitan || this.targetDetachment.superHeavy) && this.targetDetachment.stands.length > 0) {
+      focusTitan = this.targetDetachment;
+    } else if (this.activatingDetachment && (this.activatingDetachment.isTitan || this.activatingDetachment.superHeavy) && this.activatingDetachment.stands.length > 0) {
+      focusTitan = this.activatingDetachment;
+    }
+
+    if (!focusTitan) {
+      hud.style.display = 'none';
+      return;
+    }
+
+    hud.style.display = 'block';
+    const titleEl = document.getElementById('titan-hud-title');
+    const statusEl = document.getElementById('titan-hud-status');
+    const shieldsEl = document.getElementById('titan-hud-shields');
+    const gridEl = document.getElementById('titan-hud-grid');
+    const wpnEl = document.getElementById('titan-hud-weapons');
+
+    const bookMeta = FACTION_META[focusTitan.armyBook] || FACTION_META[focusTitan.faction];
+    titleEl.innerHTML = `${bookMeta.icon} ${focusTitan.name}`;
+    titleEl.style.color = bookMeta.colorHex;
+
+    if (focusTitan.damageState === 'HEAVY') {
+      statusEl.innerText = '🔥 HEAVY DAMAGE';
+      statusEl.style.background = '#991b1b';
+      statusEl.style.borderColor = '#ef4444';
+    } else if (focusTitan.damageState === 'LIGHT') {
+      statusEl.innerText = '⚠️ LIGHT DAMAGE';
+      statusEl.style.background = '#92400e';
+      statusEl.style.borderColor = '#f59e0b';
+    } else {
+      statusEl.innerText = '✅ SYSTEMS NOMINAL';
+      statusEl.style.background = '#065f46';
+      statusEl.style.borderColor = '#10b981';
+    }
+
+    // Render Shield Matrix / Holo-Field / Armor status
+    let shieldHtml = '';
+    if (focusTitan.maxShields > 0) {
+      const sType = focusTitan.shieldType === 'VOID' ? 'VOID' : (focusTitan.shieldType === 'CHITIN' ? 'BIO-SHIELD' : 'PWR FIELD');
+      for (let i = 0; i < focusTitan.maxShields; i++) {
+        const up = i < focusTitan.shields;
+        shieldHtml += `<span class="shield-cell ${up ? '' : 'down'}">${up ? '🛡️' : '⚫'} ${sType} #${i + 1}</span>`;
+      }
+    } else if (focusTitan.holoField) {
+      const hSave = this.getHoloFieldSave(focusTitan);
+      shieldHtml = `<span class="shield-cell" style="border-color:#fbbf24;color:#fef08a;">🔮 ELDAR HOLO-FIELD ACTIVE: ${hSave}+ FIXED SAVE (Speed-Based)</span>`;
+    } else {
+      shieldHtml = `<span class="shield-cell" style="border-color:#94a3b8;color:#cbd5e1;">🛡️ SUPER-HEAVY PLATING: ${focusTitan.save}+ ARMOUR${focusTitan.regeneration ? ' + 💚 5+ REGEN' : ''}</span>`;
+    }
+    shieldsEl.innerHTML = shieldHtml;
+
+    // 4-Location Structural Hit Diagram (Head/Bridge, Weapon Mounts, Reactor Core, Legs/Tracks)
+    const locs = focusTitan.locationDamage || { head: 'ONLINE', weapons: 'ONLINE', reactor: 'ONLINE', legs: 'ONLINE' };
+    const getLocClass = (val) => val === 'ONLINE' ? 'loc-ok' : (val.includes('CRIT') || val.includes('HEAVY') ? 'loc-crit' : 'loc-dmg');
+    gridEl.innerHTML = `
+      <div class="titan-loc-box ${getLocClass(locs.head)}"><span>🧠 <b>Head / Bridge</b></span><span>${locs.head}</span></div>
+      <div class="titan-loc-box ${getLocClass(locs.weapons)}"><span>🔫 <b>Weapon Mounts</b></span><span>${locs.weapons}</span></div>
+      <div class="titan-loc-box ${getLocClass(locs.reactor)}"><span>⚛️ <b>Reactor Core</b></span><span>${locs.reactor}</span></div>
+      <div class="titan-loc-box ${getLocClass(locs.legs)}"><span>🦿 <b>Legs / Drive</b></span><span>${locs.legs}</span></div>
+    `;
+
+    const facingDeg = Math.round(((Phaser.Math.RadToDeg(focusTitan.facingRad || 0) + 360) % 360));
+    const compass = facingDeg >= 225 && facingDeg < 315 ? 'NORTH ▲' : (facingDeg >= 45 && facingDeg < 135 ? 'SOUTH ▼' : (facingDeg >= 135 && facingDeg < 225 ? 'WEST ◀' : 'EAST ▶'));
+    const salvosLeft = Math.max(0, (focusTitan.maxSalvos || 1) - (focusTitan.salvosFired || 0));
+    const dmgHistory = (focusTitan.damageLog && focusTitan.damageLog.length > 0)
+      ? `<div style="color:#fca5a5; margin-top:2px;">💥 Hits Taken: ${focusTitan.damageLog.join(' | ')}</div>`
+      : '';
+    wpnEl.innerHTML =
+      `<div>🧭 <b>Facing:</b> ${compass} (180° Front Arc) | 🎯 <b>Weapon Salvos Ready:</b> ${salvosLeft}/${focusTitan.maxSalvos || 1} | ⚔️ <b>CAF:</b> ${focusTitan.damageState === 'HEAVY' ? Math.floor(focusTitan.caf / 2) : focusTitan.caf}</div>` +
+      dmgHistory;
   }
 
   getSideMeta(side) {
@@ -2388,6 +2767,13 @@ class NetEpicScene extends Phaser.Scene {
       inReserve: false,
       deepStrikeUsed: false,
       deepStrikeActive: false,
+      facingRad: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2, // South side faces North, North side faces South
+      hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy),                 // Titans & Super-Heavies: 180° front arc
+      maxSalvos: cfg.isTitan ? (cfg.maxSalvos || 3) : (cfg.superHeavy ? (cfg.maxSalvos || 2) : 1),
+      salvosFired: 0,
+      standsFired: new Set(),
+      locationDamage: { head: 'ONLINE', weapons: 'ONLINE', reactor: 'ONLINE', legs: 'ONLINE' },
+      damageLog: [],
       stands: []
     };
 
@@ -2481,6 +2867,7 @@ class NetEpicScene extends Phaser.Scene {
       color: '#38bdf8', padding: { x: 5, y: 2 }
     }).setOrigin(0.5);
     this.updateDetachmentBadge(det);
+    this.applyStandFacing(det);
 
     this.detachments.push(det);
   }
@@ -2542,20 +2929,40 @@ class NetEpicScene extends Phaser.Scene {
     const rawRoll = Phaser.Math.Between(1, 6);
     const dmgRoll = Math.min(6, rawRoll + (isCloseCombat ? 1 : 0));
 
+    // Hit location (visual tracker for the Titan HUD): 1-2 Legs/Drive, 3-4 Weapon Mounts, 5 Head/Bridge, 6 Reactor
+    const locRoll = Phaser.Math.Between(1, 6);
+    const locKey = locRoll <= 2 ? 'legs' : (locRoll <= 4 ? 'weapons' : (locRoll === 5 ? 'head' : 'reactor'));
+    const locName = { legs: 'Legs/Drive', weapons: 'Weapon Mounts', head: 'Head/Bridge', reactor: 'Reactor' }[locKey];
+    if (!det.locationDamage) det.locationDamage = { head: 'ONLINE', weapons: 'ONLINE', reactor: 'ONLINE', legs: 'ONLINE' };
+    if (!det.damageLog) det.damageLog = [];
+    const record = (result, cls) => {
+      det.damageLog.push(`${locName}: ${result}`);
+      if (det.damageLog.length > 4) det.damageLog.shift();
+      if (this._dmgRollBuffer) {
+        this._dmgRollBuffer.push({ val: rawRoll, cls, sub: locName.split('/')[0], tip: `${det.name}: ${locName} — ${result}` });
+      }
+      const strokeCol = det.damageState === 'HEAVY' ? 0xef4444 : (det.damageState === 'LIGHT' ? 0xf59e0b : null);
+      if (strokeCol && victim.baseBg) victim.baseBg.setStrokeStyle(3, strokeCol);
+    };
+
     if (dmgRoll === 1) {
       window.sfx.playSave();
-      this.spawnFloatingText(vx, vy - 12, `🛡️ GLANCING BLOW (Roll ${rawRoll}: No Effect!)`, '#fde047', '12px');
-      this.log(`🛡️ <b>Super-Heavy Damage Roll (${rawRoll}):</b> Glancing blow against <b>${det.name}</b>'s thick hull — <b>No Effect!</b>`);
+      if (det.locationDamage[locKey] === 'ONLINE') det.locationDamage[locKey] = 'SCRATCHED';
+      record('Glancing', 'die-shield');
+      this.spawnFloatingText(vx, vy - 12, `🛡️ GLANCING BLOW on ${locName} (Roll ${rawRoll}: No Effect!)`, '#fde047', '12px');
+      this.log(`🛡️ <b>Super-Heavy Damage Roll (${rawRoll}):</b> Glancing blow against <b>${det.name}</b>'s ${locName} — <b>No Effect!</b>`);
       return false;
     }
 
     if (dmgRoll <= 3 && det.damageState === 'NONE') {
       det.damageState = 'LIGHT';
       det.toHitPenalty = -1;
+      det.locationDamage[locKey] = 'DAMAGED';
+      record('Light Damage', 'die-crit');
       window.sfx.playExplosion(false);
       this.spawnExplosionFX(vx, vy, 20, false);
-      this.spawnFloatingText(vx, vy - 14, `⚠️ LIGHT DAMAGE! (-1 To-Hit)`, '#fbbf24', '12px');
-      this.log(`⚠️ <b>Super-Heavy Damage Roll (${rawRoll}): LIGHT DAMAGE</b> on <b>${det.name}</b>! Suffers <b>-1 To-Hit</b> penalty (a second Light Damage escalates to Heavy Damage).`);
+      this.spawnFloatingText(vx, vy - 14, `⚠️ ${locName.toUpperCase()} HIT — LIGHT DAMAGE! (-1 To-Hit)`, '#fbbf24', '12px');
+      this.log(`⚠️ <b>Super-Heavy Damage Roll (${rawRoll}): LIGHT DAMAGE</b> to <b>${det.name}</b>'s <b>${locName}</b> (location roll ${locRoll})! Suffers <b>-1 To-Hit</b> penalty (a second Light Damage escalates to Heavy Damage).`);
       this.updateDetachmentBadge(det);
       return false;
     }
@@ -2563,21 +2970,57 @@ class NetEpicScene extends Phaser.Scene {
     if ((dmgRoll <= 3 && det.damageState === 'LIGHT') || (dmgRoll >= 4 && dmgRoll <= 5 && det.damageState !== 'HEAVY')) {
       det.damageState = 'HEAVY';
       det.toHitPenalty = -1;
+      det.locationDamage[locKey] = 'HEAVY DMG';
+      record('Heavy Damage', 'die-fail');
       window.sfx.playExplosion(false);
       this.spawnExplosionFX(vx, vy, 26, false);
-      this.spawnFloatingText(vx, vy - 14, `🔥 HEAVY DAMAGE! (-1 Hit & ½ CAF)`, '#f97316', '13px');
-      this.log(`🔥 <b>Super-Heavy Damage Roll (${rawRoll}): HEAVY DAMAGE</b> on <b>${det.name}</b>! Suffers <b>-1 To-Hit</b> and <b>CAF halved</b> (next Heavy hit destroys it!).`);
+      this.spawnFloatingText(vx, vy - 14, `🔥 ${locName.toUpperCase()} — HEAVY DAMAGE! (-1 Hit & ½ CAF)`, '#f97316', '13px');
+      this.log(`🔥 <b>Super-Heavy Damage Roll (${rawRoll}): HEAVY DAMAGE</b> to <b>${det.name}</b>'s <b>${locName}</b> (location roll ${locRoll})! Suffers <b>-1 To-Hit</b> and <b>CAF halved</b> (next Heavy hit destroys it!).`);
       this.updateDetachmentBadge(det);
       return false;
     }
 
     // Roll 6 OR second Heavy Damage -> CATASTROPHIC REACTOR EXPLOSION!
+    det.locationDamage[locKey] = 'CRIT';
+    det.locationDamage.reactor = 'CRIT';
+    record('DESTROYED', 'die-fail');
     window.sfx.playExplosion(true);
     this.spawnExplosionFX(vx, vy, 44, true);
     this.spawnFloatingText(vx, vy - 22, `💥 CATASTROPHIC EXPLOSION!`, '#ef4444', '14px');
-    this.log(`💥 <b>Super-Heavy Damage Roll (${rawRoll}): CATASTROPHIC REACTOR EXPLOSION! ${det.name}</b> is obliterated in a massive fireball!`);
+    this.log(`💥 <b>Super-Heavy Damage Roll (${rawRoll}): CATASTROPHIC REACTOR EXPLOSION! ${det.name}</b> is obliterated in a massive fireball (final hit: ${locName})!`);
     this.removeCasualty(det, victim);
     return true;
+  }
+
+  // --- PHASE 12: FACING & 180° FRONT FIRE ARCS (Titans & Super-Heavies; Infantry & standard vehicles fire 360°) ---
+  applyStandFacing(det) {
+    if (!det) return;
+    const baseRot = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2; // Model art "front" in local space
+    det.stands.forEach(s => { if (s.container) s.container.rotation = (det.facingRad || 0) - baseRot; });
+  }
+
+  setDetachmentFacing(det, rad) {
+    if (!det) return;
+    det.facingRad = Phaser.Math.Angle.Wrap(rad);
+    this.applyStandFacing(det);
+  }
+
+  rotateSelectedFacing() {
+    const det = this.activatingDetachment || this.selectedDetachment;
+    if (!det || det.stands.length === 0 || this.isFactionAI(det.faction)) return;
+    const allowed = this.phase === 'DEPLOYMENT' || (this.phase === 'MOVEMENT' && this.activatingDetachment === det);
+    if (!allowed) return;
+    this.setDetachmentFacing(det, (det.facingRad || 0) + Math.PI / 4);
+    det.manualFacing = true;
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  isInFireArc(shooterStand, tx, ty) {
+    const det = shooterStand.detachment;
+    if (!det.hasFireArc) return true;
+    const ang = Phaser.Math.Angle.Between(shooterStand.container.x, shooterStand.container.y, tx, ty);
+    return Math.abs(Phaser.Math.Angle.Wrap(ang - (det.facingRad || 0))) <= Math.PI / 2 + 0.001;
   }
 
   // Toggle Skimmer Pop-Up Attack (NetEpic Rules p. 22: Skimmers on First Fire can rise above blocking terrain to shoot)
@@ -3018,6 +3461,10 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // Skimmer Pop-Up Attack (NetEpic p. 22) or Towering Class 4 Titans ignore intervening ground terrain blocks!
+    if (!this.isInFireArc(shooterStand, p2.x, p2.y)) {
+      return { valid: false, reason: 'Outside 180° Front Arc', distCm, coverMod: 0, indirect: false };
+    }
+
     const isPopUpLoS = Boolean(shooterStand.detachment.poppedUp || targetStand.detachment.poppedUp);
 
     // Can this stand use Indirect Fire over blocking terrain/units? (NetEpic p. 36: Artillery on First Fire orders)
@@ -3101,6 +3548,7 @@ class NetEpicScene extends Phaser.Scene {
     }
     const validPairs = [];
     for (const shooter of firerDet.stands) {
+      if (firerDet.standsFired && firerDet.standsFired.has(shooter.id)) continue;
       let bestTarget = null;
       for (const target of targetDet.stands) {
         const res = this.checkStandLoS(shooter, target, isSnapFire);
@@ -3166,12 +3614,31 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- RANGED COMBAT & ARTILLERY BARRAGE RESOLUTION ENGINE ---
-  executeRangedAttack(firerDet, targetDet, isSnapFire = false) {
+  executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+    const split = Boolean(opts.split);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
-      this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS of <b>${targetDet.name}</b>.`);
+      this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`);
       return;
     }
+
+    // Split Fire: Titans / Super-Heavies fire one weapon salvo at a time; normal detachments fire one stand at a time
+    const isSalvoUnit = (firerDet.maxSalvos || 1) > 1;
+    const salvosRemaining = Math.max(1, (firerDet.maxSalvos || 1) - (firerDet.salvosFired || 0));
+    const salvosUsed = isSalvoUnit ? (split ? 1 : salvosRemaining) : 0;
+    if (split && !isSalvoUnit) sol.validPairs = [sol.validPairs[0]];
+    const salvoFrac = isSalvoUnit ? salvosUsed / firerDet.maxSalvos : 1;
+    if (sol.isBarrage) {
+      sol.totalBp = Math.max(1, Math.round(sol.validPairs.length * (firerDet.weapon.barrageBp || 2) * salvoFrac));
+      sol.barrageStats = this.getBarrageStats(sol.totalBp, firerDet.weapon.tsm);
+    }
+    const dicePerStand = isSalvoUnit ? Math.max(1, Math.round(firerDet.weapon.dice * salvoFrac)) : firerDet.weapon.dice;
+    const salvoTag = isSalvoUnit ? ` [Weapon Salvo${salvosUsed > 1 ? 's' : ''} ${(firerDet.salvosFired || 0) + 1}${salvosUsed > 1 ? `–${(firerDet.salvosFired || 0) + salvosUsed}` : ''}/${firerDet.maxSalvos}]` : (split ? ' [Split Fire: 1 stand]' : '');
+
+    // Dice Tray collectors
+    const hitDiceUI = [];
+    const saveDiceUI = [];
+    this._dmgRollBuffer = [];
 
     const wpn = firerDet.weapon;
     const snapMod = (isSnapFire ? -1 : 0) + (firerDet.toHitPenalty || 0);
@@ -3219,19 +3686,23 @@ class NetEpicScene extends Phaser.Scene {
           const extraRoll = Phaser.Math.Between(1, 6);
           hitSuccess = extraRoll >= (neededToHit - 3);
         }
+        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', tip: `${vDet.name}: needed ${neededToHit}+` });
 
         if (hitSuccess) {
           hits++;
           // Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields first!
           if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
             saves++;
+            saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
             return;
           }
           const saveRoll = Phaser.Math.Between(1, 6);
           const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
           let neededSave = baseSave - barrageStats.tsm;
           if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave);
-          if (saveRoll >= neededSave && neededSave <= 6) {
+          const saved = saveRoll >= neededSave && neededSave <= 6;
+          saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+` });
+          if (saved) {
             saves++;
             window.sfx.playSave();
             this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : (vDet.fixedSave && saveRoll === vDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`, '#38bdf8', '11px');
@@ -3247,12 +3718,17 @@ class NetEpicScene extends Phaser.Scene {
       });
 
       this.log(
-        `🎲 Barrage Template Rolled <b>${totalDice}D6</b>: <span class="log-hit">${hits} Hit(s)</span> | ` +
+        `🎲 Barrage Template Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
         `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
       );
 
-      firerDet.fired = true;
-      this.updateDetachmentBadge(firerDet);
+      const bRows = [{ label: `Barrage To-Hit (${barrageStats.toHit}+, ${totalBp} BP)`, dice: hitDiceUI, summary: `${hits} hit` }];
+      if (saveDiceUI.length) bRows.push({ label: 'Saves', dice: saveDiceUI, summary: `${saves} saved` });
+      if (this._dmgRollBuffer.length) bRows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer });
+      this.showDiceRollTray(`💥 ${firerDet.name} Barrage ➔ ${targetDet.name}${salvoTag} — <span style="color:#f87171;">${kills} killed</span>`, bRows);
+      this._dmgRollBuffer = null;
+
+      this.markFirerAfterShot(firerDet, sol.validPairs, split, salvosUsed);
       affectedDets.forEach(d => this.checkBreakPoint(d));
       return;
     }
@@ -3278,11 +3754,12 @@ class NetEpicScene extends Phaser.Scene {
       // Modifiers penalize the shooter by increasing the needed To-Hit roll
       const neededToHit = wpn.toHit - snapMod - coverMod;
 
-      for (let d = 0; d < wpn.dice; d++) {
+      for (let d = 0; d < dicePerStand; d++) {
         if (targetDet.stands.length === 0) break;
         totalDice++;
         const roll = Phaser.Math.Between(1, 6);
         let hitSuccess = false;
+        let extraRoll = null;
 
         if (roll === 1) {
           hitSuccess = false; // Natural 1 always misses (p. 33)
@@ -3290,10 +3767,11 @@ class NetEpicScene extends Phaser.Scene {
           hitSuccess = roll >= neededToHit;
         } else if (roll === 6) {
           // To-Hit Roll Greater Than 6 (p. 34): 7 needs 6 then 4+, 8 needs 6 then 5+, 9 needs 6 then 6
-          const extraRoll = Phaser.Math.Between(1, 6);
+          extraRoll = Phaser.Math.Between(1, 6);
           const extraNeeded = neededToHit - 3;
           hitSuccess = extraRoll >= extraNeeded;
         }
+        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: extraRoll !== null ? `+${extraRoll}` : '', tip: `Needed ${neededToHit}+` });
 
         if (hitSuccess) {
           hits++;
@@ -3304,6 +3782,7 @@ class NetEpicScene extends Phaser.Scene {
           // 1. Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields before rolling Armor Save!
           if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
             saves++;
+            saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
             continue;
           }
 
@@ -3315,8 +3794,10 @@ class NetEpicScene extends Phaser.Scene {
           if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave);
           const holoSave = this.getHoloFieldSave(targetDet);
           if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
+          const saved = saveRoll >= neededSave && neededSave <= 6;
+          saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+` });
 
-          if (saveRoll >= neededSave && neededSave <= 6) {
+          if (saved) {
             saves++;
             window.sfx.playSave();
             const isHolo = (holoSave !== null && neededSave === holoSave);
@@ -3343,13 +3824,35 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this.log(
-      `🎲 Rolled <b>${totalDice}D6</b>: <span class="log-hit">${hits} Hit(s)</span> | ` +
+      `🎲 Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
       `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
     );
 
-    firerDet.fired = true;
-    this.updateDetachmentBadge(firerDet);
+    const rows = [
+      { label: `To-Hit (${wpn.toHit - snapMod}+ base)`, dice: hitDiceUI, summary: `${hits} hit` }
+    ];
+    if (saveDiceUI.length) rows.push({ label: `Saves (${targetDet.name})`, dice: saveDiceUI, summary: `${saves} saved` });
+    if (this._dmgRollBuffer.length) rows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer, summary: targetDet.damageState });
+    this.showDiceRollTray(`🎲 ${firerDet.name} ➔ ${targetDet.name}${salvoTag}${isSnapFire ? ' ⚡SNAP' : ''} — <span style="color:#f87171;">${kills} killed</span>`, rows);
+    this._dmgRollBuffer = null;
+
+    this.markFirerAfterShot(firerDet, sol.validPairs, split, salvosUsed);
     this.checkBreakPoint(targetDet);
+  }
+
+  // After a shot: track which stands / Titan weapon salvos have fired. Detachment is "fired" once everything has been used.
+  markFirerAfterShot(firerDet, pairs, split, salvosUsed) {
+    if (!firerDet.standsFired) firerDet.standsFired = new Set();
+    if ((firerDet.maxSalvos || 1) > 1) {
+      firerDet.salvosFired = (firerDet.salvosFired || 0) + salvosUsed;
+      firerDet.fired = firerDet.salvosFired >= firerDet.maxSalvos;
+    } else if (split) {
+      pairs.forEach(p => firerDet.standsFired.add(p.shooter.id));
+      firerDet.fired = firerDet.stands.every(s => firerDet.standsFired.has(s.id));
+    } else {
+      firerDet.fired = true;
+    }
+    this.updateDetachmentBadge(firerDet);
   }
 
   removeCasualty(det, specificStand = null) {
@@ -4416,6 +4919,10 @@ class NetEpicScene extends Phaser.Scene {
     const northName = this.getSideName('ORKS');
     const winName = this.getSideName(this.initiativeWinner);
     this.log(`🎲 <b>Initiative Roll:</b> ${southName} ${impRoll} vs ${northName} ${orkRoll}. <b>${winName}</b> wins Initiative!`);
+    this.showDiceRollTray(`🎲 Initiative — ${winName} wins`, [
+      { label: southName, dice: [{ val: impRoll, cls: impRoll > orkRoll ? 'die-pass' : 'die-fail' }] },
+      { label: northName, dice: [{ val: orkRoll, cls: orkRoll > impRoll ? 'die-pass' : 'die-fail' }] }
+    ]);
     this.updateUI();
     this.drawOverlays();
     this.checkAndRunAITurn();
@@ -4493,6 +5000,11 @@ class NetEpicScene extends Phaser.Scene {
 
     // Check if the unit actually moved (or Deep Struck)
     const didMove = wasDeepStriking || det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
+    if (det.hasFireArc && didMove && !wasDeepStriking && !det.manualFacing) {
+      let dx = 0, dy = 0;
+      det.stands.forEach(s => { dx += s.container.x - s.originX; dy += s.container.y - s.originY; });
+      if (Math.hypot(dx, dy) > 10) this.setDetachmentFacing(det, Math.atan2(dy, dx));
+    }
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     this.syncEmbarkedPassengers(det);
     det.moved = true;
@@ -4921,6 +5433,12 @@ class NetEpicScene extends Phaser.Scene {
       `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkModCaf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
     );
 
+    const impWin = impTotal > orkTotal, orkWin = orkTotal > impTotal;
+    this.showDiceRollTray(`⚔️ Close Combat — ${impWin ? impDet.name : (orkWin ? orkDet.name : 'TIE')}${impWin || orkWin ? ' wins' : ''}`, [
+      { label: `${impDet.name} (+${impModCaf} CAF)`, dice: impRolls.map(v => ({ val: v, cls: impWin ? 'die-pass' : (orkWin ? 'die-fail' : 'die-crit') })), summary: `= ${impTotal}` },
+      { label: `${orkDet.name} (+${orkModCaf} CAF)`, dice: orkRolls.map(v => ({ val: v, cls: orkWin ? 'die-pass' : (impWin ? 'die-fail' : 'die-crit') })), summary: `= ${orkTotal}` }
+    ]);
+
     // Filter remaining bouts to ensure both participants are still alive
     this.ccBouts = this.ccBouts.filter(b =>
       b.impStand.detachment.stands.includes(b.impStand) &&
@@ -4944,10 +5462,19 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
-  fireAtSelectedTarget() {
-    if (!this.activatingDetachment || !this.targetDetachment) return;
-    this.executeRangedAttack(this.activatingDetachment, this.targetDetachment, false);
-    this.finishCombatActivation();
+  fireAtSelectedTarget(split = false) {
+    const firer = this.activatingDetachment;
+    if (!firer || !this.targetDetachment) return;
+    this.executeRangedAttack(firer, this.targetDetachment, false, { split: Boolean(split) });
+    if (firer.fired || firer.stands.length === 0) {
+      this.finishCombatActivation();
+    } else {
+      // Remaining stands / weapon salvos can now pick another target
+      this.targetDetachment = null;
+      this.log(`🎯 <b>${firer.name}</b> still has ${firer.maxSalvos > 1 ? `${firer.maxSalvos - firer.salvosFired} weapon salvo(s)` : `${firer.stands.filter(s => !firer.standsFired.has(s.id)).length} stand(s)`} ready — tap another enemy (or click Done).`);
+      this.drawOverlays();
+      this.updateUI();
+    }
   }
 
   holdFireDetachment() {
@@ -5091,6 +5618,9 @@ class NetEpicScene extends Phaser.Scene {
       d.moved = false;
       d.fired = false;
       d.deepStrikeActive = false;
+      d.salvosFired = 0;
+      d.standsFired = new Set();
+      d.manualFacing = false;
       this.updateDetachmentBadge(d);
     });
 
@@ -5124,6 +5654,35 @@ class NetEpicScene extends Phaser.Scene {
   drawOverlays() {
     this.overlayGfx.clear();
     this.losGfx.clear();
+
+    // 0. Facing chevrons for all units with a 180° front arc + arc wedge for the selected/active one
+    this.detachments.forEach(d => {
+      if (!d.hasFireArc || d.embarkedOn || d.inReserve || d.stands.length === 0) return;
+      const f = d.facingRad || 0;
+      const col = this.getSideMeta(d.faction).phaserColor || 0xffffff;
+      d.stands.forEach(s => {
+        const cx = s.container.x, cy = s.container.y;
+        const tipX = cx + Math.cos(f) * 34, tipY = cy + Math.sin(f) * 34;
+        this.overlayGfx.lineStyle(3, col, 0.95);
+        this.overlayGfx.lineBetween(cx + Math.cos(f) * 20, cy + Math.sin(f) * 20, tipX, tipY);
+        this.overlayGfx.lineBetween(tipX, tipY, tipX - Math.cos(f - 0.5) * 9, tipY - Math.sin(f - 0.5) * 9);
+        this.overlayGfx.lineBetween(tipX, tipY, tipX - Math.cos(f + 0.5) * 9, tipY - Math.sin(f + 0.5) * 9);
+      });
+      const focus = (d === this.selectedDetachment || d === this.activatingDetachment);
+      if (focus) {
+        const s = d.stands[0];
+        const r = Math.min(d.weapon.rangeCm, 60) * PX_PER_CM;
+        this.losGfx.fillStyle(col, 0.07);
+        this.losGfx.slice(s.container.x, s.container.y, r, f - Math.PI / 2, f + Math.PI / 2, false);
+        this.losGfx.fillPath();
+        this.losGfx.lineStyle(1.5, col, 0.55);
+        this.losGfx.beginPath();
+        this.losGfx.arc(s.container.x, s.container.y, r, f - Math.PI / 2, f + Math.PI / 2, false);
+        this.losGfx.strokePath();
+        this.losGfx.lineBetween(s.container.x + Math.cos(f - Math.PI / 2) * r, s.container.y + Math.sin(f - Math.PI / 2) * r,
+                                s.container.x + Math.cos(f + Math.PI / 2) * r, s.container.y + Math.sin(f + Math.PI / 2) * r);
+      }
+    });
 
     // 1. Always draw red/orange Close Combat engagement links, Pinned rings, and Gold Fortified Garrison rings
     this.detachments.forEach(d => {
@@ -5551,6 +6110,7 @@ class NetEpicScene extends Phaser.Scene {
           btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
           document.getElementById('btn-move-group').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-move-compact').style.display = isAct ? 'block' : 'none';
+          document.getElementById('btn-move-rotate').style.display = (isAct && this.selectedDetachment.hasFireArc) ? 'block' : 'none';
           document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
           document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
@@ -5637,6 +6197,7 @@ class NetEpicScene extends Phaser.Scene {
         combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
 
         const btnFire = document.getElementById('btn-fire-target');
+        const btnSplit = document.getElementById('btn-split-fire');
         const btnHold = document.getElementById('btn-hold-fire');
         const btnCombatPop = document.getElementById('btn-combat-popup');
         btnHold.style.display = this.phase === 'COMBAT_FIRST' ? 'block' : 'none';
@@ -5655,19 +6216,37 @@ class NetEpicScene extends Phaser.Scene {
         if (this.activatingDetachment && this.targetDetachment) {
           const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
           btnFire.disabled = sol.validPairs.length === 0;
+
+          const isSalvoUnit = (this.activatingDetachment.maxSalvos || 1) > 1;
+          const salvosRemaining = Math.max(0, (this.activatingDetachment.maxSalvos || 1) - (this.activatingDetachment.salvosFired || 0));
+          const unfiredStandsCount = this.activatingDetachment.stands.filter(s => !(this.activatingDetachment.standsFired && this.activatingDetachment.standsFired.has(s.id))).length;
+          const canSplit = sol.validPairs.length > 0 && ((isSalvoUnit && salvosRemaining > 1) || (!isSalvoUnit && unfiredStandsCount > 1));
+
+          if (canSplit && btnSplit) {
+            btnSplit.style.display = 'block';
+            btnSplit.disabled = false;
+            btnSplit.innerText = isSalvoUnit
+              ? `🎯 Fire 1 Salvo (${(this.activatingDetachment.salvosFired || 0) + 1}/${this.activatingDetachment.maxSalvos})`
+              : `🎯 Split Fire (1 Stand)`;
+          } else if (btnSplit) {
+            btnSplit.style.display = 'none';
+          }
+
           if (sol.isBarrage && sol.validPairs.length > 0) {
             const modeTag = sol.isIndirect ? '📡 INDIRECT (-1 Hit)' : '💥 DIRECT';
             btnFire.innerText = `${modeTag} Barrage at ${this.targetDetachment.name} (${sol.totalBp} BP → ${sol.templateTargets.length} stands under 6cm template!)`;
           } else {
+            const salvoInfo = isSalvoUnit ? ` (All ${salvosRemaining} Salvos)` : '';
             btnFire.innerText = sol.validPairs.length > 0
-              ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
-              : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+              ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)${salvoInfo}`
+              : `🚫 No LoS / Out of Range/Arc to ${this.targetDetachment.name}`;
           }
           promptText.innerText = sol.isBarrage
             ? `Orange 6cm Circle = Barrage Template | Orange ray = Indirect Fire (-1 Hit) | Green ray = Direct LoS`
-            : `Green ray = Clear LoS | Yellow ray = Cover (-1 Woods / -2 Building) | Red ray = Blocked/In CC/Out of Range`;
+            : `Green ray = Clear LoS | Yellow ray = Cover (-1 Woods / -2 Building) | Red ray = Blocked/Out of Range/Arc`;
         } else if (this.activatingDetachment) {
           btnFire.disabled = true;
+          if (btnSplit) btnSplit.style.display = 'none';
           const isArt = this.activatingDetachment.weapon.barrage;
           const isSkim = this.activatingDetachment.skimmer && this.phase === 'COMBAT_FIRST';
           btnFire.innerText = isArt ? 'Tap an Enemy Stand to place 6cm Barrage Template' : 'Tap an Enemy Stand on the map to check LoS & Fire';
@@ -5738,6 +6317,8 @@ class NetEpicScene extends Phaser.Scene {
       selStats.innerText = 'Tap any unit stand on the battlefield (Double-click to toggle Group Move)';
       selOrderBadge.innerText = '';
     }
+
+    this.updateTitanHUD(this.selectedDetachment);
   }
 }
 
