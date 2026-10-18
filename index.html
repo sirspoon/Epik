@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NetEpic Gold - Phase 3 (Close Combat, Pinning, LoS & Ranged Combat)</title>
+  <title>NetEpic Gold - Phase 4 (Objectives, Fall Back, Rallying & Victory)</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -49,7 +49,7 @@
       flex: 1; margin: 8px 0; overflow: hidden; pointer-events: none;
     }
     #combat-log {
-      width: 330px; max-height: 240px; overflow-y: auto;
+      width: 340px; max-height: 250px; overflow-y: auto;
       font-size: 0.76rem; line-height: 1.35; pointer-events: auto;
       background: rgba(15, 23, 42, 0.88);
     }
@@ -61,7 +61,7 @@
 
     #bottom-bar {
       display: flex; flex-direction: column; gap: 6px;
-      max-width: 740px; width: 100%; margin: 0 auto;
+      max-width: 760px; width: 100%; margin: 0 auto;
     }
     .btn-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
     button {
@@ -82,6 +82,7 @@
     .btn-fire:hover:not(:disabled) { background: #b91c1c; }
     .btn-cc { background: #9333ea; border-color: #c084fc; }
     .btn-cc:hover:not(:disabled) { background: #7e22ce; }
+    .btn-warn { background: #d97706; border-color: #fbbf24; }
 
     .alert-banner {
       background: rgba(220, 38, 38, 0.92); color: white;
@@ -90,6 +91,9 @@
     }
     .snap-banner {
       background: rgba(217, 119, 6, 0.95); border: 2px solid #fde047;
+    }
+    .victory-banner {
+      background: rgba(22, 163, 74, 0.96); border: 2px solid #fde047; font-size: 0.95rem;
     }
   </style>
 </head>
@@ -102,7 +106,7 @@
     <div style="display:flex; align-items:center; gap:8px;">
       <span id="phase-badge" class="phase-badge">I. Orders Phase</span>
       <span id="turn-text" class="status-text">Turn 1</span>
-      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP</span>
+      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Target: 20 VP)</span>
     </div>
     <div id="prompt-text" class="status-text">Tap a detachment to assign hidden orders</div>
     <div style="display:flex; gap:6px;">
@@ -112,20 +116,26 @@
 
   <div id="mid-area">
     <div id="combat-log" class="panel">
-      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (LoS, Pinning & Dice)</div>
+      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (Orders, Combat & Rally)</div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 3! Charge into base contact to Pin & fight Close Combat (2D6 + CAF).</div>
+        <div class="log-entry">Welcome to Phase 4! Capture Objectives (5 VP each, 15cm radius) & break enemy formations to reach 20 VP!</div>
       </div>
     </div>
   </div>
 
   <div id="bottom-bar">
+    <div id="victory-alert" class="alert-banner victory-banner"></div>
+
     <div id="coherency-alert" class="alert-banner">
       ⚠️ OUT OF COHERENCY! All stands must form an unbroken chain within 6 cm.
     </div>
 
     <div id="engagement-alert" class="alert-banner">
       ⚠️ TOO CLOSE TO ENEMY! Only units on CHARGE orders may move into Close Combat.
+    </div>
+
+    <div id="fallback-alert" class="alert-banner">
+      ⚠️ FALL BACK RULE! Retreating stands must move toward their own table edge (IMP → South, ORK → North).
     </div>
 
     <div id="snapfire-banner" class="alert-banner snap-banner">
@@ -155,6 +165,7 @@
       <!-- II. Movement Phase Controls -->
       <div id="movement-controls" class="btn-row" style="display:none;">
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
+        <button id="btn-auto-fallback" class="btn-warn" onclick="window.gameScene.autoRetreatDetachment()" style="display:none;">🏳️ Auto-Retreat Toward Home Edge</button>
         <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Move</button>
         <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
       </div>
@@ -171,6 +182,12 @@
         <button id="btn-cc-next" class="btn-cc" onclick="window.gameScene.resolveNextCloseCombatBout()">⚔️ Fight Next Bout (2D6 + CAF)</button>
         <button id="btn-cc-all" class="btn-fire" onclick="window.gameScene.resolveAllCloseCombats()">⚡ Auto-Resolve All Bouts</button>
       </div>
+
+      <!-- IV. End Phase Controls -->
+      <div id="end-controls" class="btn-row" style="display:none;">
+        <button id="btn-rally-end" class="btn-confirm" onclick="window.gameScene.resolveEndPhase()">🎲 Roll Rally Checks & Start Next Turn</button>
+        <button id="btn-restart-game" class="btn-primary" onclick="window.location.reload()" style="display:none;">🔄 Restart Battle</button>
+      </div>
     </div>
   </div>
 </div>
@@ -183,6 +200,8 @@ const BOARD_H = 125 * PX_PER_CM;
 const COHERENCY_PX = 6 * PX_PER_CM; // 6 cm
 const ENGAGE_PX = 32;               // Base-to-base contact threshold (~3.2 cm center-to-center)
 const MIN_ENEMY_GAP_PX = 34;        // Minimum distance for non-charging units
+const OBJ_RADIUS_PX = 15 * PX_PER_CM; // 15 cm Objective capture radius
+const VICTORY_VP_TARGET = 20;       // Victory Point threshold checked in End Phase
 
 const PIN_CLASS_NAMES = {
   1: 'Infantry (Class 1)',
@@ -206,7 +225,7 @@ class NetEpicScene extends Phaser.Scene {
   create() {
     window.gameScene = this;
     this.turn = 1;
-    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT' | 'SNAP_INTERRUPT' | 'COMBAT_FIRST' | 'COMBAT_CC' | 'COMBAT_ADVANCE'
+    this.phase = 'ORDERS'; // 'ORDERS' | 'MOVEMENT' | 'SNAP_INTERRUPT' | 'COMBAT_FIRST' | 'COMBAT_CC' | 'COMBAT_ADVANCE' | 'END_PHASE'
     this.initiativeWinner = 'IMPERIUM';
     this.activePlayer = 'IMPERIUM';
 
@@ -218,7 +237,8 @@ class NetEpicScene extends Phaser.Scene {
     this.ccBouts = [];
     this.defenderFoughtCounts = new Map();
 
-    this.vp = { IMPERIUM: 0, ORKS: 0 };
+    this.vp = { IMPERIUM: 0, ORKS: 0 };    // Casualty / Break Point VPs
+    this.objVp = { IMPERIUM: 0, ORKS: 0 }; // Objective Control VPs (5 VP per objective)
 
     // Terrain Definitions for LoS & Cover
     this.woods = [
@@ -229,15 +249,29 @@ class NetEpicScene extends Phaser.Scene {
       { x: 890, y: 555, w: 170, h: 140, name: 'Manufactorum' }
     ];
 
+    // Strategic Objective Markers (NetEpic Rules p. 11 & 43: 15cm capture radius, worth 5 VP each)
+    this.objectives = [
+      { id: 1, name: 'Obj #1 (West Woods)', x: 480, y: 625, owner: 'NEUTRAL' },
+      { id: 2, name: 'Obj #2 (Central Road)', x: 790, y: 625, owner: 'NEUTRAL' },
+      { id: 3, name: 'Obj #3 (East Sector)', x: 1160, y: 625, owner: 'NEUTRAL' },
+      { id: 4, name: 'Obj #4 (East Woods)', x: 1460, y: 625, owner: 'NEUTRAL' }
+    ];
+
     this.boardGfx = this.add.graphics();
+    this.objGfx = this.add.graphics();
     this.losGfx = this.add.graphics();
     this.overlayGfx = this.add.graphics();
 
     this.drawBattlefield();
+    this.spawnObjectives();
     this.spawnDemoArmies();
     this.setupCameraAndInput();
     this.resetCamera();
     this.updateUI();
+  }
+
+  getTotalVP(faction) {
+    return this.vp[faction] + this.objVp[faction];
   }
 
   log(htmlMsg) {
@@ -285,6 +319,79 @@ class NetEpicScene extends Phaser.Scene {
 
     this.boardGfx.lineStyle(4, 0x94a3b8, 1);
     this.boardGfx.strokeRect(0, 0, BOARD_W, BOARD_H);
+  }
+
+  spawnObjectives() {
+    this.objectives.forEach(obj => {
+      obj.label = this.add.text(obj.x, obj.y + 18, `🚩 OBJ #${obj.id} (5 VP)\n[NEUTRAL]`, {
+        fontSize: '10px', fontStyle: 'bold', color: '#fde047', align: 'center',
+        backgroundColor: 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
+      }).setOrigin(0.5);
+    });
+    this.drawObjectives();
+  }
+
+  drawObjectives() {
+    this.objGfx.clear();
+    this.objectives.forEach(obj => {
+      const color = obj.owner === 'IMPERIUM' ? 0x3b82f6 : (obj.owner === 'ORKS' ? 0x22c55e : 0xfacc15);
+      const hex = obj.owner === 'IMPERIUM' ? '#60a5fa' : (obj.owner === 'ORKS' ? '#4ade80' : '#fde047');
+
+      // 15cm capture zone ring
+      this.objGfx.lineStyle(1, color, 0.35);
+      this.objGfx.strokeCircle(obj.x, obj.y, OBJ_RADIUS_PX);
+      this.objGfx.fillStyle(color, 0.06);
+      this.objGfx.fillCircle(obj.x, obj.y, OBJ_RADIUS_PX);
+
+      // Objective center beacon
+      this.objGfx.fillStyle(color, 0.95);
+      this.objGfx.fillCircle(obj.x, obj.y, 9);
+      this.objGfx.lineStyle(2, 0xffffff, 1);
+      this.objGfx.strokeCircle(obj.x, obj.y, 9);
+
+      if (obj.label) {
+        obj.label.setText(`🚩 OBJ #${obj.id} (5 VP)\n[${obj.owner}]`);
+        obj.label.setColor(hex);
+      }
+    });
+  }
+
+  evaluateObjectives(logChanges = false) {
+    let impCount = 0, orkCount = 0;
+    this.objectives.forEach(obj => {
+      let closestImp = Infinity;
+      let closestOrk = Infinity;
+
+      this.detachments.forEach(d => {
+        // Broken units on FALL_BACK cannot capture objectives (NetEpic p. 43)
+        if (d.stands.length === 0 || d.order === 'FALL_BACK') return;
+        d.stands.forEach(s => {
+          const dist = Phaser.Math.Distance.Between(obj.x, obj.y, s.container.x, s.container.y);
+          if (dist <= OBJ_RADIUS_PX) {
+            if (d.faction === 'IMPERIUM' && dist < closestImp) closestImp = dist;
+            if (d.faction === 'ORKS' && dist < closestOrk) closestOrk = dist;
+          }
+        });
+      });
+
+      const prevOwner = obj.owner;
+      if (closestImp <= OBJ_RADIUS_PX && closestImp < closestOrk) {
+        obj.owner = 'IMPERIUM';
+      } else if (closestOrk <= OBJ_RADIUS_PX && closestOrk < closestImp) {
+        obj.owner = 'ORKS';
+      }
+
+      if (logChanges && obj.owner !== prevOwner) {
+        this.log(`🚩 <b>${obj.name}</b> captured by <b>${obj.owner}</b>! (+5 VP)`);
+      }
+
+      if (obj.owner === 'IMPERIUM') impCount++;
+      if (obj.owner === 'ORKS') orkCount++;
+    });
+
+    this.objVp.IMPERIUM = impCount * 5;
+    this.objVp.ORKS = orkCount * 5;
+    this.drawObjectives();
   }
 
   spawnDemoArmies() {
@@ -418,6 +525,17 @@ class NetEpicScene extends Phaser.Scene {
           if (d < MIN_ENEMY_GAP_PX) return false;
         }
       }
+    }
+    return true;
+  }
+
+  // Units on FALL_BACK must move toward their own table edge (Imperium -> South y+, Orks -> North y-)
+  checkFallBackMoveRule(det) {
+    if (!det || det.order !== 'FALL_BACK') return true;
+    for (const s of det.stands) {
+      if (s.pinnedAtStart) continue;
+      if (det.faction === 'IMPERIUM' && s.container.y < s.originY - 2) return false;
+      if (det.faction === 'ORKS' && s.container.y > s.originY + 2) return false;
     }
     return true;
   }
@@ -607,8 +725,14 @@ class NetEpicScene extends Phaser.Scene {
       if (moraleRoll < det.morale && det.stands.length > 0) {
         det.order = 'FALL_BACK';
         det.orderRevealed = true;
+
+        // NetEpic p. 42: Any stands locked in Close Combat when the unit fails Morale and Falls Back are destroyed!
+        const engagedVictims = det.stands.filter(s => this.isStandEngaged(s));
+        engagedVictims.forEach(v => this.removeCasualty(det, v));
+        const routNote = engagedVictims.length > 0 ? ` (${engagedVictims.length} stand(s) in melee overrun & destroyed!)` : '';
+
         this.updateDetachmentBadge(det);
-        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) -> <b>FALL BACK!</b> (+${det.vpValue} VP to ${scoringSide})`);
+        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) → <b>FALL BACK!</b>${routNote} (+${det.vpValue} VP to ${scoringSide})`);
       } else {
         this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringSide}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
       }
@@ -628,7 +752,7 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const clickedDet = gameObject.standData.detachment;
 
-      if (this.phase === 'SNAP_INTERRUPT' || this.phase === 'COMBAT_CC') return;
+      if (this.phase === 'SNAP_INTERRUPT' || this.phase === 'COMBAT_CC' || this.phase === 'END_PHASE') return;
 
       // In Combat Phase: if we already have an active friendly firing detachment, clicking an enemy selects it as Target!
       if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
@@ -799,11 +923,28 @@ class NetEpicScene extends Phaser.Scene {
     this.drawOverlays();
   }
 
+  // 1-click Compulsory Retreat helper for FALL_BACK detachments (2x Move toward own table edge)
+  autoRetreatDetachment() {
+    const det = this.activatingDetachment;
+    if (!det || det.order !== 'FALL_BACK') return;
+    const retreatDistPx = det.moveCm * ORDER_INFO.FALL_BACK.mult * PX_PER_CM;
+    const dirY = det.faction === 'IMPERIUM' ? 1 : -1; // IMP retreats South (+y), ORK retreats North (-y)
+
+    det.stands.forEach(s => {
+      if (s.pinnedAtStart) return;
+      s.container.x = s.originX;
+      s.container.y = Phaser.Math.Clamp(s.originY + dirY * retreatDistPx, 20, BOARD_H - 20);
+    });
+    this.updateDetachmentBadgePos(det);
+    this.drawOverlays();
+  }
+
   confirmDetachmentMove() {
     const det = this.activatingDetachment;
     if (!det) return;
     if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
     if (!this.checkEngagementMoveRule(det)) return;
+    if (!this.checkFallBackMoveRule(det)) return;
 
     // Check if the unit actually moved
     const didMove = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
@@ -954,7 +1095,7 @@ class NetEpicScene extends Phaser.Scene {
       if (this.phase === 'COMBAT_FIRST') {
         this.startCloseCombatSegment();
       } else {
-        this.endTurn();
+        this.startEndPhase();
       }
       return;
     }
@@ -1177,8 +1318,74 @@ class NetEpicScene extends Phaser.Scene {
     this.advanceCombatTurn();
   }
 
-  endTurn() {
-    this.log(`🏁 <b>End of Turn ${this.turn}!</b> Preparing Turn ${this.turn + 1} Orders Phase.`);
+  // --- IV. END PHASE (OBJECTIVE CAPTURE, RALLY CHECKS & VICTORY) ---
+  startEndPhase() {
+    this.phase = 'END_PHASE';
+    this.selectedDetachment = null;
+    this.activatingDetachment = null;
+    this.targetDetachment = null;
+
+    this.evaluateObjectives(true);
+
+    const impTot = this.getTotalVP('IMPERIUM');
+    const orkTot = this.getTotalVP('ORKS');
+    this.log(`🏁 Entering <b>IV. End Phase (Turn ${this.turn})</b> — Score: Imperium <b>${impTot} VP</b> | Orks <b>${orkTot} VP</b>.`);
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  resolveEndPhase() {
+    if (this.phase !== 'END_PHASE') return;
+
+    // 1. Roll Rally Checks for all detachments currently on FALL_BACK orders (NetEpic p. 42)
+    const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK');
+    fallBackUnits.forEach(d => {
+      const roll = Phaser.Math.Between(1, 6);
+      if (roll >= d.morale) {
+        d.order = null;
+        d.orderRevealed = false;
+        this.updateDetachmentBadge(d);
+        this.log(`🎺 <b>RALLY! ${d.name}</b> rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied from Fall Back!`);
+      } else {
+        // Failed Rally: remains on FALL_BACK and makes a compulsory 1x Move withdrawal toward home edge
+        const retreatPx = d.moveCm * PX_PER_CM;
+        const dirY = d.faction === 'IMPERIUM' ? 1 : -1;
+        d.stands.forEach(s => {
+          s.container.y = Phaser.Math.Clamp(s.container.y + dirY * retreatPx, 20, BOARD_H - 20);
+          s.originX = s.container.x;
+          s.originY = s.container.y;
+        });
+        this.updateDetachmentBadge(d);
+        this.log(`🏳️ <b>${d.name}</b> failed Rally (${roll} < ${d.morale}+) — retreats ${d.moveCm}cm toward home edge and stays on <b>FALL BACK</b>!`);
+      }
+    });
+
+    // Re-evaluate objectives in case a unit rallied on an objective
+    this.evaluateObjectives(true);
+
+    // 2. Check Victory Conditions (20+ VP at end of turn or total annihilation)
+    const impAlive = this.detachments.some(d => d.faction === 'IMPERIUM' && d.stands.length > 0);
+    const orkAlive = this.detachments.some(d => d.faction === 'ORKS' && d.stands.length > 0);
+    const impTot = this.getTotalVP('IMPERIUM');
+    const orkTot = this.getTotalVP('ORKS');
+
+    let winner = null;
+    if (!orkAlive && impAlive) winner = 'IMPERIUM (Total Annihilation)';
+    else if (!impAlive && orkAlive) winner = 'ORKS (Total Annihilation)';
+    else if ((impTot >= VICTORY_VP_TARGET || orkTot >= VICTORY_VP_TARGET) && impTot !== orkTot) {
+      winner = impTot > orkTot ? `IMPERIUM (${impTot} vs ${orkTot} VP)` : `ORKS (${orkTot} vs ${impTot} VP)`;
+    }
+
+    const vicBanner = document.getElementById('victory-alert');
+    if (winner) {
+      vicBanner.style.display = 'block';
+      vicBanner.innerText = `🏆 VICTORY FOR ${winner}! (You may continue playing or Restart Battle)`;
+      this.log(`🏆 <b>VICTORY ACHIEVED: ${winner}!</b>`);
+      document.getElementById('btn-restart-game').style.display = 'block';
+    }
+
+    // 3. Advance to Next Turn Orders Phase
     this.turn++;
     this.phase = 'ORDERS';
     this.selectedDetachment = null;
@@ -1194,6 +1401,7 @@ class NetEpicScene extends Phaser.Scene {
       this.updateDetachmentBadge(d);
     });
 
+    this.log(`🌅 <b>Turn ${this.turn} Begins!</b> Place hidden Orders for all unbroken detachments.`);
     this.drawOverlays();
     this.updateUI();
   }
@@ -1257,13 +1465,16 @@ class NetEpicScene extends Phaser.Scene {
     if (!det || det.stands.length === 0) {
       document.getElementById('coherency-alert').style.display = 'none';
       document.getElementById('engagement-alert').style.display = 'none';
+      document.getElementById('fallback-alert').style.display = 'none';
       return;
     }
 
     const isCoherent = this.checkCoherency(det);
     const isEngageValid = this.checkEngagementMoveRule(det);
+    const isFallBackValid = this.checkFallBackMoveRule(det);
     document.getElementById('coherency-alert').style.display = (this.phase === 'MOVEMENT' && !isCoherent) ? 'block' : 'none';
     document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
+    document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
 
     // Coherency web
     for (let i = 0; i < det.stands.length; i++) {
@@ -1318,7 +1529,7 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const confirmBtn = document.getElementById('btn-confirm-move');
-    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid;
+    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid || !isFallBackValid;
   }
 
   updateDetachmentBadgePos(det) {
@@ -1368,16 +1579,20 @@ class NetEpicScene extends Phaser.Scene {
     const moveControls = document.getElementById('movement-controls');
     const combatControls = document.getElementById('combat-controls');
     const ccControls = document.getElementById('cc-controls');
+    const endControls = document.getElementById('end-controls');
     const snapBanner = document.getElementById('snapfire-banner');
 
     turnText.innerText = `Turn ${this.turn}`;
-    vpScore.innerText = `IMP: ${this.vp.IMPERIUM} VP | ORK: ${this.vp.ORKS} VP`;
+    const impTot = this.getTotalVP('IMPERIUM');
+    const orkTot = this.getTotalVP('ORKS');
+    vpScore.innerText = `IMP: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ORK: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${VICTORY_VP_TARGET}]`;
 
     ordersControls.style.display = 'none';
     lockOrdersRow.style.display = 'none';
     moveControls.style.display = 'none';
     combatControls.style.display = 'none';
     ccControls.style.display = 'none';
+    endControls.style.display = 'none';
     snapBanner.style.display = 'none';
 
     if (this.phase === 'ORDERS') {
@@ -1387,7 +1602,7 @@ class NetEpicScene extends Phaser.Scene {
       promptText.innerText = remaining > 0
         ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
         : 'All Orders placed! Roll Initiative to start Movement.';
-      ordersControls.style.display = this.selectedDetachment ? 'flex' : 'none';
+      ordersControls.style.display = (this.selectedDetachment && this.selectedDetachment.order !== 'FALL_BACK') ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
     } 
     else if (this.phase === 'SNAP_INTERRUPT') {
@@ -1417,7 +1632,9 @@ class NetEpicScene extends Phaser.Scene {
       promptText.innerText = this.activatingDetachment
         ? (this.activatingDetachment.order === 'CHARGE'
             ? `CHARGE! Drag stands up to ${this.activatingDetachment.moveCm * 2} cm — Drag onto enemy stands to Pin & enter Close Combat!`
-            : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm`)
+            : (this.activatingDetachment.order === 'FALL_BACK'
+                ? `FALL BACK! Retreat up to ${this.activatingDetachment.moveCm * 2} cm toward your home board edge (or click Auto-Retreat)`
+                : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm`))
         : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order`;
 
       moveControls.style.display = this.selectedDetachment ? 'flex' : 'none';
@@ -1428,6 +1645,7 @@ class NetEpicScene extends Phaser.Scene {
         btnAct.style.display = isAct ? 'none' : 'block';
         btnAct.disabled = !canAct;
         btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
+        document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
         document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
         document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
       }
@@ -1471,12 +1689,24 @@ class NetEpicScene extends Phaser.Scene {
         promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm range) — Tap an enemy unit!`;
       }
     }
+    else if (this.phase === 'END_PHASE') {
+      phaseBadge.innerText = 'IV. End Phase (Rally & VP)';
+      phaseBadge.style.background = '#0d9488';
+      endControls.style.display = 'flex';
+      const fbCount = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK').length;
+      promptText.innerText = fbCount > 0
+        ? `Objectives Scored! ${fbCount} broken detachment(s) must roll Morale to Rally.`
+        : `Objectives Scored! Click below to advance to Turn ${this.turn + 1}.`;
+      document.getElementById('btn-rally-end').innerText = fbCount > 0
+        ? `🎲 Roll Rally Checks (${fbCount}) & Start Turn ${this.turn + 1}`
+        : `🏁 Complete End Phase → Start Turn ${this.turn + 1}`;
+    }
 
     if (this.selectedDetachment && this.selectedDetachment.stands.length > 0) {
       const d = this.selectedDetachment;
       const pinnedCount = d.stands.filter(s => this.isStandPinned(s)).length;
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}${pinBadge})`;
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
       selOrderBadge.innerText = d.order
         ? (d.orderRevealed ? `Order: ${ORDER_INFO[d.order].label}` : `Hidden Order: ${ORDER_INFO[d.order].label}`)
