@@ -266,6 +266,7 @@
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:6px; flex-wrap:wrap;">
       <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:6px 10px;" title="Toggle Synthesized Sound Effects">🔊 SFX</button>
+      <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:6px 10px;" title="Automatically pan camera to follow AI actions and Snap Fire targets">🎥 Follow Cam</button>
       <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:6px 10px;" title="Click to switch Battlefield Map Preset or Generate Random Map">🗺️ Map: Industrial</button>
       <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
       <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Army Setup</button>
@@ -277,14 +278,14 @@
     <div id="combat-log" class="panel">
       <div id="log-header">
         <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
-        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 8! Map Generator, Roads (+5cm), Rivers & Building Garrisons!</div>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 9! Dedicated Transports (Rhinos/Battlewagons), AI Follow Cam & Snap Fire Reticles!</div>
         <div style="display:flex; gap:4px;">
           <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
           <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
         </div>
       </div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 8! <b>Map Presets & Random Generator, Roads (+5cm Move), Rivers/Bridges & Infantry Building Garrisons</b> are live!</div>
+        <div class="log-entry">Welcome to Phase 9! <b>Dedicated Transports & Embarking, Smooth AI Follow-Cam, and Snap Fire Target Reticles</b> are live!</div>
       </div>
       <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
         <span id="log-corner-grip">⤡</span>
@@ -331,6 +332,7 @@
       <div id="deployment-controls" class="btn-row" style="display:none;">
         <button id="btn-deploy-group" onclick="window.gameScene.toggleGroupMove()">🔗 Group Move: ON (Double-Click)</button>
         <button onclick="window.gameScene.compactSelectedDetachment()">📐 Tight Formation</button>
+        <button id="btn-deploy-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button class="btn-confirm" onclick="window.gameScene.finishDeploymentPhase()">⚔️ Lock Deployment & Start Turn 1 (Orders Phase)</button>
       </div>
 
@@ -349,6 +351,7 @@
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
         <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔗 Group Move: OFF (Double-Click)</button>
         <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight Formation</button>
+        <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-auto-fallback" class="btn-warn" onclick="window.gameScene.autoRetreatDetachment()" style="display:none;">🏳️ Auto-Retreat Toward Home Edge</button>
         <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Move</button>
         <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
@@ -542,7 +545,17 @@ window.toggleSFX = function() {
   if (window.sfxEnabled) window.sfx.playSave();
 };
 
-// --- PHASE 5 & 7: NETEPIC GOLD ARMY CATALOG (WITH ARTILLERY & INDIRECT BARRAGE) ---
+window.aiCamFollow = true;
+window.toggleAICam = function() {
+  window.aiCamFollow = !window.aiCamFollow;
+  const btn = document.getElementById('btn-cam-toggle');
+  if (btn) {
+    btn.innerText = window.aiCamFollow ? '🎥 Follow Cam' : '🎥 Free Cam';
+    btn.className = window.aiCamFollow ? 'btn-primary' : '';
+  }
+};
+
+// --- PHASE 5, 7 & 9: NETEPIC GOLD ARMY CATALOG (WITH ARTILLERY & DEDICATED TRANSPORTS) ---
 const UNIT_CATALOG = {
   IMPERIUM: [
     {
@@ -550,6 +563,12 @@ const UNIT_CATALOG = {
       moveCm: 10, save: 5, caf: 2, morale: 2, pinningClass: 1,
       weapon: { name: 'Bolters', rangeCm: 30, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x2563eb, standsCount: 6, baseW: 20, baseH: 20
+    },
+    {
+      key: 'sm_rhino', faction: 'IMPERIUM', name: 'Rhino APC Transport Squadron', points: 100,
+      moveCm: 25, save: 4, caf: 0, morale: 2, pinningClass: 2, transportCapacity: 2,
+      weapon: { name: 'Storm Bolters', rangeCm: 15, dice: 1, toHit: 6, tsm: 0 },
+      breakPoint: 2, vpValue: 1, color: 0x38bdf8, standsCount: 3, baseW: 22, baseH: 30
     },
     {
       key: 'sm_assault', faction: 'IMPERIUM', name: 'Space Marine Assault Squad', points: 200,
@@ -589,7 +608,7 @@ const UNIT_CATALOG = {
     },
     {
       key: 'sm_landraider', faction: 'IMPERIUM', name: 'Land Raider Squadron', points: 350,
-      moveCm: 20, save: 2, caf: 3, morale: 2, pinningClass: 3,
+      moveCm: 20, save: 2, caf: 3, morale: 2, pinningClass: 3, transportCapacity: 2,
       weapon: { name: 'Twin Lascannons & Heavy Bolters', rangeCm: 55, dice: 2, toHit: 4, tsm: -2 },
       breakPoint: 2, vpValue: 4, color: 0x38bdf8, standsCount: 3, baseW: 26, baseH: 34
     }
@@ -620,8 +639,8 @@ const UNIT_CATALOG = {
       breakPoint: 2, vpValue: 2, color: 0x4ade80, standsCount: 4, baseW: 22, baseH: 30
     },
     {
-      key: 'ork_wagons', faction: 'ORKS', name: 'Battlewagon Squadron', points: 250,
-      moveCm: 20, save: 4, caf: 2, morale: 3, pinningClass: 2,
+      key: 'ork_wagons', faction: 'ORKS', name: 'Battlewagon Transport Squadron', points: 250,
+      moveCm: 25, save: 4, caf: 2, morale: 3, pinningClass: 2, transportCapacity: 2,
       weapon: { name: 'Kannon & Twin Shootas', rangeCm: 45, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x86efac, standsCount: 3, baseW: 24, baseH: 34
     },
@@ -651,7 +670,7 @@ window.mapPreset = 'INDUSTRIAL'; // 'INDUSTRIAL' | 'RIVER' | 'FOREST' | 'RANDOM'
 window.aiFaction = 'ORKS'; // 'ORKS' | 'IMPERIUM' | 'NONE'
 window.pointsBudget = 1000;
 window.armyRosters = {
-  IMPERIUM: ['sm_tac', 'sm_assault', 'sm_pred', 'sm_whirlwind'],
+  IMPERIUM: ['sm_tac', 'sm_rhino', 'sm_assault', 'sm_pred', 'sm_whirlwind'],
   ORKS: ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_biggunz']
 };
 
@@ -732,7 +751,7 @@ window.setPointsBudget = function(pts) {
 };
 
 window.resetDefaultArmies = function() {
-  window.armyRosters.IMPERIUM = ['sm_tac', 'sm_assault', 'sm_pred', 'sm_whirlwind'];
+  window.armyRosters.IMPERIUM = ['sm_tac', 'sm_rhino', 'sm_assault', 'sm_pred', 'sm_whirlwind'];
   window.armyRosters.ORKS = ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_biggunz'];
   window.renderArmyModal();
 };
@@ -766,6 +785,7 @@ window.renderArmyModal = function() {
       catEl.innerHTML = '';
       UNIT_CATALOG[faction].forEach(u => {
         const canAfford = (spent + u.points) <= window.pointsBudget;
+        const transNote = u.transportCapacity ? ` | 🚐 Carries ${u.standsCount * u.transportCapacity} Inf` : '';
         const wpnDesc = u.weapon.barrage
           ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
           : `${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)`;
@@ -774,7 +794,7 @@ window.renderArmyModal = function() {
         row.innerHTML = `
           <div>
             <div style="font-weight:700; color:#f8fafc;">${u.name} <span style="color:#fde047;">(${u.points} pts / ${u.vpValue} VP)</span></div>
-            <div class="sub-text">${u.standsCount} stands | Move ${u.moveCm}cm | Sv ${u.save}+ | CAF +${u.caf} | ${wpnDesc}</div>
+            <div class="sub-text">${u.standsCount} stands | Move ${u.moveCm}cm | Sv ${u.save}+ | CAF +${u.caf}${transNote} | ${wpnDesc}</div>
           </div>
           <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${faction}', '${u.key}')">+ Add</button>
         `;
@@ -1305,8 +1325,8 @@ class NetEpicScene extends Phaser.Scene {
       let closestOrk = Infinity;
 
       this.detachments.forEach(d => {
-        // Broken units on FALL_BACK cannot capture objectives (NetEpic p. 43)
-        if (d.stands.length === 0 || d.order === 'FALL_BACK') return;
+        // Broken units on FALL_BACK or units currently Embarked inside a Transport cannot capture objectives on their own (the Transport captures instead)
+        if (d.stands.length === 0 || d.order === 'FALL_BACK' || d.embarkedOn) return;
         d.stands.forEach(s => {
           const dist = Phaser.Math.Distance.Between(obj.x, obj.y, s.container.x, s.container.y);
           if (dist <= OBJ_RADIUS_PX) {
@@ -1674,6 +1694,8 @@ class NetEpicScene extends Phaser.Scene {
       orderRevealed: false,
       moved: false,
       fired: false,
+      embarkedOn: null,
+      passengerDet: null,
       stands: []
     };
 
@@ -1686,12 +1708,19 @@ class NetEpicScene extends Phaser.Scene {
       container.setSize(cfg.baseW + 10, cfg.baseH + 10);
       container.setInteractive({ draggable: true });
 
-      const strokeCol = cfg.weapon && cfg.weapon.barrage ? 0xfacc15 : 0xffffff;
+      const strokeCol = cfg.weapon && cfg.weapon.barrage ? 0xfacc15 : (cfg.transportCapacity ? 0x38bdf8 : 0xffffff);
       const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color).setStrokeStyle(2, strokeCol);
       const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, strokeCol);
-      container.add([baseBg, pip]);
+      const items = [baseBg, pip];
 
-      const standObj = { id: `${cfg.id}_s${i}`, label: `#${i + 1}`, detachment: det, container, baseBg, originX: sx, originY: sy };
+      let hatchBar = null;
+      if (cfg.transportCapacity) {
+        hatchBar = this.add.rectangle(0, cfg.faction === 'IMPERIUM' ? 4 : -4, cfg.baseW - 8, 8, 0x0f172a).setStrokeStyle(1, 0x94a3b8);
+        items.push(hatchBar);
+      }
+      container.add(items);
+
+      const standObj = { id: `${cfg.id}_s${i}`, label: `#${i + 1}`, detachment: det, container, baseBg, hatchBar, originX: sx, originY: sy };
       container.standData = standObj;
       det.stands.push(standObj);
     }
@@ -1705,11 +1734,206 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.push(det);
   }
 
+  // --- PHASE 9: DEDICATED TRANSPORTS, EMBARKING & DISEMBARKING (NetEpic Rules p. 22-23) ---
+  syncEmbarkedPassengers(transDet) {
+    if (!transDet || !transDet.passengerDet) return;
+    const pDet = transDet.passengerDet;
+    if (transDet.stands.length === 0) return;
+    pDet.stands.forEach((ps, idx) => {
+      const host = transDet.stands[idx % transDet.stands.length];
+      ps.container.x = host.container.x;
+      ps.container.y = host.container.y;
+      ps.originX = host.originX;
+      ps.originY = host.originY;
+    });
+  }
+
+  canUnitEmbarkInto(infDet, transDet, requireProximity = false) {
+    if (!infDet || !transDet || infDet === transDet) return false;
+    if (infDet.faction !== transDet.faction) return false;
+    // Only non-Jump Infantry (Pinning Class 1) can embark in ground transports
+    if (infDet.pinningClass !== 1 || infDet.jump || infDet.embarkedOn || infDet.stands.length === 0) return false;
+    if (!transDet.transportCapacity || transDet.passengerDet || transDet.stands.length === 0) return false;
+    if (infDet.order === 'FALL_BACK' || transDet.order === 'FALL_BACK') return false;
+    // Transport must have enough total capacity for the infantry stands
+    const maxCap = transDet.stands.length * transDet.transportCapacity;
+    if (infDet.stands.length > maxCap) return false;
+    // Neither unit can have stands locked in Close Combat
+    if (infDet.stands.some(s => this.isStandEngaged(s)) || transDet.stands.some(s => this.isStandEngaged(s))) return false;
+
+    if (requireProximity) {
+      // At least one infantry stand must be within 7.5 cm (75px) of a transport stand
+      const closeEnough = infDet.stands.some(is =>
+        transDet.stands.some(ts => Phaser.Math.Distance.Between(is.container.x, is.container.y, ts.container.x, ts.container.y) <= COHERENCY_PX + 15)
+      );
+      if (!closeEnough) return false;
+    }
+    return true;
+  }
+
+  getTransportActionInfo(det) {
+    if (!det || det.stands.length === 0) return null;
+    const requireProx = (this.phase === 'MOVEMENT');
+
+    // 1. If this is a Transport currently carrying passengers -> Disembark!
+    if (det.passengerDet && det.passengerDet.stands.length > 0) {
+      return { action: 'DISEMBARK', transport: det, passenger: det.passengerDet };
+    }
+    // 2. If this is an embarked passenger -> Disembark!
+    if (det.embarkedOn && det.embarkedOn.stands.length > 0) {
+      return { action: 'DISEMBARK', transport: det.embarkedOn, passenger: det };
+    }
+    // 3. If this is an empty Transport -> find closest eligible friendly Infantry detachment to Embark
+    if (det.transportCapacity && !det.passengerDet) {
+      const tc = this.getDetachmentCenter(det);
+      let bestInf = null;
+      let bestDist = Infinity;
+      this.detachments.forEach(cand => {
+        if (this.canUnitEmbarkInto(cand, det, requireProx)) {
+          const cc = this.getDetachmentCenter(cand);
+          const d = Phaser.Math.Distance.Between(tc.x, tc.y, cc.x, cc.y);
+          if (d < bestDist) { bestDist = d; bestInf = cand; }
+        }
+      });
+      if (bestInf) return { action: 'EMBARK', transport: det, passenger: bestInf };
+    }
+    // 4. If this is an Infantry unit -> find closest eligible friendly Transport to Embark into
+    if (det.pinningClass === 1 && !det.jump && !det.embarkedOn) {
+      const ic = this.getDetachmentCenter(det);
+      let bestTrans = null;
+      let bestDist = Infinity;
+      this.detachments.forEach(cand => {
+        if (this.canUnitEmbarkInto(det, cand, requireProx)) {
+          const cc = this.getDetachmentCenter(cand);
+          const d = Phaser.Math.Distance.Between(ic.x, ic.y, cc.x, cc.y);
+          if (d < bestDist) { bestDist = d; bestTrans = cand; }
+        }
+      });
+      if (bestTrans) return { action: 'EMBARK', transport: bestTrans, passenger: det };
+    }
+    return null;
+  }
+
+  handleTransportAction() {
+    const det = this.activatingDetachment || this.selectedDetachment;
+    const info = this.getTransportActionInfo(det);
+    if (!info) return;
+    if (info.action === 'EMBARK') {
+      this.embarkDetachment(info.passenger, info.transport);
+    } else if (info.action === 'DISEMBARK') {
+      this.disembarkDetachment(info.transport);
+    }
+  }
+
+  embarkDetachment(infDet, transDet, silent = false) {
+    if (!infDet || !transDet) return;
+    infDet.embarkedOn = transDet;
+    transDet.passengerDet = infDet;
+
+    infDet.stands.forEach(s => {
+      s.container.setVisible(false);
+      s.container.disableInteractive();
+    });
+    if (infDet.badge) infDet.badge.setVisible(false);
+
+    transDet.stands.forEach(ts => {
+      if (ts.hatchBar) ts.hatchBar.setFillStyle(0xfacc15).setStrokeStyle(1.5, 0xffffff);
+    });
+
+    this.syncEmbarkedPassengers(transDet);
+    this.updateDetachmentBadge(transDet);
+
+    if (!silent) {
+      const tc = this.getDetachmentCenter(transDet);
+      window.sfx.playSave();
+      this.spawnFloatingText(tc.x, tc.y - 18, `🚐 ${infDet.name} EMBARKED!`, '#38bdf8', '12px');
+      this.log(`🚐 <b>${infDet.name}</b> (${infDet.stands.length} stands) embarks aboard <b>${transDet.name}</b>!`);
+    }
+
+    // If the Infantry unit was actively moving in the Movement Phase, embarking completes its move activation!
+    if (this.phase === 'MOVEMENT' && this.activatingDetachment === infDet) {
+      infDet.moved = true;
+      infDet.orderRevealed = true;
+      if (!infDet.order) infDet.order = 'ADVANCE';
+      this.finishMovementActivation();
+      return;
+    }
+
+    this.selectedDetachment = transDet;
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  disembarkDetachment(transDet, emergencyX = null, emergencyY = null) {
+    if (!transDet || !transDet.passengerDet) return;
+    const infDet = transDet.passengerDet;
+    transDet.passengerDet = null;
+    infDet.embarkedOn = null;
+
+    transDet.stands.forEach(ts => {
+      if (ts.hatchBar) ts.hatchBar.setFillStyle(0x0f172a).setStrokeStyle(1, 0x94a3b8);
+    });
+
+    const dirY = infDet.faction === 'IMPERIUM' ? -1 : 1; // Disembark slightly toward the front of the transport
+    const offsets = [
+      { dx: -24, dy: dirY * 24 },
+      { dx: 24,  dy: dirY * 24 },
+      { dx: -30, dy: 0 },
+      { dx: 30,  dy: 0 },
+      { dx: -18, dy: -dirY * 24 },
+      { dx: 18,  dy: -dirY * 24 }
+    ];
+
+    infDet.stands.forEach((s, idx) => {
+      let baseX = emergencyX !== null ? emergencyX : transDet.stands[idx % Math.max(1, transDet.stands.length)].container.x;
+      let baseY = emergencyY !== null ? emergencyY : transDet.stands[idx % Math.max(1, transDet.stands.length)].container.y;
+      const off = offsets[idx % offsets.length];
+      let tx = Phaser.Math.Clamp(baseX + off.dx, 20, BOARD_W - 20);
+      let ty = Phaser.Math.Clamp(baseY + off.dy, 20, BOARD_H - 20);
+
+      if (this.phase === 'DEPLOYMENT') {
+        const minY = infDet.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
+        const maxY = infDet.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+        ty = Phaser.Math.Clamp(ty, minY, maxY);
+      }
+
+      s.container.x = tx;
+      s.container.y = ty;
+      s.originX = tx;
+      s.originY = ty;
+      s.container.setVisible(true);
+      s.container.setInteractive({ draggable: true });
+    });
+
+    if (infDet.badge) infDet.badge.setVisible(true);
+
+    // Per NetEpic p. 22: Disembarking during the Movement Phase counts as the Infantry unit's move for the turn, and allows them to fire in the Advance Fire segment
+    if (this.phase === 'MOVEMENT') {
+      infDet.moved = true;
+      infDet.orderRevealed = true;
+      if (!infDet.order || infDet.order === 'FIRST_FIRE') {
+        infDet.order = 'ADVANCE';
+      }
+    }
+
+    this.updateDetachmentBadge(transDet);
+    this.updateDetachmentBadge(infDet);
+
+    const ic = this.getDetachmentCenter(infDet);
+    window.sfx.playSave();
+    this.spawnFloatingText(ic.x, ic.y - 18, `🚶 ${infDet.name} DISEMBARKED!`, '#4ade80', '12px');
+    this.log(`🚶 <b>${infDet.name}</b> disembarks from <b>${transDet.name}</b> into battle formation!`);
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
   // --- PINNING & CLOSE COMBAT ENGAGEMENT HELPERS (NetEpic Rules p. 20 & 38) ---
   getEngagedEnemies(stand) {
+    if (!stand || stand.detachment.embarkedOn) return [];
     const enemies = [];
     for (const det of this.detachments) {
-      if (det.faction === stand.detachment.faction || det.stands.length === 0) continue;
+      if (det.faction === stand.detachment.faction || det.stands.length === 0 || det.embarkedOn) continue;
       for (const es of det.stands) {
         const d = Phaser.Math.Distance.Between(stand.container.x, stand.container.y, es.container.x, es.container.y);
         if (d <= ENGAGE_PX) enemies.push(es);
@@ -1732,13 +1956,13 @@ class NetEpicScene extends Phaser.Scene {
 
   // Non-charging units may not move within MIN_ENEMY_GAP_PX of an enemy stand
   checkEngagementMoveRule(det) {
-    if (!det || det.order === 'CHARGE' || det.order === 'FIRST_FIRE') return true;
+    if (!det || det.order === 'CHARGE' || det.order === 'FIRST_FIRE' || det.embarkedOn) return true;
     for (const s of det.stands) {
       // If stand was already pinned at start of move and hasn't moved, allow it
       const movedDist = Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y);
       if (movedDist <= 1) continue;
       for (const enemyDet of this.detachments) {
-        if (enemyDet.faction === det.faction) continue;
+        if (enemyDet.faction === det.faction || enemyDet.embarkedOn) continue;
         for (const es of enemyDet.stands) {
           const d = Phaser.Math.Distance.Between(s.container.x, s.container.y, es.container.x, es.container.y);
           if (d < MIN_ENEMY_GAP_PX) return false;
@@ -1761,6 +1985,9 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- LINE OF SIGHT, BUILDING GARRISONS, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 26, 28, 33 & 36) ---
   checkStandLoS(shooterStand, targetStand, isSnapFire = false) {
+    if (shooterStand.detachment.embarkedOn || targetStand.detachment.embarkedOn) {
+      return { valid: false, reason: 'Embarked in Transport', distCm: 0, coverMod: 0, indirect: false };
+    }
     // Stands locked in Close Combat cannot fire ranged weapons
     if (this.isStandEngaged(shooterStand)) {
       return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0, indirect: false };
@@ -1832,7 +2059,7 @@ class NetEpicScene extends Phaser.Scene {
     // 3. Pinning Class Occlusion: Units block direct LoS to units of their pinning class or smaller
     const maxPin = Math.max(shooterStand.detachment.pinningClass, targetStand.detachment.pinningClass);
     for (const det of this.detachments) {
-      if (det === shooterStand.detachment || det === targetStand.detachment) continue;
+      if (det === shooterStand.detachment || det === targetStand.detachment || det.embarkedOn) continue;
       if (det.pinningClass >= maxPin) {
         for (const s of det.stands) {
           const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
@@ -1852,6 +2079,9 @@ class NetEpicScene extends Phaser.Scene {
 
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
+    if (!firerDet || !targetDet || firerDet.embarkedOn || targetDet.embarkedOn) {
+      return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet && firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
+    }
     const validPairs = [];
     for (const shooter of firerDet.stands) {
       let bestTarget = null;
@@ -1883,7 +2113,7 @@ class NetEpicScene extends Phaser.Scene {
 
         const caught = [];
         this.detachments.forEach(d => {
-          if (d.faction === firerDet.faction || d.stands.length === 0) return;
+          if (d.faction === firerDet.faction || d.stands.length === 0 || d.embarkedOn) return;
           d.stands.forEach(s => {
             if (!isSnapFire && this.isStandEngaged(s)) return;
             const dist = Phaser.Math.Distance.Between(candStand.container.x, candStand.container.y, s.container.x, s.container.y);
@@ -2094,6 +2324,38 @@ class NetEpicScene extends Phaser.Scene {
     victim.container.destroy();
     det.casualties++;
 
+    // NetEpic Transport Bail-Out Rule (p. 23): If a Transport stand carrying passengers is destroyed, check excess passenger capacity!
+    if (det.passengerDet && det.passengerDet.stands.length > 0) {
+      const pDet = det.passengerDet;
+      const remainingCap = det.stands.length * (det.transportCapacity || 2);
+      const excessCount = Math.max(0, pDet.stands.length - remainingCap);
+
+      for (let i = 0; i < excessCount; i++) {
+        if (pDet.stands.length === 0) break;
+        const bailRoll = Phaser.Math.Between(1, 6);
+        if (bailRoll < pDet.save) {
+          const pVictim = pDet.stands.pop();
+          pVictim.container.destroy();
+          pDet.casualties++;
+          this.log(`🔥 <b>${pDet.name} (${pVictim.label})</b> failed Bail-Out Save (${bailRoll} < ${pDet.save}+) inside destroyed <b>${det.name}</b>!`);
+        } else {
+          this.log(`🪂 <b>${pDet.name}</b> stand passed Bail-Out Save (${bailRoll} >= ${pDet.save}+) and escaped the wreck!`);
+        }
+      }
+      this.checkBreakPoint(pDet);
+
+      if (pDet.stands.length === 0) {
+        det.passengerDet = null;
+        pDet.embarkedOn = null;
+        if (pDet.badge) pDet.badge.setVisible(false);
+      } else if (det.stands.length === 0 || excessCount > 0) {
+        // Surviving passengers bail out around the wreck!
+        this.disembarkDetachment(det, vx, vy);
+      } else {
+        this.syncEmbarkedPassengers(det);
+      }
+    }
+
     if (det.stands.length === 0) {
       det.badge.setVisible(false);
       this.log(`💀 <b>${det.name}</b> has been completely wiped out!`);
@@ -2255,6 +2517,7 @@ class NetEpicScene extends Phaser.Scene {
           stand.originY = gameObject.y;
         }
 
+        this.syncEmbarkedPassengers(det);
         this.updateDetachmentBadgePos(det);
         this.drawOverlays();
         return;
@@ -2322,6 +2585,7 @@ class NetEpicScene extends Phaser.Scene {
           s.container.y = s.dragStartY + dy;
         });
 
+        this.syncEmbarkedPassengers(det);
         this.updateDetachmentBadgePos(det);
         this.drawOverlays();
         return;
@@ -2341,7 +2605,7 @@ class NetEpicScene extends Phaser.Scene {
       // Snap-to-base-contact helper when on CHARGE orders and dragging onto an enemy stand
       if (det.order === 'CHARGE') {
         for (const enemyDet of this.detachments) {
-          if (enemyDet.faction === det.faction) continue;
+          if (enemyDet.faction === det.faction || enemyDet.embarkedOn) continue;
           for (const es of enemyDet.stands) {
             const dEnemy = Phaser.Math.Distance.Between(targetX, targetY, es.container.x, es.container.y);
             if (dEnemy < 22) {
@@ -2361,6 +2625,7 @@ class NetEpicScene extends Phaser.Scene {
       gameObject.x = Phaser.Math.Clamp(targetX, 15, BOARD_W - 15);
       gameObject.y = Phaser.Math.Clamp(targetY, 15, BOARD_H - 15);
 
+      this.syncEmbarkedPassengers(det);
       this.updateDetachmentBadgePos(det);
       this.drawOverlays();
     });
@@ -2399,7 +2664,20 @@ class NetEpicScene extends Phaser.Scene {
     cam.centerOn(BOARD_W / 2, BOARD_H / 2);
   }
 
-  // --- PHASE 6: SOLO VS. AI COMMANDER ENGINE ---
+  panCameraTo(x, y, duration = 650) {
+    if (!window.aiCamFollow) return;
+    const cam = this.cameras.main;
+    const tx = Phaser.Math.Clamp(x, 220, BOARD_W - 220);
+    const ty = Phaser.Math.Clamp(y, 180, BOARD_H - 180);
+    cam.pan(tx, ty, duration, 'Sine.easeInOut', true);
+  }
+
+  panCameraBetween(p1, p2, duration = 650) {
+    if (!window.aiCamFollow || !p1 || !p2) return;
+    this.panCameraTo((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, duration);
+  }
+
+  // --- PHASE 6 & 9: SOLO VS. AI COMMANDER ENGINE (WITH CAMERA TRACKING & TRANSPORTS) ---
   isFactionAI(faction) {
     return window.aiFaction === faction;
   }
@@ -2423,10 +2701,10 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
-  // Automatically position AI detachments across its Deployment Zone facing the 4 Objectives
+  // Automatically position AI detachments across its Deployment Zone and Embark Infantry into Transports!
   autoDeployAIFaction() {
     if (window.aiFaction === 'NONE') return;
-    const aiUnits = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0);
+    const aiUnits = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0 && !d.embarkedOn);
     if (aiUnits.length === 0) return;
 
     const laneXs = [480, 790, 1160, 1460, 630, 1310];
@@ -2451,7 +2729,19 @@ class NetEpicScene extends Phaser.Scene {
         s.originX = sx;
         s.originY = sy;
       });
+      this.syncEmbarkedPassengers(det);
       this.updateDetachmentBadgePos(det);
+    });
+
+    // Automatically embark slow AI infantry (e.g. Nobz/Boyz or Tactical Marines) into empty AI Dedicated Transports!
+    const aiTransports = this.detachments.filter(d => d.faction === window.aiFaction && d.transportCapacity && !d.passengerDet && d.stands.length > 0);
+    aiTransports.forEach(trans => {
+      const candidates = this.detachments.filter(inf => this.canUnitEmbarkInto(inf, trans, false));
+      // Prefer high-CAF infantry (like Ork Nobz) or full tactical squads
+      candidates.sort((a, b) => (b.caf * 10 + b.stands.length) - (a.caf * 10 + a.stands.length));
+      if (candidates.length > 0) {
+        this.embarkDetachment(candidates[0], trans, false);
+      }
     });
   }
 
@@ -2460,12 +2750,29 @@ class NetEpicScene extends Phaser.Scene {
     if (window.aiFaction === 'NONE') return;
     let assignedCount = 0;
 
+    // On Turn 1, if AI has an empty transport near an un-embarked infantry unit, embark it!
+    if (this.turn === 1) {
+      const aiTransports = this.detachments.filter(d => d.faction === window.aiFaction && d.transportCapacity && !d.passengerDet && d.stands.length > 0);
+      aiTransports.forEach(trans => {
+        const candidates = this.detachments.filter(inf => this.canUnitEmbarkInto(inf, trans, false));
+        candidates.sort((a, b) => (b.caf * 10 + b.stands.length) - (a.caf * 10 + a.stands.length));
+        if (candidates.length > 0) {
+          this.embarkDetachment(candidates[0], trans, false);
+        }
+      });
+    }
+
     this.detachments.forEach(det => {
       if (det.faction !== window.aiFaction || det.stands.length === 0) return;
       if (det.order === 'FALL_BACK') return;
+      if (det.embarkedOn) {
+        det.order = 'ADVANCE';
+        det.orderRevealed = false;
+        return;
+      }
 
       const center = this.getDetachmentCenter(det);
-      const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0);
+      const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0 && !e.embarkedOn);
 
       let closestEnemyDist = Infinity;
       let enemiesInLoS = 0;
@@ -2476,29 +2783,33 @@ class NetEpicScene extends Phaser.Scene {
         if (this.evaluateFireSolution(det, eDet, false).validPairs.length > 0) enemiesInLoS++;
       });
 
-      const chargeReachPx = det.moveCm * 2 * PX_PER_CM;
+      const chargeReachPx = this.getEffectiveMoveCm(det) * 2 * PX_PER_CM;
       const holdingObj = this.objectives.some(o =>
         o.owner === det.faction && Phaser.Math.Distance.Between(center.x, center.y, o.x, o.y) <= OBJ_RADIUS_PX * 0.85
       );
 
       let chosenOrder = 'ADVANCE';
-      // 0. Artillery batteries with Indirect Fire within range of an enemy -> FIRST_FIRE to lob 6cm Barrages over terrain!
-      if (det.weapon.barrage && det.weapon.indirect && closestEnemyDist <= det.weapon.rangeCm * PX_PER_CM) {
+      // 0. Loaded Transports rush toward objectives with ADVANCE (or CHARGE if far away on Turn 1)
+      if (det.passengerDet) {
+        chosenOrder = 'ADVANCE';
+      }
+      // 1. Artillery batteries with Indirect Fire within range of an enemy -> FIRST_FIRE to lob 6cm Barrages over terrain!
+      else if (det.weapon.barrage && det.weapon.indirect && closestEnemyDist <= det.weapon.rangeCm * PX_PER_CM) {
         chosenOrder = 'FIRST_FIRE';
       }
-      // 1. High-CAF or dedicated melee units within Charge reach of an enemy -> CHARGE!
+      // 2. High-CAF or dedicated melee units within Charge reach of an enemy -> CHARGE!
       else if (det.caf >= 2 && closestEnemyDist <= chargeReachPx + 25) {
         chosenOrder = 'CHARGE';
       }
-      // 2. Fast assault units (Bolt Pistols / Sluggas <= 15cm range) outside gun range -> CHARGE to close ground fast or take objectives
-      else if (det.weapon.rangeCm <= 15 && closestEnemyDist > det.weapon.rangeCm * PX_PER_CM + det.moveCm * PX_PER_CM) {
+      // 3. Fast assault units (Bolt Pistols / Sluggas <= 15cm range) outside gun range -> CHARGE to close ground fast or take objectives
+      else if (det.weapon.rangeCm <= 15 && !det.transportCapacity && closestEnemyDist > det.weapon.rangeCm * PX_PER_CM + det.moveCm * PX_PER_CM) {
         chosenOrder = 'CHARGE';
       }
-      // 3. Long-range gunlines (>=45cm) that already have targets in LoS (or units holding an Objective with targets in LoS) -> FIRST_FIRE
+      // 4. Long-range gunlines (>=45cm) that already have targets in LoS (or units holding an Objective with targets in LoS) -> FIRST_FIRE
       else if ((det.weapon.rangeCm >= 45 || holdingObj) && enemiesInLoS > 0 && this.turn > 1) {
         chosenOrder = 'FIRST_FIRE';
       }
-      // 4. Default tactical push -> ADVANCE (1x Move + Fire in Advance Segment)
+      // 5. Default tactical push -> ADVANCE (1x Move + Fire in Advance Segment)
       else {
         chosenOrder = 'ADVANCE';
       }
@@ -2514,8 +2825,8 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // Auto-select first human detachment that still needs an order
-    if (!this.selectedDetachment || this.isFactionAI(this.selectedDetachment.faction) || this.selectedDetachment.order) {
-      const nextHuman = this.detachments.find(d => !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order);
+    if (!this.selectedDetachment || this.isFactionAI(this.selectedDetachment.faction) || this.selectedDetachment.order || this.selectedDetachment.embarkedOn) {
+      const nextHuman = this.detachments.find(d => !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order && !d.embarkedOn);
       if (nextHuman) this.selectedDetachment = nextHuman;
     }
   }
@@ -2523,12 +2834,12 @@ class NetEpicScene extends Phaser.Scene {
   checkAndRunAITurn() {
     if (window.aiFaction === 'NONE') return;
 
-    // 1. Snap Fire Interrupt decision when AI is the reactive side
+    // 1. Snap Fire Interrupt decision when AI is the reactive side (slower delay so human can see the Snap Fire opportunity!)
     if (this.phase === 'SNAP_INTERRUPT' && this.snapCandidates && this.snapCandidates.length > 0) {
       const snapSide = this.snapCandidates[0].faction;
       if (this.isFactionAI(snapSide) && !this.aiTimerPending) {
         this.aiTimerPending = true;
-        this.time.delayedCall(550, () => {
+        this.time.delayedCall(1150, () => {
           this.aiTimerPending = false;
           if (this.phase !== 'SNAP_INTERRUPT' || !this.snapCandidates || this.snapCandidates.length === 0) return;
           // Pick candidate with most valid LoS pairs
@@ -2550,11 +2861,11 @@ class NetEpicScene extends Phaser.Scene {
 
     // 2. AI Movement Activation
     if (this.phase === 'MOVEMENT' && this.isFactionAI(this.activePlayer) && !this.aiTimerPending) {
-      const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+      const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved && !d.embarkedOn);
       if (unmoved.length === 0) return;
 
       this.aiTimerPending = true;
-      this.time.delayedCall(600, () => {
+      this.time.delayedCall(900, () => {
         this.aiTimerPending = false;
         if (this.phase !== 'MOVEMENT' || !this.isFactionAI(this.activePlayer)) return;
         this.executeAIMove();
@@ -2566,7 +2877,7 @@ class NetEpicScene extends Phaser.Scene {
     if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
         this.isFactionAI(this.activePlayer) && this.activatingDetachment && !this.aiTimerPending) {
       this.aiTimerPending = true;
-      this.time.delayedCall(600, () => {
+      this.time.delayedCall(950, () => {
         this.aiTimerPending = false;
         if ((this.phase !== 'COMBAT_FIRST' && this.phase !== 'COMBAT_ADVANCE') || !this.isFactionAI(this.activePlayer)) return;
         this.executeAICombatTurn();
@@ -2575,7 +2886,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   executeAIMove() {
-    const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+    const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved && !d.embarkedOn);
     if (unmoved.length === 0) return;
 
     // Prioritize moving units on FIRST_FIRE first (0 move), then ADVANCE, then CHARGE
@@ -2586,16 +2897,24 @@ class NetEpicScene extends Phaser.Scene {
     this.selectedDetachment = det;
     this.activateSelectedDetachment();
 
+    const startCenter = this.getDetachmentCenter(det);
+    this.panCameraTo(startCenter.x, startCenter.y, 600);
+    this.spawnFloatingText(startCenter.x, startCenter.y - 24, `🤖 ${det.name}: ${ORDER_INFO[det.order].label}`, '#38bdf8', '12px');
+
     if (det.order === 'FIRST_FIRE') {
-      this.log(`🤖 <b>${det.name}</b> reveals <b>FIRST FIRE</b> and holds position.`);
-      this.confirmDetachmentMove();
+      this.aiTimerPending = true;
+      this.time.delayedCall(850, () => {
+        this.aiTimerPending = false;
+        if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det) return;
+        this.log(`🤖 <b>${det.name}</b> reveals <b>FIRST FIRE</b> and holds position.`);
+        this.confirmDetachmentMove();
+      });
       return;
     }
 
     if (det.order === 'FALL_BACK') {
       this.autoRetreatDetachment();
-      this.log(`🤖 <b>${det.name}</b> makes compulsory <b>FALL BACK</b> retreat toward home edge.`);
-      this.confirmDetachmentMove();
+      this.animateAIMoveAndConfirm(det, `🤖 <b>${det.name}</b> makes compulsory <b>FALL BACK</b> retreat toward home edge.`, false);
       return;
     }
 
@@ -2613,7 +2932,7 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const center = this.getDetachmentCenter(det);
-    const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0);
+    const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0 && !e.embarkedOn);
 
     // If on CHARGE orders, check if any enemy stand is within Charge reach!
     if (det.order === 'CHARGE') {
@@ -2662,9 +2981,7 @@ class NetEpicScene extends Phaser.Scene {
         if (!this.checkTerrainMoveRule(det)) {
           this.undoDetachmentMove();
         } else {
-          this.updateDetachmentBadgePos(det);
-          this.drawOverlays();
-          this.confirmDetachmentMove();
+          this.animateAIMoveAndConfirm(det, null, true);
           return;
         }
       }
@@ -2681,7 +2998,7 @@ class NetEpicScene extends Phaser.Scene {
       const dist = Phaser.Math.Distance.Between(center.x, center.y, obj.x, obj.y);
       // Check if another friendly detachment is already sitting on this objective
       const friendlyAlreadyThere = this.detachments.some(f =>
-        f !== det && f.faction === det.faction && f.stands.length > 0 &&
+        f !== det && f.faction === det.faction && f.stands.length > 0 && !f.embarkedOn &&
         Phaser.Math.Distance.Between(this.getDetachmentCenter(f).x, this.getDetachmentCenter(f).y, obj.x, obj.y) < 110
       );
       let score = -dist;
@@ -2710,8 +3027,86 @@ class NetEpicScene extends Phaser.Scene {
     const desiredDy = Math.sin(angle) * moveDist;
 
     this.translateDetachmentSafely(det, desiredDx, desiredDy, maxMovePx);
-    this.log(`🤖 <b>${det.name}</b> reveals <b>${ORDER_INFO[det.order].label}</b> and advances toward ${bestObj ? bestObj.name : 'the enemy'}!`);
-    this.confirmDetachmentMove();
+    const logMsg = `🤖 <b>${det.name}</b> reveals <b>${ORDER_INFO[det.order].label}</b> and advances toward ${bestObj ? bestObj.name : 'the enemy'}!`;
+    this.animateAIMoveAndConfirm(det, logMsg, true);
+  }
+
+  // Smoothly animate AI stands from their starting positions to their target positions so the human player can follow every move!
+  animateAIMoveAndConfirm(det, logMessage = null, checkTransportDisembark = true) {
+    this.aiTimerPending = true;
+    const targets = det.stands.map(s => ({ stand: s, destX: s.container.x, destY: s.container.y }));
+
+    // Temporarily reset stands to origin so we can watch them glide across the tabletop!
+    targets.forEach(t => {
+      t.stand.container.x = t.stand.originX;
+      t.stand.container.y = t.stand.originY;
+    });
+    this.syncEmbarkedPassengers(det);
+    this.updateDetachmentBadgePos(det);
+    this.drawOverlays();
+
+    // Pause briefly after camera pan so the player sees the unit at its starting position
+    this.time.delayedCall(550, () => {
+      if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det) {
+        this.aiTimerPending = false;
+        return;
+      }
+
+      let destAvgX = 0, destAvgY = 0;
+      targets.forEach(t => { destAvgX += t.destX; destAvgY += t.destY; });
+      if (targets.length > 0) {
+        this.panCameraTo(destAvgX / targets.length, destAvgY / targets.length, 700);
+      }
+
+      const animState = { p: 0 };
+      this.tweens.add({
+        targets: animState,
+        p: 1,
+        duration: 700,
+        ease: 'Sine.easeInOut',
+        onUpdate: () => {
+          targets.forEach(t => {
+            t.stand.container.x = Phaser.Math.Linear(t.stand.originX, t.destX, animState.p);
+            t.stand.container.y = Phaser.Math.Linear(t.stand.originY, t.destY, animState.p);
+          });
+          this.syncEmbarkedPassengers(det);
+          this.updateDetachmentBadgePos(det);
+          this.drawOverlays();
+        },
+        onComplete: () => {
+          targets.forEach(t => {
+            t.stand.container.x = t.destX;
+            t.stand.container.y = t.destY;
+          });
+          this.syncEmbarkedPassengers(det);
+          this.updateDetachmentBadgePos(det);
+          this.drawOverlays();
+
+          if (logMessage) this.log(logMessage);
+
+          // If this is a loaded AI Transport that reached an Objective or enemy proximity, Disembark the troops!
+          if (checkTransportDisembark && det.passengerDet) {
+            const dc = this.getDetachmentCenter(det);
+            const nearObj = this.objectives.some(o => Phaser.Math.Distance.Between(dc.x, dc.y, o.x, o.y) <= OBJ_RADIUS_PX + 35);
+            const nearEnemy = this.detachments.some(e =>
+              e.faction !== det.faction && e.stands.length > 0 && !e.embarkedOn &&
+              Phaser.Math.Distance.Between(dc.x, dc.y, this.getDetachmentCenter(e).x, this.getDetachmentCenter(e).y) <= 230
+            );
+            if (nearObj || nearEnemy) {
+              this.disembarkDetachment(det);
+            }
+          }
+
+          // Pause briefly at destination before confirming move
+          this.time.delayedCall(550, () => {
+            this.aiTimerPending = false;
+            if (this.phase === 'MOVEMENT' && this.activatingDetachment === det) {
+              this.confirmDetachmentMove();
+            }
+          });
+        }
+      });
+    });
   }
 
   translateDetachmentSafely(det, dx, dy, maxMovePx) {
@@ -2757,6 +3152,7 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
+    this.syncEmbarkedPassengers(det);
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
   }
@@ -2765,7 +3161,7 @@ class NetEpicScene extends Phaser.Scene {
     const firer = this.activatingDetachment;
     if (!firer || firer.stands.length === 0) return;
 
-    const enemies = this.detachments.filter(d => d.faction !== firer.faction && d.stands.length > 0);
+    const enemies = this.detachments.filter(d => d.faction !== firer.faction && d.stands.length > 0 && !d.embarkedOn);
     let bestTarget = null;
     let bestScore = 0;
 
@@ -2774,6 +3170,7 @@ class NetEpicScene extends Phaser.Scene {
       if (sol.validPairs.length > 0) {
         const hitPotential = sol.isBarrage ? (sol.templateTargets ? sol.templateTargets.length : 1) : sol.validPairs.length;
         let score = hitPotential * 10 + (7 - eDet.save);
+        if (eDet.passengerDet) score += 18; // High priority: enemy transports carrying troops!
         if (!eDet.broken && (eDet.casualties + 1 >= eDet.breakPoint)) score += 15;
         if (score > bestScore) {
           bestScore = score;
@@ -2784,14 +3181,24 @@ class NetEpicScene extends Phaser.Scene {
 
     if (bestTarget) {
       this.targetDetachment = bestTarget;
+      const fc = this.getDetachmentCenter(firer);
+      const tc = this.getDetachmentCenter(bestTarget);
+      this.panCameraBetween(fc, tc, 650);
+      this.spawnFloatingText(fc.x, fc.y - 22, `🤖 ${firer.name} AIMING...`, '#facc15', '12px');
+      this.spawnFloatingText(tc.x, tc.y - 22, `🎯 TARGET: ${bestTarget.name}`, '#ef4444', '12px');
       this.drawOverlays();
       this.updateUI();
-      this.time.delayedCall(450, () => {
+
+      this.aiTimerPending = true;
+      this.time.delayedCall(1150, () => {
+        this.aiTimerPending = false;
         if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') && this.activatingDetachment === firer) {
           this.fireAtSelectedTarget();
         }
       });
     } else {
+      const fc = this.getDetachmentCenter(firer);
+      this.panCameraTo(fc.x, fc.y, 450);
       if (this.phase === 'COMBAT_FIRST') {
         this.holdFireDetachment();
       } else {
@@ -2807,11 +3214,16 @@ class NetEpicScene extends Phaser.Scene {
     if (this.selectedDetachment.order === 'FALL_BACK') return;
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
+    // If this is a Transport carrying embarked passengers, automatically set the passenger's order to ADVANCE
+    if (this.selectedDetachment.passengerDet && !this.selectedDetachment.passengerDet.order) {
+      this.selectedDetachment.passengerDet.order = 'ADVANCE';
+      this.selectedDetachment.passengerDet.orderRevealed = false;
+    }
     this.updateDetachmentBadge(this.selectedDetachment);
 
     // Auto-advance selection to next human detachment without an order for smooth UX
     const nextUnordered = this.detachments.find(d =>
-      !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order
+      !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order && !d.embarkedOn
     );
     if (nextUnordered) {
       this.selectedDetachment = nextUnordered;
@@ -2823,6 +3235,13 @@ class NetEpicScene extends Phaser.Scene {
 
   finishOrdersPhase() {
     this.assignAIOrders();
+    // Ensure any embarked passenger detachments have a default order so they can disembark & fire in Advance Fire
+    this.detachments.forEach(d => {
+      if (d.embarkedOn && !d.order) {
+        d.order = 'ADVANCE';
+        d.orderRevealed = false;
+      }
+    });
 
     let impRoll = 0, orkRoll = 0;
     while (impRoll === orkRoll) {
@@ -2842,7 +3261,7 @@ class NetEpicScene extends Phaser.Scene {
 
   activateSelectedDetachment() {
     const det = this.selectedDetachment;
-    if (!det || det.moved || det.faction !== this.activePlayer) return;
+    if (!det || det.moved || det.embarkedOn || det.faction !== this.activePlayer) return;
 
     det.orderRevealed = true;
     this.activatingDetachment = det;
@@ -2867,8 +3286,10 @@ class NetEpicScene extends Phaser.Scene {
     const det = this.activatingDetachment;
     if (!det) return;
     det.stands.forEach(s => { s.container.x = s.originX; s.container.y = s.originY; });
+    this.syncEmbarkedPassengers(det);
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
+    this.updateUI();
   }
 
   // 1-click Compulsory Retreat helper for FALL_BACK detachments (2x Move toward own table edge)
@@ -2883,6 +3304,7 @@ class NetEpicScene extends Phaser.Scene {
       s.container.x = s.originX;
       s.container.y = Phaser.Math.Clamp(s.originY + dirY * retreatDistPx, 20, BOARD_H - 20);
     });
+    this.syncEmbarkedPassengers(det);
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
   }
@@ -2898,6 +3320,7 @@ class NetEpicScene extends Phaser.Scene {
     // Check if the unit actually moved
     const didMove = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
+    this.syncEmbarkedPassengers(det);
     det.moved = true;
 
     // Log if Infantry stands garrisoned inside a Fortified Building!
@@ -2938,6 +3361,7 @@ class NetEpicScene extends Phaser.Scene {
       const snapCandidates = this.detachments.filter(d =>
         d.faction === enemySide &&
         d.stands.length > 0 &&
+        !d.embarkedOn &&
         d.order === 'FIRST_FIRE' &&
         !d.fired &&
         this.evaluateFireSolution(d, det, true).validPairs.length > 0
@@ -2956,12 +3380,30 @@ class NetEpicScene extends Phaser.Scene {
     this.phase = 'SNAP_INTERRUPT';
     this.snapTarget = movingDet;
     this.snapCandidates = snapCandidates;
+    this.previewSnapFirer = snapCandidates[0] || null;
+
+    // Update badges so the Moving Target and Reacting First Fire units are clearly labeled on the map!
+    this.updateDetachmentBadge(movingDet);
+    snapCandidates.forEach(c => this.updateDetachmentBadge(c));
+
+    // Pan camera to frame the Snap Fire Shooter and the Moving Target!
+    const tc = this.getDetachmentCenter(movingDet);
+    if (this.previewSnapFirer) {
+      const sc = this.getDetachmentCenter(this.previewSnapFirer);
+      this.panCameraBetween(sc, tc, 650);
+      this.spawnFloatingText(sc.x, sc.y - 24, `⚡ SNAP FIRE READY!`, '#38bdf8', '12px');
+    }
+    this.spawnFloatingText(tc.x, tc.y - 24, `🎯 SNAP TARGET: ${movingDet.name}`, '#ef4444', '12px');
+
     this.updateUI();
     this.drawOverlays();
     this.checkAndRunAITurn();
   }
 
   resolveSnapFireChoice(firerId) {
+    const prevTarget = this.snapTarget;
+    const prevCandidates = this.snapCandidates ? [...this.snapCandidates] : [];
+
     if (firerId) {
       const firer = this.detachments.find(d => d.id === firerId);
       if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
@@ -2973,12 +3415,16 @@ class NetEpicScene extends Phaser.Scene {
       this.snapCandidates = this.detachments.filter(d =>
         d.faction === enemySide &&
         d.stands.length > 0 &&
+        !d.embarkedOn &&
         this.snapTarget.stands.length > 0 &&
         d.order === 'FIRST_FIRE' &&
         !d.fired &&
         this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
       );
       if (this.snapCandidates.length > 0) {
+        this.previewSnapFirer = this.snapCandidates[0];
+        this.updateDetachmentBadge(this.snapTarget);
+        prevCandidates.forEach(c => this.updateDetachmentBadge(c));
         this.updateUI();
         this.drawOverlays();
         this.checkAndRunAITurn();
@@ -2989,6 +3435,9 @@ class NetEpicScene extends Phaser.Scene {
     this.phase = 'MOVEMENT';
     this.snapTarget = null;
     this.snapCandidates = [];
+    this.previewSnapFirer = null;
+    if (prevTarget && prevTarget.stands.length > 0) this.updateDetachmentBadge(prevTarget);
+    prevCandidates.forEach(c => { if (c.stands.length > 0) this.updateDetachmentBadge(c); });
     this.finishMovementActivation();
   }
 
@@ -2997,8 +3446,8 @@ class NetEpicScene extends Phaser.Scene {
     this.selectedDetachment = null;
 
     const otherSide = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-    const otherHasMove = this.detachments.some(d => d.faction === otherSide && d.stands.length > 0 && !d.moved);
-    const currHasMove = this.detachments.some(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+    const otherHasMove = this.detachments.some(d => d.faction === otherSide && d.stands.length > 0 && !d.moved && !d.embarkedOn);
+    const currHasMove = this.detachments.some(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved && !d.embarkedOn);
 
     if (otherHasMove) {
       this.activePlayer = otherSide;
@@ -3014,7 +3463,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- III. COMBAT PHASE (1: FIRST FIRE, 2: CLOSE COMBAT, 3: ADVANCE FIRE) ---
   isEligibleInCombatPhase(det) {
-    if (det.stands.length === 0 || det.fired) return false;
+    if (det.stands.length === 0 || det.fired || det.embarkedOn) return false;
     // Must have at least one stand NOT locked in Close Combat
     const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s));
     if (!hasUnengagedStand) return false;
@@ -3328,6 +3777,7 @@ class NetEpicScene extends Phaser.Scene {
           s.originX = s.container.x;
           s.originY = s.container.y;
         });
+        this.syncEmbarkedPassengers(d);
         this.updateDetachmentBadge(d);
         this.spawnFloatingText(dc.x, dc.y - 16, `🏳️ RALLY FAILED (${roll})`, '#f59e0b', '12px');
         this.log(`🏳️ <b>${d.name}</b> failed Rally (${roll} < ${d.morale}+) — retreats ${d.moveCm}cm toward home edge and stays on <b>FALL BACK</b>!`);
@@ -3368,7 +3818,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(d => {
       if (d.stands.length === 0) return;
-      if (d.order !== 'FALL_BACK') d.order = null;
+      if (d.order !== 'FALL_BACK') d.order = (d.embarkedOn ? 'ADVANCE' : null);
       d.orderRevealed = (d.order === 'FALL_BACK');
       d.moved = false;
       d.fired = false;
@@ -3408,6 +3858,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // 1. Always draw red/orange Close Combat engagement links, Pinned rings, and Gold Fortified Garrison rings
     this.detachments.forEach(d => {
+      if (d.embarkedOn) return;
       d.stands.forEach(s => {
         if (this.isStandGarrisoned(s)) {
           this.overlayGfx.lineStyle(2, 0xfacc15, 0.85);
@@ -3440,58 +3891,65 @@ class NetEpicScene extends Phaser.Scene {
       this.overlayGfx.lineBetween(p1.x, p1.y, p2.x, p2.y);
     }
 
-    const det = this.selectedDetachment;
-    if (!det || det.stands.length === 0) {
-      document.getElementById('coherency-alert').style.display = 'none';
-      document.getElementById('engagement-alert').style.display = 'none';
-      document.getElementById('fallback-alert').style.display = 'none';
-      document.getElementById('terrain-alert').style.display = 'none';
-      return;
-    }
+    // 3. Highlight SNAP FIRE INTERRUPT Target Reticles, Reacting Shooters & Live LoS Rays!
+    if (this.phase === 'SNAP_INTERRUPT' && this.snapTarget && this.snapCandidates && this.snapCandidates.length > 0) {
+      const target = this.snapTarget;
+      // Draw bright red/yellow target reticles + crosshairs on every stand of the moving enemy target!
+      target.stands.forEach(ts => {
+        const tx = ts.container.x, ty = ts.container.y;
+        this.overlayGfx.lineStyle(3, 0xef4444, 1);
+        this.overlayGfx.strokeCircle(tx, ty, 22);
+        this.overlayGfx.lineStyle(1.5, 0xfde047, 0.95);
+        this.overlayGfx.strokeCircle(tx, ty, 16);
+        this.overlayGfx.lineBetween(tx - 26, ty, tx - 14, ty);
+        this.overlayGfx.lineBetween(tx + 14, ty, tx + 26, ty);
+        this.overlayGfx.lineBetween(tx, ty - 26, tx, ty - 14);
+        this.overlayGfx.lineBetween(tx, ty + 14, tx, ty + 26);
+      });
 
-    const isCoherent = this.checkCoherency(det);
-    const isEngageValid = this.checkEngagementMoveRule(det);
-    const isFallBackValid = this.checkFallBackMoveRule(det);
-    const isTerrainValid = this.checkTerrainMoveRule(det);
-    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isCoherent) ? 'block' : 'none';
-    document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
-    document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
-    document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
+      const activeCand = (this.previewSnapFirer && this.snapCandidates.includes(this.previewSnapFirer))
+        ? this.previewSnapFirer
+        : this.snapCandidates[0];
 
-    // Coherency web (Cyan when Group Move is ON and coherent, Green when Single-Stand and coherent, Orange when out of coherency)
-    const webColor = !isCoherent ? 0xf59e0b : (this.groupMoveMode ? 0x38bdf8 : 0x22c55e);
-    for (let i = 0; i < det.stands.length; i++) {
-      for (let j = i + 1; j < det.stands.length; j++) {
-        const s1 = det.stands[i].container, s2 = det.stands[j].container;
-        if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
-          this.overlayGfx.lineStyle(this.groupMoveMode ? 2.5 : 2, webColor, 0.65);
-          this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
+      // Highlight all eligible Snap Fire candidate detachments
+      this.snapCandidates.forEach(cand => {
+        const isPreview = (cand === activeCand);
+        cand.stands.forEach(cs => {
+          this.overlayGfx.lineStyle(isPreview ? 3 : 2, isPreview ? 0x38bdf8 : 0xfacc15, isPreview ? 1 : 0.75);
+          this.overlayGfx.strokeCircle(cs.container.x, cs.container.y, isPreview ? 21 : 18);
+        });
+      });
+
+      // Draw LoS rays (and Barrage Template if artillery) from the active/previewed Snap Fire candidate to the Moving Target
+      if (activeCand) {
+        const sol = this.evaluateFireSolution(activeCand, target, true);
+        if (sol.isBarrage && sol.aimPoint) {
+          this.losGfx.fillStyle(0xf97316, 0.22);
+          this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
+          this.losGfx.lineStyle(3, 0xf97316, 0.95);
+          this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
         }
+        activeCand.stands.forEach(shooter => {
+          if (target.stands.length === 0) return;
+          let chosen = target.stands[0];
+          let bestCheck = this.checkStandLoS(shooter, chosen, true);
+          for (const ts of target.stands) {
+            const chk = this.checkStandLoS(shooter, ts, true);
+            if (chk.valid && (!bestCheck.valid || chk.distCm < bestCheck.distCm)) {
+              chosen = ts;
+              bestCheck = chk;
+            }
+          }
+          const color = bestCheck.valid ? (bestCheck.coverMod < 0 ? 0xfacc15 : 0x38bdf8) : 0xef4444;
+          const aimX = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.x : chosen.container.x;
+          const aimY = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.y : chosen.container.y;
+          this.losGfx.lineStyle(bestCheck.valid ? 3 : 1.5, color, bestCheck.valid ? 0.95 : 0.45);
+          this.losGfx.lineBetween(shooter.container.x, shooter.container.y, aimX, aimY);
+        });
       }
     }
 
-    const maxMovePx = det.order ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
-    det.stands.forEach(s => {
-      if (this.groupMoveMode && !s.pinnedAtStart) {
-        // Double Cyan Ring for Group-Selected Stands!
-        this.overlayGfx.lineStyle(2.5, 0x38bdf8, 1);
-        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
-        this.overlayGfx.lineStyle(1.5, 0x22d3ee, 0.85);
-        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 22);
-      } else {
-        this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
-        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
-      }
-
-      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0 && !s.pinnedAtStart) {
-        this.overlayGfx.lineStyle(1, ORDER_INFO[det.order].color, 0.3);
-        this.overlayGfx.strokeCircle(s.originX, s.originY, maxMovePx);
-        this.overlayGfx.lineStyle(2, 0xffffff, 0.8);
-        this.overlayGfx.lineBetween(s.originX, s.originY, s.container.x, s.container.y);
-      }
-    });
-
-    // Draw Live Line of Sight Rays & 6cm Artillery Barrage Templates when targeting an enemy in Combat Phase
+    // 4. Draw Live Line of Sight Rays & 6cm Artillery Barrage Templates when targeting an enemy in Combat Phase
     if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
         this.activatingDetachment && this.targetDetachment) {
       const firer = this.activatingDetachment;
@@ -3542,6 +4000,57 @@ class NetEpicScene extends Phaser.Scene {
       });
     }
 
+    const det = this.selectedDetachment;
+    if (!det || det.stands.length === 0 || det.embarkedOn) {
+      document.getElementById('coherency-alert').style.display = 'none';
+      document.getElementById('engagement-alert').style.display = 'none';
+      document.getElementById('fallback-alert').style.display = 'none';
+      document.getElementById('terrain-alert').style.display = 'none';
+      return;
+    }
+
+    const isCoherent = this.checkCoherency(det);
+    const isEngageValid = this.checkEngagementMoveRule(det);
+    const isFallBackValid = this.checkFallBackMoveRule(det);
+    const isTerrainValid = this.checkTerrainMoveRule(det);
+    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isCoherent) ? 'block' : 'none';
+    document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
+    document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
+    document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
+
+    // Coherency web (Cyan when Group Move is ON and coherent, Green when Single-Stand and coherent, Orange when out of coherency)
+    const webColor = !isCoherent ? 0xf59e0b : (this.groupMoveMode ? 0x38bdf8 : 0x22c55e);
+    for (let i = 0; i < det.stands.length; i++) {
+      for (let j = i + 1; j < det.stands.length; j++) {
+        const s1 = det.stands[i].container, s2 = det.stands[j].container;
+        if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
+          this.overlayGfx.lineStyle(this.groupMoveMode ? 2.5 : 2, webColor, 0.65);
+          this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
+        }
+      }
+    }
+
+    const maxMovePx = det.order ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
+    det.stands.forEach(s => {
+      if (this.groupMoveMode && !s.pinnedAtStart) {
+        // Double Cyan Ring for Group-Selected Stands!
+        this.overlayGfx.lineStyle(2.5, 0x38bdf8, 1);
+        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
+        this.overlayGfx.lineStyle(1.5, 0x22d3ee, 0.85);
+        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 22);
+      } else {
+        this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
+        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
+      }
+
+      if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0 && !s.pinnedAtStart) {
+        this.overlayGfx.lineStyle(1, ORDER_INFO[det.order].color, 0.3);
+        this.overlayGfx.strokeCircle(s.originX, s.originY, maxMovePx);
+        this.overlayGfx.lineStyle(2, 0xffffff, 0.8);
+        this.overlayGfx.lineBetween(s.originX, s.originY, s.container.x, s.container.y);
+      }
+    });
+
     const confirmBtn = document.getElementById('btn-confirm-move');
     if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid || !isFallBackValid || !isTerrainValid;
   }
@@ -3558,10 +4067,33 @@ class NetEpicScene extends Phaser.Scene {
 
   updateDetachmentBadge(det) {
     if (det.stands.length === 0) return;
+    if (det.embarkedOn) {
+      det.badge.setVisible(false);
+      return;
+    }
+    det.badge.setVisible(true);
     this.updateDetachmentBadgePos(det);
+
     const anyEngaged = det.stands.some(s => this.isStandEngaged(s));
     const anyGarrisoned = det.stands.some(s => this.isStandGarrisoned(s));
-    const ccSuffix = (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
+    const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
+    const ccSuffix = transSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
+
+    // Highlight Snap Target and Snap Fire Shooters unmistakably during SNAP_INTERRUPT!
+    if (this.phase === 'SNAP_INTERRUPT') {
+      if (det === this.snapTarget) {
+        det.badge.setText(`🎯 SNAP TARGET: ${det.name}`);
+        det.badge.setBackgroundColor('#dc2626');
+        det.badge.setColor('#fef08a');
+        return;
+      }
+      if (this.snapCandidates && this.snapCandidates.includes(det)) {
+        det.badge.setText(`⚡ SNAP SHOOTER: ${det.name}`);
+        det.badge.setBackgroundColor('#0284c7');
+        det.badge.setColor('#ffffff');
+        return;
+      }
+    }
 
     if (this.phase === 'DEPLOYMENT') {
       det.badge.setText('📍 DEPLOY' + ccSuffix);
@@ -3631,37 +4163,64 @@ class NetEpicScene extends Phaser.Scene {
     if (this.phase === 'DEPLOYMENT') {
       phaseBadge.innerText = '0. Deployment Phase';
       phaseBadge.style.background = '#0284c7';
-      promptText.innerText = 'Drag detachments inside your Deployment Zone (Double-click any stand to toggle Group vs Single-Stand move)';
+      promptText.innerText = 'Drag detachments inside your Deployment Zone (Select Infantry or Transport to 🚐 Embark Troops!)';
       deployControls.style.display = 'flex';
+
+      const btnDepTrans = document.getElementById('btn-deploy-transport');
+      if (btnDepTrans) {
+        const tInfo = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction))
+          ? this.getTransportActionInfo(this.selectedDetachment)
+          : null;
+        if (tInfo) {
+          btnDepTrans.style.display = 'block';
+          btnDepTrans.innerText = tInfo.action === 'EMBARK'
+            ? `🚐 Embark ${tInfo.passenger.name} into ${tInfo.transport.name}`
+            : `🚶 Disembark ${tInfo.passenger.name}`;
+        } else {
+          btnDepTrans.style.display = 'none';
+        }
+      }
     }
     else if (this.phase === 'ORDERS') {
       phaseBadge.innerText = 'I. Orders Phase';
       phaseBadge.style.background = '#d97706';
-      const remaining = this.detachments.filter(d => d.stands.length > 0 && !d.order).length;
+      const remaining = this.detachments.filter(d => d.stands.length > 0 && !d.order && !d.embarkedOn).length;
       promptText.innerText = remaining > 0
         ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
         : 'All Orders placed! Roll Initiative to start Movement.';
-      ordersControls.style.display = (this.selectedDetachment && this.selectedDetachment.order !== 'FALL_BACK' && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
+      ordersControls.style.display = (this.selectedDetachment && !this.selectedDetachment.embarkedOn && this.selectedDetachment.order !== 'FALL_BACK' && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
     } 
     else if (this.phase === 'SNAP_INTERRUPT') {
       phaseBadge.innerText = '⚡ SNAP FIRE INTERRUPT';
       phaseBadge.style.background = '#dc2626';
-      promptText.innerText = `Enemy ${this.snapTarget.name} moved into sight!`;
+      const shooterNames = this.snapCandidates.map(c => c.name).join(', ');
+      promptText.innerText = `⚡ SNAP FIRE: [${shooterNames}] aiming at moving enemy 🎯 [${this.snapTarget.name}]! (Cyan rays on map show LoS)`;
       snapBanner.style.display = 'block';
+
+      const snapTextEl = document.getElementById('snapfire-text');
+      if (snapTextEl) {
+        snapTextEl.innerHTML = `⚡ <b>SNAP FIRE OPPORTUNITY!</b> Enemy <span style="color:#fef08a; text-decoration:underline;">🎯 ${this.snapTarget.name}</span> moved into sight! Select which First Fire unit shoots:`;
+      }
 
       const btnContainer = document.getElementById('snapfire-buttons');
       btnContainer.innerHTML = '';
       this.snapCandidates.forEach(cand => {
         const sol = this.evaluateFireSolution(cand, this.snapTarget, true);
+        const neededHit = Math.min(6, cand.weapon.toHit + 1);
         const b = document.createElement('button');
         b.className = 'btn-fire';
-        b.innerText = `Snap Fire with ${cand.name} (${sol.validPairs.length} stands in LoS, -1 To-Hit)`;
+        b.innerText = `🔥 ${cand.name} ➔ 🎯 ${this.snapTarget.name} (${sol.validPairs.length}/${cand.stands.length} stands in LoS, Hit ${neededHit}+)`;
+        b.onpointerenter = () => {
+          this.previewSnapFirer = cand;
+          this.panCameraBetween(this.getDetachmentCenter(cand), this.getDetachmentCenter(this.snapTarget), 450);
+          this.drawOverlays();
+        };
         b.onclick = () => this.resolveSnapFireChoice(cand.id);
         btnContainer.appendChild(b);
       });
       const passBtn = document.createElement('button');
-      passBtn.innerText = 'Pass / Hold Fire';
+      passBtn.innerText = '⏭️ Pass / Hold Fire (Save First Fire for Combat Phase)';
       passBtn.onclick = () => this.resolveSnapFireChoice(null);
       btnContainer.appendChild(passBtn);
     }
@@ -3669,7 +4228,8 @@ class NetEpicScene extends Phaser.Scene {
       phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
       phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
       if (this.isFactionAI(this.activePlayer)) {
-        promptText.innerText = `🤖 ${this.activePlayer} AI Commander is manoeuvring...`;
+        const aiUnit = this.activatingDetachment ? `${this.activatingDetachment.name} (${ORDER_INFO[this.activatingDetachment.order].label})` : `${this.activePlayer} AI Commander`;
+        promptText.innerText = `🤖 ${aiUnit} is manoeuvring across the battlefield...`;
         moveControls.style.display = 'none';
       } else {
         const grpHint = this.groupMoveMode ? ' [🔗 GROUP MOVE ON — Double-click to toggle]' : ' [Double-click unit to Group-Move]';
@@ -3686,7 +4246,7 @@ class NetEpicScene extends Phaser.Scene {
         moveControls.style.display = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
         if (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) {
           const isAct = this.activatingDetachment === this.selectedDetachment;
-          const canAct = !this.activatingDetachment && !this.selectedDetachment.moved && this.selectedDetachment.faction === this.activePlayer;
+          const canAct = !this.activatingDetachment && !this.selectedDetachment.moved && !this.selectedDetachment.embarkedOn && this.selectedDetachment.faction === this.activePlayer;
           const btnAct = document.getElementById('btn-activate');
           btnAct.style.display = isAct ? 'none' : 'block';
           btnAct.disabled = !canAct;
@@ -3696,6 +4256,19 @@ class NetEpicScene extends Phaser.Scene {
           document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
           document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
+
+          const btnMoveTrans = document.getElementById('btn-move-transport');
+          if (btnMoveTrans) {
+            const tInfo = isAct ? this.getTransportActionInfo(this.activatingDetachment) : null;
+            if (tInfo) {
+              btnMoveTrans.style.display = 'block';
+              btnMoveTrans.innerText = tInfo.action === 'EMBARK'
+                ? `🚐 Embark into ${tInfo.transport.name}`
+                : `🚶 Disembark ${tInfo.passenger.name}`;
+            } else {
+              btnMoveTrans.style.display = 'none';
+            }
+          }
         }
       }
     }
@@ -3724,7 +4297,9 @@ class NetEpicScene extends Phaser.Scene {
 
       if (this.isFactionAI(this.activePlayer)) {
         combatControls.style.display = 'none';
-        promptText.innerText = `🤖 ${this.activePlayer} AI Commander is acquiring targets...`;
+        const aiShooter = this.activatingDetachment ? this.activatingDetachment.name : `${this.activePlayer} AI`;
+        const aiTgt = this.targetDetachment ? ` ➔ 🎯 ${this.targetDetachment.name}` : ' is acquiring targets...';
+        promptText.innerText = `🤖 ${aiShooter}${aiTgt}`;
       } else {
         combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
 
@@ -3773,13 +4348,16 @@ class NetEpicScene extends Phaser.Scene {
       const garrisonCount = d.stands.filter(s => this.isStandGarrisoned(s)).length;
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
       const garBadge = garrisonCount > 0 ? ` | 🏰 ${garrisonCount} Garrisoned (4+ Save, -2 Hit, +2 CAF)` : '';
+      const transBadge = d.passengerDet
+        ? ` | 🚐 Carrying: ${d.passengerDet.name} (${d.passengerDet.stands.length} stands)`
+        : (d.transportCapacity ? ` | 🚐 Transport (Cap: ${d.stands.length * d.transportCapacity} Inf)` : '');
       const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
       const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
       const wpnInfo = d.weapon.barrage
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${garBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? 'Phase: Deployment'
