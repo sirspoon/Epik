@@ -197,19 +197,23 @@
 
 <div id="game-container"></div>
 
-<!-- Phase 5: Army Selection & Force Muster Modal -->
+<!-- Phase 5 & 6: Army Selection, Deployment & Solo vs AI Modal -->
 <div id="army-modal">
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-size:1.1rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — ARMY SELECTION & DEPLOYMENT</div>
-        <div class="sub-text">Select detachments for Imperium & Orks, then deploy in your Deployment Zone (Tip: Double-click any unit to Group-Move all stands together!)</div>
+        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — ARMY SETUP & SOLO VS. AI</div>
+        <div class="sub-text">Choose Solo vs. AI or 2-Player mode, customize your detachments, and deploy!</div>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <span class="sub-text" style="font-weight:700;">Points Limit:</span>
-        <button id="pts-750" onclick="window.setPointsBudget(750)" style="min-width:auto; padding:5px 9px;">750 pts</button>
-        <button id="pts-1000" class="btn-primary" onclick="window.setPointsBudget(1000)" style="min-width:auto; padding:5px 9px;">1000 pts</button>
-        <button id="pts-1500" onclick="window.setPointsBudget(1500)" style="min-width:auto; padding:5px 9px;">1500 pts</button>
+      <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+        <span class="sub-text" style="font-weight:700;">Mode:</span>
+        <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="min-width:auto; padding:5px 8px;">🤖 vs Ork AI</button>
+        <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="min-width:auto; padding:5px 8px;">🤖 vs Imperium AI</button>
+        <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="min-width:auto; padding:5px 8px;">👥 2P Hotseat</button>
+        <span class="sub-text" style="font-weight:700; margin-left:4px;">Pts:</span>
+        <button id="pts-750" onclick="window.setPointsBudget(750)" style="min-width:auto; padding:5px 8px;">750</button>
+        <button id="pts-1000" class="btn-primary" onclick="window.setPointsBudget(1000)" style="min-width:auto; padding:5px 8px;">1000</button>
+        <button id="pts-1500" onclick="window.setPointsBudget(1500)" style="min-width:auto; padding:5px 8px;">1500</button>
       </div>
     </div>
 
@@ -240,7 +244,7 @@
     </div>
 
     <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px;">
-      <button onclick="window.resetDefaultArmies()" style="flex:0 0 auto;">↺ Reset Balanced Lists</button>
+      <button onclick="window.resetDefaultArmies()" style="flex:0 0 auto;">↺ Reset Lists</button>
       <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)">📍 Proceed to Deployment Phase (Place Units in Zones)</button>
       <button class="btn-primary" onclick="window.startBattleFromBuilder(false)">⚡ Quick Start (Forward Skirmish Deployment)</button>
     </div>
@@ -256,6 +260,7 @@
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:6px;">
+      <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
       <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Army Setup</button>
       <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
     </div>
@@ -466,11 +471,42 @@ const UNIT_CATALOG = {
   ]
 };
 
-// --- ARMY BUILDER STATE & UI FUNCTIONS ---
+// --- ARMY BUILDER & SOLO AI STATE & UI FUNCTIONS ---
+window.aiFaction = 'ORKS'; // 'ORKS' | 'IMPERIUM' | 'NONE'
 window.pointsBudget = 1000;
 window.armyRosters = {
   IMPERIUM: ['sm_tac', 'sm_assault', 'sm_pred', 'sm_dev'],
   ORKS: ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_stormboyz']
+};
+
+window.setAIMode = function(mode) {
+  window.aiFaction = mode;
+  ['ORKS', 'IMPERIUM', 'NONE'].forEach(m => {
+    const b = document.getElementById(`ai-mode-${m}`);
+    if (b) b.className = (m === mode) ? 'btn-confirm' : '';
+  });
+  const topBtn = document.getElementById('btn-ai-toggle');
+  if (topBtn) {
+    if (mode === 'ORKS') {
+      topBtn.innerText = '🤖 AI: ORKS';
+      topBtn.className = 'btn-confirm';
+    } else if (mode === 'IMPERIUM') {
+      topBtn.innerText = '🤖 AI: IMPERIUM';
+      topBtn.className = 'btn-primary';
+    } else {
+      topBtn.innerText = '👥 2P Hotseat';
+      topBtn.className = '';
+    }
+  }
+  if (window.gameScene) {
+    window.gameScene.onAIModeChanged();
+  }
+};
+
+window.cycleAIMode = function() {
+  const order = ['ORKS', 'IMPERIUM', 'NONE'];
+  const next = order[(order.indexOf(window.aiFaction) + 1) % order.length];
+  window.setAIMode(next);
 };
 
 window.getRosterPoints = function(faction) {
@@ -932,17 +968,21 @@ class NetEpicScene extends Phaser.Scene {
       });
     });
 
-    this.selectedDetachment = this.detachments[0] || null;
+    // Select first player-controlled detachment by default
+    this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction)) || this.detachments[0] || null;
     this.activatingDetachment = null;
     this.targetDetachment = null;
 
     if (useDeploymentPhase) {
       this.phase = 'DEPLOYMENT';
       this.groupMoveMode = true; // Default to Group Move ON during Deployment for fast positioning!
-      this.log(`📍 <b>Deployment Phase Started!</b> Drag units inside their Deployment Zones. <b>Double-click</b> any unit to toggle Group Formation Move!`);
+      this.autoDeployAIFaction();
+      const aiNote = window.aiFaction !== 'NONE' ? ` (🤖 <b>${window.aiFaction} AI</b> has deployed its forces)` : '';
+      this.log(`📍 <b>Deployment Phase Started!</b>${aiNote} Drag your units inside your Deployment Zone. <b>Double-click</b> any unit to toggle Group Formation Move!`);
     } else {
       this.phase = 'ORDERS';
       this.groupMoveMode = false;
+      this.assignAIOrders();
       this.log(`⚡ <b>Quick Skirmish Started — Turn 1 Orders Phase!</b> Double-click any unit during Movement to move the whole group together.`);
     }
 
@@ -965,7 +1005,8 @@ class NetEpicScene extends Phaser.Scene {
     this.phase = 'ORDERS';
     this.turn = 1;
     this.drawDeploymentZones();
-    this.log(`⚔️ <b>Deployment Locked! Turn 1 Begins (I. Orders Phase).</b> Select each detachment to assign hidden orders.`);
+    this.assignAIOrders();
+    this.log(`⚔️ <b>Deployment Locked! Turn 1 Begins (I. Orders Phase).</b> Select each of your detachments to assign hidden orders.`);
     this.drawOverlays();
     this.updateUI();
   }
@@ -1386,6 +1427,9 @@ class NetEpicScene extends Phaser.Scene {
       const stand = gameObject.standData;
       const det = stand.detachment;
 
+      // Prevent dragging AI-controlled detachments
+      if (this.isFactionAI(det.faction)) return;
+
       if (this.phase === 'DEPLOYMENT') {
         this.selectedDetachment = det;
         this.isDraggingStand = true;
@@ -1420,6 +1464,7 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const stand = gameObject.standData;
       const det = stand.detachment;
+      if (this.isFactionAI(det.faction)) return;
 
       // --- 0. DEPLOYMENT PHASE DRAGGING (Within Faction Deployment Zone) ---
       if (this.phase === 'DEPLOYMENT') {
@@ -1595,17 +1640,422 @@ class NetEpicScene extends Phaser.Scene {
     cam.centerOn(BOARD_W / 2, BOARD_H / 2);
   }
 
+  // --- PHASE 6: SOLO VS. AI COMMANDER ENGINE ---
+  isFactionAI(faction) {
+    return window.aiFaction === faction;
+  }
+
+  getDetachmentCenter(det) {
+    if (!det || det.stands.length === 0) return { x: BOARD_W / 2, y: BOARD_H / 2 };
+    let sx = 0, sy = 0;
+    det.stands.forEach(s => { sx += s.container.x; sy += s.container.y; });
+    return { x: sx / det.stands.length, y: sy / det.stands.length };
+  }
+
+  onAIModeChanged() {
+    if (this.phase === 'DEPLOYMENT') {
+      this.autoDeployAIFaction();
+    } else if (this.phase === 'ORDERS') {
+      this.assignAIOrders();
+    } else if (this.phase === 'MOVEMENT' || this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE' || this.phase === 'SNAP_INTERRUPT') {
+      this.checkAndRunAITurn();
+    }
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  // Automatically position AI detachments across its Deployment Zone facing the 4 Objectives
+  autoDeployAIFaction() {
+    if (window.aiFaction === 'NONE') return;
+    const aiUnits = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0);
+    if (aiUnits.length === 0) return;
+
+    const laneXs = [480, 790, 1160, 1460, 630, 1310];
+    aiUnits.forEach((det, idx) => {
+      const targetX = laneXs[idx % laneXs.length] + (idx >= 4 ? (idx % 2 === 0 ? -70 : 70) : 0);
+      const isLongRange = det.weapon.rangeCm >= 45 && det.moveCm <= 20;
+      const targetY = det.faction === 'ORKS'
+        ? (isLongRange ? 180 : 275) // Forward edge of North deployment zone is y=350
+        : (isLongRange ? BOARD_H - 180 : BOARD_H - 275); // Forward edge of South deployment zone is y=900
+
+      const cols = Math.min(3, Math.ceil(det.stands.length / 2));
+      const spacing = 34;
+      const dirY = det.faction === 'IMPERIUM' ? 1 : -1;
+
+      det.stands.forEach((s, i) => {
+        const col = (i % cols) - (cols - 1) / 2;
+        const row = Math.floor(i / cols);
+        const sx = Phaser.Math.Clamp(targetX + col * spacing, 25, BOARD_W - 25);
+        const sy = Phaser.Math.Clamp(targetY + row * spacing * dirY, 25, BOARD_H - 25);
+        s.container.x = sx;
+        s.container.y = sy;
+        s.originX = sx;
+        s.originY = sy;
+      });
+      this.updateDetachmentBadgePos(det);
+    });
+  }
+
+  // AI secretly assigns Orders during I. Orders Phase
+  assignAIOrders() {
+    if (window.aiFaction === 'NONE') return;
+    let assignedCount = 0;
+
+    this.detachments.forEach(det => {
+      if (det.faction !== window.aiFaction || det.stands.length === 0) return;
+      if (det.order === 'FALL_BACK') return;
+
+      const center = this.getDetachmentCenter(det);
+      const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0);
+
+      let closestEnemyDist = Infinity;
+      let enemiesInLoS = 0;
+      enemies.forEach(eDet => {
+        const ec = this.getDetachmentCenter(eDet);
+        const d = Phaser.Math.Distance.Between(center.x, center.y, ec.x, ec.y);
+        if (d < closestEnemyDist) closestEnemyDist = d;
+        if (this.evaluateFireSolution(det, eDet, false).validPairs.length > 0) enemiesInLoS++;
+      });
+
+      const chargeReachPx = det.moveCm * 2 * PX_PER_CM;
+      const holdingObj = this.objectives.some(o =>
+        o.owner === det.faction && Phaser.Math.Distance.Between(center.x, center.y, o.x, o.y) <= OBJ_RADIUS_PX * 0.85
+      );
+
+      let chosenOrder = 'ADVANCE';
+      // 1. High-CAF or dedicated melee units within Charge reach of an enemy -> CHARGE!
+      if (det.caf >= 2 && closestEnemyDist <= chargeReachPx + 25) {
+        chosenOrder = 'CHARGE';
+      }
+      // 2. Fast assault units (Bolt Pistols / Sluggas <= 15cm range) outside gun range -> CHARGE to close ground fast or take objectives
+      else if (det.weapon.rangeCm <= 15 && closestEnemyDist > det.weapon.rangeCm * PX_PER_CM + det.moveCm * PX_PER_CM) {
+        chosenOrder = 'CHARGE';
+      }
+      // 3. Long-range gunlines (>=45cm) that already have targets in LoS (or units holding an Objective with targets in LoS) -> FIRST_FIRE
+      else if ((det.weapon.rangeCm >= 45 || holdingObj) && enemiesInLoS > 0 && this.turn > 1) {
+        chosenOrder = 'FIRST_FIRE';
+      }
+      // 4. Default tactical push -> ADVANCE (1x Move + Fire in Advance Segment)
+      else {
+        chosenOrder = 'ADVANCE';
+      }
+
+      if (!det.order) assignedCount++;
+      det.order = chosenOrder;
+      det.orderRevealed = false;
+      this.updateDetachmentBadge(det);
+    });
+
+    if (assignedCount > 0) {
+      this.log(`🤖 <b>${window.aiFaction} AI Commander</b> has locked in hidden Orders for its detachments.`);
+    }
+
+    // Auto-select first human detachment that still needs an order
+    if (!this.selectedDetachment || this.isFactionAI(this.selectedDetachment.faction) || this.selectedDetachment.order) {
+      const nextHuman = this.detachments.find(d => !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order);
+      if (nextHuman) this.selectedDetachment = nextHuman;
+    }
+  }
+
+  checkAndRunAITurn() {
+    if (window.aiFaction === 'NONE') return;
+
+    // 1. Snap Fire Interrupt decision when AI is the reactive side
+    if (this.phase === 'SNAP_INTERRUPT' && this.snapCandidates && this.snapCandidates.length > 0) {
+      const snapSide = this.snapCandidates[0].faction;
+      if (this.isFactionAI(snapSide) && !this.aiTimerPending) {
+        this.aiTimerPending = true;
+        this.time.delayedCall(550, () => {
+          this.aiTimerPending = false;
+          if (this.phase !== 'SNAP_INTERRUPT' || !this.snapCandidates || this.snapCandidates.length === 0) return;
+          // Pick candidate with most valid LoS pairs
+          let bestCand = this.snapCandidates[0];
+          let bestCount = -1;
+          this.snapCandidates.forEach(c => {
+            const count = this.evaluateFireSolution(c, this.snapTarget, true).validPairs.length;
+            if (count > bestCount) { bestCount = count; bestCand = c; }
+          });
+          if (bestCand && bestCount > 0) {
+            this.resolveSnapFireChoice(bestCand.id);
+          } else {
+            this.resolveSnapFireChoice(null);
+          }
+        });
+      }
+      return;
+    }
+
+    // 2. AI Movement Activation
+    if (this.phase === 'MOVEMENT' && this.isFactionAI(this.activePlayer) && !this.aiTimerPending) {
+      const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+      if (unmoved.length === 0) return;
+
+      this.aiTimerPending = true;
+      this.time.delayedCall(600, () => {
+        this.aiTimerPending = false;
+        if (this.phase !== 'MOVEMENT' || !this.isFactionAI(this.activePlayer)) return;
+        this.executeAIMove();
+      });
+      return;
+    }
+
+    // 3. AI Ranged Combat Activation (First Fire & Advance Fire)
+    if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
+        this.isFactionAI(this.activePlayer) && this.activatingDetachment && !this.aiTimerPending) {
+      this.aiTimerPending = true;
+      this.time.delayedCall(600, () => {
+        this.aiTimerPending = false;
+        if ((this.phase !== 'COMBAT_FIRST' && this.phase !== 'COMBAT_ADVANCE') || !this.isFactionAI(this.activePlayer)) return;
+        this.executeAICombatTurn();
+      });
+    }
+  }
+
+  executeAIMove() {
+    const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved);
+    if (unmoved.length === 0) return;
+
+    // Prioritize moving units on FIRST_FIRE first (0 move), then ADVANCE, then CHARGE
+    const priority = { FIRST_FIRE: 1, FALL_BACK: 2, ADVANCE: 3, CHARGE: 4 };
+    unmoved.sort((a, b) => (priority[a.order] || 9) - (priority[b.order] || 9));
+
+    const det = unmoved[0];
+    this.selectedDetachment = det;
+    this.activateSelectedDetachment();
+
+    if (det.order === 'FIRST_FIRE') {
+      this.log(`🤖 <b>${det.name}</b> reveals <b>FIRST FIRE</b> and holds position.`);
+      this.confirmDetachmentMove();
+      return;
+    }
+
+    if (det.order === 'FALL_BACK') {
+      this.autoRetreatDetachment();
+      this.log(`🤖 <b>${det.name}</b> makes compulsory <b>FALL BACK</b> retreat toward home edge.`);
+      this.confirmDetachmentMove();
+      return;
+    }
+
+    const maxMovePx = det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM;
+    const movable = det.stands.filter(s => !s.pinnedAtStart);
+
+    if (movable.length === 0) {
+      this.confirmDetachmentMove();
+      return;
+    }
+
+    // Compact into coherent formation first if needed
+    if (!this.checkCoherency(det)) {
+      this.compactSelectedDetachment(movable[0]);
+    }
+
+    const center = this.getDetachmentCenter(det);
+    const enemies = this.detachments.filter(e => e.faction !== det.faction && e.stands.length > 0);
+
+    // If on CHARGE orders, check if any enemy stand is within Charge reach!
+    if (det.order === 'CHARGE') {
+      let bestTargetEnemyDet = null;
+      let bestDist = Infinity;
+      enemies.forEach(eDet => {
+        eDet.stands.forEach(es => {
+          const d = Phaser.Math.Distance.Between(center.x, center.y, es.container.x, es.container.y);
+          if (d <= maxMovePx + 20 && d < bestDist) {
+            bestDist = d;
+            bestTargetEnemyDet = eDet;
+          }
+        });
+      });
+
+      if (bestTargetEnemyDet) {
+        // Move each movable stand toward base contact with the enemy detachment while keeping coherency
+        let anchorX = 0, anchorY = 0;
+        movable.forEach((s, idx) => {
+          const targetStand = bestTargetEnemyDet.stands[idx % bestTargetEnemyDet.stands.length];
+          const ang = Phaser.Math.Angle.Between(targetStand.container.x, targetStand.container.y, s.originX, s.originY);
+          let tx = targetStand.container.x + Math.cos(ang) * 22 + (idx >= bestTargetEnemyDet.stands.length ? (idx - 1) * 14 : 0);
+          let ty = targetStand.container.y + Math.sin(ang) * 22;
+
+          const distFromOrig = Phaser.Math.Distance.Between(s.originX, s.originY, tx, ty);
+          if (distFromOrig > maxMovePx) {
+            const moveAng = Phaser.Math.Angle.Between(s.originX, s.originY, tx, ty);
+            tx = s.originX + Math.cos(moveAng) * maxMovePx;
+            ty = s.originY + Math.sin(moveAng) * maxMovePx;
+          }
+          if (idx > 0) {
+            // Ensure within COHERENCY_PX - 6 of previous stand
+            const dPrev = Phaser.Math.Distance.Between(anchorX, anchorY, tx, ty);
+            if (dPrev > COHERENCY_PX - 6) {
+              const cAng = Phaser.Math.Angle.Between(anchorX, anchorY, tx, ty);
+              tx = anchorX + Math.cos(cAng) * (COHERENCY_PX - 8);
+              ty = anchorY + Math.sin(cAng) * (COHERENCY_PX - 8);
+            }
+          }
+          s.container.x = Phaser.Math.Clamp(tx, 18, BOARD_W - 18);
+          s.container.y = Phaser.Math.Clamp(ty, 18, BOARD_H - 18);
+          anchorX = s.container.x;
+          anchorY = s.container.y;
+        });
+
+        this.updateDetachmentBadgePos(det);
+        this.drawOverlays();
+        this.confirmDetachmentMove();
+        return;
+      }
+    }
+
+    // Otherwise (ADVANCE, or CHARGE with no enemy in immediate melee reach):
+    // Pick best Strategic Objective (unowned or enemy-owned) or enemy unit to advance toward
+    let goalX = center.x;
+    let goalY = det.faction === 'ORKS' ? center.y + maxMovePx : center.y - maxMovePx;
+
+    let bestObj = null;
+    let bestObjScore = -Infinity;
+    this.objectives.forEach(obj => {
+      const dist = Phaser.Math.Distance.Between(center.x, center.y, obj.x, obj.y);
+      // Check if another friendly detachment is already sitting on this objective
+      const friendlyAlreadyThere = this.detachments.some(f =>
+        f !== det && f.faction === det.faction && f.stands.length > 0 &&
+        Phaser.Math.Distance.Between(this.getDetachmentCenter(f).x, this.getDetachmentCenter(f).y, obj.x, obj.y) < 110
+      );
+      let score = -dist;
+      if (obj.owner !== det.faction) score += 450;
+      if (friendlyAlreadyThere) score -= 500;
+      if (score > bestObjScore) {
+        bestObjScore = score;
+        bestObj = obj;
+      }
+    });
+
+    if (bestObj) {
+      goalX = bestObj.x;
+      goalY = bestObj.y;
+    } else if (enemies.length > 0) {
+      const ec = this.getDetachmentCenter(enemies[0]);
+      goalX = ec.x;
+      goalY = ec.y;
+    }
+
+    // Compute desired translation vector (dx, dy) toward (goalX, goalY)
+    const distToGoal = Phaser.Math.Distance.Between(center.x, center.y, goalX, goalY);
+    const moveDist = Math.min(maxMovePx, distToGoal);
+    const angle = Phaser.Math.Angle.Between(center.x, center.y, goalX, goalY);
+    const desiredDx = Math.cos(angle) * moveDist;
+    const desiredDy = Math.sin(angle) * moveDist;
+
+    this.translateDetachmentSafely(det, desiredDx, desiredDy, maxMovePx);
+    this.log(`🤖 <b>${det.name}</b> reveals <b>${ORDER_INFO[det.order].label}</b> and advances toward ${bestObj ? bestObj.name : 'the enemy'}!`);
+    this.confirmDetachmentMove();
+  }
+
+  translateDetachmentSafely(det, dx, dy, maxMovePx) {
+    const movable = det.stands.filter(s => !s.pinnedAtStart);
+    const pinned = det.stands.filter(s => s.pinnedAtStart);
+    if (movable.length === 0) return;
+
+    movable.forEach(s => {
+      s.dragStartX = s.container.x;
+      s.dragStartY = s.container.y;
+    });
+
+    // Try scales from 1.0 down to 0.0 to find the furthest valid group move that respects maxMovePx, coherency, and MIN_ENEMY_GAP_PX
+    for (let step = 10; step >= 0; step--) {
+      const scale = step / 10;
+      let tdx = dx * scale;
+      let tdy = dy * scale;
+
+      movable.forEach(s => {
+        if (s.dragStartX + tdx < 18) tdx = 18 - s.dragStartX;
+        if (s.dragStartX + tdx > BOARD_W - 18) tdx = (BOARD_W - 18) - s.dragStartX;
+        if (s.dragStartY + tdy < 18) tdy = 18 - s.dragStartY;
+        if (s.dragStartY + tdy > BOARD_H - 18) tdy = (BOARD_H - 18) - s.dragStartY;
+      });
+
+      movable.forEach(s => {
+        s.container.x = s.dragStartX + tdx;
+        s.container.y = s.dragStartY + tdy;
+      });
+
+      const withinAllowance = movable.every(s =>
+        Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) <= maxMovePx + 1
+      );
+      const coherent = this.checkCoherency(det);
+      const engageOk = this.checkEngagementMoveRule(det);
+      const pinnedOk = pinned.length === 0 || movable.some(ms =>
+        pinned.some(ps => Phaser.Math.Distance.Between(ms.container.x, ms.container.y, ps.container.x, ps.container.y) <= COHERENCY_PX)
+      );
+
+      if (withinAllowance && coherent && engageOk && pinnedOk) {
+        break;
+      }
+    }
+
+    this.updateDetachmentBadgePos(det);
+    this.drawOverlays();
+  }
+
+  executeAICombatTurn() {
+    const firer = this.activatingDetachment;
+    if (!firer || firer.stands.length === 0) return;
+
+    const enemies = this.detachments.filter(d => d.faction !== firer.faction && d.stands.length > 0);
+    let bestTarget = null;
+    let bestScore = 0;
+
+    enemies.forEach(eDet => {
+      const sol = this.evaluateFireSolution(firer, eDet, false);
+      if (sol.validPairs.length > 0) {
+        // Prefer targets where more stands have LoS, targets near Break Point, and targets with worse saves
+        let score = sol.validPairs.length * 10 + (7 - eDet.save);
+        if (!eDet.broken && (eDet.casualties + 1 >= eDet.breakPoint)) score += 15;
+        if (score > bestScore) {
+          bestScore = score;
+          bestTarget = eDet;
+        }
+      }
+    });
+
+    if (bestTarget) {
+      this.targetDetachment = bestTarget;
+      this.drawOverlays();
+      this.updateUI();
+      this.time.delayedCall(450, () => {
+        if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') && this.activatingDetachment === firer) {
+          this.fireAtSelectedTarget();
+        }
+      });
+    } else {
+      if (this.phase === 'COMBAT_FIRST') {
+        this.holdFireDetachment();
+      } else {
+        this.skipFireDetachment();
+      }
+    }
+  }
+
   // --- PHASE TRANSITIONS & TURN LOGIC ---
   assignOrder(orderKey) {
     if (!this.selectedDetachment || this.phase !== 'ORDERS') return;
+    if (this.isFactionAI(this.selectedDetachment.faction)) return;
     if (this.selectedDetachment.order === 'FALL_BACK') return;
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     this.updateDetachmentBadge(this.selectedDetachment);
+
+    // Auto-advance selection to next human detachment without an order for smooth UX
+    const nextUnordered = this.detachments.find(d =>
+      !this.isFactionAI(d.faction) && d.stands.length > 0 && !d.order
+    );
+    if (nextUnordered) {
+      this.selectedDetachment = nextUnordered;
+    }
+
+    this.drawOverlays();
     this.updateUI();
   }
 
   finishOrdersPhase() {
+    this.assignAIOrders();
+
     let impRoll = 0, orkRoll = 0;
     while (impRoll === orkRoll) {
       impRoll = Phaser.Math.Between(1, 6);
@@ -1619,6 +2069,7 @@ class NetEpicScene extends Phaser.Scene {
     this.log(`🎲 <b>Initiative Roll:</b> Imperium ${impRoll} vs Orks ${orkRoll}. <b>${this.initiativeWinner}</b> wins Initiative!`);
     this.updateUI();
     this.drawOverlays();
+    this.checkAndRunAITurn();
   }
 
   activateSelectedDetachment() {
@@ -1731,6 +2182,7 @@ class NetEpicScene extends Phaser.Scene {
     this.snapCandidates = snapCandidates;
     this.updateUI();
     this.drawOverlays();
+    this.checkAndRunAITurn();
   }
 
   resolveSnapFireChoice(firerId) {
@@ -1753,6 +2205,7 @@ class NetEpicScene extends Phaser.Scene {
       if (this.snapCandidates.length > 0) {
         this.updateUI();
         this.drawOverlays();
+        this.checkAndRunAITurn();
         return;
       }
     }
@@ -1780,6 +2233,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.drawOverlays();
     this.updateUI();
+    this.checkAndRunAITurn();
   }
 
   // --- III. COMBAT PHASE (1: FIRST FIRE, 2: CLOSE COMBAT, 3: ADVANCE FIRE) ---
@@ -1837,6 +2291,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.drawOverlays();
     this.updateUI();
+    this.checkAndRunAITurn();
   }
 
   // --- III-2. CLOSE COMBAT SEGMENT (NetEpic Rules p. 38-40) ---
@@ -2131,6 +2586,7 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     this.log(`🌅 <b>Turn ${this.turn} Begins!</b> Place hidden Orders for all unbroken detachments.`);
+    this.assignAIOrders();
     this.drawOverlays();
     this.updateUI();
   }
@@ -2364,7 +2820,7 @@ class NetEpicScene extends Phaser.Scene {
       promptText.innerText = remaining > 0
         ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
         : 'All Orders placed! Roll Initiative to start Movement.';
-      ordersControls.style.display = (this.selectedDetachment && this.selectedDetachment.order !== 'FALL_BACK') ? 'flex' : 'none';
+      ordersControls.style.display = (this.selectedDetachment && this.selectedDetachment.order !== 'FALL_BACK' && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
     } 
     else if (this.phase === 'SNAP_INTERRUPT') {
@@ -2391,28 +2847,33 @@ class NetEpicScene extends Phaser.Scene {
     else if (this.phase === 'MOVEMENT') {
       phaseBadge.innerText = `II. Movement (${this.activePlayer})`;
       phaseBadge.style.background = this.activePlayer === 'IMPERIUM' ? '#2563eb' : '#16a34a';
-      const grpHint = this.groupMoveMode ? ' [🔗 GROUP MOVE ON — Double-click to toggle]' : ' [Double-click unit to Group-Move]';
-      promptText.innerText = this.activatingDetachment
-        ? (this.activatingDetachment.order === 'CHARGE'
-            ? `CHARGE! Drag stands up to ${this.activatingDetachment.moveCm * 2} cm — Drag onto enemy stands to Pin & enter Close Combat!${grpHint}`
-            : (this.activatingDetachment.order === 'FALL_BACK'
-                ? `FALL BACK! Retreat up to ${this.activatingDetachment.moveCm * 2} cm toward your home board edge (or click Auto-Retreat)`
-                : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm${grpHint}`))
-        : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
+      if (this.isFactionAI(this.activePlayer)) {
+        promptText.innerText = `🤖 ${this.activePlayer} AI Commander is manoeuvring...`;
+        moveControls.style.display = 'none';
+      } else {
+        const grpHint = this.groupMoveMode ? ' [🔗 GROUP MOVE ON — Double-click to toggle]' : ' [Double-click unit to Group-Move]';
+        promptText.innerText = this.activatingDetachment
+          ? (this.activatingDetachment.order === 'CHARGE'
+              ? `CHARGE! Drag stands up to ${this.activatingDetachment.moveCm * 2} cm — Drag onto enemy stands to Pin & enter Close Combat!${grpHint}`
+              : (this.activatingDetachment.order === 'FALL_BACK'
+                  ? `FALL BACK! Retreat up to ${this.activatingDetachment.moveCm * 2} cm toward your home board edge (or click Auto-Retreat)`
+                  : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm${grpHint}`))
+          : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
 
-      moveControls.style.display = this.selectedDetachment ? 'flex' : 'none';
-      if (this.selectedDetachment) {
-        const isAct = this.activatingDetachment === this.selectedDetachment;
-        const canAct = !this.activatingDetachment && !this.selectedDetachment.moved && this.selectedDetachment.faction === this.activePlayer;
-        const btnAct = document.getElementById('btn-activate');
-        btnAct.style.display = isAct ? 'none' : 'block';
-        btnAct.disabled = !canAct;
-        btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
-        document.getElementById('btn-move-group').style.display = isAct ? 'block' : 'none';
-        document.getElementById('btn-move-compact').style.display = isAct ? 'block' : 'none';
-        document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
-        document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
-        document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
+        moveControls.style.display = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
+        if (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) {
+          const isAct = this.activatingDetachment === this.selectedDetachment;
+          const canAct = !this.activatingDetachment && !this.selectedDetachment.moved && this.selectedDetachment.faction === this.activePlayer;
+          const btnAct = document.getElementById('btn-activate');
+          btnAct.style.display = isAct ? 'none' : 'block';
+          btnAct.disabled = !canAct;
+          btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
+          document.getElementById('btn-move-group').style.display = isAct ? 'block' : 'none';
+          document.getElementById('btn-move-compact').style.display = isAct ? 'block' : 'none';
+          document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
+          document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
+          document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
+        }
       }
     }
     else if (this.phase === 'COMBAT_CC') {
@@ -2435,23 +2896,29 @@ class NetEpicScene extends Phaser.Scene {
       const segTitle = this.phase === 'COMBAT_FIRST' ? 'III-1. First Fire' : 'III-3. Advance Fire';
       phaseBadge.innerText = `${segTitle} (${this.activePlayer})`;
       phaseBadge.style.background = '#dc2626';
-      combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
 
-      const btnFire = document.getElementById('btn-fire-target');
-      const btnHold = document.getElementById('btn-hold-fire');
-      btnHold.style.display = this.phase === 'COMBAT_FIRST' ? 'block' : 'none';
+      if (this.isFactionAI(this.activePlayer)) {
+        combatControls.style.display = 'none';
+        promptText.innerText = `🤖 ${this.activePlayer} AI Commander is acquiring targets...`;
+      } else {
+        combatControls.style.display = this.activatingDetachment ? 'flex' : 'none';
 
-      if (this.activatingDetachment && this.targetDetachment) {
-        const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
-        btnFire.disabled = sol.validPairs.length === 0;
-        btnFire.innerText = sol.validPairs.length > 0
-          ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
-          : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
-        promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
-      } else if (this.activatingDetachment) {
-        btnFire.disabled = true;
-        btnFire.innerText = 'Tap an Enemy Stand on the map to check LoS & Fire';
-        promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm range) — Tap an enemy unit!`;
+        const btnFire = document.getElementById('btn-fire-target');
+        const btnHold = document.getElementById('btn-hold-fire');
+        btnHold.style.display = this.phase === 'COMBAT_FIRST' ? 'block' : 'none';
+
+        if (this.activatingDetachment && this.targetDetachment) {
+          const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
+          btnFire.disabled = sol.validPairs.length === 0;
+          btnFire.innerText = sol.validPairs.length > 0
+            ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
+            : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+          promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
+        } else if (this.activatingDetachment) {
+          btnFire.disabled = true;
+          btnFire.innerText = 'Tap an Enemy Stand on the map to check LoS & Fire';
+          promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm range) — Tap an enemy unit!`;
+        }
       }
     }
     else if (this.phase === 'END_PHASE') {
@@ -2472,12 +2939,15 @@ class NetEpicScene extends Phaser.Scene {
       const pinnedCount = d.stands.filter(s => this.isStandPinned(s)).length;
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${grpBadge})`;
+      const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? 'Phase: Deployment'
         : (d.order
-            ? (d.orderRevealed ? `Order: ${ORDER_INFO[d.order].label}` : `Hidden Order: ${ORDER_INFO[d.order].label}`)
+            ? (d.orderRevealed
+                ? `Order: ${ORDER_INFO[d.order].label}`
+                : (this.isFactionAI(d.faction) ? 'Hidden Order: 🔒 AI SECRET' : `Hidden Order: ${ORDER_INFO[d.order].label}`))
             : 'No Order Assigned');
     } else {
       selTitle.innerText = 'No Detachment Selected';
