@@ -259,7 +259,8 @@
       <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Target: 20 VP)</span>
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
-    <div style="display:flex; gap:6px;">
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:6px 10px;" title="Toggle Synthesized Sound Effects">🔊 SFX</button>
       <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
       <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Army Setup</button>
       <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
@@ -270,14 +271,14 @@
     <div id="combat-log" class="panel">
       <div id="log-header">
         <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
-        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 5! Double-click any unit to Group-Move!</div>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 7! Artillery Barrages, Indirect Fire & Visual/Audio FX active!</div>
         <div style="display:flex; gap:4px;">
           <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
           <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
         </div>
       </div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 5! Select your armies, deploy in your zone, and <b>double-click any stand</b> to toggle cohesive Group Formation Move!</div>
+        <div class="log-entry">Welcome to Phase 7! <b>Artillery 6cm Barrages, Indirect Fire, Weapon Laser/Explosion FX & Sound</b> are now live!</div>
       </div>
       <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
         <span id="log-corner-grip">⤡</span>
@@ -371,11 +372,12 @@ const PX_PER_CM = 10;
 const BOARD_W = 185 * PX_PER_CM;
 const BOARD_H = 125 * PX_PER_CM;
 const DEPLOY_DEPTH_PX = 35 * PX_PER_CM; // 35 cm Deployment Zone depth from North/South edges
-const COHERENCY_PX = 6 * PX_PER_CM; // 6 cm
-const ENGAGE_PX = 32;               // Base-to-base contact threshold (~3.2 cm center-to-center)
-const MIN_ENEMY_GAP_PX = 34;        // Minimum distance for non-charging units
-const OBJ_RADIUS_PX = 15 * PX_PER_CM; // 15 cm Objective capture radius
-const VICTORY_VP_TARGET = 20;       // Victory Point threshold checked in End Phase
+const COHERENCY_PX = 6 * PX_PER_CM;     // 6 cm
+const BARRAGE_RADIUS_PX = 3 * PX_PER_CM; // 3 cm radius = 6 cm diameter circular NetEpic Barrage Template
+const ENGAGE_PX = 32;                   // Base-to-base contact threshold (~3.2 cm center-to-center)
+const MIN_ENEMY_GAP_PX = 34;            // Minimum distance for non-charging units
+const OBJ_RADIUS_PX = 15 * PX_PER_CM;   // 15 cm Objective capture radius
+const VICTORY_VP_TARGET = 20;           // Victory Point threshold checked in End Phase
 
 const PIN_CLASS_NAMES = {
   1: 'Infantry (Class 1)',
@@ -391,7 +393,145 @@ const ORDER_INFO = {
   FALL_BACK:  { label: 'FALL BACK',  mult: 2, color: 0xf59e0b, hex: '#f59e0b' }
 };
 
-// --- PHASE 5: NETEPIC GOLD ARMY CATALOG ---
+// --- SYNTHESIZED WEBAUDIO SOUND ENGINE (PHASE 7) ---
+window.sfxEnabled = true;
+window.sfx = {
+  ctx: null,
+  ensureCtx() {
+    if (!window.sfxEnabled) return null;
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+    return this.ctx;
+  },
+  playLaser(isHeavy = false) {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = isHeavy ? 'sawtooth' : 'square';
+    osc.frequency.setValueAtTime(isHeavy ? 520 : 880, now);
+    osc.frequency.exponentialRampToValueAtTime(isHeavy ? 95 : 180, now + (isHeavy ? 0.22 : 0.14));
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + (isHeavy ? 0.24 : 0.15));
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + (isHeavy ? 0.24 : 0.15));
+  },
+  playBarrage() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // Incoming shell whistle
+    const osc = ctx.createOscillator();
+    const wGain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(950, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.26);
+    wGain.gain.setValueAtTime(0.09, now);
+    wGain.gain.exponentialRampToValueAtTime(0.005, now + 0.26);
+    osc.connect(wGain);
+    wGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.26);
+    // Deep artillery detonation boom
+    setTimeout(() => this.playExplosion(true), 230);
+  },
+  playExplosion(isBig = false) {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const dur = isBig ? 0.48 : 0.28;
+    const bufSize = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.6);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(isBig ? 420 : 680, now);
+    filter.frequency.exponentialRampToValueAtTime(75, now + dur);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(isBig ? 0.28 : 0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+  },
+  playSave() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1040, now);
+    osc.frequency.exponentialRampToValueAtTime(1680, now + 0.09);
+    gain.gain.setValueAtTime(0.11, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  },
+  playMelee() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [320, 480].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+      osc.frequency.exponentialRampToValueAtTime(140, now + idx * 0.06 + 0.11);
+      gain.gain.setValueAtTime(0.13, now + idx * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.12);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.06);
+      osc.stop(now + idx * 0.06 + 0.12);
+    });
+  },
+  playHorn() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [440, 554.37, 659.25].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+      gain.gain.setValueAtTime(0.1, now + idx * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.07);
+      osc.stop(now + idx * 0.07 + 0.22);
+    });
+  }
+};
+
+window.toggleSFX = function() {
+  window.sfxEnabled = !window.sfxEnabled;
+  const btn = document.getElementById('btn-sfx-toggle');
+  if (btn) {
+    btn.innerText = window.sfxEnabled ? '🔊 SFX' : '🔇 Mute';
+    btn.className = window.sfxEnabled ? 'btn-primary' : '';
+  }
+  if (window.sfxEnabled) window.sfx.playSave();
+};
+
+// --- PHASE 5 & 7: NETEPIC GOLD ARMY CATALOG (WITH ARTILLERY & INDIRECT BARRAGE) ---
 const UNIT_CATALOG = {
   IMPERIUM: [
     {
@@ -417,6 +557,18 @@ const UNIT_CATALOG = {
       moveCm: 25, save: 3, caf: 1, morale: 2, pinningClass: 2,
       weapon: { name: 'Autocannon & Heavy Bolters', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 },
       breakPoint: 2, vpValue: 3, color: 0x60a5fa, standsCount: 3, baseW: 24, baseH: 32
+    },
+    {
+      key: 'sm_whirlwind', faction: 'IMPERIUM', name: 'Whirlwind Artillery Battery', points: 250,
+      moveCm: 20, save: 4, caf: 0, morale: 2, pinningClass: 2,
+      weapon: { name: 'Whirlwind Multiple Launchers', rangeCm: 80, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      breakPoint: 2, vpValue: 3, color: 0x0284c7, standsCount: 3, baseW: 24, baseH: 30
+    },
+    {
+      key: 'ig_basilisk', faction: 'IMPERIUM', name: 'Imperial Basilisk Battery', points: 275,
+      moveCm: 15, save: 4, caf: 0, morale: 3, pinningClass: 2,
+      weapon: { name: 'Earthshaker Heavy Artillery', rangeCm: 120, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
+      breakPoint: 2, vpValue: 3, color: 0x0ea5e9, standsCount: 3, baseW: 26, baseH: 34
     },
     {
       key: 'sm_dread', faction: 'IMPERIUM', name: 'Space Marine Dreadnought Talon', points: 200,
@@ -463,6 +615,18 @@ const UNIT_CATALOG = {
       breakPoint: 2, vpValue: 3, color: 0x86efac, standsCount: 3, baseW: 24, baseH: 34
     },
     {
+      key: 'ork_biggunz', faction: 'ORKS', name: 'Ork Big Gunz Battery', points: 175,
+      moveCm: 10, save: 6, caf: 0, morale: 4, pinningClass: 1,
+      weapon: { name: 'Lobba & Smasha Gunz', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      breakPoint: 2, vpValue: 2, color: 0x65a30d, standsCount: 4, baseW: 22, baseH: 22
+    },
+    {
+      key: 'ork_pulsa', faction: 'ORKS', name: 'Ork Pulsa Rokkit Battery', points: 225,
+      moveCm: 10, save: 5, caf: 0, morale: 4, pinningClass: 2,
+      weapon: { name: 'Pulsa Rokkit Barrage', rangeCm: 90, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
+      breakPoint: 2, vpValue: 3, color: 0x84cc16, standsCount: 3, baseW: 24, baseH: 28
+    },
+    {
       key: 'ork_stompas', faction: 'ORKS', name: 'Ork Stompa Mob', points: 350,
       moveCm: 15, save: 2, caf: 4, morale: 3, pinningClass: 3,
       weapon: { name: 'Gatling Cannon & Belly Gun', rangeCm: 50, dice: 3, toHit: 4, tsm: -2 },
@@ -475,8 +639,8 @@ const UNIT_CATALOG = {
 window.aiFaction = 'ORKS'; // 'ORKS' | 'IMPERIUM' | 'NONE'
 window.pointsBudget = 1000;
 window.armyRosters = {
-  IMPERIUM: ['sm_tac', 'sm_assault', 'sm_pred', 'sm_dev'],
-  ORKS: ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_stormboyz']
+  IMPERIUM: ['sm_tac', 'sm_assault', 'sm_pred', 'sm_whirlwind'],
+  ORKS: ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_biggunz']
 };
 
 window.setAIMode = function(mode) {
@@ -526,8 +690,8 @@ window.setPointsBudget = function(pts) {
 };
 
 window.resetDefaultArmies = function() {
-  window.armyRosters.IMPERIUM = ['sm_tac', 'sm_assault', 'sm_pred', 'sm_dev'];
-  window.armyRosters.ORKS = ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_stormboyz'];
+  window.armyRosters.IMPERIUM = ['sm_tac', 'sm_assault', 'sm_pred', 'sm_whirlwind'];
+  window.armyRosters.ORKS = ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_biggunz'];
   window.renderArmyModal();
 };
 
@@ -560,12 +724,15 @@ window.renderArmyModal = function() {
       catEl.innerHTML = '';
       UNIT_CATALOG[faction].forEach(u => {
         const canAfford = (spent + u.points) <= window.pointsBudget;
+        const wpnDesc = u.weapon.barrage
+          ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
+          : `${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)`;
         const row = document.createElement('div');
         row.className = 'catalog-item';
         row.innerHTML = `
           <div>
             <div style="font-weight:700; color:#f8fafc;">${u.name} <span style="color:#fde047;">(${u.points} pts / ${u.vpValue} VP)</span></div>
-            <div class="sub-text">${u.standsCount} stands | Move ${u.moveCm}cm | Sv ${u.save}+ | CAF +${u.caf} | ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)</div>
+            <div class="sub-text">${u.standsCount} stands | Move ${u.moveCm}cm | Sv ${u.save}+ | CAF +${u.caf} | ${wpnDesc}</div>
           </div>
           <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${faction}', '${u.key}')">+ Add</button>
         `;
@@ -903,6 +1070,8 @@ class NetEpicScene extends Phaser.Scene {
 
       if (logChanges && obj.owner !== prevOwner) {
         this.log(`🚩 <b>${obj.name}</b> captured by <b>${obj.owner}</b>! (+5 VP)`);
+        this.spawnFloatingText(obj.x, obj.y - 16, `🚩 ${obj.owner} +5 VP!`, obj.owner === 'IMPERIUM' ? '#60a5fa' : '#4ade80', '13px');
+        window.sfx.playHorn();
       }
 
       if (obj.owner === 'IMPERIUM') impCount++;
@@ -912,6 +1081,100 @@ class NetEpicScene extends Phaser.Scene {
     this.objVp.IMPERIUM = impCount * 5;
     this.objVp.ORKS = orkCount * 5;
     this.drawObjectives();
+  }
+
+  // --- PHASE 7: VISUAL FX, FLOATING POPUPS & EXPLOSIONS ---
+  spawnFloatingText(x, y, text, colorHex = '#fde047', fontSize = '12px') {
+    const label = this.add.text(x, y - 10, text, {
+      fontSize,
+      fontStyle: 'bold',
+      color: colorHex,
+      stroke: '#020617',
+      strokeThickness: 4,
+      backgroundColor: 'rgba(2, 6, 23, 0.72)',
+      padding: { x: 4, y: 1 }
+    }).setOrigin(0.5).setDepth(500);
+
+    this.tweens.add({
+      targets: label,
+      y: y - 46,
+      alpha: { from: 1, to: 0 },
+      duration: 1200,
+      ease: 'Cubic.easeOut',
+      onComplete: () => label.destroy()
+    });
+  }
+
+  spawnLaserFX(x1, y1, x2, y2, color = 0x38bdf8, isArc = false) {
+    const gfx = this.add.graphics().setDepth(420);
+    if (isArc) {
+      // High-angle artillery shell trajectory curve
+      const midX = (x1 + x2) / 2;
+      const midY = Math.min(y1, y2) - 65;
+      const curve = new Phaser.Curves.QuadraticBezier(
+        new Phaser.Math.Vector2(x1, y1),
+        new Phaser.Math.Vector2(midX, midY),
+        new Phaser.Math.Vector2(x2, y2)
+      );
+      gfx.lineStyle(3, 0xf97316, 0.9);
+      curve.draw(gfx, 24);
+      gfx.lineStyle(1.5, 0xfef08a, 1);
+      curve.draw(gfx, 24);
+    } else {
+      // Glowing laser / tracer beam + muzzle flash
+      gfx.lineStyle(4, color, 0.45);
+      gfx.lineBetween(x1, y1, x2, y2);
+      gfx.lineStyle(1.8, 0xffffff, 0.95);
+      gfx.lineBetween(x1, y1, x2, y2);
+      gfx.fillStyle(0xfef08a, 0.95);
+      gfx.fillCircle(x1, y1, 5);
+      gfx.fillCircle(x2, y2, 4);
+    }
+
+    this.tweens.add({
+      targets: gfx,
+      alpha: 0,
+      duration: isArc ? 520 : 320,
+      ease: 'Quad.easeOut',
+      onComplete: () => gfx.destroy()
+    });
+  }
+
+  spawnExplosionFX(x, y, maxRadius = 20, isBarrage = false) {
+    const gfx = this.add.graphics().setDepth(430);
+    const state = { t: 0.1 };
+
+    this.tweens.add({
+      targets: state,
+      t: 1,
+      duration: isBarrage ? 550 : 360,
+      ease: 'Cubic.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const r = maxRadius * state.t;
+        const alpha = 1 - state.t * 0.85;
+        // Outer shockwave ring (matches 6cm / 30px barrage template when isBarrage=true)
+        gfx.lineStyle(isBarrage ? 3.5 : 2.5, 0xf97316, alpha);
+        gfx.strokeCircle(x, y, r);
+        // Inner fireball
+        gfx.fillStyle(0xef4444, alpha * 0.45);
+        gfx.fillCircle(x, y, r * 0.78);
+        gfx.fillStyle(0xfef08a, alpha * 0.75);
+        gfx.fillCircle(x, y, r * 0.38);
+      },
+      onComplete: () => gfx.destroy()
+    });
+  }
+
+  // NetEpic Gold Barrage Points (BP) Table (Rules p. 35)
+  getBarrageStats(totalBp, baseTsm = 0) {
+    let toHit = 5, bpTsm = 0;
+    if (totalBp >= 9)      { toHit = 3; bpTsm = -2; }
+    else if (totalBp >= 7) { toHit = 3; bpTsm = -1; }
+    else if (totalBp >= 5) { toHit = 4; bpTsm = -1; }
+    else if (totalBp >= 3) { toHit = 4; bpTsm = 0; }
+    else                   { toHit = 5; bpTsm = 0; }
+    return { toHit, tsm: Math.min(bpTsm, baseTsm || 0) };
   }
 
   clearAllDetachments() {
@@ -1102,8 +1365,9 @@ class NetEpicScene extends Phaser.Scene {
       container.setSize(cfg.baseW + 10, cfg.baseH + 10);
       container.setInteractive({ draggable: true });
 
-      const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color).setStrokeStyle(2, 0xffffff);
-      const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, 0xffffff);
+      const strokeCol = cfg.weapon && cfg.weapon.barrage ? 0xfacc15 : 0xffffff;
+      const baseBg = this.add.rectangle(0, 0, cfg.baseW, cfg.baseH, cfg.color).setStrokeStyle(2, strokeCol);
+      const pip = this.add.circle(0, cfg.faction === 'IMPERIUM' ? -cfg.baseH/3 : cfg.baseH/3, 3, strokeCol);
       container.add([baseBg, pip]);
 
       const standObj = { id: `${cfg.id}_s${i}`, label: `#${i + 1}`, detachment: det, container, baseBg, originX: sx, originY: sy };
@@ -1174,15 +1438,15 @@ class NetEpicScene extends Phaser.Scene {
     return true;
   }
 
-  // --- LINE OF SIGHT & TERRAIN RAYCASTER (NetEpic Rules p. 28 & 33) ---
+  // --- LINE OF SIGHT, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 28, 33 & 36) ---
   checkStandLoS(shooterStand, targetStand, isSnapFire = false) {
     // Stands locked in Close Combat cannot fire ranged weapons
     if (this.isStandEngaged(shooterStand)) {
-      return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0 };
+      return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
     // Stands locked in Close Combat cannot be targeted by normal ranged fire (Snap Fire happens right before contact)
     if (!isSnapFire && this.isStandEngaged(targetStand)) {
-      return { valid: false, reason: 'Target in Close Combat', distCm: 0, coverMod: 0 };
+      return { valid: false, reason: 'Target in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
 
     const p1 = { x: shooterStand.container.x, y: shooterStand.container.y };
@@ -1192,27 +1456,33 @@ class NetEpicScene extends Phaser.Scene {
 
     const wpn = shooterStand.detachment.weapon;
     if (distCm > wpn.rangeCm) {
-      return { valid: false, reason: 'Out of Range', distCm, coverMod: 0 };
+      return { valid: false, reason: 'Out of Range', distCm, coverMod: 0, indirect: false };
+    }
+
+    // Can this stand use Indirect Fire over blocking terrain/units? (NetEpic p. 36: Artillery on First Fire orders)
+    const canFireIndirect = Boolean(wpn.indirect && shooterStand.detachment.order === 'FIRST_FIRE' && !isSnapFire);
+
+    let targetInWood = false;
+    for (const w of this.woods) {
+      if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
     }
 
     const line = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
 
-    // 1. Check Buildings (Block LoS completely)
+    // 1. Check Buildings (Block direct LoS completely)
     for (const b of this.buildings) {
       const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
       if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
-        return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0 };
+        if (canFireIndirect) {
+          return { valid: true, indirect: true, reason: `Indirect over ${b.name} (-1 Hit)`, distCm, coverMod: targetInWood ? -1 : 0 };
+        }
+        return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0, indirect: false };
       }
     }
 
-    // 2. Check Woods (More than 2 cm = 20px of woods blocks LoS; edge <=2cm grants -1 cover)
+    // 2. Check Woods (More than 2 cm = 20px of woods blocks direct LoS; edge <=2cm grants -1 cover)
     const steps = Math.max(10, Math.ceil(distPx / 4));
     let woodPixels = 0;
-    let targetInWood = false;
-
-    for (const w of this.woods) {
-      if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
-    }
 
     for (let i = 1; i < steps; i++) {
       const t = i / steps;
@@ -1227,10 +1497,13 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     if (woodPixels > 20) {
-      return { valid: false, reason: 'Blocked (>2 cm Woods)', distCm, coverMod: 0 };
+      if (canFireIndirect) {
+        return { valid: true, indirect: true, reason: 'Indirect over Woods (-1 Hit)', distCm, coverMod: targetInWood ? -1 : 0 };
+      }
+      return { valid: false, reason: 'Blocked (>2 cm Woods)', distCm, coverMod: 0, indirect: false };
     }
 
-    // 3. Pinning Class Occlusion: Units block LoS to units of their pinning class or smaller
+    // 3. Pinning Class Occlusion: Units block direct LoS to units of their pinning class or smaller
     const maxPin = Math.max(shooterStand.detachment.pinningClass, targetStand.detachment.pinningClass);
     for (const det of this.detachments) {
       if (det === shooterStand.detachment || det === targetStand.detachment) continue;
@@ -1238,17 +1511,20 @@ class NetEpicScene extends Phaser.Scene {
         for (const s of det.stands) {
           const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
           if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
-            return { valid: false, reason: `Blocked by ${det.name}`, distCm, coverMod: 0 };
+            if (canFireIndirect) {
+              return { valid: true, indirect: true, reason: `Indirect over ${det.name} (-1 Hit)`, distCm, coverMod: targetInWood ? -1 : 0 };
+            }
+            return { valid: false, reason: `Blocked by ${det.name}`, distCm, coverMod: 0, indirect: false };
           }
         }
       }
     }
 
     const coverMod = (targetInWood || woodPixels > 0) ? -1 : 0;
-    return { valid: true, reason: 'Clear LoS', distCm, coverMod };
+    return { valid: true, indirect: false, reason: 'Clear LoS', distCm, coverMod };
   }
 
-  // Evaluate all stands from firerDet shooting at targetDet
+  // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
     const validPairs = [];
     for (const shooter of firerDet.stands) {
@@ -1256,17 +1532,67 @@ class NetEpicScene extends Phaser.Scene {
       for (const target of targetDet.stands) {
         const res = this.checkStandLoS(shooter, target, isSnapFire);
         if (res.valid) {
-          if (!bestTarget || res.distCm < bestTarget.res.distCm) {
+          // Prefer direct LoS over indirect fire when choosing aim stand
+          if (!bestTarget || (!res.indirect && bestTarget.res.indirect) || (res.indirect === bestTarget.res.indirect && res.distCm < bestTarget.res.distCm)) {
             bestTarget = { shooter, target, res };
           }
         }
       }
       if (bestTarget) validPairs.push(bestTarget);
     }
-    return { validPairs, isSnapFire };
+
+    if (firerDet.weapon && firerDet.weapon.barrage) {
+      if (validPairs.length === 0 || targetDet.stands.length === 0) {
+        return { validPairs: [], isSnapFire, isBarrage: true, templateTargets: [], totalBp: 0, isIndirect: false };
+      }
+
+      // Pick the target stand in targetDet that catches the maximum number of enemy stands under the 6cm (30px radius) Barrage Template
+      let bestAimStand = validPairs[0].target;
+      let bestCaught = [];
+
+      targetDet.stands.forEach(candStand => {
+        // Must be reachable by at least one firing stand
+        const reachable = firerDet.stands.some(sh => this.checkStandLoS(sh, candStand, isSnapFire).valid);
+        if (!reachable) return;
+
+        const caught = [];
+        this.detachments.forEach(d => {
+          if (d.faction === firerDet.faction || d.stands.length === 0) return;
+          d.stands.forEach(s => {
+            if (!isSnapFire && this.isStandEngaged(s)) return;
+            const dist = Phaser.Math.Distance.Between(candStand.container.x, candStand.container.y, s.container.x, s.container.y);
+            if (dist <= BARRAGE_RADIUS_PX + 8) {
+              caught.push(s);
+            }
+          });
+        });
+
+        if (caught.length > bestCaught.length) {
+          bestCaught = caught;
+          bestAimStand = candStand;
+        }
+      });
+
+      const totalBp = validPairs.length * (firerDet.weapon.barrageBp || 2);
+      const isIndirect = validPairs.some(p => p.res.indirect);
+      const barrageStats = this.getBarrageStats(totalBp, firerDet.weapon.tsm);
+
+      return {
+        validPairs,
+        isSnapFire,
+        isBarrage: true,
+        aimPoint: { x: bestAimStand.container.x, y: bestAimStand.container.y },
+        templateTargets: bestCaught,
+        totalBp,
+        isIndirect,
+        barrageStats
+      };
+    }
+
+    return { validPairs, isSnapFire, isBarrage: false };
   }
 
-  // --- RANGED COMBAT RESOLUTION ENGINE ---
+  // --- RANGED COMBAT & ARTILLERY BARRAGE RESOLUTION ENGINE ---
   executeRangedAttack(firerDet, targetDet, isSnapFire = false) {
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
@@ -1278,6 +1604,85 @@ class NetEpicScene extends Phaser.Scene {
     const snapMod = isSnapFire ? -1 : 0;
     let totalDice = 0, hits = 0, saves = 0, kills = 0;
 
+    // --- A) 6 CM ARTILLERY BARRAGE TEMPLATE RESOLUTION (NetEpic Rules p. 34-36) ---
+    if (sol.isBarrage) {
+      const { aimPoint, templateTargets, totalBp, isIndirect, barrageStats } = sol;
+      const indirectMod = isIndirect ? -1 : 0;
+      const modeLabel = isIndirect ? '📡 INDIRECT BARRAGE (-1 Hit)' : (isSnapFire ? '⚡ SNAP BARRAGE (-1 Hit)' : '💥 DIRECT BARRAGE');
+
+      window.sfx.playBarrage();
+      sol.validPairs.forEach(p => {
+        this.spawnLaserFX(p.shooter.container.x, p.shooter.container.y, aimPoint.x, aimPoint.y, 0xf97316, true);
+      });
+      this.spawnExplosionFX(aimPoint.x, aimPoint.y, BARRAGE_RADIUS_PX, true);
+      this.spawnFloatingText(aimPoint.x, aimPoint.y - 22, `💥 ${totalBp} BP BARRAGE!`, '#fb923c', '13px');
+
+      this.log(
+        `💥 <b>${firerDet.name}</b> unleashes <i>${wpn.name}</i> [${modeLabel}, <b>${totalBp} BP</b> → Hit ${barrageStats.toHit}+, TSM ${barrageStats.tsm}] ` +
+        `covering <b>${templateTargets.length} stand(s)</b> under the 6cm template!`
+      );
+
+      const affectedDets = new Set([targetDet]);
+      templateTargets.forEach(victimStand => {
+        const vDet = victimStand.detachment;
+        if (!vDet || !vDet.stands.includes(victimStand)) return;
+        affectedDets.add(vDet);
+
+        const vx = victimStand.container.x;
+        const vy = victimStand.container.y;
+        const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
+        const coverMod = inWood ? -1 : 0;
+        const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod;
+
+        totalDice++;
+        const roll = Phaser.Math.Between(1, 6);
+        let hitSuccess = false;
+        if (roll === 1) {
+          hitSuccess = false;
+        } else if (neededToHit <= 6) {
+          hitSuccess = roll >= neededToHit;
+        } else if (roll === 6) {
+          const extraRoll = Phaser.Math.Between(1, 6);
+          hitSuccess = extraRoll >= (neededToHit - 3);
+        }
+
+        if (hitSuccess) {
+          hits++;
+          const saveRoll = Phaser.Math.Between(1, 6);
+          const neededSave = vDet.save - barrageStats.tsm;
+          if (saveRoll >= neededSave && neededSave <= 6) {
+            saves++;
+            window.sfx.playSave();
+            this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+          } else {
+            kills++;
+            this.removeCasualty(vDet, victimStand);
+          }
+        }
+      });
+
+      this.log(
+        `🎲 Barrage Template Rolled <b>${totalDice}D6</b>: <span class="log-hit">${hits} Hit(s)</span> | ` +
+        `<span class="log-save">${saves} Saved</span> | <span class="log-kill">${kills} Killed</span>`
+      );
+
+      firerDet.fired = true;
+      this.updateDetachmentBadge(firerDet);
+      affectedDets.forEach(d => this.checkBreakPoint(d));
+      return;
+    }
+
+    // --- B) STANDARD DIRECT RANGED ATTACK RESOLUTION ---
+    window.sfx.playLaser(wpn.tsm <= -1);
+    const beamColor = firerDet.faction === 'IMPERIUM' ? 0x38bdf8 : 0xfacc15;
+    sol.validPairs.forEach(pair => {
+      this.spawnLaserFX(
+        pair.shooter.container.x, pair.shooter.container.y,
+        pair.target.container.x, pair.target.container.y,
+        beamColor, false
+      );
+    });
+
     this.log(`🔥 <b>${firerDet.name}</b> fires <i>${wpn.name}</i> (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}) at <b>${targetDet.name}</b>!`);
 
     sol.validPairs.forEach(pair => {
@@ -1287,6 +1692,7 @@ class NetEpicScene extends Phaser.Scene {
       const neededToHit = wpn.toHit - snapMod - coverMod;
 
       for (let d = 0; d < wpn.dice; d++) {
+        if (targetDet.stands.length === 0) break;
         totalDice++;
         const roll = Phaser.Math.Between(1, 6);
         let hitSuccess = false;
@@ -1307,8 +1713,14 @@ class NetEpicScene extends Phaser.Scene {
           // Armour Save modified by TSM (p. 37)
           const saveRoll = Phaser.Math.Between(1, 6);
           const neededSave = targetDet.save - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
+          const victimRef = targetDet.stands[targetDet.stands.length - 1];
+          const vx = victimRef ? victimRef.container.x : pair.target.container.x;
+          const vy = victimRef ? victimRef.container.y : pair.target.container.y;
+
           if (saveRoll >= neededSave && neededSave <= 6) {
             saves++;
+            window.sfx.playSave();
+            this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
           } else {
             kills++;
             this.removeCasualty(targetDet);
@@ -1316,6 +1728,11 @@ class NetEpicScene extends Phaser.Scene {
         }
       }
     });
+
+    if (kills === 0 && hits === 0) {
+      const tc = this.getDetachmentCenter(targetDet);
+      this.spawnFloatingText(tc.x, tc.y, '💨 MISSED', '#94a3b8', '11px');
+    }
 
     this.log(
       `🎲 Rolled <b>${totalDice}D6</b>: <span class="log-hit">${hits} Hit(s)</span> | ` +
@@ -1337,12 +1754,20 @@ class NetEpicScene extends Phaser.Scene {
     } else {
       victim = det.stands.pop();
     }
+
+    const vx = victim.container.x;
+    const vy = victim.container.y;
+    window.sfx.playExplosion(false);
+    this.spawnExplosionFX(vx, vy, 22, false);
+    this.spawnFloatingText(vx, vy, `💥 ${victim.label} KILLED!`, '#f87171', '12px');
+
     victim.container.destroy();
     det.casualties++;
 
     if (det.stands.length === 0) {
       det.badge.setVisible(false);
       this.log(`💀 <b>${det.name}</b> has been completely wiped out!`);
+      this.spawnFloatingText(vx, vy - 18, `💀 WIPED OUT!`, '#ef4444', '14px');
     } else {
       this.updateDetachmentBadgePos(det);
     }
@@ -1353,6 +1778,8 @@ class NetEpicScene extends Phaser.Scene {
       det.broken = true;
       const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
       this.vp[scoringSide] += det.vpValue;
+      const dc = this.getDetachmentCenter(det);
+      window.sfx.playHorn();
 
       // Morale Check (p. 41-42)
       const moraleRoll = Phaser.Math.Between(1, 6);
@@ -1366,8 +1793,10 @@ class NetEpicScene extends Phaser.Scene {
         const routNote = engagedVictims.length > 0 ? ` (${engagedVictims.length} stand(s) in melee overrun & destroyed!)` : '';
 
         this.updateDetachmentBadge(det);
+        this.spawnFloatingText(dc.x, dc.y - 22, `🏳️ BROKEN! FALL BACK (+${det.vpValue} VP)`, '#f59e0b', '13px');
         this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) → <b>FALL BACK!</b>${routNote} (+${det.vpValue} VP to ${scoringSide})`);
       } else {
+        this.spawnFloatingText(dc.x, dc.y - 22, `⚔️ BROKEN (+${det.vpValue} VP) — MORALE HELD!`, '#fde047', '13px');
         this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringSide}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
       }
     }
@@ -1723,8 +2152,12 @@ class NetEpicScene extends Phaser.Scene {
       );
 
       let chosenOrder = 'ADVANCE';
+      // 0. Artillery batteries with Indirect Fire within range of an enemy -> FIRST_FIRE to lob 6cm Barrages over terrain!
+      if (det.weapon.barrage && det.weapon.indirect && closestEnemyDist <= det.weapon.rangeCm * PX_PER_CM) {
+        chosenOrder = 'FIRST_FIRE';
+      }
       // 1. High-CAF or dedicated melee units within Charge reach of an enemy -> CHARGE!
-      if (det.caf >= 2 && closestEnemyDist <= chargeReachPx + 25) {
+      else if (det.caf >= 2 && closestEnemyDist <= chargeReachPx + 25) {
         chosenOrder = 'CHARGE';
       }
       // 2. Fast assault units (Bolt Pistols / Sluggas <= 15cm range) outside gun range -> CHARGE to close ground fast or take objectives
@@ -2004,8 +2437,8 @@ class NetEpicScene extends Phaser.Scene {
     enemies.forEach(eDet => {
       const sol = this.evaluateFireSolution(firer, eDet, false);
       if (sol.validPairs.length > 0) {
-        // Prefer targets where more stands have LoS, targets near Break Point, and targets with worse saves
-        let score = sol.validPairs.length * 10 + (7 - eDet.save);
+        const hitPotential = sol.isBarrage ? (sol.templateTargets ? sol.templateTargets.length : 1) : sol.validPairs.length;
+        let score = hitPotential * 10 + (7 - eDet.save);
         if (!eDet.broken && (eDet.casualties + 1 >= eDet.breakPoint)) score += 15;
         if (score > bestScore) {
           bestScore = score;
@@ -2431,17 +2864,24 @@ class NetEpicScene extends Phaser.Scene {
     const gangTagImp = impDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${impDiceCount}D6!]</span>` : '';
     const gangTagOrk = orkDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${orkDiceCount}D6!]</span>` : '';
 
+    window.sfx.playMelee();
+    const midX = (impStand.container.x + orkStand.container.x) / 2;
+    const midY = (impStand.container.y + orkStand.container.y) / 2;
+
     let outcomeHtml = '';
     if (impTotal > orkTotal) {
       outcomeHtml = `<span class="log-kill">💥 ${orkDet.name} (${orkStand.label}) Destroyed! (No Save)</span>`;
+      this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, '#60a5fa', '12px');
       this.removeCasualty(orkDet, orkStand);
       this.checkBreakPoint(orkDet);
     } else if (orkTotal > impTotal) {
       outcomeHtml = `<span class="log-kill">💥 ${impDet.name} (${impStand.label}) Destroyed! (No Save)</span>`;
+      this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, '#4ade80', '12px');
       this.removeCasualty(impDet, impStand);
       this.checkBreakPoint(impDet);
     } else {
       outcomeHtml = `<span class="log-cc">🤝 Tie (${impTotal} vs ${orkTotal})! Both survive & remain locked in melee!</span>`;
+      this.spawnFloatingText(midX, midY - 14, `🤝 MELEE TIE (${impTotal})`, '#c084fc', '12px');
     }
 
     this.log(
@@ -2526,10 +2966,13 @@ class NetEpicScene extends Phaser.Scene {
     const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK');
     fallBackUnits.forEach(d => {
       const roll = Phaser.Math.Between(1, 6);
+      const dc = this.getDetachmentCenter(d);
       if (roll >= d.morale) {
         d.order = null;
         d.orderRevealed = false;
         this.updateDetachmentBadge(d);
+        window.sfx.playHorn();
+        this.spawnFloatingText(dc.x, dc.y - 16, `🎺 RALLIED! (${roll})`, '#4ade80', '13px');
         this.log(`🎺 <b>RALLY! ${d.name}</b> rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied from Fall Back!`);
       } else {
         // Failed Rally: remains on FALL_BACK and makes a compulsory 1x Move withdrawal toward home edge
@@ -2541,6 +2984,7 @@ class NetEpicScene extends Phaser.Scene {
           s.originY = s.container.y;
         });
         this.updateDetachmentBadge(d);
+        this.spawnFloatingText(dc.x, dc.y - 16, `🏳️ RALLY FAILED (${roll})`, '#f59e0b', '12px');
         this.log(`🏳️ <b>${d.name}</b> failed Rally (${roll} < ${d.morale}+) — retreats ${d.moveCm}cm toward home edge and stays on <b>FALL BACK</b>!`);
       }
     });
@@ -2563,6 +3007,7 @@ class NetEpicScene extends Phaser.Scene {
 
     const vicBanner = document.getElementById('victory-alert');
     if (winner) {
+      window.sfx.playHorn();
       vicBanner.style.display = 'block';
       vicBanner.innerText = `🏆 VICTORY FOR ${winner}! (You may continue playing or open Army Setup)`;
       this.log(`🏆 <b>VICTORY ACHIEVED: ${winner}!</b>`);
@@ -2694,31 +3139,54 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
-    // Draw Live Line of Sight Rays when targeting an enemy in Combat Phase
+    // Draw Live Line of Sight Rays & 6cm Artillery Barrage Templates when targeting an enemy in Combat Phase
     if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
         this.activatingDetachment && this.targetDetachment) {
       const firer = this.activatingDetachment;
       const target = this.targetDetachment;
+      const sol = this.evaluateFireSolution(firer, target, false);
 
-      target.stands.forEach(ts => {
-        this.overlayGfx.lineStyle(2, 0xef4444, 0.9);
-        this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 20);
-      });
+      if (sol.isBarrage && sol.aimPoint) {
+        // Draw 6cm Diameter (30px radius) Circular NetEpic Barrage Template!
+        this.losGfx.fillStyle(0xf97316, 0.22);
+        this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
+        this.losGfx.lineStyle(3, 0xf97316, 0.95);
+        this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
+        this.losGfx.lineStyle(1.5, 0xfde047, 0.9);
+        this.losGfx.lineBetween(sol.aimPoint.x - 10, sol.aimPoint.y, sol.aimPoint.x + 10, sol.aimPoint.y);
+        this.losGfx.lineBetween(sol.aimPoint.x, sol.aimPoint.y - 10, sol.aimPoint.x, sol.aimPoint.y + 10);
+
+        // Highlight every enemy stand caught under the 6cm template!
+        sol.templateTargets.forEach(ts => {
+          this.overlayGfx.lineStyle(2.5, 0xfacc15, 1);
+          this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 19);
+        });
+      } else {
+        target.stands.forEach(ts => {
+          this.overlayGfx.lineStyle(2, 0xef4444, 0.9);
+          this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 20);
+        });
+      }
 
       firer.stands.forEach(shooter => {
-        // Check ray to closest target stand
+        if (target.stands.length === 0) return;
         let chosen = target.stands[0];
         let bestCheck = this.checkStandLoS(shooter, chosen);
         for (const ts of target.stands) {
           const chk = this.checkStandLoS(shooter, ts);
-          if (chk.valid && (!bestCheck.valid || chk.distCm < bestCheck.distCm)) {
+          if (chk.valid && (!bestCheck.valid || (!chk.indirect && bestCheck.indirect) || chk.distCm < bestCheck.distCm)) {
             chosen = ts;
             bestCheck = chk;
           }
         }
-        const color = bestCheck.valid ? (bestCheck.coverMod < 0 ? 0xfacc15 : 0x22c55e) : 0xef4444;
-        this.losGfx.lineStyle(2, color, 0.85);
-        this.losGfx.lineBetween(shooter.container.x, shooter.container.y, chosen.container.x, chosen.container.y);
+        // Green = Clear LoS, Orange = Indirect Fire over terrain, Yellow = Woods Cover, Red = Blocked/Out of range
+        const color = bestCheck.valid
+          ? (bestCheck.indirect ? 0xf97316 : (bestCheck.coverMod < 0 ? 0xfacc15 : 0x22c55e))
+          : 0xef4444;
+        const aimX = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.x : chosen.container.x;
+        const aimY = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.y : chosen.container.y;
+        this.losGfx.lineStyle(bestCheck.indirect ? 2.5 : 2, color, 0.85);
+        this.losGfx.lineBetween(shooter.container.x, shooter.container.y, aimX, aimY);
       });
     }
 
@@ -2910,14 +3378,22 @@ class NetEpicScene extends Phaser.Scene {
         if (this.activatingDetachment && this.targetDetachment) {
           const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
           btnFire.disabled = sol.validPairs.length === 0;
-          btnFire.innerText = sol.validPairs.length > 0
-            ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
-            : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
-          promptText.innerText = `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
+          if (sol.isBarrage && sol.validPairs.length > 0) {
+            const modeTag = sol.isIndirect ? '📡 INDIRECT (-1 Hit)' : '💥 DIRECT';
+            btnFire.innerText = `${modeTag} Barrage at ${this.targetDetachment.name} (${sol.totalBp} BP → ${sol.templateTargets.length} stands under 6cm template!)`;
+          } else {
+            btnFire.innerText = sol.validPairs.length > 0
+              ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)`
+              : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+          }
+          promptText.innerText = sol.isBarrage
+            ? `Orange 6cm Circle = Barrage Template | Orange ray = Indirect Fire (-1 Hit) | Green ray = Direct LoS`
+            : `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
         } else if (this.activatingDetachment) {
           btnFire.disabled = true;
-          btnFire.innerText = 'Tap an Enemy Stand on the map to check LoS & Fire';
-          promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm range) — Tap an enemy unit!`;
+          const isArt = this.activatingDetachment.weapon.barrage;
+          btnFire.innerText = isArt ? 'Tap an Enemy Stand to place 6cm Barrage Template' : 'Tap an Enemy Stand on the map to check LoS & Fire';
+          promptText.innerText = `${this.activePlayer}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}) — Tap an enemy unit!`;
         }
       }
     }
@@ -2940,8 +3416,11 @@ class NetEpicScene extends Phaser.Scene {
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
       const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
+      const wpnInfo = d.weapon.barrage
+        ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
+        : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
       selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${grpBadge}${aiBadge})`;
-      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
+      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? 'Phase: Deployment'
         : (d.order
