@@ -202,11 +202,16 @@
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — ARMY SETUP & SOLO VS. AI</div>
-        <div class="sub-text">Choose Solo vs. AI or 2-Player mode, customize your detachments, and deploy!</div>
+        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — ARMY, MAP & AI SETUP</div>
+        <div class="sub-text">Choose Battlefield Map, Solo vs. AI or 2-Player mode, and customize your detachments!</div>
       </div>
       <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-        <span class="sub-text" style="font-weight:700;">Mode:</span>
+        <span class="sub-text" style="font-weight:700;">Map:</span>
+        <button id="map-preset-INDUSTRIAL" class="btn-primary" onclick="window.setMapPreset('INDUSTRIAL')" style="min-width:auto; padding:5px 8px;">🏭 Industrial</button>
+        <button id="map-preset-RIVER" onclick="window.setMapPreset('RIVER')" style="min-width:auto; padding:5px 8px;">🌊 River</button>
+        <button id="map-preset-FOREST" onclick="window.setMapPreset('FOREST')" style="min-width:auto; padding:5px 8px;">🌲 Forest</button>
+        <button id="map-preset-RANDOM" onclick="window.setMapPreset('RANDOM')" style="min-width:auto; padding:5px 8px;">🎲 Random</button>
+        <span class="sub-text" style="font-weight:700; margin-left:4px;">Mode:</span>
         <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="min-width:auto; padding:5px 8px;">🤖 vs Ork AI</button>
         <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="min-width:auto; padding:5px 8px;">🤖 vs Imperium AI</button>
         <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="min-width:auto; padding:5px 8px;">👥 2P Hotseat</button>
@@ -261,6 +266,7 @@
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:6px; flex-wrap:wrap;">
       <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:6px 10px;" title="Toggle Synthesized Sound Effects">🔊 SFX</button>
+      <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:6px 10px;" title="Click to switch Battlefield Map Preset or Generate Random Map">🗺️ Map: Industrial</button>
       <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
       <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Army Setup</button>
       <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
@@ -271,14 +277,14 @@
     <div id="combat-log" class="panel">
       <div id="log-header">
         <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
-        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 7! Artillery Barrages, Indirect Fire & Visual/Audio FX active!</div>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 8! Map Generator, Roads (+5cm), Rivers & Building Garrisons!</div>
         <div style="display:flex; gap:4px;">
           <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
           <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
         </div>
       </div>
       <div id="log-content">
-        <div class="log-entry">Welcome to Phase 7! <b>Artillery 6cm Barrages, Indirect Fire, Weapon Laser/Explosion FX & Sound</b> are now live!</div>
+        <div class="log-entry">Welcome to Phase 8! <b>Map Presets & Random Generator, Roads (+5cm Move), Rivers/Bridges & Infantry Building Garrisons</b> are live!</div>
       </div>
       <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
         <span id="log-corner-grip">⤡</span>
@@ -301,6 +307,10 @@
 
     <div id="fallback-alert" class="alert-banner">
       ⚠️ FALL BACK RULE! Retreating stands must move toward their own table edge (IMP → South, ORK → North).
+    </div>
+
+    <div id="terrain-alert" class="alert-banner">
+      ⚠️ IMPASSABLE TERRAIN! Only Infantry (Class 1) may garrison Buildings, and Ground units must cross Rivers via Bridges/Fords!
     </div>
 
     <div id="snapfire-banner" class="alert-banner snap-banner">
@@ -374,6 +384,7 @@ const BOARD_H = 125 * PX_PER_CM;
 const DEPLOY_DEPTH_PX = 35 * PX_PER_CM; // 35 cm Deployment Zone depth from North/South edges
 const COHERENCY_PX = 6 * PX_PER_CM;     // 6 cm
 const BARRAGE_RADIUS_PX = 3 * PX_PER_CM; // 3 cm radius = 6 cm diameter circular NetEpic Barrage Template
+const ROAD_BONUS_CM = 5;                // +5 cm NetEpic Road Movement Bonus
 const ENGAGE_PX = 32;                   // Base-to-base contact threshold (~3.2 cm center-to-center)
 const MIN_ENEMY_GAP_PX = 34;            // Minimum distance for non-charging units
 const OBJ_RADIUS_PX = 15 * PX_PER_CM;   // 15 cm Objective capture radius
@@ -542,7 +553,7 @@ const UNIT_CATALOG = {
     },
     {
       key: 'sm_assault', faction: 'IMPERIUM', name: 'Space Marine Assault Squad', points: 200,
-      moveCm: 15, save: 5, caf: 3, morale: 2, pinningClass: 1,
+      moveCm: 15, save: 5, caf: 3, morale: 2, pinningClass: 1, jump: true,
       weapon: { name: 'Bolt Pistols', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 2, vpValue: 2, color: 0x3b82f6, standsCount: 4, baseW: 20, baseH: 20
     },
@@ -598,7 +609,7 @@ const UNIT_CATALOG = {
     },
     {
       key: 'ork_stormboyz', faction: 'ORKS', name: 'Stormboyz Jump-Mob', points: 175,
-      moveCm: 15, save: 6, caf: 2, morale: 3, pinningClass: 1,
+      moveCm: 15, save: 6, caf: 2, morale: 3, pinningClass: 1, jump: true,
       weapon: { name: 'Sluggas & Rokkit Pack', rangeCm: 15, dice: 1, toHit: 5, tsm: 0 },
       breakPoint: 3, vpValue: 2, color: 0x22c55e, standsCount: 5, baseW: 20, baseH: 20
     },
@@ -635,12 +646,43 @@ const UNIT_CATALOG = {
   ]
 };
 
-// --- ARMY BUILDER & SOLO AI STATE & UI FUNCTIONS ---
+// --- ARMY BUILDER, MAP PRESETS & SOLO AI STATE & UI FUNCTIONS ---
+window.mapPreset = 'INDUSTRIAL'; // 'INDUSTRIAL' | 'RIVER' | 'FOREST' | 'RANDOM'
 window.aiFaction = 'ORKS'; // 'ORKS' | 'IMPERIUM' | 'NONE'
 window.pointsBudget = 1000;
 window.armyRosters = {
   IMPERIUM: ['sm_tac', 'sm_assault', 'sm_pred', 'sm_whirlwind'],
   ORKS: ['ork_boyz', 'ork_nobz', 'ork_buggies', 'ork_wagons', 'ork_biggunz']
+};
+
+const MAP_LABELS = {
+  INDUSTRIAL: '🏭 Industrial',
+  RIVER: '🌊 River',
+  FOREST: '🌲 Forest',
+  RANDOM: '🎲 Random'
+};
+
+window.setMapPreset = function(preset) {
+  window.mapPreset = preset;
+  ['INDUSTRIAL', 'RIVER', 'FOREST', 'RANDOM'].forEach(p => {
+    const b = document.getElementById(`map-preset-${p}`);
+    if (b) b.className = (p === preset) ? 'btn-primary' : '';
+  });
+  const topMapBtn = document.getElementById('btn-map-toggle');
+  if (topMapBtn) {
+    topMapBtn.innerText = `🗺️ Map: ${MAP_LABELS[preset] || preset}`;
+  }
+  if (window.gameScene) {
+    window.gameScene.applyMapPreset(preset);
+  }
+};
+
+window.cycleMapPreset = function() {
+  const order = ['INDUSTRIAL', 'RIVER', 'FOREST', 'RANDOM'];
+  // If already on RANDOM, clicking again generates a fresh random map!
+  const idx = order.indexOf(window.mapPreset);
+  const next = order[(idx + 1) % order.length];
+  window.setMapPreset(next);
 };
 
 window.setAIMode = function(mode) {
@@ -890,22 +932,13 @@ class NetEpicScene extends Phaser.Scene {
     this.vp = { IMPERIUM: 0, ORKS: 0 };    // Casualty / Break Point VPs
     this.objVp = { IMPERIUM: 0, ORKS: 0 }; // Objective Control VPs (5 VP per objective)
 
-    // Terrain Definitions for LoS & Cover
-    this.woods = [
-      { x: 580, y: 625, r: 120 },
-      { x: 1380, y: 625, r: 110 }
-    ];
-    this.buildings = [
-      { x: 890, y: 555, w: 170, h: 140, name: 'Manufactorum' }
-    ];
-
-    // Strategic Objective Markers (NetEpic Rules p. 11 & 43: 15cm capture radius, worth 5 VP each)
-    this.objectives = [
-      { id: 1, name: 'Obj #1 (West Woods)', x: 480, y: 625, owner: 'NEUTRAL' },
-      { id: 2, name: 'Obj #2 (Central Road)', x: 790, y: 625, owner: 'NEUTRAL' },
-      { id: 3, name: 'Obj #3 (East Sector)', x: 1160, y: 625, owner: 'NEUTRAL' },
-      { id: 4, name: 'Obj #4 (East Woods)', x: 1460, y: 625, owner: 'NEUTRAL' }
-    ];
+    this.terrainLabels = [];
+    this.roads = [];
+    this.rivers = [];
+    this.bridges = [];
+    this.woods = [];
+    this.buildings = [];
+    this.objectives = [];
 
     this.boardGfx = this.add.graphics();
     this.deployGfx = this.add.graphics();
@@ -915,6 +948,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments = [];
     window.initCombatLogResize();
+    this.loadMapConfig(window.mapPreset || 'INDUSTRIAL');
     this.drawBattlefield();
     this.spawnObjectives();
     this.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, true);
@@ -922,6 +956,151 @@ class NetEpicScene extends Phaser.Scene {
     this.resetCamera();
     window.renderArmyModal();
     this.updateUI();
+  }
+
+  // --- PHASE 8: BATTLEFIELD MAP PRESETS & PROCEDURAL GENERATOR ---
+  loadMapConfig(preset = 'INDUSTRIAL') {
+    this.roads = [];
+    this.rivers = [];
+    this.bridges = [];
+    this.woods = [];
+    this.buildings = [];
+
+    if (preset === 'INDUSTRIAL') {
+      // Crossroads road network + Manufactorum & Hab-Blocks + flanking Woods
+      this.roads = [
+        { x1: 925, y1: 0, x2: 925, y2: BOARD_H, width: 36, name: 'Imperial Highway (+5cm Move)' },
+        { x1: 120, y1: 625, x2: BOARD_W - 120, y2: 625, width: 32, name: 'Supply Road (+5cm Move)' }
+      ];
+      this.woods = [
+        { x: 560, y: 625, r: 105 },
+        { x: 1320, y: 625, r: 105 }
+      ];
+      this.buildings = [
+        { x: 840, y: 445, w: 170, h: 120, name: 'Manufactorum' },
+        { x: 310, y: 565, w: 125, h: 110, name: 'Hab-Block West' },
+        { x: 1455, y: 565, w: 125, h: 110, name: 'Hab-Block East' }
+      ];
+      this.objectives = [
+        { id: 1, name: 'Obj #1 (Hab-Block West)', x: 372, y: 620, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (West Crossroads)', x: 740, y: 625, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Crossroads)', x: 1120, y: 625, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (Hab-Block East)', x: 1517, y: 620, owner: 'NEUTRAL' }
+      ];
+    } else if (preset === 'RIVER') {
+      // River Styx cutting East-West with 2 Bridges, 1 Ford, Approach Roads & Bridgehead Bunkers
+      this.rivers = [
+        { y: 580, h: 90, name: 'River Styx (Impassable except Bridges / Jump Units)' }
+      ];
+      this.bridges = [
+        { x: 500, y: 566, w: 96, h: 118, name: 'West Bridge' },
+        { x: 900, y: 566, w: 84, h: 118, name: 'Central Shallow Ford', isFord: true },
+        { x: 1280, y: 566, w: 96, h: 118, name: 'East Bridge' }
+      ];
+      this.roads = [
+        { x1: 548, y1: 0, x2: 548, y2: BOARD_H, width: 34, name: 'West Bridge Road (+5cm Move)' },
+        { x1: 1328, y1: 0, x2: 1328, y2: BOARD_H, width: 34, name: 'East Bridge Road (+5cm Move)' }
+      ];
+      this.buildings = [
+        { x: 350, y: 445, w: 120, h: 95, name: 'North Bridge Bunker' },
+        { x: 1410, y: 705, w: 120, h: 95, name: 'South Bridge Bunker' }
+      ];
+      this.woods = [
+        { x: 735, y: 455, r: 95 },
+        { x: 1130, y: 790, r: 95 }
+      ];
+      this.objectives = [
+        { id: 1, name: 'Obj #1 (West Bridge)', x: 548, y: 495, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Ford)', x: 942, y: 625, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Bridge)', x: 1328, y: 755, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (South Bank Woods)', x: 1130, y: 790, owner: 'NEUTRAL' }
+      ];
+    } else if (preset === 'FOREST') {
+      // Deathworld Jungle: Dense woods, winding road, and temple ruins
+      this.roads = [
+        { x1: 420, y1: BOARD_H, x2: 760, y2: 625, width: 30, name: 'Jungle Track (+5cm Move)' },
+        { x1: 760, y1: 625, x2: 1140, y2: 625, width: 30, name: 'Jungle Track (+5cm Move)' },
+        { x1: 1140, y1: 625, x2: 1440, y2: 0, width: 30, name: 'Jungle Track (+5cm Move)' }
+      ];
+      this.woods = [
+        { x: 390, y: 580, r: 115 },
+        { x: 700, y: 480, r: 105 },
+        { x: 1160, y: 760, r: 105 },
+        { x: 1470, y: 650, r: 115 }
+      ];
+      this.buildings = [
+        { x: 875, y: 565, w: 130, h: 115, name: 'Shrine Ruins' },
+        { x: 640, y: 720, w: 110, h: 90, name: 'Listening Post' }
+      ];
+      this.objectives = [
+        { id: 1, name: 'Obj #1 (West Jungle)', x: 390, y: 580, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Listening Post)', x: 695, y: 765, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (Shrine Ruins)', x: 940, y: 622, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (East Jungle)', x: 1470, y: 650, owner: 'NEUTRAL' }
+      ];
+    } else {
+      // PROCEDURAL RANDOM BATTLEFIELD GENERATOR
+      const hasRiver = Math.random() < 0.45;
+      if (hasRiver) {
+        const riverY = Phaser.Math.Between(555, 605);
+        this.rivers.push({ y: riverY, h: 84, name: ' Slag River (Impassable except Bridges / Jump)' });
+        const b1X = Phaser.Math.Between(420, 660);
+        const b2X = Phaser.Math.Between(1180, 1420);
+        this.bridges.push(
+          { x: b1X - 45, y: riverY - 12, w: 90, h: 108, name: 'West Crossing' },
+          { x: b2X - 45, y: riverY - 12, w: 90, h: 108, name: 'East Crossing' }
+        );
+        this.roads.push(
+          { x1: b1X, y1: 0, x2: b1X, y2: BOARD_H, width: 32, name: 'West Sector Road (+5cm)' },
+          { x1: b2X, y1: 0, x2: b2X, y2: BOARD_H, width: 32, name: 'East Sector Road (+5cm)' }
+        );
+      } else {
+        const roadX = Phaser.Math.Between(780, 1080);
+        const roadY = Phaser.Math.Between(540, 700);
+        this.roads.push(
+          { x1: roadX, y1: 0, x2: roadX, y2: BOARD_H, width: 34, name: 'Sector Highway (+5cm)' },
+          { x1: 140, y1: roadY, x2: BOARD_W - 140, y2: roadY, width: 30, name: 'Perimeter Road (+5cm)' }
+        );
+      }
+
+      const bNames = ['Ruined Basilica', 'Munitorum Depot', 'Promethium Silo', 'Command Bunker'];
+      const bXs = [Phaser.Math.Between(320, 560), Phaser.Math.Between(820, 1020), Phaser.Math.Between(1280, 1500)];
+      bXs.forEach((bx, idx) => {
+        const by = hasRiver ? (idx % 2 === 0 ? Phaser.Math.Between(410, 460) : Phaser.Math.Between(700, 760)) : Phaser.Math.Between(450, 710);
+        this.buildings.push({ x: bx, y: by, w: Phaser.Math.Between(115, 145), h: Phaser.Math.Between(95, 120), name: bNames[idx % bNames.length] });
+      });
+
+      const wXs = [Phaser.Math.Between(460, 720), Phaser.Math.Between(1120, 1380), Phaser.Math.Between(780, 1060)];
+      wXs.forEach((wx, idx) => {
+        const wy = hasRiver ? (idx % 2 === 0 ? Phaser.Math.Between(710, 800) : Phaser.Math.Between(420, 480)) : Phaser.Math.Between(460, 780);
+        // Avoid overlapping buildings
+        const overlapsB = this.buildings.some(b => Phaser.Math.Distance.Between(wx, wy, b.x + b.w / 2, b.y + b.h / 2) < 150);
+        if (!overlapsB) {
+          this.woods.push({ x: wx, y: wy, r: Phaser.Math.Between(85, 110) });
+        }
+      });
+
+      this.objectives = [
+        { id: 1, name: 'Obj #1 (West Flank)', x: Phaser.Math.Between(400, 540), y: hasRiver ? 490 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (West Center)', x: Phaser.Math.Between(740, 880), y: hasRiver ? 740 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Center)', x: Phaser.Math.Between(1020, 1160), y: hasRiver ? 490 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (East Flank)', x: Phaser.Math.Between(1340, 1480), y: hasRiver ? 740 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' }
+      ];
+    }
+  }
+
+  applyMapPreset(preset) {
+    this.loadMapConfig(preset);
+    this.drawBattlefield();
+    this.spawnObjectives();
+    this.evaluateObjectives(false);
+    if (this.phase === 'DEPLOYMENT') {
+      this.autoDeployAIFaction();
+    }
+    this.drawDeploymentZones();
+    this.drawOverlays();
+    this.updateUI();
+    this.log(`🗺️ <b>Battlefield Map switched to ${MAP_LABELS[preset] || preset}!</b> (Roads: +5cm Move | Buildings: Infantry Garrison -2 Hit & 4+ Save)`);
   }
 
   getTotalVP(faction) {
@@ -942,6 +1121,12 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   drawBattlefield() {
+    this.boardGfx.clear();
+    if (this.terrainLabels) {
+      this.terrainLabels.forEach(lbl => lbl.destroy());
+    }
+    this.terrainLabels = [];
+
     this.boardGfx.fillStyle(0x1a2219, 1);
     this.boardGfx.fillRect(0, 0, BOARD_W, BOARD_H);
 
@@ -952,10 +1137,63 @@ class NetEpicScene extends Phaser.Scene {
 
     // Centerline
     const centerY = BOARD_H / 2;
-    this.boardGfx.lineStyle(2, 0x475569, 0.4);
+    this.boardGfx.lineStyle(2, 0x475569, 0.35);
     this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
 
-    // Woods (Outer 2cm gives -1 cover; >2cm blocks LoS)
+    // 1. Rivers (Deep water channel + bank foam)
+    this.rivers.forEach(rv => {
+      this.boardGfx.fillStyle(0x0c4a6e, 0.92);
+      this.boardGfx.fillRect(0, rv.y, BOARD_W, rv.h);
+      this.boardGfx.fillStyle(0x0284c7, 0.55);
+      this.boardGfx.fillRect(0, rv.y + 12, BOARD_W, rv.h - 24);
+      this.boardGfx.lineStyle(2, 0x38bdf8, 0.7);
+      this.boardGfx.lineBetween(0, rv.y, BOARD_W, rv.y);
+      this.boardGfx.lineBetween(0, rv.y + rv.h, BOARD_W, rv.y + rv.h);
+      const lbl = this.add.text(210, rv.y + rv.h / 2, `🌊 ${rv.name.toUpperCase()}`, {
+        fontSize: '11px', color: '#7dd3fc', fontStyle: 'bold'
+      }).setOrigin(0.5);
+      this.terrainLabels.push(lbl);
+    });
+
+    // 2. Roads (+5cm Bonus Movement along road corridors)
+    this.roads.forEach(rd => {
+      this.boardGfx.lineStyle(rd.width || 32, 0x334155, 0.9);
+      this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
+      this.boardGfx.lineStyle((rd.width || 32) - 6, 0x475569, 0.85);
+      this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
+      // Dashed yellow road centerline
+      const dist = Phaser.Math.Distance.Between(rd.x1, rd.y1, rd.x2, rd.y2);
+      const steps = Math.floor(dist / 28);
+      this.boardGfx.lineStyle(2, 0xfacc15, 0.55);
+      for (let i = 0; i < steps; i += 2) {
+        const t1 = i / steps;
+        const t2 = Math.min(1, (i + 1) / steps);
+        this.boardGfx.lineBetween(
+          rd.x1 + (rd.x2 - rd.x1) * t1, rd.y1 + (rd.y2 - rd.y1) * t1,
+          rd.x1 + (rd.x2 - rd.x1) * t2, rd.y1 + (rd.y2 - rd.y1) * t2
+        );
+      }
+      const lx = (rd.x1 + rd.x2) / 2 + (rd.x1 === rd.x2 ? 58 : 0);
+      const ly = (rd.y1 + rd.y2) / 2 + (rd.y1 === rd.y2 ? -22 : -180);
+      const lbl = this.add.text(lx, Phaser.Math.Clamp(ly, 380, 860), '🛣️ ROAD (+5cm Move)', {
+        fontSize: '10px', color: '#fde047', backgroundColor: 'rgba(15, 23, 42, 0.7)', padding: { x: 3, y: 1 }
+      }).setOrigin(0.5);
+      this.terrainLabels.push(lbl);
+    });
+
+    // 3. Bridges & Shallow Fords across Rivers
+    this.bridges.forEach(br => {
+      this.boardGfx.fillStyle(br.isFord ? 0x38bdf8 : 0x64748b, br.isFord ? 0.45 : 0.96);
+      this.boardGfx.fillRect(br.x, br.y, br.w, br.h);
+      this.boardGfx.lineStyle(3, br.isFord ? 0xbae6fd : 0xe2e8f0, 0.95);
+      this.boardGfx.strokeRect(br.x, br.y, br.w, br.h);
+      const lbl = this.add.text(br.x + br.w / 2, br.y + br.h / 2, br.name.toUpperCase(), {
+        fontSize: '10px', color: '#ffffff', fontStyle: 'bold', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: { x: 3, y: 1 }
+      }).setOrigin(0.5);
+      this.terrainLabels.push(lbl);
+    });
+
+    // 4. Woods (Outer 2cm gives -1 cover; >2cm blocks LoS)
     this.woods.forEach(w => {
       this.boardGfx.fillStyle(0x143318, 0.9);
       this.boardGfx.lineStyle(2, 0x22c55e, 0.7);
@@ -964,28 +1202,39 @@ class NetEpicScene extends Phaser.Scene {
       // Inner 2cm deep-woods indicator
       this.boardGfx.lineStyle(1, 0x86efac, 0.35);
       this.boardGfx.strokeCircle(w.x, w.y, w.r - 20);
-      this.add.text(w.x, w.y, 'WOODS\n(-1 Cover / >2cm Blocks LoS)', { fontSize: '11px', color: '#86efac', align: 'center' }).setOrigin(0.5);
+      const lbl = this.add.text(w.x, w.y, '🌲 WOODS\n(-1 Cover / >2cm Blocks LoS)', { fontSize: '10px', color: '#86efac', align: 'center' }).setOrigin(0.5);
+      this.terrainLabels.push(lbl);
     });
 
-    // Buildings (Blocks LoS)
+    // 5. Buildings (Blocks LoS; Infantry can Garrison inside for -2 Hit, 4+ Save & +2 CAF!)
     this.buildings.forEach(b => {
       this.boardGfx.fillStyle(0x334155, 0.95);
-      this.boardGfx.lineStyle(2, 0x94a3b8, 1);
+      this.boardGfx.lineStyle(2.5, 0xcbd5e1, 1);
       this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
       this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
-      this.add.text(b.x + b.w/2, b.y + b.h/2, `${b.name.toUpperCase()}\n(Blocks LoS)`, { fontSize: '12px', color: '#e2e8f0', align: 'center', fontStyle: 'bold' }).setOrigin(0.5);
+      // Inner fortified battlement border
+      this.boardGfx.lineStyle(1, 0x64748b, 0.8);
+      this.boardGfx.strokeRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
+      const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `🏰 ${b.name.toUpperCase()}\n(Infantry Garrison: -2 Hit / 4+ Sv)`, {
+        fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold'
+      }).setOrigin(0.5);
+      this.terrainLabels.push(lbl);
     });
 
     this.boardGfx.lineStyle(4, 0x94a3b8, 1);
     this.boardGfx.strokeRect(0, 0, BOARD_W, BOARD_H);
 
     // Deployment Zone Labels
-    this.orkDeployLabel = this.add.text(BOARD_W / 2, DEPLOY_DEPTH_PX - 18, '▲ ORK DEPLOYMENT ZONE (NORTH 35 CM) — Drag units to position ▲', {
-      fontSize: '12px', fontStyle: 'bold', color: '#4ade80', backgroundColor: 'rgba(15, 23, 42, 0.8)'
-    }).setOrigin(0.5);
-    this.impDeployLabel = this.add.text(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18, '▼ IMPERIUM DEPLOYMENT ZONE (SOUTH 35 CM) — Drag units to position ▼', {
-      fontSize: '12px', fontStyle: 'bold', color: '#60a5fa', backgroundColor: 'rgba(15, 23, 42, 0.8)'
-    }).setOrigin(0.5);
+    if (!this.orkDeployLabel) {
+      this.orkDeployLabel = this.add.text(BOARD_W / 2, DEPLOY_DEPTH_PX - 18, '▲ ORK DEPLOYMENT ZONE (NORTH 35 CM) — Drag units to position ▲', {
+        fontSize: '12px', fontStyle: 'bold', color: '#4ade80', backgroundColor: 'rgba(15, 23, 42, 0.8)'
+      }).setOrigin(0.5);
+    }
+    if (!this.impDeployLabel) {
+      this.impDeployLabel = this.add.text(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18, '▼ IMPERIUM DEPLOYMENT ZONE (SOUTH 35 CM) — Drag units to position ▼', {
+        fontSize: '12px', fontStyle: 'bold', color: '#60a5fa', backgroundColor: 'rgba(15, 23, 42, 0.8)'
+      }).setOrigin(0.5);
+    }
   }
 
   drawDeploymentZones() {
@@ -1009,11 +1258,17 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   spawnObjectives() {
+    if (this.objectiveLabels) {
+      this.objectiveLabels.forEach(l => l.destroy());
+    }
+    this.objectiveLabels = [];
     this.objectives.forEach(obj => {
+      if (obj.label) obj.label.destroy();
       obj.label = this.add.text(obj.x, obj.y + 18, `🚩 OBJ #${obj.id} (5 VP)\n[NEUTRAL]`, {
         fontSize: '10px', fontStyle: 'bold', color: '#fde047', align: 'center',
         backgroundColor: 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
       }).setOrigin(0.5);
+      this.objectiveLabels.push(obj.label);
     });
     this.drawObjectives();
   }
@@ -1081,6 +1336,72 @@ class NetEpicScene extends Phaser.Scene {
     this.objVp.IMPERIUM = impCount * 5;
     this.objVp.ORKS = orkCount * 5;
     this.drawObjectives();
+  }
+
+  // --- PHASE 8: ROADS (+5CM MOVE), RIVERS/BRIDGES & BUILDING GARRISON HELPERS ---
+  isPointOnRoad(x, y) {
+    for (const rd of this.roads) {
+      const l2 = Phaser.Math.Distance.Squared(rd.x1, rd.y1, rd.x2, rd.y2);
+      let t = 0;
+      if (l2 > 0) {
+        t = ((x - rd.x1) * (rd.x2 - rd.x1) + (y - rd.y1) * (rd.y2 - rd.y1)) / l2;
+        t = Phaser.Math.Clamp(t, 0, 1);
+      }
+      const projX = rd.x1 + t * (rd.x2 - rd.x1);
+      const projY = rd.y1 + t * (rd.y2 - rd.y1);
+      if (Phaser.Math.Distance.Between(x, y, projX, projY) <= (rd.width || 32) / 2 + 14) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // A detachment receives the +5cm Road Bonus if any unpinned stand starts or moves along a Road
+  hasRoadBonus(det) {
+    if (!det || det.stands.length === 0 || det.order === 'FIRST_FIRE') return false;
+    return det.stands.some(s => this.isPointOnRoad(s.originX, s.originY) || this.isPointOnRoad(s.container.x, s.container.y));
+  }
+
+  getEffectiveMoveCm(det) {
+    if (!det) return 0;
+    return det.moveCm + (this.hasRoadBonus(det) ? ROAD_BONUS_CM : 0);
+  }
+
+  getBuildingAt(x, y) {
+    for (const b of this.buildings) {
+      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        return b;
+      }
+    }
+    return null;
+  }
+
+  // Only Infantry (Pinning Class 1) can garrison inside a Building!
+  isStandGarrisoned(stand) {
+    if (!stand || stand.detachment.pinningClass !== 1) return false;
+    return Boolean(this.getBuildingAt(stand.container.x, stand.container.y));
+  }
+
+  isPointInImpassableRiver(x, y) {
+    const inRiver = this.rivers.some(rv => y >= rv.y && y <= rv.y + rv.h);
+    if (!inRiver) return false;
+    const onBridge = this.bridges.some(br => x >= br.x && x <= br.x + br.w && y >= br.y && y <= br.y + br.h);
+    return !onBridge;
+  }
+
+  // Validate that no Vehicle/Titan ends inside a Building and no non-Jump unit ends in deep River water
+  checkTerrainMoveRule(det) {
+    if (!det) return true;
+    for (const s of det.stands) {
+      const x = s.container.x, y = s.container.y;
+      if (det.pinningClass > 1 && this.getBuildingAt(x, y)) {
+        return false; // Non-infantry cannot enter buildings
+      }
+      if (!det.jump && this.isPointInImpassableRiver(x, y)) {
+        return false; // Ground units cannot end in deep river water outside a bridge/ford
+      }
+    }
+    return true;
   }
 
   // --- PHASE 7: VISUAL FX, FLOATING POPUPS & EXPLOSIONS ---
@@ -1304,7 +1625,7 @@ class NetEpicScene extends Phaser.Scene {
     const spacing = 34; // 3.4 cm tight formation (well within 6cm coherency)
 
     const maxMovePx = (this.phase === 'MOVEMENT' && det.order)
-      ? det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM
+      ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM
       : Infinity;
 
     movable.forEach((s, i) => {
@@ -1438,7 +1759,7 @@ class NetEpicScene extends Phaser.Scene {
     return true;
   }
 
-  // --- LINE OF SIGHT, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 28, 33 & 36) ---
+  // --- LINE OF SIGHT, BUILDING GARRISONS, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 26, 28, 33 & 36) ---
   checkStandLoS(shooterStand, targetStand, isSnapFire = false) {
     // Stands locked in Close Combat cannot fire ranged weapons
     if (this.isStandEngaged(shooterStand)) {
@@ -1462,19 +1783,24 @@ class NetEpicScene extends Phaser.Scene {
     // Can this stand use Indirect Fire over blocking terrain/units? (NetEpic p. 36: Artillery on First Fire orders)
     const canFireIndirect = Boolean(wpn.indirect && shooterStand.detachment.order === 'FIRST_FIRE' && !isSnapFire);
 
+    const shooterBuilding = this.isStandGarrisoned(shooterStand) ? this.getBuildingAt(p1.x, p1.y) : null;
+    const targetBuilding = this.isStandGarrisoned(targetStand) ? this.getBuildingAt(p2.x, p2.y) : null;
+
     let targetInWood = false;
     for (const w of this.woods) {
       if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
     }
 
+    const baseCoverMod = targetBuilding ? -2 : (targetInWood ? -1 : 0);
     const line = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
 
-    // 1. Check Buildings (Block direct LoS completely)
+    // 1. Check Buildings (Block direct LoS unless the shooter or target is Garrisoned inside that specific building!)
     for (const b of this.buildings) {
+      if (b === shooterBuilding || b === targetBuilding) continue;
       const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
       if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
         if (canFireIndirect) {
-          return { valid: true, indirect: true, reason: `Indirect over ${b.name} (-1 Hit)`, distCm, coverMod: targetInWood ? -1 : 0 };
+          return { valid: true, indirect: true, reason: `Indirect over ${b.name} (-1 Hit)`, distCm, coverMod: baseCoverMod };
         }
         return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0, indirect: false };
       }
@@ -1498,7 +1824,7 @@ class NetEpicScene extends Phaser.Scene {
 
     if (woodPixels > 20) {
       if (canFireIndirect) {
-        return { valid: true, indirect: true, reason: 'Indirect over Woods (-1 Hit)', distCm, coverMod: targetInWood ? -1 : 0 };
+        return { valid: true, indirect: true, reason: 'Indirect over Woods (-1 Hit)', distCm, coverMod: baseCoverMod };
       }
       return { valid: false, reason: 'Blocked (>2 cm Woods)', distCm, coverMod: 0, indirect: false };
     }
@@ -1512,7 +1838,7 @@ class NetEpicScene extends Phaser.Scene {
           const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
           if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
             if (canFireIndirect) {
-              return { valid: true, indirect: true, reason: `Indirect over ${det.name} (-1 Hit)`, distCm, coverMod: targetInWood ? -1 : 0 };
+              return { valid: true, indirect: true, reason: `Indirect over ${det.name} (-1 Hit)`, distCm, coverMod: baseCoverMod };
             }
             return { valid: false, reason: `Blocked by ${det.name}`, distCm, coverMod: 0, indirect: false };
           }
@@ -1520,8 +1846,8 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
-    const coverMod = (targetInWood || woodPixels > 0) ? -1 : 0;
-    return { valid: true, indirect: false, reason: 'Clear LoS', distCm, coverMod };
+    const coverMod = targetBuilding ? -2 : ((targetInWood || woodPixels > 0) ? -1 : 0);
+    return { valid: true, indirect: false, reason: targetBuilding ? 'Garrison Cover (-2 Hit)' : 'Clear LoS', distCm, coverMod };
   }
 
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
@@ -1630,8 +1956,9 @@ class NetEpicScene extends Phaser.Scene {
 
         const vx = victimStand.container.x;
         const vy = victimStand.container.y;
+        const garrisoned = this.isStandGarrisoned(victimStand);
         const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
-        const coverMod = inWood ? -1 : 0;
+        const coverMod = garrisoned ? -2 : (inWood ? -1 : 0);
         const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod;
 
         totalDice++;
@@ -1649,11 +1976,12 @@ class NetEpicScene extends Phaser.Scene {
         if (hitSuccess) {
           hits++;
           const saveRoll = Phaser.Math.Between(1, 6);
-          const neededSave = vDet.save - barrageStats.tsm;
+          const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
+          const neededSave = baseSave - barrageStats.tsm;
           if (saveRoll >= neededSave && neededSave <= 6) {
             saves++;
             window.sfx.playSave();
-            this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+            this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : ''}SAVED (${saveRoll})`, '#38bdf8', '11px');
           } else {
             kills++;
             this.removeCasualty(vDet, victimStand);
@@ -1710,17 +2038,19 @@ class NetEpicScene extends Phaser.Scene {
 
         if (hitSuccess) {
           hits++;
-          // Armour Save modified by TSM (p. 37)
+          // Armour Save modified by TSM (p. 37) and Building Garrison 4+ Fortified Save (p. 26)
           const saveRoll = Phaser.Math.Between(1, 6);
-          const neededSave = targetDet.save - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
           const victimRef = targetDet.stands[targetDet.stands.length - 1];
+          const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
+          const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
+          const neededSave = baseSave - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
           const vx = victimRef ? victimRef.container.x : pair.target.container.x;
           const vy = victimRef ? victimRef.container.y : pair.target.container.y;
 
           if (saveRoll >= neededSave && neededSave <= 6) {
             saves++;
             window.sfx.playSave();
-            this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+            this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : ''}SAVED (${saveRoll})`, '#38bdf8', '11px');
           } else {
             kills++;
             this.removeCasualty(targetDet);
@@ -1933,7 +2263,7 @@ class NetEpicScene extends Phaser.Scene {
       // --- II. MOVEMENT PHASE DRAGGING ---
       if (this.phase !== 'MOVEMENT' || this.activatingDetachment !== det || stand.pinnedAtStart) return;
 
-      const maxMovePx = det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM;
+      const maxMovePx = this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM;
 
       // GROUP FORMATION MOVE: Move all unpinned stands together while keeping them coherent and within each stand's movement allowance!
       if (this.groupMoveMode) {
@@ -2269,7 +2599,7 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    const maxMovePx = det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM;
+    const maxMovePx = this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM;
     const movable = det.stands.filter(s => !s.pinnedAtStart);
 
     if (movable.length === 0) {
@@ -2329,10 +2659,14 @@ class NetEpicScene extends Phaser.Scene {
           anchorY = s.container.y;
         });
 
-        this.updateDetachmentBadgePos(det);
-        this.drawOverlays();
-        this.confirmDetachmentMove();
-        return;
+        if (!this.checkTerrainMoveRule(det)) {
+          this.undoDetachmentMove();
+        } else {
+          this.updateDetachmentBadgePos(det);
+          this.drawOverlays();
+          this.confirmDetachmentMove();
+          return;
+        }
       }
     }
 
@@ -2390,7 +2724,7 @@ class NetEpicScene extends Phaser.Scene {
       s.dragStartY = s.container.y;
     });
 
-    // Try scales from 1.0 down to 0.0 to find the furthest valid group move that respects maxMovePx, coherency, and MIN_ENEMY_GAP_PX
+    // Try scales from 1.0 down to 0.0 to find the furthest valid group move that respects maxMovePx, coherency, MIN_ENEMY_GAP_PX, and terrain rules
     for (let step = 10; step >= 0; step--) {
       const scale = step / 10;
       let tdx = dx * scale;
@@ -2413,11 +2747,12 @@ class NetEpicScene extends Phaser.Scene {
       );
       const coherent = this.checkCoherency(det);
       const engageOk = this.checkEngagementMoveRule(det);
+      const terrainOk = this.checkTerrainMoveRule(det);
       const pinnedOk = pinned.length === 0 || movable.some(ms =>
         pinned.some(ps => Phaser.Math.Distance.Between(ms.container.x, ms.container.y, ps.container.x, ps.container.y) <= COHERENCY_PX)
       );
 
-      if (withinAllowance && coherent && engageOk && pinnedOk) {
+      if (withinAllowance && coherent && engageOk && terrainOk && pinnedOk) {
         break;
       }
     }
@@ -2540,7 +2875,7 @@ class NetEpicScene extends Phaser.Scene {
   autoRetreatDetachment() {
     const det = this.activatingDetachment;
     if (!det || det.order !== 'FALL_BACK') return;
-    const retreatDistPx = det.moveCm * ORDER_INFO.FALL_BACK.mult * PX_PER_CM;
+    const retreatDistPx = this.getEffectiveMoveCm(det) * ORDER_INFO.FALL_BACK.mult * PX_PER_CM;
     const dirY = det.faction === 'IMPERIUM' ? 1 : -1; // IMP retreats South (+y), ORK retreats North (-y)
 
     det.stands.forEach(s => {
@@ -2558,11 +2893,19 @@ class NetEpicScene extends Phaser.Scene {
     if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
     if (!this.checkEngagementMoveRule(det)) return;
     if (!this.checkFallBackMoveRule(det)) return;
+    if (!this.checkTerrainMoveRule(det)) return;
 
     // Check if the unit actually moved
     const didMove = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     det.moved = true;
+
+    // Log if Infantry stands garrisoned inside a Fortified Building!
+    const garrisonedStands = det.stands.filter(s => this.isStandGarrisoned(s));
+    if (didMove && garrisonedStands.length > 0) {
+      const bldg = this.getBuildingAt(garrisonedStands[0].container.x, garrisonedStands[0].container.y);
+      this.log(`🏰 <b>${det.name}</b> (${garrisonedStands.length} stand${garrisonedStands.length > 1 ? 's' : ''}) garrisons inside <b>${bldg ? bldg.name : 'Building'}</b> (-2 To-Hit, 4+ Fortified Save, +2 CAF)!`);
+    }
 
     // Log any new Charge engagements & Pinning status
     if (det.order === 'CHARGE') {
@@ -2858,11 +3201,13 @@ class NetEpicScene extends Phaser.Scene {
 
     const impSum = impRolls.reduce((a, b) => a + b, 0);
     const orkSum = orkRolls.reduce((a, b) => a + b, 0);
-    const impTotal = impSum + impDet.caf;
-    const orkTotal = orkSum + orkDet.caf;
+    const impGarrisonBonus = this.isStandGarrisoned(impStand) ? 2 : 0;
+    const orkGarrisonBonus = this.isStandGarrisoned(orkStand) ? 2 : 0;
+    const impTotal = impSum + impDet.caf + impGarrisonBonus;
+    const orkTotal = orkSum + orkDet.caf + orkGarrisonBonus;
 
-    const gangTagImp = impDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${impDiceCount}D6!]</span>` : '';
-    const gangTagOrk = orkDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${orkDiceCount}D6!]</span>` : '';
+    const gangTagImp = (impDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${impDiceCount}D6!]</span>` : '') + (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 Fortified +2 CAF]</span>` : '');
+    const gangTagOrk = (orkDiceCount > 2 ? ` <span class="log-hit">[Gang-Up ${orkDiceCount}D6!]</span>` : '') + (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 Fortified +2 CAF]</span>` : '');
 
     window.sfx.playMelee();
     const midX = (impStand.container.x + orkStand.container.x) / 2;
@@ -2885,8 +3230,8 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this.log(
-      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impDet.caf} = <b>${impTotal}</b>) vs ` +
-      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkDet.caf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
+      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impDet.caf + impGarrisonBonus} = <b>${impTotal}</b>) vs ` +
+      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkDet.caf + orkGarrisonBonus} = <b>${orkTotal}</b>) → ${outcomeHtml}`
     );
 
     // Filter remaining bouts to ensure both participants are still alive
@@ -3061,9 +3406,13 @@ class NetEpicScene extends Phaser.Scene {
     this.overlayGfx.clear();
     this.losGfx.clear();
 
-    // 1. Always draw red/orange Close Combat engagement links & Pinned rings for any stands in base contact
+    // 1. Always draw red/orange Close Combat engagement links, Pinned rings, and Gold Fortified Garrison rings
     this.detachments.forEach(d => {
       d.stands.forEach(s => {
+        if (this.isStandGarrisoned(s)) {
+          this.overlayGfx.lineStyle(2, 0xfacc15, 0.85);
+          this.overlayGfx.strokeRect(s.container.x - 16, s.container.y - 16, 32, 32);
+        }
         const engagedEnemies = this.getEngagedEnemies(s);
         if (engagedEnemies.length > 0) {
           const pinned = this.isStandPinned(s);
@@ -3096,15 +3445,18 @@ class NetEpicScene extends Phaser.Scene {
       document.getElementById('coherency-alert').style.display = 'none';
       document.getElementById('engagement-alert').style.display = 'none';
       document.getElementById('fallback-alert').style.display = 'none';
+      document.getElementById('terrain-alert').style.display = 'none';
       return;
     }
 
     const isCoherent = this.checkCoherency(det);
     const isEngageValid = this.checkEngagementMoveRule(det);
     const isFallBackValid = this.checkFallBackMoveRule(det);
+    const isTerrainValid = this.checkTerrainMoveRule(det);
     document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isCoherent) ? 'block' : 'none';
     document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
     document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
+    document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
 
     // Coherency web (Cyan when Group Move is ON and coherent, Green when Single-Stand and coherent, Orange when out of coherency)
     const webColor = !isCoherent ? 0xf59e0b : (this.groupMoveMode ? 0x38bdf8 : 0x22c55e);
@@ -3118,7 +3470,7 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
-    const maxMovePx = det.order ? det.moveCm * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
+    const maxMovePx = det.order ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
     det.stands.forEach(s => {
       if (this.groupMoveMode && !s.pinnedAtStart) {
         // Double Cyan Ring for Group-Selected Stands!
@@ -3179,7 +3531,7 @@ class NetEpicScene extends Phaser.Scene {
             bestCheck = chk;
           }
         }
-        // Green = Clear LoS, Orange = Indirect Fire over terrain, Yellow = Woods Cover, Red = Blocked/Out of range
+        // Green = Clear LoS, Orange = Indirect Fire over terrain, Yellow = Woods/Building Cover, Red = Blocked/Out of range
         const color = bestCheck.valid
           ? (bestCheck.indirect ? 0xf97316 : (bestCheck.coverMod < 0 ? 0xfacc15 : 0x22c55e))
           : 0xef4444;
@@ -3191,7 +3543,7 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const confirmBtn = document.getElementById('btn-confirm-move');
-    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid || !isFallBackValid;
+    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid || !isFallBackValid || !isTerrainValid;
   }
 
   updateDetachmentBadgePos(det) {
@@ -3208,10 +3560,11 @@ class NetEpicScene extends Phaser.Scene {
     if (det.stands.length === 0) return;
     this.updateDetachmentBadgePos(det);
     const anyEngaged = det.stands.some(s => this.isStandEngaged(s));
-    const ccSuffix = anyEngaged ? ' ⚔️CC' : '';
+    const anyGarrisoned = det.stands.some(s => this.isStandGarrisoned(s));
+    const ccSuffix = (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
 
     if (this.phase === 'DEPLOYMENT') {
-      det.badge.setText('📍 DEPLOY');
+      det.badge.setText('📍 DEPLOY' + ccSuffix);
       det.badge.setBackgroundColor('#0284c7');
       det.badge.setColor('#ffffff');
       return;
@@ -3320,12 +3673,14 @@ class NetEpicScene extends Phaser.Scene {
         moveControls.style.display = 'none';
       } else {
         const grpHint = this.groupMoveMode ? ' [🔗 GROUP MOVE ON — Double-click to toggle]' : ' [Double-click unit to Group-Move]';
+        const effMove = this.activatingDetachment ? this.getEffectiveMoveCm(this.activatingDetachment) : 0;
+        const roadTag = (this.activatingDetachment && this.hasRoadBonus(this.activatingDetachment)) ? ' (🛣️ +5cm Road Bonus!)' : '';
         promptText.innerText = this.activatingDetachment
           ? (this.activatingDetachment.order === 'CHARGE'
-              ? `CHARGE! Drag stands up to ${this.activatingDetachment.moveCm * 2} cm — Drag onto enemy stands to Pin & enter Close Combat!${grpHint}`
+              ? `CHARGE! Drag stands up to ${effMove * 2} cm${roadTag} — Drag onto enemy stands to Pin & enter Close Combat!${grpHint}`
               : (this.activatingDetachment.order === 'FALL_BACK'
-                  ? `FALL BACK! Retreat up to ${this.activatingDetachment.moveCm * 2} cm toward your home board edge (or click Auto-Retreat)`
-                  : `Drag stands up to ${this.activatingDetachment.moveCm * ORDER_INFO[this.activatingDetachment.order].mult} cm${grpHint}`))
+                  ? `FALL BACK! Retreat up to ${effMove * 2} cm${roadTag} toward your home board edge (or click Auto-Retreat)`
+                  : `Drag stands up to ${effMove * ORDER_INFO[this.activatingDetachment.order].mult} cm${roadTag}${grpHint}`))
           : `${this.activePlayer}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
 
         moveControls.style.display = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
@@ -3355,9 +3710,11 @@ class NetEpicScene extends Phaser.Scene {
         const orkFought = this.defenderFoughtCounts.get(b.orkStand) || 0;
         const impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
         const orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
+        const impCaf = b.impStand.detachment.caf + (this.isStandGarrisoned(b.impStand) ? 2 : 0);
+        const orkCaf = b.orkStand.detachment.caf + (this.isStandGarrisoned(b.orkStand) ? 2 : 0);
 
-        promptText.innerText = `⚔️ Next Bout: ${b.impStand.detachment.name} ${b.impStand.label} (${impDice}D6+${b.impStand.detachment.caf}) vs ${b.orkStand.detachment.name} ${b.orkStand.label} (${orkDice}D6+${b.orkStand.detachment.caf})`;
-        document.getElementById('btn-cc-next').innerText = `⚔️ Fight Bout (${impDice}D6+${b.impStand.detachment.caf} vs ${orkDice}D6+${b.orkStand.detachment.caf})`;
+        promptText.innerText = `⚔️ Next Bout: ${b.impStand.detachment.name} ${b.impStand.label} (${impDice}D6+${impCaf}) vs ${b.orkStand.detachment.name} ${b.orkStand.label} (${orkDice}D6+${orkCaf})`;
+        document.getElementById('btn-cc-next').innerText = `⚔️ Fight Bout (${impDice}D6+${impCaf} vs ${orkDice}D6+${orkCaf})`;
       }
     }
     else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
@@ -3388,7 +3745,7 @@ class NetEpicScene extends Phaser.Scene {
           }
           promptText.innerText = sol.isBarrage
             ? `Orange 6cm Circle = Barrage Template | Orange ray = Indirect Fire (-1 Hit) | Green ray = Direct LoS`
-            : `Green ray = Clear LoS | Yellow ray = -1 Woods Cover | Red ray = Blocked/In CC/Out of Range`;
+            : `Green ray = Clear LoS | Yellow ray = Cover (-1 Woods / -2 Building) | Red ray = Blocked/In CC/Out of Range`;
         } else if (this.activatingDetachment) {
           btnFire.disabled = true;
           const isArt = this.activatingDetachment.weapon.barrage;
@@ -3413,14 +3770,17 @@ class NetEpicScene extends Phaser.Scene {
     if (this.selectedDetachment && this.selectedDetachment.stands.length > 0) {
       const d = this.selectedDetachment;
       const pinnedCount = d.stands.filter(s => this.isStandPinned(s)).length;
+      const garrisonCount = d.stands.filter(s => this.isStandGarrisoned(s)).length;
       const pinBadge = pinnedCount > 0 ? ` | 📌 ${pinnedCount} Pinned` : '';
+      const garBadge = garrisonCount > 0 ? ` | 🏰 ${garrisonCount} Garrisoned (4+ Save, -2 Hit, +2 CAF)` : '';
+      const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
       const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
       const wpnInfo = d.weapon.barrage
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit}+, TSM ${d.weapon.tsm})`;
-      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${grpBadge}${aiBadge})`;
-      selStats.innerText = `Move: ${d.moveCm}cm | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
+      selTitle.innerText = `[${d.faction}] ${d.name} (${d.stands.length}/${d.initialCount} stands, Break: ${d.breakPoint}, Morale: ${d.morale}+${pinBadge}${garBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${d.save}+ | CAF: +${d.caf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? 'Phase: Deployment'
         : (d.order
