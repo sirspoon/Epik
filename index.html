@@ -46,14 +46,56 @@
 
     #mid-area {
       display: flex; justify-content: flex-end; align-items: flex-start;
-      flex: 1; margin: 8px 0; overflow: hidden; pointer-events: none;
+      flex: 1; margin: 6px 0; overflow: hidden; pointer-events: none;
     }
     #combat-log {
-      width: 340px; max-height: 250px; overflow-y: auto;
-      font-size: 0.76rem; line-height: 1.35; pointer-events: auto;
+      width: 340px; height: 190px; min-width: 180px; min-height: 34px;
+      max-width: 96vw; max-height: 60vh;
+      display: flex; flex-direction: column;
+      font-size: 0.75rem; line-height: 1.32; pointer-events: auto;
       background: rgba(15, 23, 42, 0.88);
+      padding: 6px 10px 4px 10px; position: relative;
+      transition: height 0.12s ease;
     }
-    .log-entry { margin-bottom: 5px; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
+    #combat-log.collapsed {
+      height: auto !important;
+      max-height: 36px !important;
+      padding: 4px 8px;
+    }
+    #combat-log.collapsed #log-content,
+    #combat-log.collapsed #log-resize-bar {
+      display: none !important;
+    }
+    #log-header {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 6px; padding-bottom: 3px; border-bottom: 1px solid #334155;
+      flex-shrink: 0;
+    }
+    #combat-log.collapsed #log-header {
+      border-bottom: none; padding-bottom: 0;
+    }
+    #log-latest-preview {
+      flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.72rem; color: #cbd5e1; cursor: pointer;
+    }
+    .log-ctrl-btn {
+      flex: 0 0 auto; min-width: auto; padding: 2px 6px;
+      font-size: 0.68rem; border-radius: 4px; background: #1e293b;
+      border: 1px solid #475569; color: #e2e8f0;
+    }
+    #log-content {
+      flex: 1; overflow-y: auto; margin-top: 4px; padding-right: 2px;
+    }
+    #log-resize-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.65rem; color: #64748b; padding-top: 2px;
+      border-top: 1px dashed #334155; cursor: ns-resize;
+      touch-action: none; flex-shrink: 0; user-select: none;
+    }
+    #log-corner-grip {
+      cursor: nwse-resize; padding: 0 4px; color: #94a3b8; font-weight: bold;
+    }
+    .log-entry { margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
     .log-hit { color: #fde047; }
     .log-kill { color: #f87171; font-weight: bold; }
     .log-save { color: #4ade80; }
@@ -123,6 +165,31 @@
     }
     .catalog-item button, .roster-item button {
       flex: 0 0 auto; min-width: auto; padding: 4px 9px; font-size: 0.74rem;
+    }
+
+    /* Mobile & Small Screen Optimizations */
+    @media (max-width: 768px), (max-height: 560px) {
+      #hud { padding: 4px; }
+      .panel { padding: 5px 8px; border-radius: 6px; }
+      #top-bar { gap: 4px; }
+      .phase-badge { font-size: 0.7rem; padding: 3px 6px; }
+      .status-text { font-size: 0.78rem; }
+      .sub-text { font-size: 0.68rem; }
+      .vp-box { font-size: 0.7rem; padding: 2px 6px; }
+      #mid-area { margin: 3px 0; justify-content: stretch; }
+      #combat-log {
+        width: 100%;
+        height: 96px;
+        max-height: 32vh;
+        font-size: 0.7rem;
+        background: rgba(15, 23, 42, 0.82);
+      }
+      button {
+        padding: 6px 8px; font-size: 0.74rem; min-width: 80px;
+      }
+      .modal-card { padding: 8px; max-height: 96vh; }
+      .modal-cols { flex-direction: column; overflow-y: auto; gap: 8px; }
+      .faction-col { overflow-y: visible; }
     }
   </style>
 </head>
@@ -196,9 +263,21 @@
 
   <div id="mid-area">
     <div id="combat-log" class="panel">
-      <div style="font-weight:bold; color:#94a3b8; margin-bottom:4px;">📋 BATTLE LOG (Orders, Combat & Rally)</div>
+      <div id="log-header">
+        <span style="font-weight:bold; color:#94a3b8; white-space:nowrap;" onclick="window.toggleLogCollapse()">📋 LOG</span>
+        <div id="log-latest-preview" onclick="window.toggleLogCollapse()" title="Tap to expand/collapse Battle Log">Welcome to Phase 5! Double-click any unit to Group-Move!</div>
+        <div style="display:flex; gap:4px;">
+          <button class="log-ctrl-btn" onclick="window.cycleLogSize()" title="Cycle Log Size (Small / Medium / Large)">↕ Size</button>
+          <button id="btn-log-collapse" class="log-ctrl-btn" onclick="window.toggleLogCollapse()" title="Minimize / Expand Battle Log">▬</button>
+        </div>
+      </div>
       <div id="log-content">
         <div class="log-entry">Welcome to Phase 5! Select your armies, deploy in your zone, and <b>double-click any stand</b> to toggle cohesive Group Formation Move!</div>
+      </div>
+      <div id="log-resize-bar" title="Drag vertically or diagonally to resize Battle Log">
+        <span id="log-corner-grip">⤡</span>
+        <span>Drag bar to resize log</span>
+        <span>↕</span>
       </div>
     </div>
   </div>
@@ -490,6 +569,96 @@ window.startBattleFromBuilder = function(useDeploymentPhase) {
   }
 };
 
+// --- BATTLE LOG COLLAPSE, PRESET SIZES & TOUCH/MOUSE DRAG RESIZE ---
+window.logSizePresetIdx = 1;
+window.logSizePresets = [95, 175, 290];
+
+window.toggleLogCollapse = function(forceCollapse = null) {
+  const logEl = document.getElementById('combat-log');
+  const btn = document.getElementById('btn-log-collapse');
+  if (!logEl) return;
+  const shouldCollapse = forceCollapse !== null ? forceCollapse : !logEl.classList.contains('collapsed');
+  if (shouldCollapse) {
+    logEl.classList.add('collapsed');
+    if (btn) btn.innerText = '＋';
+  } else {
+    logEl.classList.remove('collapsed');
+    if (btn) btn.innerText = '▬';
+  }
+};
+
+window.cycleLogSize = function() {
+  const logEl = document.getElementById('combat-log');
+  if (!logEl) return;
+  if (logEl.classList.contains('collapsed')) {
+    window.toggleLogCollapse(false);
+    logEl.style.height = window.logSizePresets[0] + 'px';
+    window.logSizePresetIdx = 0;
+    return;
+  }
+  window.logSizePresetIdx = (window.logSizePresetIdx + 1) % (window.logSizePresets.length + 1);
+  if (window.logSizePresetIdx === window.logSizePresets.length) {
+    window.toggleLogCollapse(true);
+  } else {
+    logEl.style.height = window.logSizePresets[window.logSizePresetIdx] + 'px';
+  }
+};
+
+window.initCombatLogResize = function() {
+  const logEl = document.getElementById('combat-log');
+  const barEl = document.getElementById('log-resize-bar');
+  if (!logEl || !barEl) return;
+
+  // On phone / small screens, start collapsed as a sleek 1-line ticker so the battlefield has maximum room
+  if (window.innerWidth <= 768 || window.innerHeight <= 560) {
+    window.toggleLogCollapse(true);
+  }
+
+  let isResizing = false;
+  let startX = 0, startY = 0, startW = 0, startH = 0;
+  let resizeWidthToo = false;
+
+  barEl.addEventListener('pointerdown', (e) => {
+    isResizing = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = logEl.getBoundingClientRect();
+    startW = rect.width;
+    startH = rect.height;
+    resizeWidthToo = (e.target && e.target.id === 'log-corner-grip') || (e.clientX - rect.left < 44);
+    logEl.style.transition = 'none';
+    if (barEl.setPointerCapture) barEl.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+    e.preventDefault();
+  });
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isResizing) return;
+    const dy = e.clientY - startY;
+    const newH = Math.max(68, Math.min(window.innerHeight * 0.65, startH + dy));
+    logEl.style.height = Math.round(newH) + 'px';
+
+    if (resizeWidthToo) {
+      const dx = startX - e.clientX; // anchored on right side, so dragging left increases width
+      const newW = Math.max(190, Math.min(window.innerWidth - 12, startW + dx));
+      logEl.style.width = Math.round(newW) + 'px';
+    }
+    e.stopPropagation();
+  });
+
+  const stopResize = (e) => {
+    if (!isResizing) return;
+    isResizing = false;
+    logEl.style.transition = 'height 0.12s ease';
+    if (barEl.releasePointerCapture && e && e.pointerId !== undefined) {
+      try { barEl.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+  };
+
+  window.addEventListener('pointerup', stopResize);
+  window.addEventListener('pointercancel', stopResize);
+};
+
 class NetEpicScene extends Phaser.Scene {
   constructor() {
     super({ key: 'NetEpicScene' });
@@ -542,6 +711,7 @@ class NetEpicScene extends Phaser.Scene {
     this.overlayGfx = this.add.graphics();
 
     this.detachments = [];
+    window.initCombatLogResize();
     this.drawBattlefield();
     this.spawnObjectives();
     this.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, true);
@@ -561,6 +731,11 @@ class NetEpicScene extends Phaser.Scene {
     div.className = 'log-entry';
     div.innerHTML = htmlMsg;
     container.prepend(div);
+
+    const preview = document.getElementById('log-latest-preview');
+    if (preview) {
+      preview.innerHTML = htmlMsg;
+    }
   }
 
   drawBattlefield() {
