@@ -15082,12 +15082,244 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   getBuildingAt(x, y) {
+    if (!this.buildings) return null;
     for (const b of this.buildings) {
       if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
         return b;
       }
     }
     return null;
+  }
+
+  doesLineIntersectRect(x1, y1, x2, y2, rx, ry, rw, rh) {
+    if (rx <= x1 && x1 <= rx + rw && ry <= y1 && y1 <= ry + rh) return true;
+    if (rx <= x2 && x2 <= rx + rw && ry <= y2 && y2 <= ry + rh) return true;
+    const edges = [
+      [rx, ry, rx + rw, ry],
+      [rx + rw, ry, rx + rw, ry + rh],
+      [rx + rw, ry + rh, rx, ry + rh],
+      [rx, ry + rh, rx, ry]
+    ];
+    const ccw = (ax, ay, bx, by, cx, cy) => (cy - ay) * (bx - ax) > (by - ay) * (cx - ax);
+    const intersect = (ax, ay, bx, by, cx, cy, dx, dy) => {
+      return ccw(ax, ay, cx, cy, dx, dy) !== ccw(bx, by, cx, cy, dx, dy) &&
+             ccw(ax, ay, bx, by, cx, cy) !== ccw(ax, ay, bx, by, dx, dy);
+    };
+    for (const [ex1, ey1, ex2, ey2] of edges) {
+      if (intersect(x1, y1, x2, y2, ex1, ey1, ex2, ey2)) return true;
+    }
+    return false;
+  }
+
+  clampPointOutsideBuilding(x, y, b, margin = 16) {
+    if (x < b.x || x > b.x + b.w || y < b.y || y > b.y + b.h) {
+      return { x, y };
+    }
+    const dL = x - b.x, dR = (b.x + b.w) - x;
+    const dT = y - b.y, dB = (b.y + b.h) - y;
+    const minD = Math.min(dL, dR, dT, dB);
+    if (minD === dL) return { x: b.x - margin, y };
+    if (minD === dR) return { x: b.x + b.w + margin, y };
+    if (minD === dT) return { x, y: b.y - margin };
+    return { x, y: b.y + b.h + margin };
+  }
+
+  // NetEpic Gold Core Rules p. 29 & 30:
+  // - Entering & Leaving Buildings: Costs 5 cm (50 px) of movement for Infantry & Light Artillery.
+  // - Buildings are IMPASSABLE to Vehicles, Knights, Walkers, Titans & Praetorians! They must go around.
+  // - Rivers are IMPASSABLE to Ground Units unless crossing via Bridges/Fords.
+  calculateStandMovePath(stand, rawTargetX, rawTargetY) {
+    const det = stand.detachment;
+    const sx = stand.originX, sy = stand.originY;
+    let tx = Phaser.Math.Clamp(rawTargetX, 15, BOARD_W - 15);
+    let ty = Phaser.Math.Clamp(rawTargetY, 15, BOARD_H - 15);
+
+    const isInfantry = det.pinningClass === 1;
+    const isFlyerOrSkimmer = Boolean(det.flyer || det.skimmer || det.jump);
+    const isTitan = Boolean(det.isTitan || det.superHeavy);
+
+    if (this.phase === 'DEPLOYMENT') {
+      if (!isInfantry) {
+        for (const b of (this.buildings || [])) {
+          const clamped = this.clampPointOutsideBuilding(tx, ty, b, 16);
+          tx = clamped.x; ty = clamped.y;
+        }
+      }
+      return {
+        finalX: tx, finalY: ty, waypoints: [{ x: sx, y: sy }, { x: tx, y: ty }],
+        distPx: Math.hypot(tx - sx, ty - sy), valid: true, buildingPenaltyPx: 0
+      };
+    }
+
+    const baseMoveCm = (this.phase === 'MOVEMENT' && det.order && !det.deepStrikeActive)
+      ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult
+      : Infinity;
+    const maxMovePx = baseMoveCm < 9999 ? baseMoveCm * PX_PER_CM : Infinity;
+
+    // 1. INFANTRY: Can enter/leave buildings with 5 cm (50 px) movement cost
+    if (isInfantry && !isFlyerOrSkimmer) {
+      const startB = this.getBuildingAt(sx, sy);
+      const endB = this.getBuildingAt(tx, ty);
+      let buildingPenaltyPx = 0;
+
+      if (!startB && endB) {
+        buildingPenaltyPx = 5 * PX_PER_CM; // 5 cm entry cost
+      } else if (startB && !endB) {
+        buildingPenaltyPx = 5 * PX_PER_CM; // 5 cm exit cost
+      } else if (startB && endB && startB !== endB) {
+        buildingPenaltyPx = 10 * PX_PER_CM; // Exit first + enter second
+      } else if (!startB && !endB) {
+        for (const b of (this.buildings || [])) {
+          if (this.doesLineIntersectRect(sx, sy, tx, ty, b.x, b.y, b.w, b.h)) {
+            buildingPenaltyPx = 10 * PX_PER_CM; // Enter + exit through building
+            break;
+          }
+        }
+      }
+
+      if (this.rivers && this.rivers.length > 0 && this.isPointInImpassableRiver(tx, ty)) {
+        return {
+          finalX: sx, finalY: sy, waypoints: [{ x: sx, y: sy }],
+          distPx: 0, valid: false, blockedBy: 'RIVER'
+        };
+      }
+
+      const allowedTravelPx = Math.max(0, maxMovePx - buildingPenaltyPx);
+      const straightDist = Math.hypot(tx - sx, ty - sy);
+
+      if (straightDist > allowedTravelPx && straightDist > 0.001) {
+        const ang = Math.atan2(ty - sy, tx - sx);
+        tx = sx + Math.cos(ang) * allowedTravelPx;
+        ty = sy + Math.sin(ang) * allowedTravelPx;
+      }
+
+      return {
+        finalX: tx, finalY: ty, waypoints: [{ x: sx, y: sy }, { x: tx, y: ty }],
+        distPx: Math.hypot(tx - sx, ty - sy) + buildingPenaltyPx,
+        valid: true, buildingPenaltyPx
+      };
+    }
+
+    // 2. FLYERS & SKIMMERS: Can fly/hover directly over terrain
+    if (isFlyerOrSkimmer) {
+      const straightDist = Math.hypot(tx - sx, ty - sy);
+      if (straightDist > maxMovePx && straightDist > 0.001) {
+        const ang = Math.atan2(ty - sy, tx - sx);
+        tx = sx + Math.cos(ang) * maxMovePx;
+        ty = sy + Math.sin(ang) * maxMovePx;
+      }
+      return {
+        finalX: tx, finalY: ty, waypoints: [{ x: sx, y: sy }, { x: tx, y: ty }],
+        distPx: Math.hypot(tx - sx, ty - sy), valid: true, buildingPenaltyPx: 0
+      };
+    }
+
+    // 3. VEHICLES, SUPERHEAVIES, TITANS & PRAETORIANS:
+    // Buildings are IMPASSABLE! Must go around!
+    for (const b of (this.buildings || [])) {
+      const clamped = this.clampPointOutsideBuilding(tx, ty, b, 16);
+      tx = clamped.x; ty = clamped.y;
+    }
+
+    if (this.rivers && this.rivers.length > 0 && !isTitan && this.isPointInImpassableRiver(tx, ty)) {
+      return {
+        finalX: sx, finalY: sy, waypoints: [{ x: sx, y: sy }],
+        distPx: 0, valid: false, blockedBy: 'RIVER'
+      };
+    }
+
+    let intersectingBuilding = null;
+    for (const b of (this.buildings || [])) {
+      if (this.doesLineIntersectRect(sx, sy, tx, ty, b.x, b.y, b.w, b.h)) {
+        intersectingBuilding = b;
+        break;
+      }
+    }
+
+    if (!intersectingBuilding) {
+      const straightDist = Math.hypot(tx - sx, ty - sy);
+      if (straightDist > maxMovePx && straightDist > 0.001) {
+        const ang = Math.atan2(ty - sy, tx - sx);
+        tx = sx + Math.cos(ang) * maxMovePx;
+        ty = sy + Math.sin(ang) * maxMovePx;
+      }
+      return {
+        finalX: tx, finalY: ty, waypoints: [{ x: sx, y: sy }, { x: tx, y: ty }],
+        distPx: Math.hypot(tx - sx, ty - sy), valid: true, buildingPenaltyPx: 0
+      };
+    }
+
+    // Obstacle avoidance routing around building corners
+    const b = intersectingBuilding;
+    const margin = 16;
+    const corners = [
+      { x: b.x - margin, y: b.y - margin },
+      { x: b.x + b.w + margin, y: b.y - margin },
+      { x: b.x + b.w + margin, y: b.y + b.h + margin },
+      { x: b.x - margin, y: b.y + b.h + margin }
+    ];
+
+    let bestDist = Infinity;
+    let bestWaypoints = [{ x: sx, y: sy }, { x: tx, y: ty }];
+
+    for (const c of corners) {
+      if (!this.doesLineIntersectRect(sx, sy, c.x, c.y, b.x + 1, b.y + 1, b.w - 2, b.h - 2) &&
+          !this.doesLineIntersectRect(c.x, c.y, tx, ty, b.x + 1, b.y + 1, b.w - 2, b.h - 2)) {
+        const d = Math.hypot(c.x - sx, c.y - sy) + Math.hypot(tx - c.x, ty - c.y);
+        if (d < bestDist) {
+          bestDist = d;
+          bestWaypoints = [{ x: sx, y: sy }, c, { x: tx, y: ty }];
+        }
+      }
+    }
+
+    if (bestDist === Infinity) {
+      const pairs = [
+        [corners[0], corners[1]], [corners[1], corners[2]],
+        [corners[2], corners[3]], [corners[3], corners[0]],
+        [corners[1], corners[0]], [corners[2], corners[1]],
+        [corners[3], corners[2]], [corners[0], corners[3]]
+      ];
+      for (const [c1, c2] of pairs) {
+        const d = Math.hypot(c1.x - sx, c1.y - sy) + Math.hypot(c2.x - c1.x, c2.y - c1.y) + Math.hypot(tx - c2.x, ty - c2.y);
+        if (d < bestDist) {
+          bestDist = d;
+          bestWaypoints = [{ x: sx, y: sy }, c1, c2, { x: tx, y: ty }];
+        }
+      }
+    }
+
+    if (bestDist > maxMovePx && maxMovePx < 90000) {
+      let remaining = maxMovePx;
+      const truncatedWaypoints = [bestWaypoints[0]];
+      let stoppedX = sx, stoppedY = sy;
+
+      for (let i = 0; i < bestWaypoints.length - 1; i++) {
+        const p1 = bestWaypoints[i], p2 = bestWaypoints[i + 1];
+        const segDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        if (remaining >= segDist) {
+          remaining -= segDist;
+          truncatedWaypoints.push(p2);
+          stoppedX = p2.x; stoppedY = p2.y;
+        } else {
+          const t = segDist > 0.001 ? remaining / segDist : 0;
+          stoppedX = p1.x + t * (p2.x - p1.x);
+          stoppedY = p1.y + t * (p2.y - p1.y);
+          truncatedWaypoints.push({ x: stoppedX, y: stoppedY });
+          remaining = 0;
+          break;
+        }
+      }
+      return {
+        finalX: stoppedX, finalY: stoppedY, waypoints: truncatedWaypoints,
+        distPx: maxMovePx, valid: true, routed: true
+      };
+    }
+
+    return {
+      finalX: tx, finalY: ty, waypoints: bestWaypoints,
+      distPx: bestDist, valid: true, routed: true
+    };
   }
 
   // Only Infantry (Pinning Class 1) can garrison inside a Building!
@@ -15097,21 +15329,32 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   isPointInImpassableRiver(x, y) {
+    if (!this.rivers || this.rivers.length === 0) return false;
     const inRiver = this.rivers.some(rv => y >= rv.y && y <= rv.y + rv.h);
     if (!inRiver) return false;
-    const onBridge = this.bridges.some(br => x >= br.x && x <= br.x + br.w && y >= br.y && y <= br.y + br.h);
+    const onBridge = (this.bridges || []).some(br => x >= br.x && x <= br.x + br.w && y >= br.y && y <= br.y + br.h);
     return !onBridge;
   }
 
-  // Validate that no Vehicle/Titan ends inside a Building and no non-Jump/non-Skimmer unit ends in deep River water
+  // Validate that no Vehicle/Titan ends inside a Building or cuts straight through intact buildings
   checkTerrainMoveRule(det) {
     if (!det) return true;
+    const isInfantry = det.pinningClass === 1;
+    const isFlyerOrSkimmer = Boolean(det.flyer || det.skimmer || det.jump);
+    const isTitan = Boolean(det.isTitan || det.superHeavy);
+
     for (const s of det.stands) {
       const x = s.container.x, y = s.container.y;
-      if (det.pinningClass > 1 && this.getBuildingAt(x, y)) {
+      if (!isInfantry && this.getBuildingAt(x, y)) {
         return false; // Non-infantry cannot enter buildings
       }
-      // Pulsa Seismic Fields: only Titans, Praetorians, Flyers & Skimmers can cross (NetEpic Gold p. 16)
+      if (!isInfantry && !isFlyerOrSkimmer) {
+        for (const b of (this.buildings || [])) {
+          if (this.doesLineIntersectRect(s.originX, s.originY, x, y, b.x + 2, b.y + 2, b.w - 4, b.h - 4)) {
+            return false; // Vehicles cannot pass through buildings
+          }
+        }
+      }
       if (this.pulsaFields && this.pulsaFields.length > 0 && !det.isTitan && !det.superHeavy && !det.skimmer && !det.flyer && !det.jump) {
         for (const pf of this.pulsaFields) {
           if (Phaser.Math.Distance.Between(x, y, pf.x, pf.y) <= pf.r) {
@@ -15119,8 +15362,8 @@ class NetEpicScene extends Phaser.Scene {
           }
         }
       }
-      if (!det.jump && !det.skimmer && this.isPointInImpassableRiver(x, y)) {
-        return false; // Ground units cannot end in deep river water outside a bridge/ford
+      if (!isFlyerOrSkimmer && !isTitan && this.isPointInImpassableRiver(x, y)) {
+        return false;
       }
     }
     return true;
@@ -18919,8 +19162,10 @@ class NetEpicScene extends Phaser.Scene {
         });
 
         movable.forEach(s => {
-          s.container.x = s.dragStartX + dx;
-          s.container.y = s.dragStartY + dy;
+          const pRes = this.calculateStandMovePath(s, s.dragStartX + dx, s.dragStartY + dy);
+          s.container.x = pRes.finalX;
+          s.container.y = pRes.finalY;
+          s.activeWaypoints = pRes.waypoints;
         });
 
         this.syncEmbarkedPassengers(det);
@@ -18929,16 +19174,11 @@ class NetEpicScene extends Phaser.Scene {
         return;
       }
 
-      // SINGLE-STAND MOVE
-      const dist = Phaser.Math.Distance.Between(stand.originX, stand.originY, dragX, dragY);
-
-      let targetX = dragX;
-      let targetY = dragY;
-      if (dist > maxMovePx) {
-        const angle = Phaser.Math.Angle.Between(stand.originX, stand.originY, dragX, dragY);
-        targetX = stand.originX + Math.cos(angle) * maxMovePx;
-        targetY = stand.originY + Math.sin(angle) * maxMovePx;
-      }
+      // SINGLE-STAND MOVE WITH NETEPIC TERRAIN & OBSTACLE ROUTING
+      const pathRes = this.calculateStandMovePath(stand, dragX, dragY);
+      let targetX = pathRes.finalX;
+      let targetY = pathRes.finalY;
+      stand.activeWaypoints = pathRes.waypoints;
 
       // Snap-to-base-contact helper when on CHARGE orders and dragging onto an enemy stand
       if (det.order === 'CHARGE') {
@@ -20714,6 +20954,19 @@ class NetEpicScene extends Phaser.Scene {
         });
       }
     });
+
+    // 0c. Navigation Trajectory Polyline (drawn when routing around buildings or entering structures)
+    if (this.phase === 'MOVEMENT' && this.activatingDetachment) {
+      this.activatingDetachment.stands.forEach(s => {
+        if (s.activeWaypoints && s.activeWaypoints.length > 1) {
+          const wps = s.activeWaypoints;
+          this.overlayGfx.lineStyle(2, s.activeWaypoints.length > 2 ? 0xf59e0b : 0x38bdf8, 0.75);
+          for (let i = 0; i < wps.length - 1; i++) {
+            this.overlayGfx.lineBetween(wps[i].x, wps[i].y, wps[i+1].x, wps[i+1].y);
+          }
+        }
+      });
+    }
 
     // 1. Always draw red/orange Close Combat engagement links, Pinned rings, and Gold Fortified Garrison rings
     this.detachments.forEach(d => {
