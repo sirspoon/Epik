@@ -4441,6 +4441,887 @@ const UNIT_CATALOG = {
         "baseW": 24,
         "baseH": 32
       }
+    },
+    {
+          "key": "card_ork_bubble_chukka",
+          "cardType": "SUPPORT",
+          "cardName": "Bubble Chukka Speedsta",
+          "armyBook": "ORKS",
+          "name": "Mekboy Bubble Chukka Speedsta",
+          "composition": "1 Mekboy Bubble Chukka Speedsta (Rocket Propulsion Engine & Force Bubble Projector)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Bubble Chukka Force Projector",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Envelops target in a bouncing force bubble; incoming/outgoing shots rebound and hit target firer directly, bypassing shields."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_destrukta_rokkits",
+          "cardType": "SUPPORT",
+          "cardName": "Destrukta Rokkits Speedsta",
+          "armyBook": "ORKS",
+          "name": "Mekboy Destrukta Rokkits Speedsta",
+          "composition": "1 Mekboy Destrukta Rokkits Speedsta (High-Speed Rocket Launch Chassis)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 30,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Destruktor Rokkits Barrage",
+                "rangeCm": 75,
+                "dice": 6,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Direct-fire rokkit barrage (2-10 BP). Misfire hits Speedsta at -2 TSM."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_dragsta",
+          "cardType": "SUPPORT",
+          "cardName": "Mekboy Dragsta",
+          "armyBook": "ORKS",
+          "name": "Mekboy Dragsta Deflektor Speedsta",
+          "composition": "1 Mekboy Dragsta (Overcharged Dragster Engine & 6cm Deflektor Force Field)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 35,
+          "save": 3,
+          "caf": 2,
+          "pinningClass": 2,
+          "shieldType": "POWER",
+          "maxShields": 2,
+          "weapon": {
+                "name": "Deflektor Field & Twin Big Shootas",
+                "rangeCm": 25,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "6cm Deflektor Field deflects incoming shots and barrages 4D6cm on scatter."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_kustom_kannon",
+          "cardType": "SUPPORT",
+          "cardName": "Kustom Kannon Speedsta",
+          "armyBook": "ORKS",
+          "name": "Mekboy Kustom Kannon Speedsta",
+          "composition": "1 Mekboy Kustom Kannon Speedsta (Rotary Autocannon Gunwagon)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 30,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Rotary Kustom Kannon",
+                "rangeCm": 75,
+                "dice": 4,
+                "toHit": 5,
+                "tsm": -2,
+                "notes": "Heavy variable-fire autocannon (2-10 attacks). Misfire damages Speedsta."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_lifta_droppa",
+          "cardType": "SUPPORT",
+          "cardName": "Lifta-Droppa Speedsta",
+          "armyBook": "ORKS",
+          "name": "Mekboy Lifta-Droppa Speedsta",
+          "composition": "1 Mekboy Lifta-Droppa Speedsta (Tractor Force Beam Armature)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 20,
+          "save": 3,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Lifta-Droppa Grav Beam",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -4,
+                "notes": "Lifts target vehicle/titan into the sky and drops it with 2D6cm scatter, crushing victims below."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_renegade_mekboyz",
+          "cardType": "SPECIAL",
+          "cardName": "Renegade Mekboyz",
+          "armyBook": "ORKS",
+          "name": "Renegade Mekboyz Speedsta Warband",
+          "composition": "8 Mekboy Dragstas & Speedstas (Any mix of Bubble Chukkas, Destruktas, Dragstas, Kustom Kannons & Lifta-Droppas)",
+          "points": 600,
+          "breakPoint": 4,
+          "morale": 4,
+          "vpValue": 6,
+          "moveCm": 30,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Kustom Weapons & Force Projectors",
+                "rangeCm": 75,
+                "dice": 8,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Mekboy rocket-boosted propulsion engines grant +2D6cm move (+4D6cm on Charge)."
+          },
+          "standsCount": 8,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_bowelburna",
+          "cardType": "SUPPORT",
+          "cardName": "Bowelburna Squadron",
+          "armyBook": "ORKS",
+          "name": "Evil Sunz Bowelburna Flame Squadron",
+          "composition": "3 Bowelburna Flame Tanks (Turret-Mounted Large Scorcher)",
+          "points": 100,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 30,
+          "save": 5,
+          "caf": 1,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Turret Scorcher",
+                "rangeCm": 25,
+                "dice": 3,
+                "toHit": 4,
+                "tsm": 0,
+                "notes": "Ignores Cover, Flame Template attack."
+          },
+          "standsCount": 3,
+          "color": 12134940,
+          "baseW": 26,
+          "baseH": 30
+    },
+    {
+          "key": "card_ork_gobsmasha",
+          "cardType": "SUPPORT",
+          "cardName": "Gobsmasha Squadron",
+          "armyBook": "ORKS",
+          "name": "Evil Sunz Gobsmasha Squadron",
+          "composition": "5 Gobsmasha Light Assault Tanks",
+          "points": 100,
+          "breakPoint": 3,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 25,
+          "save": 5,
+          "caf": 0,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Big Shootas",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+          },
+          "standsCount": 5,
+          "color": 12134940,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_spleenrippa",
+          "cardType": "SUPPORT",
+          "cardName": "Spleenrippa Squadron",
+          "armyBook": "ORKS",
+          "name": "Evil Sunz Spleenrippa Tank Hunter Squadron",
+          "composition": "3 Spleenrippa High-Speed Tank Hunters",
+          "points": 125,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 30,
+          "save": 5,
+          "caf": 0,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "High-Velocity Blastacannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -2
+          },
+          "standsCount": 3,
+          "color": 12134940,
+          "baseW": 26,
+          "baseH": 32
+    },
+    {
+          "key": "card_ork_blood_axe_land_raider",
+          "cardType": "SUPPORT",
+          "cardName": "Blood Axe Land Raider Squadron",
+          "armyBook": "ORKS",
+          "name": "Blood Axe Looted Land Raider Squadron",
+          "composition": "3 Looted Land Raiders (Twin Zzappas & Ork Krew)",
+          "points": 200,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 20,
+          "save": 2,
+          "caf": 3,
+          "pinningClass": 2,
+          "transportCapacity": 2,
+          "weapon": {
+                "name": "Looted Zzap Guns & Heavy Bolters",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": -2
+          },
+          "standsCount": 3,
+          "color": 4153874,
+          "baseW": 26,
+          "baseH": 34
+    },
+    {
+          "key": "card_ork_blood_axe_rhino",
+          "cardType": "SUPPORT",
+          "cardName": "Blood Axe Rhino Squadron",
+          "armyBook": "ORKS",
+          "name": "Blood Axe Looted Rhino APC Squadron",
+          "composition": "3 Looted Rhinos (Armoured Troop Transports)",
+          "points": 50,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 25,
+          "save": 4,
+          "caf": 0,
+          "pinningClass": 2,
+          "transportCapacity": 2,
+          "weapon": {
+                "name": "Pintle Storm Bolter",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+          },
+          "standsCount": 3,
+          "color": 4153874,
+          "baseW": 24,
+          "baseH": 30
+    },
+    {
+          "key": "card_ork_cyberwyverns",
+          "cardType": "SUPPORT",
+          "cardName": "Cyberwyvern Squadron",
+          "armyBook": "ORKS",
+          "name": "Snakebite Cyberwyvern Beast Squadron",
+          "composition": "5 Bionic Cyberwyvern Airborne Beast Skimmers",
+          "points": 150,
+          "breakPoint": 3,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 25,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Twin Autocannons & Venomous Talons",
+                "rangeCm": 50,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": -1,
+                "notes": "Skimmer. On Fall Back orders charges 25cm in random direction and attacks first unit encountered."
+          },
+          "standsCount": 5,
+          "color": 7877903,
+          "baseW": 24,
+          "baseH": 26
+    },
+    {
+          "key": "card_ork_hop_splat",
+          "cardType": "SUPPORT",
+          "cardName": "Hop-Splat Battery",
+          "armyBook": "ORKS",
+          "name": "Hop-Splat Gun Artillery Battery",
+          "composition": "5 Hop-Splat Bouncing Splat Gunz & Grot Krew",
+          "points": 150,
+          "breakPoint": 3,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 5,
+          "save": 6,
+          "caf": -3,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Bouncing Hop-Splat Barrage",
+                "rangeCm": 50,
+                "dice": 3,
+                "toHit": 4,
+                "tsm": -1,
+                "notes": "Fires triple-bounce barrage: initial template lands, second scatters 3D6cm, third scatters 3D6cm."
+          },
+          "standsCount": 5,
+          "color": 1409085,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_pulsa_rokkit",
+          "cardType": "SUPPORT",
+          "cardName": "Pulsa Rokkit Battery",
+          "armyBook": "ORKS",
+          "name": "Pulsa Rokkit Heavy Artillery Battery",
+          "composition": "3 Pulsa Rokkits & Ground Shockwave Launch Platforms",
+          "points": 250,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 3,
+          "moveCm": 5,
+          "save": 4,
+          "caf": 0,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Pulsa Seismic Ground Wave",
+                "rangeCm": 100,
+                "dice": 3,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Heavy seismic shockwave disrupts infantry and vehicles across the impact zone."
+          },
+          "standsCount": 3,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 26
+    },
+    {
+          "key": "card_ork_squig_katapult",
+          "cardType": "SUPPORT",
+          "cardName": "Squig Katapult Battery",
+          "armyBook": "ORKS",
+          "name": "Snakebite Squig Katapult Battery",
+          "composition": "3 Squig Katapults (Flinging Buzz-Squig Swarms)",
+          "points": 100,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 15,
+          "save": 3,
+          "caf": 1,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Buzz Squig Swarm & Tower Guns",
+                "rangeCm": 50,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": 1,
+                "notes": "Catapults swarms of biting buzz-squigs over obstacles into enemy lines."
+          },
+          "standsCount": 3,
+          "color": 7877903,
+          "baseW": 24,
+          "baseH": 28
+    },
+    {
+          "key": "card_ork_doomdiver",
+          "cardType": "SUPPORT",
+          "cardName": "Doomdiver AA Magna Kannon",
+          "armyBook": "ORKS",
+          "name": "Doomdiver AA Magna Kannon Battery",
+          "composition": "1 Heavy Magna Kannon (Anti-Aircraft Magnetic Projector)",
+          "points": 50,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 20,
+          "save": 4,
+          "caf": 0,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Magna Kannon Anti-Aircraft Beam",
+                "rangeCm": 100,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -2,
+                "notes": "Dedicated Anti-Aircraft beam. Stops ground unit movement."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 26
+    },
+    {
+          "key": "card_ork_gibletgrinda",
+          "cardType": "SUPPORT",
+          "cardName": "Gibletgrinda Battle Fortress",
+          "armyBook": "ORKS",
+          "name": "Gibletgrinda Heavy Battle Fortress",
+          "composition": "1 Gibletgrinda (Spiked Deathroller & 5 Heavy Big Shootas)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 15,
+          "save": 1,
+          "caf": 8,
+          "pinningClass": 3,
+          "superHeavy": true,
+          "transportCapacity": 5,
+          "weapon": {
+                "name": "Spiked Deathroller & 5 Big Shootas",
+                "rangeCm": 50,
+                "dice": 5,
+                "toHit": 5,
+                "tsm": -1,
+                "notes": "Deathroller crushes infantry on contact. 1+ save all-around."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 34,
+          "baseH": 42
+    },
+    {
+          "key": "card_ork_skullhamma",
+          "cardType": "SUPPORT",
+          "cardName": "Skullhamma Battle Fortress",
+          "armyBook": "ORKS",
+          "name": "Skullhamma Ram Fortress",
+          "composition": "1 Skullhamma Battle Fortress (Twin Heavy Blastacannons & Ram)",
+          "points": 100,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 15,
+          "save": 1,
+          "caf": 4,
+          "pinningClass": 3,
+          "superHeavy": true,
+          "transportCapacity": 5,
+          "weapon": {
+                "name": "Twin Long Blastacannons",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Triple speed (45cm) on Charge Orders."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 34,
+          "baseH": 42
+    },
+    {
+          "key": "card_ork_tour_wagon",
+          "cardType": "SPECIAL",
+          "cardName": "Goffik Rokker Tour Wagon",
+          "armyBook": "ORKS",
+          "name": "Goffik Rokker Tour Wagon & Bouncers",
+          "composition": "1 Goffik Rokker Tour Wagon (Sound Blaster Rig) & 5 Bouncer Boyz stands",
+          "points": 400,
+          "breakPoint": 3,
+          "morale": 4,
+          "vpValue": 4,
+          "moveCm": 10,
+          "save": 1,
+          "caf": 10,
+          "pinningClass": 3,
+          "superHeavy": true,
+          "shieldType": "POWER",
+          "maxShields": 3,
+          "weapon": {
+                "name": "Sound Blaster & Heavy Cannons",
+                "rangeCm": 50,
+                "dice": 3,
+                "toHit": 4,
+                "tsm": -1,
+                "notes": "Sound Blaster ignores shields. Within 6cm Orks are immune to morale and gain +1 CAF."
+          },
+          "standsCount": 6,
+          "color": 1409085,
+          "baseW": 36,
+          "baseH": 44
+    },
+    {
+          "key": "card_ork_weirdboy_tower",
+          "cardType": "SUPPORT",
+          "cardName": "Weirdboy Battletower",
+          "armyBook": "ORKS",
+          "name": "Bad Moon Weirdboy Battletower",
+          "composition": "1 Armoured Tracked Weirdboy Battletower (Psychic Amplifier Mast)",
+          "points": 200,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 25,
+          "save": 4,
+          "caf": 1,
+          "pinningClass": 2,
+          "isPsyker": true,
+          "psychicRank": 4,
+          "weapon": {
+                "name": "Amplified Eed-Zzap Beam",
+                "rangeCm": 100,
+                "dice": 4,
+                "toHit": 3,
+                "tsm": -4,
+                "notes": "Amplifies Weirdboy powers across the battlefield."
+          },
+          "standsCount": 1,
+          "color": 15387400,
+          "baseW": 28,
+          "baseH": 34
+    },
+    {
+          "key": "card_ork_deathskull_shootas",
+          "cardType": "SUPPORT",
+          "cardName": "Deathskull Shootaz",
+          "armyBook": "ORKS",
+          "name": "Deathskull Shoota Mobs",
+          "composition": "4 Deathskull Shoota stands (Kustomized Heavy Shootaz)",
+          "points": 200,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 0,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Kustom Heavy Shootaz",
+                "rangeCm": 50,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -1,
+                "notes": "Enhanced fire rate and armor-piercing looted ammunition."
+          },
+          "standsCount": 4,
+          "color": 1920984,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_madboyz",
+          "cardType": "SUPPORT",
+          "cardName": "Madmob",
+          "armyBook": "ORKS",
+          "name": "Madboyz Erratic Mob",
+          "composition": "4 Madboyz stands (Uncontrolled Erratic Boyz)",
+          "points": 0,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Wild Shootaz & Stikkbombs",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "Erratic behavior: random charges, manic cheer, or frenzied firing."
+          },
+          "standsCount": 4,
+          "color": 1409085,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_freebooterz",
+          "cardType": "SPECIAL",
+          "cardName": "Freebooterz",
+          "armyBook": "ORKS",
+          "name": "Freebooterz Pirate Warband",
+          "composition": "1 Freebooter Kaptin stand & 4 Freebooterz stands (Flash Pirate Gear)",
+          "points": 50,
+          "breakPoint": 3,
+          "morale": 3,
+          "vpValue": 2,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 2,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Flash Gitz Kustom Shootaz",
+                "rangeCm": 50,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "Independent mercenaries. High morale and flashy gear."
+          },
+          "standsCount": 5,
+          "color": 1409085,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_wildboyz",
+          "cardType": "SUPPORT",
+          "cardName": "Wildmob",
+          "armyBook": "ORKS",
+          "name": "Feral Wildboyz Mob",
+          "composition": "4 Wildboyz stands (Crude Choppas & Shields)",
+          "points": 75,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Crude Choppas & Spears",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "Fierce melee specialists (+3 CAF)."
+          },
+          "standsCount": 4,
+          "color": 7877903,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_wildboyz_horde",
+          "cardType": "COMPANY",
+          "cardName": "Wildboyz Horde",
+          "armyBook": "ORKS",
+          "name": "Wildboyz Feral Horde Warband",
+          "composition": "4 Nobz stands & 15 Wildboyz stands (19 Feral Stands)",
+          "points": 400,
+          "breakPoint": 10,
+          "morale": 4,
+          "vpValue": 4,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 1,
+          "weapon": {
+                "name": "Massed Choppas & Thrown Weapons",
+                "rangeCm": 15,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": 0
+          },
+          "standsCount": 19,
+          "color": 7877903,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_runtherd",
+          "cardType": "SPECIAL",
+          "cardName": "Runtherd",
+          "armyBook": "ORKS",
+          "name": "Runtherd Beastmaster Stand",
+          "composition": "1 Runtherd stand (Grot-Prod & Grabba-Stikk)",
+          "points": 75,
+          "breakPoint": 1,
+          "morale": 4,
+          "vpValue": 1,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 1,
+          "isCharacter": true,
+          "weapon": {
+                "name": "Shoota & Shock Grot-Prod",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "Grants +1 CAF to Grots; enables orders for Squigs, Hop-Splats & Tractor Kannons."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 20,
+          "baseH": 20
+    },
+    {
+          "key": "card_ork_onslaughter",
+          "cardType": "SUPPORT",
+          "cardName": "Onslaughter Mob",
+          "armyBook": "ORKS",
+          "name": "Onslaughter Heavy Dreadnought Mob",
+          "composition": "4 Onslaughter Heavy Dreadnought Walkers (Armoured Heavy Walkers)",
+          "points": 200,
+          "breakPoint": 2,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 10,
+          "save": 4,
+          "caf": 5,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Zappa Beam & Rotary Shoota",
+                "rangeCm": 75,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": -2
+          },
+          "standsCount": 4,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 24
+    },
+    {
+          "key": "card_ork_blasta_bomma",
+          "cardType": "SPECIAL",
+          "cardName": "Blasta Bomma",
+          "armyBook": "ORKS",
+          "name": "Mekboy Blasta Bomma Superheavy Flyer",
+          "composition": "1 Blasta Bomma (2 Power Fields, Nose Blasta Cannon & Heavy Bomb Racks)",
+          "points": 500,
+          "breakPoint": 1,
+          "morale": 3,
+          "vpValue": 5,
+          "moveCm": 60,
+          "save": 1,
+          "caf": 8,
+          "pinningClass": 3,
+          "superHeavy": true,
+          "shieldType": "POWER",
+          "maxShields": 2,
+          "weapon": {
+                "name": "Blasta Cannon, Big Shootas & Heavy Bomb Racks",
+                "rangeCm": 50,
+                "dice": 6,
+                "toHit": 5,
+                "tsm": -3,
+                "damagesBuildings": true,
+                "notes": "Superheavy Flyer. 2 Power Fields. Heavy structural damage."
+          },
+          "standsCount": 1,
+          "color": 1409085,
+          "baseW": 38,
+          "baseH": 42
+    },
+    {
+          "key": "card_ork_heavy_bomma",
+          "cardType": "SUPPORT",
+          "cardName": "Bomma Squadron",
+          "armyBook": "ORKS",
+          "name": "Bomma Heavy Attack Squadron",
+          "composition": "3 Heavy Bomma Aircraft (Heavy Rokkit Racks & Kustom Shootas)",
+          "points": 300,
+          "breakPoint": 2,
+          "morale": 3,
+          "vpValue": 3,
+          "moveCm": 75,
+          "save": 2,
+          "caf": 1,
+          "pinningClass": 2,
+          "weapon": {
+                "name": "Heavy Wing Rokkits & Bombs",
+                "rangeCm": 25,
+                "dice": 4,
+                "toHit": 5,
+                "tsm": -1
+          },
+          "standsCount": 3,
+          "color": 1409085,
+          "baseW": 32,
+          "baseH": 34
+    },
+    {
+          "key": "card_ork_landa",
+          "cardType": "SPECIAL",
+          "cardName": "Landa Skwadron",
+          "armyBook": "ORKS",
+          "name": "Landa Assault Dropship Skwadron",
+          "composition": "5 Heavy Landa Assault Transports (Deep Strike Troop Landers)",
+          "points": 450,
+          "breakPoint": 3,
+          "morale": 3,
+          "vpValue": 5,
+          "moveCm": 40,
+          "save": 3,
+          "caf": 0,
+          "pinningClass": 2,
+          "transportCapacity": 7,
+          "weapon": {
+                "name": "Big Shootas & Rokkit Pods",
+                "rangeCm": 50,
+                "dice": 4,
+                "toHit": 4,
+                "tsm": -2,
+                "notes": "Deep Strike. Transports up to 7 stands per Landa."
+          },
+          "standsCount": 5,
+          "color": 1409085,
+          "baseW": 34,
+          "baseH": 36
+    },
+    {
+          "key": "card_ork_supa_transport_rokkit",
+          "cardType": "SPECIAL",
+          "cardName": "Supa Transport Rokkit Battery",
+          "armyBook": "ORKS",
+          "name": "Supa Transport Rokkit Drop Battery",
+          "composition": "4 Supa Transport Rokkits & 4 Launchers (Sub-Orbital Drop Pods)",
+          "points": 200,
+          "breakPoint": 4,
+          "morale": 4,
+          "vpValue": 2,
+          "moveCm": 40,
+          "save": 5,
+          "caf": 0,
+          "pinningClass": 2,
+          "transportCapacity": 5,
+          "weapon": {
+                "name": "Drop Pod Pod-Shootas",
+                "rangeCm": 15,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": 0,
+                "notes": "Deep Strike orbital insertion pod. Transports 5 infantry stands each."
+          },
+          "standsCount": 8,
+          "color": 1409085,
+          "baseW": 24,
+          "baseH": 26
     }
   ],
   "ELDAR": [
@@ -11955,6 +12836,525 @@ class NetEpicScene extends Phaser.Scene {
       ctx.fillRect(14.5, 10, 3, 4);
       can.refresh();
     }
+
+    // 48. Bubble Chukka Speedsta (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_speedsta_bubble', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 14, 5, 10); ctx.fillRect(18, 14, 5, 10);
+      ctx.fillRect(3, 2, 4, 6); ctx.fillRect(17, 2, 4, 6);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(5, 4, 14, 20);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 18, 8, 7);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(12, 14, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath(); ctx.arc(12, 6, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#86efac';
+      ctx.beginPath(); ctx.arc(12, 6, 2.8, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 49. Destrukta Rokkits Speedsta (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_speedsta_destrukta', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 14, 5, 10); ctx.fillRect(18, 14, 5, 10);
+      ctx.fillRect(3, 2, 4, 6); ctx.fillRect(17, 2, 4, 6);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(5, 4, 14, 20);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 18, 8, 7);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(12, 14, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(6, 4, 12, 7);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(7, 2, 2.5, 5); ctx.fillRect(10.8, 2, 2.5, 5); ctx.fillRect(14.5, 2, 2.5, 5);
+      can.refresh();
+    }
+
+    // 50. Mekboy Dragsta (24x32)
+    {
+      const can = this.textures.createCanvas('topdown_ork_dragsta', 24, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 18, 6, 12); ctx.fillRect(18, 18, 6, 12);
+      ctx.fillRect(4, 2, 3, 6); ctx.fillRect(17, 2, 3, 6);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(6, 6, 12, 23);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(9, 2, 6, 6);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 20, 8, 8);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(12, 15, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(4, 8, 16, 14);
+      can.refresh();
+    }
+
+    // 51. Kustom Kannon Speedsta (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_speedsta_kannon', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 14, 5, 10); ctx.fillRect(18, 14, 5, 10);
+      ctx.fillRect(3, 2, 4, 6); ctx.fillRect(17, 2, 4, 6);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(5, 4, 14, 20);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 18, 8, 7);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(12, 14, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 0, 4, 11);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(9, 1, 6, 2.5);
+      can.refresh();
+    }
+
+    // 52. Lifta-Droppa Speedsta (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_speedsta_lifta', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 14, 5, 10); ctx.fillRect(18, 14, 5, 10);
+      ctx.fillRect(3, 2, 4, 6); ctx.fillRect(17, 2, 4, 6);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(5, 4, 14, 20);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 18, 8, 7);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(12, 14, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(11, 2, 2, 12);
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath(); ctx.arc(12, 3, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(8, 0, 8, 2);
+      can.refresh();
+    }
+
+    // 53. Bowelburna Flame Tank (26x30)
+    {
+      const can = this.textures.createCanvas('topdown_ork_bowelburna', 26, 30);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 2, 5, 26); ctx.fillRect(21, 2, 5, 26);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(5, 3, 16, 24);
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(8, 16, 10, 8);
+      ctx.fillStyle = '#44403c';
+      ctx.beginPath(); ctx.arc(13, 10, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(11.5, 0, 3, 8);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(11, 0, 4, 2);
+      can.refresh();
+    }
+
+    // 54. Gobsmasha Assault Tank (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_gobsmasha', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 2, 4, 24); ctx.fillRect(20, 2, 4, 24);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(4, 3, 16, 22);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(6, 6, 12, 10);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(10.5, 0, 3, 8);
+      can.refresh();
+    }
+
+    // 55. Spleenrippa Tank Hunter (26x32)
+    {
+      const can = this.textures.createCanvas('topdown_ork_spleenrippa', 26, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 2, 5, 28); ctx.fillRect(21, 2, 5, 28);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(5, 4, 16, 24);
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(7, 8, 12, 14);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(11, -2, 4, 16);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(10, -2, 6, 2.5);
+      can.refresh();
+    }
+
+    // 56. Looted Land Raider (28x36)
+    {
+      const can = this.textures.createCanvas('topdown_ork_landraider', 28, 36);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 2, 6, 32); ctx.fillRect(22, 2, 6, 32);
+      ctx.fillStyle = '#3f6212';
+      ctx.fillRect(6, 4, 16, 28);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(8, 4, 12, 6);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 10, 4, 10); ctx.fillRect(23, 10, 4, 10);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(0, 6, 2, 8); ctx.fillRect(26, 6, 2, 8);
+      can.refresh();
+    }
+
+    // 57. Looted Rhino (24x30)
+    {
+      const can = this.textures.createCanvas('topdown_ork_rhino', 24, 30);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 2, 4.5, 26); ctx.fillRect(19.5, 2, 4.5, 26);
+      ctx.fillStyle = '#3f6212';
+      ctx.fillRect(4.5, 3, 15, 24);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(7, 4, 10, 5);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(6, 12, 12, 10);
+      can.refresh();
+    }
+
+    // 58. Cyberwyverns (28x26)
+    {
+      const can = this.textures.createCanvas('topdown_ork_cyberwyverns', 28, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(11, 4, 6, 18);
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.moveTo(11, 8); ctx.lineTo(0, 2); ctx.lineTo(2, 14); ctx.lineTo(11, 12);
+      ctx.moveTo(17, 8); ctx.lineTo(28, 2); ctx.lineTo(26, 14); ctx.lineTo(17, 12);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(12, 2, 4, 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(6, 2, 2, 8); ctx.fillRect(20, 2, 2, 8);
+      can.refresh();
+    }
+
+    // 59. Hop-Splat Gun (26x22)
+    {
+      const can = this.textures.createCanvas('topdown_ork_hop_splat', 26, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(1, 4, 4, 14); ctx.fillRect(21, 4, 4, 14);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(5, 6, 16, 10);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 1, 6, 12);
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath(); ctx.arc(13, 1, 3.5, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 60. Pulsa Rokkit (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_pulsa_rokkit', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(4, 16, 16, 10);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(9, 4, 6, 18);
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(9, 4); ctx.lineTo(12, -1); ctx.lineTo(15, 4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath(); ctx.arc(12, 10, 2.5, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 61. Squig Katapult (26x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_squig_katapult', 26, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(4, 6, 18, 16);
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(1, 6, 3, 16); ctx.fillRect(22, 6, 3, 16);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(11, 0, 4, 20);
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.arc(13, 3, 4, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 62. Doomdiver AA Magna Kannon (24x26)
+    {
+      const can = this.textures.createCanvas('topdown_ork_doomdiver', 24, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(1, 4, 4, 18); ctx.fillRect(19, 4, 4, 18);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(5, 6, 14, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(9, -2, 6, 14);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10.5, -4, 3, 16);
+      can.refresh();
+    }
+
+    // 63. Gibletgrinda Battle Fortress (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_ork_gibletgrinda', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 12, 5, 28); ctx.fillRect(30, 12, 5, 28);
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(6, 10, 24, 30);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(2, 0, 32, 9);
+      ctx.fillStyle = '#cbd5e1';
+      for (let x = 4; x <= 30; x += 4) {
+        ctx.fillRect(x, -2, 2, 4);
+      }
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 16, 4, 5); ctx.fillRect(2, 26, 4, 5);
+      ctx.fillRect(30, 16, 4, 5); ctx.fillRect(30, 26, 4, 5);
+      can.refresh();
+    }
+
+    // 64. Skullhamma Ram Fortress (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_ork_skullhamma', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 6, 5, 34); ctx.fillRect(30, 6, 5, 34);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(6, 8, 24, 32);
+      ctx.fillStyle = '#44403c';
+      ctx.beginPath();
+      ctx.moveTo(18, 0); ctx.lineTo(33, 8); ctx.lineTo(3, 8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(11, -3, 3, 14); ctx.fillRect(22, -3, 3, 14);
+      can.refresh();
+    }
+
+    // 65. Goffik Rokker Tour Wagon (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_ork_tour_wagon', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 4, 5, 36); ctx.fillRect(30, 4, 5, 36);
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(6, 4, 24, 36);
+      ctx.fillStyle = '#f8fafc';
+      for (let y = 6; y <= 24; y += 7) {
+        ctx.beginPath(); ctx.arc(10, y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(26, y, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(14, 18, 8, 8);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(17, 14, 2, 10);
+      can.refresh();
+    }
+
+    // 66. Weirdboy Battletower (28x36)
+    {
+      const can = this.textures.createCanvas('topdown_ork_weirdboy_tower', 28, 36);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 4, 5, 28); ctx.fillRect(23, 4, 5, 28);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(5, 5, 18, 26);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(9, 8, 10, 18);
+      ctx.fillStyle = '#86efac';
+      ctx.beginPath(); ctx.arc(14, 6, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath(); ctx.arc(14, 6, 2.5, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 67. Deathskull Shootas (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_deathskull_shootas', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.arc(ox, oy, 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1d4ed8';
+        ctx.fillRect(ox - 2, oy - 2, 4, 3.5);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(ox - 1, oy - 1.5, 2, 0.8);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(ox + 1, oy - 5, 2.4, 5);
+        ctx.fillRect(ox - 3, oy - 4, 1.8, 3.5);
+      });
+      can.refresh();
+    }
+
+    // 68. Madboyz (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_madboyz', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 0, 30, 20);
+      const colors = ['#dc2626', '#eab308', '#2563eb', '#9333ea', '#16a34a'];
+      const pos = [[5, 5], [16, 4], [25, 7], [8, 14], [21, 13]];
+      pos.forEach(([ox, oy], idx) => {
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.arc(ox, oy, 2.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = colors[idx % colors.length];
+        ctx.fillRect(ox - 2, oy - 2, 4, 3.5);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 3, oy - 4, 1.5, 4);
+      });
+      can.refresh();
+    }
+
+    // 69. Freebooterz (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_freebooterz', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath(); ctx.arc(ox, oy, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#b91c1c';
+        ctx.fillRect(ox - 2.5, oy - 2.5, 5, 4);
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(ox - 3, oy - 3.8, 6, 1.8);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(ox - 0.8, oy - 3.5, 1.6, 1.2);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox + 1.5, oy - 5, 2, 5);
+      });
+      can.refresh();
+    }
+
+    // 70. Wildboyz (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_wildboyz', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.arc(ox, oy, 2.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(ox - 2, oy - 2, 4, 3.5);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(ox - 2.5, oy - 3, 1, 1.5); ctx.fillRect(ox + 1.5, oy - 3, 1, 1.5);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 4, oy - 4.5, 2, 5);
+      });
+      can.refresh();
+    }
+
+    // 71. Runtherd (20x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_runtherd', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 20, 20);
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath(); ctx.arc(10, 10, 2.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(7.5, 7.5, 5, 5);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(14, 2, 1.5, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(13, 1, 3.5, 2);
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.arc(6, 14, 2, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 72. Onslaughter Dreadnought (24x24)
+    {
+      const can = this.textures.createCanvas('topdown_ork_onslaughter', 24, 24);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(5, 5, 14, 14);
+      ctx.fillStyle = '#44403c';
+      ctx.strokeRect(5, 5, 14, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(0, 7, 5, 10);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(19, 7, 5, 10);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(9, 7, 6, 2);
+      can.refresh();
+    }
+
+    // 73. Blasta Bomma (38x42)
+    {
+      const can = this.textures.createCanvas('topdown_ork_blasta_bomma', 38, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(14, 4, 10, 34);
+      ctx.beginPath();
+      ctx.moveTo(0, 18); ctx.lineTo(38, 18); ctx.lineTo(30, 28); ctx.lineTo(8, 28); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(17, 0, 4, 8);
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.arc(6, 20, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(32, 20, 3, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 74. Heavy Bomma (32x34)
+    {
+      const can = this.textures.createCanvas('topdown_ork_heavy_bomma', 32, 34);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(12, 4, 8, 26);
+      ctx.beginPath();
+      ctx.moveTo(2, 16); ctx.lineTo(30, 16); ctx.lineTo(24, 24); ctx.lineTo(8, 24); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 0, 4, 6);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(5, 16, 3, 5); ctx.fillRect(24, 16, 3, 5);
+      can.refresh();
+    }
+
+    // 75. Landa Assault Dropship (34x36)
+    {
+      const can = this.textures.createCanvas('topdown_ork_landa', 34, 36);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(6, 6, 22, 24);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(8, 8, 18, 20);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(9, 2, 16, 5);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 8, 5, 8); ctx.fillRect(28, 8, 5, 8);
+      ctx.fillRect(1, 20, 5, 8); ctx.fillRect(28, 20, 5, 8);
+      can.refresh();
+    }
+
+    // 76. Supa Transport Rokkit (24x28)
+    {
+      const can = this.textures.createCanvas('topdown_ork_supa_transport_rokkit', 24, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(8, 6, 8, 18);
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(8, 6); ctx.lineTo(12, 0); ctx.lineTo(16, 6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(4, 18, 4, 6); ctx.fillRect(16, 18, 4, 6);
+      can.refresh();
+    }
   }
 
   getOrkClan(cfg) {
@@ -11965,7 +13365,7 @@ class NetEpicScene extends Phaser.Scene {
     if (str.includes('evil_sun') || str.includes('speed_co') || str.includes('speed freaks') || str.includes('speedster')) return 'EVIL_SUNZ';
     if (str.includes('deathskull')) return 'DEATHSKULL';
     if (str.includes('blood_axe') || str.includes('blood axe') || str.includes('kommando')) return 'BLOOD_AXE';
-    if (str.includes('snakebite') || str.includes('boarboy') || str.includes('feral')) return 'SNAKEBITE';
+    if (str.includes('snakebite') || str.includes('boarboy') || str.includes('feral') || str.includes('wildboy')) return 'SNAKEBITE';
     if (str.includes('goff') || str.includes('ghazghkull')) return 'GOFF';
     return 'GOFF';
   }
@@ -11987,7 +13387,11 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // 2. Super-Heavies & Stompas & Mega-Squiggoths
-    if (cfg.superHeavy || allText.includes('stompa') || allText.includes('mega_squiggoth') || allText.includes('mega-squiggoth')) {
+    if (cfg.superHeavy || allText.includes('stompa') || allText.includes('mega_squiggoth') || allText.includes('mega-squiggoth') || allText.includes('gibletgrinda') || allText.includes('skullhamma') || allText.includes('tour_wagon') || allText.includes('tour wagon') || allText.includes('blasta_bomma') || allText.includes('blasta bomma')) {
+      if (allText.includes('blasta_bomma') || allText.includes('blasta bomma')) return 'topdown_ork_blasta_bomma';
+      if (allText.includes('tour_wagon') || allText.includes('tour wagon') || allText.includes('rokker')) return 'topdown_ork_tour_wagon';
+      if (allText.includes('gibletgrinda')) return 'topdown_ork_gibletgrinda';
+      if (allText.includes('skullhamma')) return 'topdown_ork_skullhamma';
       if (allText.includes('mega_squiggoth') || allText.includes('mega-squiggoth')) return 'topdown_ork_mega_squiggoth';
       if (allText.includes('stompa')) return 'topdown_ork_stompa';
       if (allText.includes('baneblade') || allText.includes('shadowsword') || allText.includes('stormhammer')) return 'topdown_baneblade';
@@ -12004,17 +13408,41 @@ class NetEpicScene extends Phaser.Scene {
       if (allText.includes('calgar') || allText.includes('captain') || allText.includes('commissar')) return 'topdown_character_captain';
       
       // Ork Characters
+      if (allText.includes('runtherd')) return 'topdown_ork_runtherd';
       if (allText.includes('weirdboy') || allText.includes('warphead')) return 'topdown_ork_weirdboy';
       if (allText.includes('warboss') || allText.includes('ghazghkull')) return 'topdown_ork_warboss';
       if (allText.includes('painboy') || allText.includes('dok')) return 'topdown_ork_dok';
       if (allText.includes('mek')) return 'topdown_ork_mek';
     }
 
-    // 4. Ork Walkers, Beasts & Aircraft
+    // 4. Ork Walkers, Beasts, Flyers & Speedstas
+    // Mekboy Speedstas & Dragstas
+    if (allText.includes('bubble_chukka') || allText.includes('bubble chukka')) return 'topdown_ork_speedsta_bubble';
+    if (allText.includes('destrukta_rokkits') || allText.includes('destrukta') || allText.includes('destruktor')) return 'topdown_ork_speedsta_destrukta';
+    if (allText.includes('dragsta')) return 'topdown_ork_dragsta';
+    if (allText.includes('kustom_kannon') || allText.includes('kustom kannon')) return 'topdown_ork_speedsta_kannon';
+    if (allText.includes('lifta_droppa') || allText.includes('lifta-droppa') || allText.includes('lifta droppa')) return 'topdown_ork_speedsta_lifta';
+    if (allText.includes('renegade_mekboy') || allText.includes('renegade mekboy')) return 'topdown_ork_dragsta';
+
+    // Ork Aircraft & Airborne Assault
+    if (allText.includes('blasta_bomma') || allText.includes('blasta bomma')) return 'topdown_ork_blasta_bomma';
+    if (allText.includes('heavy_bomma') || (allText.includes('bomma') && !allText.includes('fighta'))) return 'topdown_ork_heavy_bomma';
+    if (allText.includes('landa')) return 'topdown_ork_landa';
+    if (allText.includes('supa_transport_rokkit') || allText.includes('supa transport rokkit') || allText.includes('trans\'ort rokkit')) return 'topdown_ork_supa_transport_rokkit';
     if (allText.includes('copta') || allText.includes('kopta') || allText.includes('copter')) return 'topdown_ork_copta';
+    if (allText.includes('fighta')) return 'topdown_ork_fighta';
+
+    // Ork Beasts & Walkers
+    if (allText.includes('cyberwyvern')) return 'topdown_ork_cyberwyverns';
     if (allText.includes('squiggoth')) return 'topdown_ork_squiggoth';
-    if (allText.includes('fighta') || allText.includes('bomma')) return 'topdown_ork_fighta';
     if (allText.includes('tinbot')) return 'topdown_ork_tinbotz';
+    if (allText.includes('onslaughter')) return 'topdown_ork_onslaughter';
+
+    // Ork Artillery Batteries
+    if (allText.includes('hop_splat') || allText.includes('hop-splat') || allText.includes('hop splat')) return 'topdown_ork_hop_splat';
+    if (allText.includes('pulsa_rokkit') || allText.includes('pulsa rokkit') || allText.includes('pulsa')) return 'topdown_ork_pulsa_rokkit';
+    if (allText.includes('squig_katapult') || allText.includes('squig katapult') || allText.includes('squig catapult')) return 'topdown_ork_squig_katapult';
+    if (allText.includes('doomdiver') || allText.includes('magna kannon')) return 'topdown_ork_doomdiver';
     if (allText.includes('lobba') || allText.includes('shokk') || allText.includes('zzap') || allText.includes('traktor') || allText.includes('soopa') || allText.includes('battery')) return 'topdown_ork_artillery';
 
     // 5. Dreadnoughts & Walkers
@@ -12025,18 +13453,28 @@ class NetEpicScene extends Phaser.Scene {
     if (allText.includes('kan')) return 'topdown_ork_kans';
 
     // 6. Vehicles & Tanks
-    if (allText.includes('landraider') || allText.includes('land raider') || allText.includes('crusader')) return 'topdown_landraider';
+    if (allText.includes('landraider') || allText.includes('land raider') || allText.includes('crusader')) {
+      if (isOrk) return 'topdown_ork_landraider';
+      return 'topdown_landraider';
+    }
     if (allText.includes('vindic')) return 'topdown_vindicator';
     if (allText.includes('whirlwind')) return 'topdown_whirlwind';
     if (allText.includes('razorback')) return 'topdown_razorback';
     if (allText.includes('pred')) return 'topdown_predator';
     if (allText.includes('speeder') || allText.includes('typhoon')) return 'topdown_speeder';
-    if (allText.includes('rhino')) return 'topdown_rhino';
+    if (allText.includes('rhino')) {
+      if (isOrk) return 'topdown_ork_rhino';
+      return 'topdown_rhino';
+    }
     if (allText.includes('leman')) return 'topdown_lemanruss';
     if (allText.includes('basilisk') || allText.includes('earthshaker')) return 'topdown_basilisk';
     if (allText.includes('chimera')) return 'topdown_chimera';
 
-    // Ork Vehicles
+    // Ork Clan Vehicles & Light Tanks
+    if (allText.includes('bowelburna') || allText.includes('bowel-burna')) return 'topdown_ork_bowelburna';
+    if (allText.includes('gobsmasha')) return 'topdown_ork_gobsmasha';
+    if (allText.includes('spleenrippa')) return 'topdown_ork_spleenrippa';
+    if (allText.includes('weirdboy_tower') || allText.includes('weirdboy tower') || allText.includes('battletower')) return 'topdown_ork_weirdboy_tower';
     if (allText.includes('wagon') || allText.includes('bonebreaka') || allText.includes('bonecruncha') || allText.includes('lungbursta') || allText.includes('braincrusha') || allText.includes('gutrippa') || allText.includes('flakwagon')) return 'topdown_battlewagon';
     if (allText.includes('bugg') || allText.includes('trukk') || allText.includes('wartrak') || allText.includes('scorcher')) return 'topdown_ork_buggy';
 
@@ -12048,6 +13486,10 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // 8. Infantry Squads
+    if (allText.includes('deathskull_shootas') || allText.includes('deathskull shoota') || allText.includes('deathskull shootaz')) return 'topdown_ork_deathskull_shootas';
+    if (allText.includes('madboy')) return 'topdown_ork_madboyz';
+    if (allText.includes('freebooter')) return 'topdown_ork_freebooterz';
+    if (allText.includes('wildboy')) return 'topdown_ork_wildboyz';
     if (allText.includes('terminator') || allText.includes('term_') || allText.includes('grey_knights')) return 'topdown_terminator';
     if (allText.includes('scout')) return 'topdown_scouts';
     if (allText.includes('devastator') || allText.includes('heavy weapon')) return 'topdown_devastator';
@@ -13783,6 +15225,19 @@ class NetEpicScene extends Phaser.Scene {
         { ...template, subName: name + ' - Warbike Squadron', subStands: 4, clan: 'EVIL_SUNZ', moveCm: 20 },
         { ...template, subName: name + ' - Wartrak & Buggy Squadron', subStands: 4, clan: 'EVIL_SUNZ', moveCm: 20 },
         { ...template, subName: name + ' - Deffkopta Squadron', subStands: 4, clan: 'EVIL_SUNZ', moveCm: 25 }
+      ];
+    }
+    if (template.key === 'card_ork_wildboyz_horde') {
+      return [
+        { ...template, subName: name + ' - Feral Nobz & Boss', subStands: 4, clan: 'SNAKEBITE' },
+        { ...template, subName: name + ' - 1st Wildboyz Mob', subStands: 7, clan: 'SNAKEBITE', caf: 3 },
+        { ...template, subName: name + ' - 2nd Wildboyz Mob', subStands: 8, clan: 'SNAKEBITE', caf: 3 }
+      ];
+    }
+    if (template.key === 'card_ork_renegade_mekboyz') {
+      return [
+        { ...template, subName: name + ' - 1st Speedsta Squadron', subStands: 4, clan: 'EVIL_SUNZ' },
+        { ...template, subName: name + ' - 2nd Speedsta Squadron', subStands: 4, clan: 'EVIL_SUNZ' }
       ];
     }
     if (template.key === 'card_tyr_biotitan_host') {
