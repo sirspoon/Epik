@@ -10043,6 +10043,7 @@ class NetEpicScene extends Phaser.Scene {
     this.dirtTracks = [];
 
     this.createGrassTexture();
+    this.createTopDownTextures();
     this.grassTile = this.add.tileSprite(BOARD_W / 2, BOARD_H / 2, BOARD_W, BOARD_H, 'grass_canvas').setDepth(0);
 
     this.boardGfx = this.add.graphics().setDepth(1);
@@ -10062,6 +10063,7 @@ class NetEpicScene extends Phaser.Scene {
     this.resetCamera();
     window.renderArmyModal();
     this.updateUI();
+    this.updateZoomLOD();
   }
 
   // --- PROCEDURAL GRASSLAND TEXTURE GENERATOR (Tabletop static grass flock & meadow tufts) ---
@@ -10149,6 +10151,528 @@ class NetEpicScene extends Phaser.Scene {
     canvasTexture.refresh();
   }
 
+  // --- PROCEDURAL 2D TOP-DOWN MINIATURE SPRITE GENERATOR (RTS / Tabletop Miniatures on Stand Bases) ---
+  createTopDownTextures() {
+    if (this.textures.exists('topdown_tactical_marine')) return;
+
+    // Helper to draw a single Space Marine trooper in top-down view
+    const drawMarine = (ctx, mx, my, colArmour = '#1e40af', colTrim = '#f59e0b', weaponType = 'bolter') => {
+      // 1. Power pack (twin exhaust spheres on back)
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(mx - 2, my + 2.5, 1.3, 0, Math.PI * 2);
+      ctx.arc(mx + 2, my + 2.5, 1.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Torso
+      ctx.fillStyle = colArmour;
+      ctx.fillRect(mx - 2.5, my - 1.5, 5, 3.5);
+
+      // 3. Pauldrons (curved shoulder guards with trim)
+      ctx.fillStyle = colArmour;
+      ctx.strokeStyle = colTrim;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.arc(mx - 3.2, my, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(mx + 3.2, my, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 4. Helmet (Mk VII visor / beak facing forward)
+      ctx.fillStyle = colArmour;
+      ctx.beginPath();
+      ctx.arc(mx, my - 1.5, 2.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#020617';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(mx - 1.2, my - 2);
+      ctx.lineTo(mx + 1.2, my - 2);
+      ctx.stroke();
+
+      // 5. Weapon held forward
+      ctx.fillStyle = '#334155';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 0.6;
+      if (weaponType === 'heavy') {
+        ctx.fillRect(mx + 1.5, my - 6.5, 1.8, 6.5);
+        ctx.strokeRect(mx + 1.5, my - 6.5, 1.8, 6.5);
+      } else {
+        ctx.fillRect(mx + 0.8, my - 4.5, 1.6, 4.5);
+        ctx.strokeRect(mx + 0.8, my - 4.5, 1.6, 4.5);
+      }
+    };
+
+    // 1. Space Marine Tactical Squad (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_tactical_marine', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([x, y]) => drawMarine(ctx, x, y, '#1e40af', '#f59e0b', 'bolter'));
+      can.refresh();
+    }
+
+    // 2. Space Marine Devastator Squad (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_devastator', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([x, y], idx) => drawMarine(ctx, x, y, '#1e40af', '#38bdf8', idx % 2 === 0 ? 'heavy' : 'bolter'));
+      can.refresh();
+    }
+
+    // 3. Space Marine Terminator Squad (34x22)
+    {
+      const can = this.textures.createCanvas('topdown_terminator', 34, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 34, 22);
+      const pos = [[7, 6], [17, 5], [27, 6], [11, 15], [23, 15]];
+      pos.forEach(([mx, my]) => {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(mx - 3.5, my + 1, 7, 3);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(mx - 3, my - 2, 6, 4);
+        ctx.fillStyle = '#1d4ed8';
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(mx - 4, my - 0.5, 2.6, 0, Math.PI * 2);
+        ctx.arc(mx + 4, my - 0.5, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(mx, my - 2, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(mx - 1.2, my - 2.5, 2.4, 0.9);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(mx + 1, my - 5.5, 2.4, 4.5);
+      });
+      can.refresh();
+    }
+
+    // 4. Space Marine Assault Squad (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_assault', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([x, y]) => {
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(x - 3.5, y + 2, 7, 2.5);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(x - 3, y + 4.2, 2, 1.2);
+        ctx.fillRect(x + 1, y + 4.2, 2, 1.2);
+        drawMarine(ctx, x, y, '#1e40af', '#e11d48', 'bolter');
+      });
+      can.refresh();
+    }
+
+    // 5. Space Marine Rhino APC (30x38)
+    {
+      const can = this.textures.createCanvas('topdown_rhino', 30, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 1, 6, 36);
+      ctx.fillRect(23, 1, 6, 36);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 3; y < 36; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(23, y); ctx.lineTo(29, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(7, 3, 16, 32);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeRect(7, 3, 16, 32);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 4, 14, 5);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(9, 5, 4, 1.5);
+      ctx.fillRect(17, 5, 4, 1.5);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.beginPath();
+      ctx.arc(15, 18, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#93c5fd';
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 9, 2, 5);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(9, 29, 12, 4);
+      can.refresh();
+    }
+
+    // 6. Space Marine Predator Battle Tank (32x40)
+    {
+      const can = this.textures.createCanvas('topdown_predator', 32, 40);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 2, 6, 36);
+      ctx.fillRect(25, 2, 6, 36);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 4; y < 36; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(25, y); ctx.lineTo(31, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(7, 4, 18, 32);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeRect(7, 4, 18, 32);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(0, 16, 4, 10);
+      ctx.fillRect(28, 16, 4, 10);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 11, 2, 6);
+      ctx.fillRect(29, 11, 2, 6);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.arc(16, 19, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#60a5fa';
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14.5, 3, 3, 13);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(13.8, 1, 4.4, 3);
+      can.refresh();
+    }
+
+    // 7. Space Marine Land Raider (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_landraider', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 1, 7, 42);
+      ctx.fillRect(28, 1, 7, 42);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 3; y < 42; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(8, y);
+        ctx.moveTo(28, y); ctx.lineTo(35, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 3, 20, 38);
+      ctx.strokeStyle = '#60a5fa';
+      ctx.strokeRect(8, 3, 20, 38);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 3, 16, 6);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(11, 4, 14, 2);
+      ctx.fillStyle = '#1e40af';
+      ctx.beginPath();
+      ctx.arc(18, 14, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(16.5, 7, 1.3, 5);
+      ctx.fillRect(18.2, 7, 1.3, 5);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(0, 16, 5, 14);
+      ctx.fillRect(31, 16, 5, 14);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 9, 1.8, 8);
+      ctx.fillRect(3, 9, 1.8, 8);
+      ctx.fillRect(31.2, 9, 1.8, 8);
+      ctx.fillRect(33.2, 9, 1.8, 8);
+      can.refresh();
+    }
+
+    // 8. Warlord Battle Titan (44x46)
+    {
+      const can = this.textures.createCanvas('topdown_warlord', 44, 46);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 6, 12, 22);
+      ctx.fillRect(30, 6, 12, 22);
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(3, 10); ctx.lineTo(13, 18); ctx.lineTo(13, 21); ctx.lineTo(3, 13);
+      ctx.moveTo(31, 10); ctx.lineTo(41, 18); ctx.lineTo(41, 21); ctx.lineTo(31, 13);
+      ctx.fill();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(12, 8, 20, 28);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(12, 8, 20, 28);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(18, 3, 8, 8);
+      ctx.strokeStyle = '#fde047';
+      ctx.strokeRect(18, 3, 8, 8);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(20, 4, 4, 1.8);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 1, 6, 16);
+      ctx.fillStyle = '#ef4444';
+      for (let y = 3; y < 14; y += 3) ctx.fillRect(0, y, 8, 1.2);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(37, 1, 6, 16);
+      ctx.fillStyle = '#06b6d4';
+      for (let y = 3; y < 14; y += 3) ctx.fillRect(36, y, 8, 1.2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 12, 6, 9);
+      ctx.fillRect(24, 12, 6, 9);
+      ctx.fillStyle = '#ef4444';
+      for (let y = 14; y <= 18; y += 2.5) {
+        ctx.fillRect(15, y, 1.8, 1.5); ctx.fillRect(17.5, y, 1.8, 1.5);
+        ctx.fillRect(25, y, 1.8, 1.5); ctx.fillRect(27.5, y, 1.8, 1.5);
+      }
+      can.refresh();
+    }
+
+    // 9. Warhound Scout Titan (34x38)
+    {
+      const can = this.textures.createCanvas('topdown_warhound', 34, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(9, 10, 16, 22);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeRect(9, 10, 16, 22);
+      ctx.fillStyle = '#b91c1c';
+      ctx.beginPath();
+      ctx.moveTo(17, 3); ctx.lineTo(12, 12); ctx.lineTo(22, 12); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(15, 6, 4, 1.5);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 6, 6, 18);
+      ctx.fillStyle = '#06b6d4';
+      ctx.fillRect(0, 10, 8, 6);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(27, 6, 6, 18);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(28, 4, 4, 3);
+      can.refresh();
+    }
+
+    // 10. Ork Boyz Mob (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_ork_boyz', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(ox - 2.8, oy, 2.2, 0, Math.PI * 2);
+        ctx.arc(ox + 2.8, oy, 2.2, 0, Math.PI * 2);
+        ctx.arc(ox, oy - 1, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(ox - 1.8, oy - 2.8, 3.6, 2.2);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 2.8, oy - 3.8, 1, 2);
+        ctx.fillRect(ox + 1.8, oy - 3.8, 1, 2);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 4.5, oy - 4.5, 1.8, 4.5);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(ox + 1.2, oy - 4.5, 2.2, 4.2);
+      });
+      can.refresh();
+    }
+
+    // 11. Ork Battlewagon (34x44)
+    {
+      const can = this.textures.createCanvas('topdown_battlewagon', 34, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(5, 5, 24, 34);
+      ctx.strokeStyle = '#44403c';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(5, 5, 24, 34);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(2, 2, 30, 5);
+      ctx.fillStyle = '#cbd5e1';
+      for (let x = 4; x <= 28; x += 4) {
+        ctx.beginPath();
+        ctx.moveTo(x - 1.5, 2); ctx.lineTo(x + 1.5, 2); ctx.lineTo(x, -1); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(8, 9, 18, 9);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 10, 14, 2);
+      ctx.fillStyle = '#451a03';
+      ctx.fillRect(8, 20, 18, 16);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 23, 2, 6);
+      ctx.fillRect(22, 23, 2, 6);
+      ctx.fillStyle = '#1c1917';
+      ctx.beginPath();
+      ctx.arc(6, 36, 2, 0, Math.PI * 2);
+      ctx.arc(28, 36, 2, 0, Math.PI * 2);
+      ctx.fill();
+      can.refresh();
+    }
+
+    // 12. Ork Great Gargant (46x50)
+    {
+      const can = this.textures.createCanvas('topdown_gargant', 46, 50);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 8, 30, 36);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(8, 8, 30, 36);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(15, 3, 16, 12);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(17, 5, 4, 1.8);
+      ctx.fillRect(25, 5, 4, 1.8);
+      ctx.fillStyle = '#cbd5e1';
+      for (let x = 16; x < 30; x += 3) ctx.fillRect(x, 12, 1.8, 2.5);
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(23, 24, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(20, 12, 6, 10);
+      ctx.fillStyle = '#78716c';
+      ctx.beginPath();
+      ctx.arc(4, 16, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ef4444';
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(39, 4, 6, 22);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(38, 10, 8, 3);
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(12, 38, 4, 8);
+      ctx.fillRect(30, 38, 4, 8);
+      can.refresh();
+    }
+
+    // 13. Leman Russ Battle Tank (34x42)
+    {
+      const can = this.textures.createCanvas('topdown_lemanruss', 34, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 2, 6, 38);
+      ctx.fillRect(27, 2, 6, 38);
+      ctx.fillStyle = '#3f3f46';
+      ctx.fillRect(7, 4, 20, 34);
+      ctx.strokeStyle = '#71717a';
+      ctx.strokeRect(7, 4, 20, 34);
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(0, 17, 4, 9);
+      ctx.fillRect(30, 17, 4, 9);
+      ctx.fillStyle = '#27272a';
+      ctx.beginPath();
+      ctx.arc(17, 19, 7.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(15, 2, 4, 16);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(14, 0, 6, 3);
+      can.refresh();
+    }
+
+    // 14. Baneblade Super-Heavy Tank (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_baneblade', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 1, 7, 42);
+      ctx.fillRect(28, 1, 7, 42);
+      ctx.fillStyle = '#3f3f46';
+      ctx.fillRect(8, 3, 20, 38);
+      ctx.strokeStyle = '#a1a1aa';
+      ctx.strokeRect(8, 3, 20, 38);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 2, 5, 6);
+      ctx.fillStyle = '#27272a';
+      ctx.beginPath();
+      ctx.arc(18, 20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(16, 2, 4, 18);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(15, 0, 6, 3);
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(0, 10, 4, 7);
+      ctx.fillRect(0, 26, 4, 7);
+      ctx.fillRect(32, 10, 4, 7);
+      ctx.fillRect(32, 26, 4, 7);
+      can.refresh();
+    }
+  }
+
+  getTopDownTextureKey(cfg) {
+    if (!cfg) return null;
+    const k = (cfg.key || '').toLowerCase();
+    const n = (cfg.name || '').toLowerCase();
+
+    if (cfg.isTitan) {
+      if (k.includes('warhound') || n.includes('warhound')) return 'topdown_warhound';
+      if (k.includes('reaver') || n.includes('reaver')) return 'topdown_warlord';
+      if (k.includes('gargant') || n.includes('gargant')) return 'topdown_gargant';
+      return 'topdown_warlord';
+    }
+
+    if (cfg.superHeavy) {
+      if (k.includes('baneblade') || n.includes('baneblade') || k.includes('shadowsword') || n.includes('shadowsword') || k.includes('stormhammer')) return 'topdown_baneblade';
+      if (k.includes('battlewagon') || n.includes('battlewagon') || k.includes('fortress') || n.includes('fortress')) return 'topdown_battlewagon';
+      return 'topdown_baneblade';
+    }
+
+    if (k.includes('landraider') || n.includes('land raider')) return 'topdown_landraider';
+    if (k.includes('predator') || n.includes('predator')) return 'topdown_predator';
+    if (k.includes('rhino') || n.includes('rhino') || k.includes('razorback') || n.includes('razorback')) return 'topdown_rhino';
+    if (k.includes('leman') || n.includes('leman russ')) return 'topdown_lemanruss';
+
+    if (k.includes('terminator') || n.includes('terminator')) return 'topdown_terminator';
+    if (k.includes('devastator') || n.includes('devastator') || k.includes('heavy weapon')) return 'topdown_devastator';
+    if (k.includes('assault') || n.includes('assault marine')) return 'topdown_assault';
+
+    if (cfg.faction === 'ORKS') {
+      return 'topdown_ork_boyz';
+    }
+
+    return 'topdown_tactical_marine';
+  }
+
+  updateZoomLOD() {
+    const isZoomedIn = this.cameras.main.zoom >= 0.82;
+    if (this._currentZoomLOD === isZoomedIn) return;
+    this._currentZoomLOD = isZoomedIn;
+
+    this.detachments.forEach(d => {
+      d.stands.forEach(s => {
+        if (s.topDownSprite) {
+          s.topDownSprite.setVisible(isZoomedIn);
+        }
+        if (s.pip) {
+          s.pip.setVisible(!isZoomedIn);
+        }
+        if (s.geoDetails) {
+          s.geoDetails.forEach(g => g.setVisible(!isZoomedIn));
+        }
+        if (s.baseBg) {
+          s.baseBg.setAlpha(isZoomedIn ? 0.45 : 1.0);
+        }
+      });
+    });
+  }
+
   // --- PHASE 8: BATTLEFIELD MAP PRESETS & PROCEDURAL GENERATOR ---
   applyTableSize() {
     const cfg = TABLE_SIZES[window.tableSize] || TABLE_SIZES.STANDARD_6X4;
@@ -10156,7 +10680,7 @@ class NetEpicScene extends Phaser.Scene {
     BOARD_H = cfg.heightCm * PX_PER_CM;
     DEPLOY_DEPTH_PX = cfg.deployDepthCm * PX_PER_CM;
 
-    this.cameras.main.setBounds(0, 0, BOARD_W, BOARD_H);
+    this.cameras.main.removeBounds();
 
     if (this.grassTile) {
       this.grassTile.setSize(BOARD_W, BOARD_H);
@@ -12249,6 +12773,7 @@ class NetEpicScene extends Phaser.Scene {
       items.push(baseBg, pip);
 
       // Titan / Super-Heavy visual details (carapace + twin shoulder weapon pods + shield pips)
+      const geoDetails = [];
       const shieldPips = [];
       if (isTitan) {
         const podY = cfg.faction === 'IMPERIUM' ? -4 : 4;
@@ -12256,6 +12781,7 @@ class NetEpicScene extends Phaser.Scene {
         const rightPod = this.add.rectangle(cfg.baseW * 0.36, podY, 8, 16, 0x0f172a).setStrokeStyle(1.5, 0xfde047);
         const coreColor = cfg.holoField ? 0xfbbf24 : (cfg.shieldType === 'VOID' ? 0x38bdf8 : (cfg.shieldType === 'CHITIN' ? 0xc084fc : 0xfacc15));
         const core = this.add.circle(0, 0, 6, coreColor).setStrokeStyle(1.5, 0xffffff);
+        geoDetails.push(leftPod, rightPod, core);
         items.push(leftPod, rightPod, core);
 
         const pipCount = cfg.maxShields || 0;
@@ -12269,20 +12795,37 @@ class NetEpicScene extends Phaser.Scene {
         }
       } else if (isSuper) {
         const turret = this.add.rectangle(0, 0, cfg.baseW - 10, cfg.baseH - 12, 0x0f172a).setStrokeStyle(1.5, 0xfde047);
+        geoDetails.push(turret);
         items.push(turret);
       } else if (cfg.deepStrike) {
         const crux = this.add.rectangle(0, 0, 7, 7, 0xc084fc).setAngle(45).setStrokeStyle(1, 0xffffff);
+        geoDetails.push(crux);
         items.push(crux);
       } else if (cfg.synapse) {
         const synGem = this.add.circle(0, 0, 4.5, 0xf43f5e).setStrokeStyle(1, 0xffffff);
+        geoDetails.push(synGem);
         items.push(synGem);
       }
 
       let hatchBar = null;
       if (cfg.transportCapacity) {
         hatchBar = this.add.rectangle(0, cfg.faction === 'IMPERIUM' ? 4 : -4, cfg.baseW - 8, 8, 0x0f172a).setStrokeStyle(1, 0x94a3b8);
+        geoDetails.push(hatchBar);
         items.push(hatchBar);
       }
+
+      // Procedural top-down unit miniature sprite (visible when zoomed in)
+      const texKey = this.getTopDownTextureKey(cfg);
+      let topDownSprite = null;
+      if (texKey && this.textures.exists(texKey)) {
+        topDownSprite = this.add.image(0, 0, texKey);
+        if (cfg.faction === 'ORKS') {
+          topDownSprite.setRotation(Math.PI);
+        }
+        topDownSprite.setVisible(this.cameras.main.zoom >= 0.82);
+        items.push(topDownSprite);
+      }
+
       container.add(items);
 
       const standObj = {
@@ -12291,6 +12834,9 @@ class NetEpicScene extends Phaser.Scene {
         detachment: det,
         container,
         baseBg,
+        pip,
+        topDownSprite,
+        geoDetails,
         hatchBar,
         shieldRing,
         shieldPips,
@@ -14065,6 +14611,13 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
+  update(time, delta) {
+    if (this._lastCamZoom !== this.cameras.main.zoom) {
+      this._lastCamZoom = this.cameras.main.zoom;
+      this.updateZoomLOD();
+    }
+  }
+
   // --- CAMERA & INPUT ---
   setupCameraAndInput() {
     this.input.addPointer(1);
@@ -14072,6 +14625,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5));
+      this.updateZoomLOD();
     });
 
     this.input.on('gameobjectdown', (pointer, gameObject) => {
@@ -14337,6 +14891,7 @@ class NetEpicScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
         if (this.lastPinchDist > 0) {
           cam.setZoom(Phaser.Math.Clamp(cam.zoom + (dist - this.lastPinchDist) * 0.005, 0.35, 2.5));
+          this.updateZoomLOD();
         }
         this.lastPinchDist = dist;
         return;
@@ -14355,13 +14910,14 @@ class NetEpicScene extends Phaser.Scene {
     const zoomY = this.scale.height / (BOARD_H + 120);
     cam.setZoom(Math.min(zoomX, zoomY));
     cam.centerOn(BOARD_W / 2, BOARD_H / 2);
+    this.updateZoomLOD();
   }
 
   panCameraTo(x, y, duration = 650) {
     if (!window.aiCamFollow) return;
     const cam = this.cameras.main;
-    const tx = Phaser.Math.Clamp(x, 220, BOARD_W - 220);
-    const ty = Phaser.Math.Clamp(y, 180, BOARD_H - 180);
+    const tx = Phaser.Math.Clamp(x, 50, BOARD_W - 50);
+    const ty = Phaser.Math.Clamp(y, 50, BOARD_H - 50);
     cam.pan(tx, ty, duration, 'Sine.easeInOut', true);
   }
 
