@@ -215,6 +215,31 @@
       max-width: 960px; width: 100%; max-height: 92vh; display: flex;
       flex-direction: column; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.85);
     }
+    .setup-stepper {
+      display: flex; gap: 5px; overflow-x: auto; max-width: 100%; padding-bottom: 2px;
+    }
+    .step-chip {
+      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+      background: #1e293b; border: 1.5px solid #475569; color: #94a3b8;
+      cursor: pointer; white-space: nowrap; flex: 0 0 auto; transition: 0.15s;
+    }
+    .step-chip:hover { color: #f8fafc; border-color: #94a3b8; }
+    .step-chip.active {
+      background: #2563eb; border-color: #60a5fa; color: #ffffff;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    }
+    .map-preset-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;
+    }
+    .preset-card {
+      background: #1e293b; border: 1.5px solid #334155; border-radius: 8px;
+      padding: 9px; cursor: pointer; transition: 0.16s ease; text-align: center;
+    }
+    .preset-card:hover { border-color: #60a5fa; background: #1e3a8a; }
+    .preset-card.active {
+      border-color: #3b82f6; background: rgba(37, 99, 235, 0.22);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+    }
     .modal-cols {
       display: flex; gap: 12px; flex: 1; overflow: hidden; margin: 10px 0;
     }
@@ -284,70 +309,174 @@
 <!-- Army Selection, Deployment & Solo vs AI Modal -->
 <div id="army-modal">
   <div class="modal-card">
+    <!-- Stepper Navigation Header -->
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — 8 FACTIONS, ARMY & AI SETUP</div>
-        <div class="sub-text">Choose from 8 Armies: 🛡️ Adeptus Astartes, 🪖 Adeptus Militaris, ⚙️ Adeptus Mechanicus, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats!</div>
+        <div style="font-size:1.02rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — SETUP & ARMIES</div>
+        <div class="sub-text" style="color:#94a3b8;">8 Authentic Factions &bull; Core Gold Cards &bull; Solo vs AI or 2P Hotseat</div>
       </div>
-      <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-        <span class="sub-text" style="font-weight:700;">Map:</span>
-        <button id="map-preset-INDUSTRIAL" class="btn-primary" onclick="window.setMapPreset('INDUSTRIAL')" style="min-width:auto; padding:5px 8px;">🏭 Industrial</button>
-        <button id="map-preset-RIVER" onclick="window.setMapPreset('RIVER')" style="min-width:auto; padding:5px 8px;">🌊 River</button>
-        <button id="map-preset-FOREST" onclick="window.setMapPreset('FOREST')" style="min-width:auto; padding:5px 8px;">🌲 Forest</button>
-        <button id="map-preset-RANDOM" onclick="window.setMapPreset('RANDOM')" style="min-width:auto; padding:5px 8px;">🎲 Random</button>
-        <span class="sub-text" style="font-weight:700; margin-left:4px;">Mode:</span>
-        <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="min-width:auto; padding:5px 8px;">🤖 vs North AI</button>
-        <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="min-width:auto; padding:5px 8px;">🤖 vs South AI</button>
-        <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="min-width:auto; padding:5px 8px;">👥 2P Hotseat</button>
-        <span class="sub-text" style="font-weight:700; margin-left:4px;">Pts:</span>
-        <button id="pts-750" onclick="window.setPointsBudget(750)" style="min-width:auto; padding:5px 8px;">750</button>
-        <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="min-width:auto; padding:5px 8px;">1000</button>
-        <button id="pts-1500" class="btn-primary" onclick="window.setPointsBudget(1500)" style="min-width:auto; padding:5px 8px;">1500</button>
-        <button id="pts-2000" onclick="window.setPointsBudget(2000)" style="min-width:auto; padding:5px 8px;">2000</button>
+      <div class="setup-stepper" id="builder-stepper">
+        <button id="step-chip-1" class="step-chip active" onclick="window.setBuilderStep(1)">1. Map & Match</button>
+        <button id="step-chip-2" class="step-chip" onclick="window.setBuilderStep(2)">2. South Force</button>
+        <button id="step-chip-3" class="step-chip" onclick="window.setBuilderStep(3)">3. North Force</button>
+        <button id="step-chip-4" class="step-chip" onclick="window.setBuilderStep(4)">4. Deploy</button>
       </div>
     </div>
 
-    <div class="modal-cols">
-      <!-- South Force (Player 1) Column -->
-      <div id="imp-col-card" class="faction-col" style="border-top: 3px solid #3b82f6;">
-        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="imp-faction-tabs"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-          <span id="imp-col-title" style="font-weight:800; color:#60a5fa;">🛡️ IMPERIUM (South Force)</span>
-          <span id="imp-pts-badge" class="vp-box">1500 / 1500 pts</span>
+    <!-- STEP 1: Match & Battlefield Setup -->
+    <div id="wizard-step-1" class="wizard-step" style="display:flex; flex-direction:column; gap:12px; padding:10px 0; overflow-y:auto; flex:1;">
+      <div>
+        <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🗺️ Battlefield Map Preset:</div>
+        <div class="map-preset-grid">
+          <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')">
+            <div style="font-size:1.3rem;">🏭</div>
+            <div style="font-weight:700; color:#f8fafc;">Industrial</div>
+            <div class="sub-text">Factory ruins, toxic waterways, cargo containers & rail lines.</div>
+          </div>
+          <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')">
+            <div style="font-size:1.3rem;">🌊</div>
+            <div style="font-weight:700; color:#f8fafc;">River Crossing</div>
+            <div class="sub-text">Dividing river with tactical stone bridges & swamp crossings.</div>
+          </div>
+          <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')">
+            <div style="font-size:1.3rem;">🌲</div>
+            <div style="font-weight:700; color:#f8fafc;">Dense Woods</div>
+            <div class="sub-text">Woodland groves with speed-boosting paved highways.</div>
+          </div>
+          <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')">
+            <div style="font-size:1.3rem;">🎲</div>
+            <div style="font-weight:700; color:#f8fafc;">Randomized</div>
+            <div class="sub-text">Procedurally generated terrain with mixed cover.</div>
+          </div>
         </div>
-        <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd;">Faction Rules: Void Shields (4+ Repair), Terminators (4+/6+f) & Combined Arms</div>
+      </div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🤖 Game Mode / Opponent:</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:110px;">🤖 vs North AI</button>
+            <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="flex:1; min-width:110px;">🤖 vs South AI</button>
+            <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="flex:1; min-width:110px;">👥 2P Hotseat</button>
+          </div>
+        </div>
+        <div style="flex:1; min-width:240px;">
+          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget:</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button id="pts-750" onclick="window.setPointsBudget(750)" style="flex:1;">750</button>
+            <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="flex:1;">1000</button>
+            <button id="pts-1500" class="btn-primary" onclick="window.setPointsBudget(1500)" style="flex:1;">1500</button>
+            <button id="pts-2000" onclick="window.setPointsBudget(2000)" style="flex:1;">2000</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <div style="font-weight:700; color:#e2e8f0; font-size:0.84rem;">Quick Matchup Shuffle:</div>
+          <div class="sub-text">Randomly picks two exciting factions from all 8 armies & random terrain.</div>
+        </div>
+        <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto; padding:6px 12px;">🎲 Random Matchup</button>
+      </div>
+
+      <div class="btn-row" style="margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
+        <button class="btn-primary" onclick="window.setBuilderStep(2)" style="width:100%; padding:10px 14px; font-size:0.88rem;">Next: Configure South Force (Player 1) →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: South Force (Player 1) -->
+    <div id="wizard-step-2" class="wizard-step" style="display:none; flex-direction:column; gap:8px; padding:6px 0; overflow-y:auto; flex:1;">
+      <div id="imp-col-card" class="faction-col" style="border-top:3px solid #3b82f6; flex:1;">
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="imp-faction-tabs"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; flex-wrap:wrap; gap:4px;">
+          <span id="imp-col-title" style="font-weight:800; font-size:0.95rem; color:#60a5fa;">🛡️ IMPERIUM (South Force / P1)</span>
+          <span id="imp-pts-badge" class="vp-box" style="font-size:0.78rem;">1500 / 1500 pts</span>
+        </div>
+        <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd;">Faction Rules</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
           <span class="sub-text" style="font-weight:700;">Gold Card Catalog:</span>
           <div id="imp-card-filters" style="display:flex; gap:3px;"></div>
         </div>
-        <div id="imp-catalog"></div>
-        <div class="sub-text" style="margin:4px 0 4px; font-weight:700;">Mustered South Army (Gold Cards):</div>
-        <div id="imp-roster"></div>
+        <div id="imp-catalog" style="max-height:280px; overflow-y:auto;"></div>
+
+        <!-- Collapsible Roster Drawer -->
+        <div style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window.toggleRosterView('imp')">
+            <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="imp-roster-header">📋 Selected South Roster [Tap to Toggle]</span>
+            <span id="imp-roster-toggle-icon" style="color:#94a3b8; font-size:0.75rem;">▼</span>
+          </div>
+          <div id="imp-roster" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
+        </div>
       </div>
 
-      <!-- North Force (Player 2 / AI) Column -->
-      <div id="ork-col-card" class="faction-col" style="border-top: 3px solid #22c55e;">
+      <div class="btn-row" style="padding-top:6px; border-top:1px solid #334155;">
+        <button onclick="window.setBuilderStep(1)" style="flex:1;">← Back: Match Setup</button>
+        <button class="btn-primary" onclick="window.setBuilderStep(3)" style="flex:2;">Next: Configure North Force →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: North Force (Player 2 / AI) -->
+    <div id="wizard-step-3" class="wizard-step" style="display:none; flex-direction:column; gap:8px; padding:6px 0; overflow-y:auto; flex:1;">
+      <div id="ork-col-card" class="faction-col" style="border-top:3px solid #22c55e; flex:1;">
         <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="ork-faction-tabs"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-          <span id="ork-col-title" style="font-weight:800; color:#4ade80;">🟢 ORK HORDE (North Force)</span>
-          <span id="ork-pts-badge" class="vp-box">1500 / 1500 pts</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; flex-wrap:wrap; gap:4px;">
+          <span id="ork-col-title" style="font-weight:800; font-size:0.95rem; color:#4ade80;">🟢 ORK HORDE (North Force / P2-AI)</span>
+          <span id="ork-pts-badge" class="vp-box" style="font-size:0.78rem;">1500 / 1500 pts</span>
         </div>
-        <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac;">Faction Rules: Power Fields (4+ Flicker Save), Huge Mobs & Gargants</div>
+        <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac;">Faction Rules</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
           <span class="sub-text" style="font-weight:700;">Gold Card Catalog:</span>
           <div id="ork-card-filters" style="display:flex; gap:3px;"></div>
         </div>
-        <div id="ork-catalog"></div>
-        <div class="sub-text" style="margin:4px 0 4px; font-weight:700;">Mustered North Army (Gold Cards):</div>
-        <div id="ork-roster"></div>
+        <div id="ork-catalog" style="max-height:280px; overflow-y:auto;"></div>
+
+        <!-- Collapsible Roster Drawer -->
+        <div style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window.toggleRosterView('ork')">
+            <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="ork-roster-header">📋 Selected North Roster [Tap to Toggle]</span>
+            <span id="ork-roster-toggle-icon" style="color:#94a3b8; font-size:0.75rem;">▼</span>
+          </div>
+          <div id="ork-roster" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="padding-top:6px; border-top:1px solid #334155;">
+        <button onclick="window.setBuilderStep(2)" style="flex:1;">← Back: South Force</button>
+        <button class="btn-primary" onclick="window.setBuilderStep(4)" style="flex:2;">Next: Review & Deploy →</button>
       </div>
     </div>
 
-    <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px;">
-      <button onclick="window.resetDefaultArmies()" style="flex:0 0 auto;">↺ Reset Lists</button>
-      <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto;">🎲 Random Factions</button>
-      <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)">📍 Proceed to Deployment Phase (Place Units in Zones)</button>
-      <button class="btn-primary" onclick="window.startBattleFromBuilder(false)">⚡ Quick Start (Forward Skirmish Deployment)</button>
+    <!-- STEP 4: Battle Review & Deployment -->
+    <div id="wizard-step-4" class="wizard-step" style="display:none; flex-direction:column; gap:12px; padding:10px 0; overflow-y:auto; flex:1;">
+      <div style="font-weight:800; font-size:1rem; color:#f8fafc;">⚔️ Battle Briefing & Match Review</div>
+      
+      <div id="briefing-card" style="background:#1e293b; border:1px solid #475569; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+          <span id="briefing-map" style="font-weight:700; color:#38bdf8;">🗺️ Map: Industrial</span>
+          <span id="briefing-mode" style="font-weight:700; color:#4ade80;">🤖 Mode: vs North AI</span>
+          <span id="briefing-budget" style="font-weight:700; color:#fde047;">🎯 Budget: 1500 pts</span>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;">
+          <div id="briefing-south" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #3b82f6;">
+            <div style="font-weight:700; color:#60a5fa;" id="briefing-south-name">🛡️ South Force</div>
+            <div class="sub-text" id="briefing-south-details" style="margin-top:2px;">Loading...</div>
+          </div>
+          <div id="briefing-north" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #22c55e;">
+            <div style="font-weight:700; color:#4ade80;" id="briefing-north-name">🟢 North Force</div>
+            <div class="sub-text" id="briefing-north-details" style="margin-top:2px;">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+        <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)" style="padding:12px; font-size:0.92rem;">📍 Start Deployment Phase (Place Units in Zones)</button>
+        <button class="btn-primary" onclick="window.startBattleFromBuilder(false)" style="padding:10px; font-size:0.86rem;">⚡ Quick Start (Forward Skirmish Deployment)</button>
+      </div>
+
+      <div class="btn-row" style="margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
+        <button onclick="window.setBuilderStep(3)" style="flex:1;">← Back to Armies</button>
+        <button onclick="window.resetDefaultArmies()" style="flex:1; background:#334155;">↺ Reset Rosters</button>
+      </div>
     </div>
   </div>
 </div>
@@ -377,14 +506,21 @@
       <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Target: 20 VP)</span>
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
-    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-      <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:6px 10px;" title="Toggle Synthesized Sound Effects">🔊 SFX</button>
-      <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:6px 10px;" title="Automatically pan camera to follow AI actions and Snap Fire targets">🎥 Follow Cam</button>
-      <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:6px 10px;" title="Click to switch Battlefield Map Preset or Generate Random Map">🗺️ Map: Industrial</button>
-      <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
-      <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Armies (8 Factions)</button>
-      <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
+    <div style="display:flex; gap:5px; align-items:center; flex-shrink:0;">
+      <button onclick="window.gameScene.resetCamera()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto;" title="Recenter Battlefield Camera">🎯 Recenter</button>
+      <button id="btn-menu-toggle" onclick="window.toggleBattleMenu()" style="padding:4px 10px; font-size:0.75rem; min-width:auto; background:#1e293b; border-color:#64748b;" title="Battlefield Options & Settings">⚙️ Menu</button>
     </div>
+  </div>
+
+  <!-- Collapsible In-Battle Options Drawer -->
+  <div id="battle-menu-dropdown" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid #334155; flex-wrap:wrap; gap:5px; justify-content:flex-end;">
+    <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🔊 SFX</button>
+    <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🎥 Follow Cam</button>
+    <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🗺️ Map</button>
+    <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🤖 AI: ORKS</button>
+    <button onclick="window.openArmyModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🛠️ Army Setup</button>
+    <button onclick="window.restartBattle()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#7f1d1d; border-color:#dc2626;">🔄 Restart Match</button>
+    <button onclick="window.toggleBattleMenu()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#334155;">✕ Close</button>
   </div>
 
   <div id="mid-area">
@@ -401,12 +537,17 @@
       <!-- Titan & Super-Heavy Status & Hit Location Damage Sheet -->
       <div id="titan-hud" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:4px;">
-          <span id="titan-hud-title" style="font-weight:800; color:#38bdf8;">🤖 TITAN DATA SHEET</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="log-ctrl-btn" onclick="window.toggleTitanHud()" id="btn-titan-toggle" style="padding:1px 5px;" title="Minimize / Expand Titan Sheet">—</button>
+            <span id="titan-hud-title" style="font-weight:800; color:#38bdf8;">🤖 TITAN DATA SHEET</span>
+          </div>
           <span id="titan-hud-status" class="vp-box" style="font-size:0.68rem; padding:1px 6px;">ONLINE</span>
         </div>
+        <div id="titan-hud-body">
         <div id="titan-hud-shields" class="shield-pip-row"></div>
         <div id="titan-hud-grid" class="titan-grid"></div>
         <div id="titan-hud-weapons" class="sub-text" style="margin-top:5px; border-top:1px dashed #334155; padding-top:4px;"></div>
+        </div>
       </div>
     </div>
 
@@ -820,6 +961,98 @@ window.toggleAICam = function() {
   }
 };
 
+
+// --- STEPPER WIZARD STATE & MENU TOGGLES ---
+window.builderStep = 1;
+window.rosterDrawerOpen = { imp: true, ork: true };
+
+window.setBuilderStep = function(stepNum) {
+  window.builderStep = stepNum;
+  for (let s = 1; s <= 4; s++) {
+    const stepEl = document.getElementById(`wizard-step-${s}`);
+    const chipEl = document.getElementById(`step-chip-${s}`);
+    if (stepEl) stepEl.style.display = (s === stepNum) ? 'flex' : 'none';
+    if (chipEl) {
+      if (s === stepNum) chipEl.classList.add('active');
+      else chipEl.classList.remove('active');
+    }
+  }
+  if (stepNum === 4) {
+    window.updateBriefingCard();
+  }
+};
+
+window.toggleBattleMenu = function() {
+  const d = document.getElementById('battle-menu-dropdown');
+  if (!d) return;
+  const isHidden = (d.style.display === 'none' || !d.style.display);
+  d.style.display = isHidden ? 'flex' : 'none';
+};
+
+window.toggleTitanHud = function() {
+  const b = document.getElementById('titan-hud-body');
+  const btn = document.getElementById('btn-titan-toggle');
+  if (!b) return;
+  const isHidden = (b.style.display === 'none');
+  b.style.display = isHidden ? 'block' : 'none';
+  if (btn) btn.innerText = isHidden ? '—' : '＋';
+};
+
+window.toggleRosterView = function(sidePrefix) {
+  const r = document.getElementById(`${sidePrefix}-roster`);
+  const icon = document.getElementById(`${sidePrefix}-roster-toggle-icon`);
+  if (!r) return;
+  const isHidden = (r.style.display === 'none');
+  r.style.display = isHidden ? 'block' : 'none';
+  if (icon) icon.innerText = isHidden ? '▼' : '►';
+};
+
+window.updateBriefingCard = function() {
+  const bMap = document.getElementById('briefing-map');
+  const bMode = document.getElementById('briefing-mode');
+  const bBudget = document.getElementById('briefing-budget');
+  if (bMap) bMap.innerText = `🗺️ Map: ${MAP_LABELS[window.mapPreset] || window.mapPreset}`;
+  if (bMode) {
+    const modeLabel = window.aiFaction === 'ORKS' ? 'vs North AI' : (window.aiFaction === 'IMPERIUM' ? 'vs South AI' : '2-Player Hotseat');
+    bMode.innerText = `🤖 Mode: ${modeLabel}`;
+  }
+  if (bBudget) bBudget.innerText = `🎯 Budget: ${window.pointsBudget} pts`;
+
+  const sMeta = window.getSideMeta ? window.getSideMeta('IMPERIUM') : FACTION_META.IMPERIUM;
+  const nMeta = window.getSideMeta ? window.getSideMeta('ORKS') : FACTION_META.ORKS;
+  const sPts = window.getRosterPoints ? window.getRosterPoints('IMPERIUM') : 0;
+  const nPts = window.getRosterPoints ? window.getRosterPoints('ORKS') : 0;
+  const sCount = (window.armyRosters && window.armyRosters.IMPERIUM) ? window.armyRosters.IMPERIUM.length : 0;
+  const nCount = (window.armyRosters && window.armyRosters.ORKS) ? window.armyRosters.ORKS.length : 0;
+
+  const bSouthName = document.getElementById('briefing-south-name');
+  const bSouthDetails = document.getElementById('briefing-south-details');
+  if (bSouthName) {
+    bSouthName.innerText = `${sMeta.icon} ${sMeta.fullTitle} (South)`;
+    bSouthName.style.color = sMeta.colorHex;
+  }
+  if (bSouthDetails) {
+    bSouthDetails.innerText = `${sPts} / ${window.pointsBudget} pts (${sCount} Cards) &bull; ${sMeta.traitDesc}`;
+  }
+
+  const bNorthName = document.getElementById('briefing-north-name');
+  const bNorthDetails = document.getElementById('briefing-north-details');
+  if (bNorthName) {
+    bNorthName.innerText = `${nMeta.icon} ${nMeta.fullTitle} (North)`;
+    bNorthName.style.color = nMeta.colorHex;
+  }
+  if (bNorthDetails) {
+    bNorthDetails.innerText = `${nPts} / ${window.pointsBudget} pts (${nCount} Cards) &bull; ${nMeta.traitDesc}`;
+  }
+};
+
+window.restartBattle = function() {
+  if (window.gameScene) {
+    window.gameScene.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, true);
+    const d = document.getElementById('battle-menu-dropdown');
+    if (d) d.style.display = 'none';
+  }
+};
 // --- PHASE 5–11: NETEPIC GOLD v5 6-FACTION CATALOG (IMPERIUM, ORKS, ELDAR, CHAOS, TYRANIDS & SQUATS) ---
 const FACTION_META = {
   IMPERIUM: {
@@ -4035,6 +4268,203 @@ const UNIT_CATALOG = {
   ],
   "ELDAR": [
     {
+      "key": "card_eld_aspect_host",
+      "cardType": "COMPANY",
+      "cardName": "Aspect Warrior Host",
+      "armyBook": "ELDAR",
+      "name": "Aspect Warrior Battlehost",
+      "composition": "Exarch CHQ & 3 Aspect Squads (Avengers, Scorpions, Dragons = 19 stands & 3 Wave Serpents)",
+      "points": 600,
+      "breakPoint": 9,
+      "morale": 2,
+      "vpValue": 6,
+      "moveCm": 15,
+      "save": 4,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Shuriken Catapults & Fusion Guns",
+        "rangeCm": 40,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 19,
+      "color": 14251782,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_eld_windrider_host",
+      "cardType": "COMPANY",
+      "cardName": "Windrider Jetbike Host",
+      "armyBook": "ELDAR",
+      "name": "Windrider Jetbike Outrider Host",
+      "composition": "Warlock Jetbike CHQ & 3 Jetbike Squadrons (16 Jetbikes)",
+      "points": 600,
+      "breakPoint": 9,
+      "morale": 3,
+      "vpValue": 6,
+      "moveCm": 35,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "skimmer": true,
+      "weapon": {
+        "name": "Twin Shuriken Cannons",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 16,
+      "color": 16096779,
+      "baseW": 22,
+      "baseH": 26
+    },
+    {
+      "key": "card_eld_falcon_host",
+      "cardType": "COMPANY",
+      "cardName": "Falcon Armoured Host",
+      "armyBook": "ELDAR",
+      "name": "Falcon Grav-Tank Armoured Host",
+      "composition": "Command Falcon & 3 Falcon Squadrons (10 Falcon Grav-Tanks)",
+      "points": 500,
+      "breakPoint": 6,
+      "morale": 3,
+      "vpValue": 6,
+      "moveCm": 25,
+      "save": 3,
+      "caf": 1,
+      "pinningClass": 2,
+      "skimmer": true,
+      "weapon": {
+        "name": "Pulse Laser & Bright Lance",
+        "rangeCm": 75,
+        "dice": 5,
+        "toHit": 4,
+        "tsm": -2,
+        "damagesBuildings": true
+      },
+      "standsCount": 10,
+      "color": 11817737,
+      "baseW": 24,
+      "baseH": 32
+    },
+    {
+      "key": "card_eld_engine_host",
+      "cardType": "COMPANY",
+      "cardName": "Engines of Vaul Host",
+      "armyBook": "ELDAR",
+      "name": "Engines of Vaul Super-Heavy Host",
+      "composition": "1 Scorpion & 2 Cobra Grav-Tanks (Holo-Fields)",
+      "points": 800,
+      "breakPoint": 3,
+      "morale": 2,
+      "vpValue": 8,
+      "moveCm": 20,
+      "save": 2,
+      "holoField": true,
+      "caf": 5,
+      "pinningClass": 3,
+      "superHeavy": true,
+      "skimmer": true,
+      "weapon": {
+        "name": "Twin Pulsar Cannon & D-Cannon",
+        "rangeCm": 100,
+        "dice": 6,
+        "toHit": 3,
+        "tsm": -4,
+        "damagesBuildings": true
+      },
+      "standsCount": 3,
+      "color": 9584654,
+      "baseW": 32,
+      "baseH": 40
+    },
+    {
+      "key": "card_eld_wraith_host",
+      "cardType": "COMPANY",
+      "cardName": "Ghost Warrior Host",
+      "armyBook": "ELDAR",
+      "name": "Wraithguard & Wraithlord Ghost Host",
+      "composition": "Spiritseer CHQ & 3 Wraithguard/Wraithlord Detachments (10 Wraith models)",
+      "points": 650,
+      "breakPoint": 6,
+      "morale": 1,
+      "vpValue": 7,
+      "moveCm": 10,
+      "save": 3,
+      "caf": 4,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Wraithcannons & Bright Lances",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -3,
+        "damagesBuildings": true
+      },
+      "standsCount": 10,
+      "color": 16498468,
+      "baseW": 24,
+      "baseH": 26
+    },
+    {
+      "key": "card_eld_dragon_host",
+      "cardType": "COMPANY",
+      "cardName": "Exodite Dragon Host",
+      "armyBook": "ELDAR",
+      "name": "Exodite Dragon Knight Host",
+      "composition": "Dragon Lord CHQ & 3 Dragon Knight Squadrons (16 Dragon Knights)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 3,
+      "vpValue": 6,
+      "moveCm": 20,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Power Lances & Dragon Breath",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 16,
+      "color": 366185,
+      "baseW": 24,
+      "baseH": 28
+    },
+    {
+      "key": "card_eld_war_host",
+      "cardType": "COMPANY",
+      "cardName": "Exodite War Host",
+      "armyBook": "ELDAR",
+      "name": "Exodite Warrior Warhost",
+      "composition": "Exodite Chieftain & 3 Warrior Detachments (19 stands)",
+      "points": 350,
+      "breakPoint": 9,
+      "morale": 3,
+      "vpValue": 4,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Hunting Rifles & Shuriken Catapults",
+        "rangeCm": 50,
+        "dice": 3,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 19,
+      "color": 1096065,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
       "key": "card_eld_guardians",
       "cardType": "SUPPORT",
       "cardName": "Guardian Detachment",
@@ -4620,6 +5050,310 @@ const UNIT_CATALOG = {
   ],
   "CHAOS": [
     {
+      "key": "card_chs_renegades_co",
+      "cardType": "COMPANY",
+      "cardName": "Chaos Renegades Warband",
+      "armyBook": "CHAOS",
+      "name": "Chaos Renegades Warband",
+      "composition": "Aspiring Champion, 1 Chaos Marine Det, 1 Beastman Warband, 1 Cultist Det (21 stands)",
+      "points": 600,
+      "breakPoint": 16,
+      "morale": 4,
+      "vpValue": 6,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Bolters, Autoguns & Choppas",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 21,
+      "color": 8330525,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_cultist_co",
+      "cardType": "COMPANY",
+      "cardName": "Chaos Cultist Army",
+      "armyBook": "CHAOS",
+      "name": "Chaos Cultist Rabble Army",
+      "composition": "Aspiring Champion & 2 Cultist Detachments (21 stands)",
+      "points": 400,
+      "breakPoint": 11,
+      "morale": 4,
+      "vpValue": 4,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Autoguns & Heavy Stubbers",
+        "rangeCm": 50,
+        "dice": 3,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 21,
+      "color": 10033947,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_beastman_co",
+      "cardType": "COMPANY",
+      "cardName": "Beastman Horde",
+      "armyBook": "CHAOS",
+      "name": "Chaos Beastman Savage Horde",
+      "composition": "Aspiring Champion, 2 Beastman Warbands & Ogryn Mercenaries (21 stands)",
+      "points": 500,
+      "breakPoint": 13,
+      "morale": 4,
+      "vpValue": 6,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Axes, Slugs & Ripper Guns",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 21,
+      "color": 8591427,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_daemon_co",
+      "cardType": "COMPANY",
+      "cardName": "Daemon Incursion Horde",
+      "armyBook": "CHAOS",
+      "name": "Daemon Incursion Horde",
+      "composition": "Minotaur Warband, Troll Warband & Lesser Daemons (20 stands, Daemonic Terror)",
+      "points": 400,
+      "breakPoint": 11,
+      "morale": 3,
+      "vpValue": 4,
+      "daemonicTerror": true,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Hellblades & Warpfire",
+        "rangeCm": 25,
+        "dice": 3,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 20,
+      "color": 8917815,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_world_eaters_co",
+      "cardType": "COMPANY",
+      "cardName": "World Eaters Century",
+      "armyBook": "CHAOS",
+      "name": "World Eaters Khorne Century",
+      "composition": "Chaos Lord, 2 Chaos Marine Dets & 1 Khorne Berzerker Det (19 stands & 10 Rhinos)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 6,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 4,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Chainaxes & Bolters",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 19,
+      "color": 12131356,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_death_guard_co",
+      "cardType": "COMPANY",
+      "cardName": "Death Guard Century",
+      "armyBook": "CHAOS",
+      "name": "Death Guard Nurgle Century",
+      "composition": "Chaos Lord, 2 Chaos Marine Dets & 1 Plague Marine Det (19 stands & 10 Rhinos, 5+ Regen)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 6,
+      "regeneration": true,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Plague Knives & Bolters",
+        "rangeCm": 50,
+        "dice": 3,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 19,
+      "color": 5078031,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_emperors_children_co",
+      "cardType": "COMPANY",
+      "cardName": "Emperor's Children Century",
+      "armyBook": "CHAOS",
+      "name": "Emperor's Children Slaanesh Century",
+      "composition": "Chaos Lord, 2 Chaos Marine Dets & 1 Noise Marine Det (19 stands & 10 Rhinos)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 6,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Sonic Blasters & Blastmasters",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": -1
+      },
+      "standsCount": 19,
+      "color": 10624175,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_thousand_sons_co",
+      "cardType": "COMPANY",
+      "cardName": "Thousand Sons Century",
+      "armyBook": "CHAOS",
+      "name": "Thousand Sons Tzeentch Century",
+      "composition": "Sorcerer Lord (Psyker 4), 2 Chaos Marine Dets & Rubric Marines (19 stands & 10 Rhinos)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 6,
+      "isPsyker": true,
+      "psychicRank": 4,
+      "moveCm": 10,
+      "save": 4,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Inferno Bolters & Smite",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 19,
+      "color": 223649,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_havok_co",
+      "cardType": "COMPANY",
+      "cardName": "Chaos Havok Company",
+      "armyBook": "CHAOS",
+      "name": "Chaos Havok Heavy Support Company",
+      "composition": "Chaos Champion & 3 Havok Squads (19 stands & 10 Rhinos)",
+      "points": 1000,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 10,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Autocannons, Missile Launchers & Lascannons",
+        "rangeCm": 75,
+        "dice": 6,
+        "toHit": 5,
+        "tsm": -1,
+        "damagesBuildings": true
+      },
+      "standsCount": 19,
+      "color": 4674921,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_chs_term_co",
+      "cardType": "COMPANY",
+      "cardName": "Chaos Terminator Company",
+      "armyBook": "CHAOS",
+      "name": "Chaos Terminator 1st Company",
+      "composition": "Chaos Lord in Terminator Armour & 3 Chaos Terminator Detachments (13 stands & 7 Land Raiders)",
+      "points": 1000,
+      "breakPoint": 10,
+      "morale": 1,
+      "vpValue": 10,
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 6,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Reaper Autocannons & Combi-Bolters",
+        "rangeCm": 35,
+        "dice": 6,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 13,
+      "color": 1976635,
+      "baseW": 22,
+      "baseH": 22
+    },
+    {
+      "key": "card_chs_landraider_co",
+      "cardType": "COMPANY",
+      "cardName": "Chaos Land Raider Company",
+      "armyBook": "CHAOS",
+      "name": "Chaos Land Raider Armoured Company",
+      "composition": "Command Chaos Land Raider & 3 Chaos Land Raider Squadrons (10 Land Raiders)",
+      "points": 750,
+      "breakPoint": 5,
+      "morale": 2,
+      "vpValue": 8,
+      "moveCm": 25,
+      "save": 2,
+      "caf": 2,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Twin Lascannons & Heavy Bolters",
+        "rangeCm": 75,
+        "dice": 6,
+        "toHit": 5,
+        "tsm": -2,
+        "damagesBuildings": true
+      },
+      "standsCount": 10,
+      "color": 988970,
+      "baseW": 26,
+      "baseH": 34
+    },
+    {
       "key": "card_chs_marines",
       "cardType": "SUPPORT",
       "cardName": "Chaos Marine Detachment",
@@ -5154,6 +5888,147 @@ const UNIT_CATALOG = {
   ],
   "TYRANIDS": [
     {
+      "key": "card_tyr_termagant_swarm",
+      "cardType": "COMPANY",
+      "cardName": "Termagant Chittering Swarm",
+      "armyBook": "TYRANIDS",
+      "name": "Termagant Endless Swarm",
+      "composition": "Massive Swarm of 24 Termagant stands (Fleshborers)",
+      "points": 450,
+      "breakPoint": 12,
+      "morale": 4,
+      "vpValue": 5,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Fleshborer Beetles",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 24,
+      "color": 11032055,
+      "baseW": 18,
+      "baseH": 18
+    },
+    {
+      "key": "card_tyr_genestealer_swarm",
+      "cardType": "COMPANY",
+      "cardName": "Genestealer Infiltration Swarm",
+      "armyBook": "TYRANIDS",
+      "name": "Genestealer Infiltration Brood",
+      "composition": "Broodlord & 18 Genestealer stands (Rending Claws, Infiltrators)",
+      "points": 500,
+      "breakPoint": 9,
+      "morale": 2,
+      "vpValue": 5,
+      "deepStrike": true,
+      "moveCm": 15,
+      "save": 5,
+      "caf": 4,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Rending Claws & Hypnotic Gaze",
+        "rangeCm": 10,
+        "dice": 3,
+        "toHit": 4,
+        "tsm": -2
+      },
+      "standsCount": 19,
+      "color": 8266446,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_tyr_carnifex_swarm",
+      "cardType": "COMPANY",
+      "cardName": "Carnifex Assault Brood",
+      "armyBook": "TYRANIDS",
+      "name": "Carnifex Crushing Brood",
+      "composition": "4 Carnifexes / Screamer-Killers (Bio-Plasma)",
+      "points": 600,
+      "breakPoint": 4,
+      "morale": 1,
+      "vpValue": 6,
+      "superHeavy": true,
+      "moveCm": 15,
+      "save": 2,
+      "caf": 7,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Bio-Plasma & Heavy Venom Cannons",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -2,
+        "damagesBuildings": true
+      },
+      "standsCount": 4,
+      "color": 7020968,
+      "baseW": 28,
+      "baseH": 28
+    },
+    {
+      "key": "card_tyr_gargoyle_swarm",
+      "cardType": "COMPANY",
+      "cardName": "Gargoyle Winged Swarm",
+      "armyBook": "TYRANIDS",
+      "name": "Gargoyle Sky-Swarm",
+      "composition": "18 Gargoyle stands (Winged Fliers / Jump)",
+      "points": 400,
+      "breakPoint": 9,
+      "morale": 3,
+      "vpValue": 4,
+      "jump": true,
+      "moveCm": 25,
+      "save": 6,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Fleshborers & Acid Spurt",
+        "rangeCm": 25,
+        "dice": 3,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 18,
+      "color": 12616956,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_tyr_biotitan_host",
+      "cardType": "COMPANY",
+      "cardName": "Bio-Titan Hive Host",
+      "armyBook": "TYRANIDS",
+      "name": "Bio-Titan Apex Swarm",
+      "composition": "1 Hierophant & 2 Hierodules (8 Chitin Shields, Apex Synapse)",
+      "points": 1000,
+      "breakPoint": 3,
+      "morale": 1,
+      "vpValue": 10,
+      "isTitan": true,
+      "superHeavy": true,
+      "shieldType": "CHITIN",
+      "maxShields": 8,
+      "synapse": true,
+      "weapon": {
+        "name": "Bio-Cannons & Massive Scythes",
+        "rangeCm": 75,
+        "dice": 8,
+        "toHit": 3,
+        "tsm": -3,
+        "damagesBuildings": true
+      },
+      "standsCount": 3,
+      "color": 5774471,
+      "baseW": 40,
+      "baseH": 46
+    },
+    {
       "key": "card_tyr_hormagaunts",
       "cardType": "SUPPORT",
       "cardName": "Hormagaunt Brood",
@@ -5677,6 +6552,208 @@ const UNIT_CATALOG = {
     }
   ],
   "SQUATS": [
+    {
+      "key": "card_sqt_shortbeards",
+      "cardType": "COMPANY",
+      "cardName": "Shortbeards Brotherhood",
+      "armyBook": "SQUATS",
+      "name": "Shortbeard Youth Brotherhood",
+      "composition": "Warlord & 3 Shortbeard Detachments (21 stands, CC Mastery)",
+      "points": 450,
+      "breakPoint": 15,
+      "morale": 3,
+      "vpValue": 6,
+      "squatMastery": true,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Autoguns & Heavy Bolters",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 21,
+      "color": 16436245,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_sqt_termite_co",
+      "cardType": "COMPANY",
+      "cardName": "Termite Subterranean Company",
+      "armyBook": "SQUATS",
+      "name": "Termite Tunneler Assault Company",
+      "composition": "Warlord & Command Termite + 3 Termite Detachments (18 stands & 6 Termite Tunnelers)",
+      "points": 700,
+      "breakPoint": 22,
+      "morale": 2,
+      "vpValue": 10,
+      "deepStrike": true,
+      "squatMastery": true,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Melta-Cutters & Bolters",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 18,
+      "color": 14251782,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_sqt_guild_biker_co",
+      "cardType": "COMPANY",
+      "cardName": "Guild Biker Company",
+      "armyBook": "SQUATS",
+      "name": "Guild Outrider Biker Company",
+      "composition": "Guild Trike Squadron & 2 Bike Squadrons (15 Bikes & Trikes)",
+      "points": 600,
+      "breakPoint": 17,
+      "morale": 2,
+      "vpValue": 8,
+      "moveCm": 30,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Twin Heavy Bolters & Autocannons",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 15,
+      "color": 11817737,
+      "baseW": 22,
+      "baseH": 26
+    },
+    {
+      "key": "card_sqt_grand_battery",
+      "cardType": "COMPANY",
+      "cardName": "Grand Artillery Battery",
+      "armyBook": "SQUATS",
+      "name": "Squat Grand Artillery Battery",
+      "composition": "1 Thudd Gun Battery & 2 Mole Mortar Batteries (9 Artillery stands)",
+      "points": 400,
+      "breakPoint": 11,
+      "morale": 2,
+      "vpValue": 5,
+      "moveCm": 5,
+      "save": 6,
+      "caf": -2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Mole Mortars & Thudd Guns",
+        "rangeCm": 75,
+        "dice": 3,
+        "toHit": 4,
+        "tsm": -1,
+        "barrage": true,
+        "barrageBp": 6,
+        "indirect": true,
+        "ignoresCover": true
+      },
+      "standsCount": 9,
+      "color": 7877903,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_sqt_goliath_battery",
+      "cardType": "COMPANY",
+      "cardName": "Goliath Superheavy Battery",
+      "armyBook": "SQUATS",
+      "name": "Goliath Mega-Artillery Battery",
+      "composition": "3 Goliath Mega-Cannons",
+      "points": 475,
+      "breakPoint": 2,
+      "morale": 2,
+      "vpValue": 6,
+      "superHeavy": true,
+      "moveCm": 5,
+      "save": 2,
+      "caf": 0,
+      "pinningClass": 3,
+      "weapon": {
+        "name": "Goliath Mega-Cannon",
+        "rangeCm": 150,
+        "dice": 3,
+        "toHit": 3,
+        "tsm": -4,
+        "barrage": true,
+        "barrageBp": 9,
+        "indirect": true,
+        "damagesBuildings": true
+      },
+      "standsCount": 3,
+      "color": 4528643,
+      "baseW": 32,
+      "baseH": 36
+    },
+    {
+      "key": "card_sqt_gyrocopter_wing",
+      "cardType": "COMPANY",
+      "cardName": "Iron Eagle Gyrocopter Wing",
+      "armyBook": "SQUATS",
+      "name": "Iron Eagle Gyrocopter Wing",
+      "composition": "3 Gyrocopter Squadrons (9 Gyrocopters, Skimmers)",
+      "points": 550,
+      "breakPoint": 7,
+      "morale": 2,
+      "vpValue": 7,
+      "skimmer": true,
+      "moveCm": 35,
+      "save": 4,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Twin Autocannons & Battlecannon",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 9,
+      "color": 9584654,
+      "baseW": 24,
+      "baseH": 26
+    },
+    {
+      "key": "card_sqt_robot_co",
+      "cardType": "COMPANY",
+      "cardName": "Ironbreaker Robot Company",
+      "armyBook": "SQUATS",
+      "name": "Ironbreaker Robot Company",
+      "composition": "Robot Command Vehicle & 2 Robot Detachments (9 Automaton models, Fearless)",
+      "points": 300,
+      "breakPoint": 4,
+      "morale": 1,
+      "vpValue": 3,
+      "moveCm": 10,
+      "save": 4,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Heavy Bolters & Lascannons",
+        "rangeCm": 50,
+        "dice": 3,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "standsCount": 9,
+      "color": 6583435,
+      "baseW": 22,
+      "baseH": 22
+    },
     {
       "key": "card_sqt_warriors",
       "cardType": "SUPPORT",
@@ -6246,6 +7323,200 @@ const UNIT_CATALOG = {
   ]
 ,
   "MILITARIS": [
+    {
+      "key": "card_mil_heavy_co",
+      "cardType": "COMPANY",
+      "cardName": "Heavy Weapons Infantry Company",
+      "armyBook": "MILITARIS",
+      "name": "Imperial Guard Heavy Weapons Company",
+      "composition": "2 CHQ & Command Rhino, 3 Heavy Weapon Platoons & Commissar (17 stands & 2 Rhinos)",
+      "points": 600,
+      "breakPoint": 10,
+      "morale": 4,
+      "vpValue": 8,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Lascannons, Autocannons & Heavy Bolters",
+        "rangeCm": 75,
+        "dice": 6,
+        "toHit": 5,
+        "tsm": -1,
+        "damagesBuildings": true
+      },
+      "standsCount": 17,
+      "color": 1467700,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_mil_assault_co",
+      "cardType": "COMPANY",
+      "cardName": "Assault Infantry Company",
+      "armyBook": "MILITARIS",
+      "name": "Imperial Guard Assault Jump Company",
+      "composition": "2 Assault CHQ & Command Rhino, 3 Assault Platoons & Commissar (17 stands, Jump Packs)",
+      "points": 300,
+      "breakPoint": 10,
+      "morale": 4,
+      "vpValue": 4,
+      "jump": true,
+      "moveCm": 15,
+      "save": 6,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Pistols & Chainswords",
+        "rangeCm": 25,
+        "dice": 3,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 17,
+      "color": 1409085,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_mil_mech_assault_co",
+      "cardType": "COMPANY",
+      "cardName": "Mechanized Assault Company",
+      "armyBook": "MILITARIS",
+      "name": "Mechanized Assault Chimera Company",
+      "composition": "2 CHQ & Chimera, 3 Mechanized Platoons & Commissar (17 stands & 10 Chimeras)",
+      "points": 600,
+      "breakPoint": 16,
+      "morale": 4,
+      "vpValue": 7,
+      "moveCm": 10,
+      "save": 6,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Lasguns & Multi-Lasers",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 17,
+      "color": 1483594,
+      "baseW": 20,
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "mil_chimera_mech_co",
+        "armyBook": "MILITARIS",
+        "name": "Company Chimeras",
+        "moveCm": 20,
+        "save": 3,
+        "caf": 1,
+        "morale": 4,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Multi-Lasers",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 1409085,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      }
+    },
+    {
+      "key": "card_mil_earthshaker_co",
+      "cardType": "COMPANY",
+      "cardName": "Earthshaker Artillery Company",
+      "armyBook": "MILITARIS",
+      "name": "Earthshaker Basilisk Artillery Company",
+      "composition": "2 CHQ & Rhino, 3 Earthshaker Batteries & Commissar (9 Basilisks)",
+      "points": 450,
+      "breakPoint": 6,
+      "morale": 5,
+      "vpValue": 5,
+      "moveCm": 15,
+      "save": 4,
+      "caf": 0,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Earthshaker Cannon",
+        "rangeCm": 120,
+        "dice": 3,
+        "toHit": 3,
+        "tsm": -2,
+        "barrage": true,
+        "barrageBp": 9,
+        "indirect": true,
+        "damagesBuildings": true
+      },
+      "standsCount": 9,
+      "color": 1332013,
+      "baseW": 26,
+      "baseH": 34
+    },
+    {
+      "key": "card_mil_rough_rider_co",
+      "cardType": "COMPANY",
+      "cardName": "Rough Rider Outrider Company",
+      "armyBook": "MILITARIS",
+      "name": "Rough Rider Cavalry Outrider Company",
+      "composition": "2 CHQ stands & 3 Rough Rider Squads (32 Cavalry stands, Hunting Lances)",
+      "points": 600,
+      "breakPoint": 16,
+      "morale": 5,
+      "vpValue": 6,
+      "moveCm": 20,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Hunting Lances",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "standsCount": 32,
+      "color": 2278750,
+      "baseW": 22,
+      "baseH": 26
+    },
+    {
+      "key": "card_mil_mammoth_co",
+      "cardType": "COMPANY",
+      "cardName": "Mammoth Super-Heavy Company",
+      "armyBook": "MILITARIS",
+      "name": "Mammoth Super-Heavy Tank Company",
+      "composition": "Mammoth CHQ & 3 Mammoth Super-Heavy Squadrons (10 Super-Heavy Tanks)",
+      "points": 750,
+      "breakPoint": 5,
+      "morale": 4,
+      "vpValue": 8,
+      "superHeavy": true,
+      "moveCm": 15,
+      "save": 2,
+      "caf": 5,
+      "pinningClass": 3,
+      "weapon": {
+        "name": "Dual Battlecannons & Sponson Lascannons",
+        "rangeCm": 75,
+        "dice": 6,
+        "toHit": 4,
+        "tsm": -2,
+        "damagesBuildings": true
+      },
+      "standsCount": 10,
+      "color": 1003826,
+      "baseW": 32,
+      "baseH": 40
+    },
   {
     "key": "card_mil_tac_platoon",
     "cardType": "SUPPORT",
@@ -7057,6 +8328,199 @@ const UNIT_CATALOG = {
   }
 ],
   "MECHANICUS": [
+    {
+      "key": "card_am_knight_paladin_co",
+      "cardType": "COMPANY",
+      "cardName": "Imperial Knight Paladin Household",
+      "armyBook": "MECHANICUS",
+      "name": "Imperial Knight Paladin Household",
+      "composition": "Command Knight Paladin & 2 Paladin Detachments (7 Knight Paladins, Ion Shields)",
+      "points": 600,
+      "breakPoint": 4,
+      "morale": 2,
+      "vpValue": 6,
+      "moveCm": 20,
+      "save": 3,
+      "fixedSave": 5,
+      "caf": 4,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Battlecannon & Heavy Bolters",
+        "rangeCm": 75,
+        "dice": 5,
+        "toHit": 4,
+        "tsm": -2
+      },
+      "standsCount": 7,
+      "color": 14427686,
+      "baseW": 26,
+      "baseH": 26
+    },
+    {
+      "key": "card_am_knight_lancer_co",
+      "cardType": "COMPANY",
+      "cardName": "Imperial Knight Lancer Household",
+      "armyBook": "MECHANICUS",
+      "name": "Imperial Knight Lancer Household",
+      "composition": "Command Knight Lancer & 2 Lancer Detachments (7 Knight Lancers, Power Lances)",
+      "points": 600,
+      "breakPoint": 4,
+      "morale": 2,
+      "vpValue": 6,
+      "moveCm": 25,
+      "save": 3,
+      "fixedSave": 5,
+      "caf": 5,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Shock Lances & Battlecannons",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -2
+      },
+      "standsCount": 7,
+      "color": 12131356,
+      "baseW": 26,
+      "baseH": 26
+    },
+    {
+      "key": "card_am_knight_errant_co",
+      "cardType": "COMPANY",
+      "cardName": "Imperial Knight Errant Household",
+      "armyBook": "MECHANICUS",
+      "name": "Imperial Knight Errant Household",
+      "composition": "Command Knight Errant & 2 Errant Detachments (7 Knight Errants, Thermal Cannons)",
+      "points": 500,
+      "breakPoint": 4,
+      "morale": 2,
+      "vpValue": 5,
+      "moveCm": 20,
+      "save": 3,
+      "fixedSave": 5,
+      "caf": 4,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Thermal Cannons & Heavy Stubbers",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 4,
+        "tsm": -3,
+        "damagesBuildings": true
+      },
+      "standsCount": 7,
+      "color": 10033947,
+      "baseW": 26,
+      "baseH": 26
+    },
+    {
+      "key": "card_am_mech_assault_co",
+      "cardType": "COMPANY",
+      "cardName": "Tech-Guard Mech Assault Company",
+      "armyBook": "MECHANICUS",
+      "name": "Tech-Guard Mechanized Assault Company",
+      "composition": "Assault HQ & Command Rhino, 3 Mech Assault Platoons (19 stands & 10 Chimeras)",
+      "points": 650,
+      "breakPoint": 15,
+      "morale": 3,
+      "vpValue": 7,
+      "jump": true,
+      "moveCm": 15,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Chainswords & Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 19,
+      "color": 12131356,
+      "baseW": 20,
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "am_chimera_ass_co",
+        "armyBook": "MECHANICUS",
+        "name": "Company Chimeras",
+        "moveCm": 20,
+        "save": 3,
+        "caf": 1,
+        "morale": 3,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Multi-Lasers",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 10033947,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      }
+    },
+    {
+      "key": "card_am_titan_defense_co",
+      "cardType": "COMPANY",
+      "cardName": "Tech-Guard Titan Defense Company",
+      "armyBook": "MECHANICUS",
+      "name": "Titan Defense Guard Company",
+      "composition": "Tactical HQ stand & Command Rhino, 3 Tactical Platoons (19 stands & 1 Rhino)",
+      "points": 500,
+      "breakPoint": 10,
+      "morale": 3,
+      "vpValue": 5,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Tech-Guard Heavy Lasguns",
+        "rangeCm": 50,
+        "dice": 4,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 19,
+      "color": 14427686,
+      "baseW": 20,
+      "baseH": 20
+    },
+    {
+      "key": "card_am_stormblade_co",
+      "cardType": "COMPANY",
+      "cardName": "Tech-Guard Stormblade Company",
+      "armyBook": "MECHANICUS",
+      "name": "Tech-Guard Stormblade Super-Heavy Company",
+      "composition": "3 Stormblade Super-Heavy Plasma Tanks",
+      "points": 1000,
+      "breakPoint": 2,
+      "morale": 3,
+      "vpValue": 10,
+      "superHeavy": true,
+      "moveCm": 15,
+      "save": 2,
+      "caf": 6,
+      "pinningClass": 3,
+      "weapon": {
+        "name": "Plasma Blastgun & Lascannons",
+        "rangeCm": 75,
+        "dice": 6,
+        "toHit": 3,
+        "tsm": -3,
+        "damagesBuildings": true
+      },
+      "standsCount": 3,
+      "color": 8330525,
+      "baseW": 34,
+      "baseH": 42
+    },
   {
     "key": "card_am_mech_tac",
     "cardType": "SUPPORT",
@@ -8003,6 +9467,11 @@ window.setMapPreset = function(preset) {
   ['INDUSTRIAL', 'RIVER', 'FOREST', 'RANDOM'].forEach(p => {
     const b = document.getElementById(`map-preset-${p}`);
     if (b) b.className = (p === preset) ? 'btn-primary' : '';
+    const card = document.getElementById(`map-card-${p}`);
+    if (card) {
+      if (p === preset) card.classList.add('active');
+      else card.classList.remove('active');
+    }
   });
   const topMapBtn = document.getElementById('btn-map-toggle');
   if (topMapBtn) {
