@@ -7103,6 +7103,8 @@ const UNIT_CATALOG = {
       "key": "card_eld_revenant",
       "cardType": "SPECIAL",
       "cardName": "Revenant Scout Titan",
+      "noCoherency": true,
+      "independent": true,
       "armyBook": "ELDAR",
       "name": "Revenant Scout Titan",
       "composition": "1 Revenant Scout Titan (250 pts, 3 VP, Holo-Field, Jump Jets, Agile)",
@@ -7137,6 +7139,8 @@ const UNIT_CATALOG = {
       "key": "card_eld_revenant_pair",
       "cardType": "SPECIAL",
       "cardName": "Revenant Scout Titans (Pair)",
+      "noCoherency": true,
+      "independent": true,
       "armyBook": "ELDAR",
       "name": "Revenant Scout Titans Pair",
       "composition": "2 Revenant Scout Titans (500 pts, 3 VP each, Holo-Fields, Jump Jets, Agile)",
@@ -22666,6 +22670,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // Multi-Weapon Salvo & Stand System
     const isSalvoUnit = (firerDet.maxSalvos || 1) > 1;
+    const salvosUsed = 1;
     const salvoIdx = firerDet.salvosFired || 0;
     const activeSalvoWpn = isSalvoUnit ? this.getSalvoWeapon(firerDet, salvoIdx) : null;
     if (split && !isSalvoUnit) sol.validPairs = [sol.validPairs[0]];
@@ -22797,7 +22802,7 @@ class NetEpicScene extends Phaser.Scene {
           if (!saved && (vDet.pinningClass === 1 || vDet.pinningClass === 2)) {
             const hasMedic = this.detachments.some(md =>
               md.faction === vDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
-              Phaser.Math.Distance.Between(vStand.container.x, vStand.container.y, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
+              Phaser.Math.Distance.Between(victimStand.container.x, victimStand.container.y, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
             );
             if (hasMedic) {
               const medRoll = Phaser.Math.Between(1, 6);
@@ -23063,10 +23068,10 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // After a shot: track which stands / Titan weapon salvos have fired. Detachment is "fired" once everything has been used.
-  markFirerAfterShot(firerDet, pairs, split, salvosUsed) {
+  markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
     if (!firerDet.standsFired) firerDet.standsFired = new Set();
     if ((firerDet.maxSalvos || 1) > 1) {
-      firerDet.salvosFired = (firerDet.salvosFired || 0) + salvosUsed;
+      firerDet.salvosFired = (firerDet.salvosFired || 0) + (salvosUsed || 1);
       firerDet.fired = firerDet.salvosFired >= firerDet.maxSalvos;
     } else if (split) {
       pairs.forEach(p => firerDet.standsFired.add(p.shooter.id));
@@ -24425,10 +24430,24 @@ class NetEpicScene extends Phaser.Scene {
     if (!det) return;
     if (this.isRotatingGizmo) this.closeRotationGizmo();
     this.resolveDetachmentSpacing(det);
-    if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
-    if (!this.checkEngagementMoveRule(det)) return;
-    if (!this.checkFallBackMoveRule(det)) return;
-    if (!this.checkTerrainMoveRule(det)) return;
+
+    // AI Safety Fallback: If an AI move violates any movement rule, revert to start position, mark moved and continue without freezing
+    if (this.isFactionAI(det.faction)) {
+      if ((det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) ||
+          !this.checkEngagementMoveRule(det) ||
+          !this.checkFallBackMoveRule(det) ||
+          !this.checkTerrainMoveRule(det)) {
+        this.undoDetachmentMove();
+        det.moved = true;
+        this.finishMovementActivation();
+        return;
+      }
+    } else {
+      if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
+      if (!this.checkEngagementMoveRule(det)) return;
+      if (!this.checkFallBackMoveRule(det)) return;
+      if (!this.checkTerrainMoveRule(det)) return;
+    }
 
     const wasDeepStriking = Boolean(det.deepStrikeActive);
     if (wasDeepStriking) {
@@ -24539,35 +24558,47 @@ class NetEpicScene extends Phaser.Scene {
       const firer = this.detachments.find(d => d.id === firerId);
       if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
         firer.orderRevealed = true;
-        this.executeRangedAttack(firer, this.snapTarget, true);
+        try {
+          this.executeRangedAttack(firer, this.snapTarget, true);
+        } catch (err) {
+          console.error("Error executing Snap Fire attack:", err);
+        }
       }
       // Re-check if more First Fire detachments can still Snap Fire at the surviving stands
-      const enemySide = this.snapTarget.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-      this.snapCandidates = this.detachments.filter(d =>
-        d.faction === enemySide &&
-        d.stands.length > 0 &&
-        !d.embarkedOn &&
-        !d.inReserve &&
-        this.snapTarget.stands.length > 0 &&
-        d.order === 'FIRST_FIRE' &&
-        !d.fired &&
-        this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
-      );
-      if (this.snapCandidates.length > 0) {
-        this.previewSnapFirer = this.snapCandidates[0];
-        this.updateDetachmentBadge(this.snapTarget);
-        prevCandidates.forEach(c => this.updateDetachmentBadge(c));
-        this.updateUI();
-        this.drawOverlays();
-        this.checkAndRunAITurn();
-        return;
+      if (this.snapTarget && this.snapTarget.stands.length > 0) {
+        const enemySide = this.snapTarget.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+        this.snapCandidates = this.detachments.filter(d =>
+          d.faction === enemySide &&
+          d.stands.length > 0 &&
+          !d.embarkedOn &&
+          !d.inReserve &&
+          this.snapTarget &&
+          this.snapTarget.stands.length > 0 &&
+          d.order === 'FIRST_FIRE' &&
+          !d.fired &&
+          this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
+        );
+        if (this.snapCandidates.length > 0) {
+          this.previewSnapFirer = this.snapCandidates[0];
+          this.updateDetachmentBadge(this.snapTarget);
+          prevCandidates.forEach(c => this.updateDetachmentBadge(c));
+          this.updateUI();
+          this.drawOverlays();
+          this.checkAndRunAITurn();
+          return;
+        }
       }
     }
+
+    const snapBannerEl = document.getElementById('snapfire-banner');
+    if (snapBannerEl) snapBannerEl.style.display = 'none';
 
     this.phase = 'MOVEMENT';
     this.snapTarget = null;
     this.snapCandidates = [];
     this.previewSnapFirer = null;
+    this.overlayGfx.clear();
+    this.losGfx.clear();
     if (prevTarget && prevTarget.stands.length > 0) this.updateDetachmentBadge(prevTarget);
     prevCandidates.forEach(c => { if (c.stands.length > 0) this.updateDetachmentBadge(c); });
     this.finishMovementActivation();
@@ -25234,6 +25265,9 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   checkCoherency(det) {
+    if (!det) return true;
+    // NetEpic Gold Rules: Single models, Titans, Revenant Scout Titan pairs, Warhound pairs, and Independent units do NOT observe coherency
+    if (det.noCoherency || det.isTitan || det.independent || det.key === 'card_eld_revenant_pair') return true;
     const stands = det.stands;
     if (stands.length <= 1) return true;
     const visited = new Set([0]);
@@ -25514,23 +25548,26 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    const isCoherent = this.checkCoherency(det);
+    const observesCoherency = !det.noCoherency && !det.isTitan && !det.independent && det.key !== 'card_eld_revenant_pair' && det.stands.length > 1;
+    const isCoherent = observesCoherency ? this.checkCoherency(det) : true;
     const isEngageValid = this.checkEngagementMoveRule(det);
     const isFallBackValid = this.checkFallBackMoveRule(det);
     const isTerrainValid = this.checkTerrainMoveRule(det);
-    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isCoherent) ? 'block' : 'none';
+    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && observesCoherency && !isCoherent) ? 'block' : 'none';
     document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
     document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
     document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
 
-    // Coherency web (Cyan when Group Move is ON and coherent, Green when Single-Stand and coherent, Orange when out of coherency)
-    const webColor = !isCoherent ? 0xf59e0b : (this.groupMoveMode ? 0x38bdf8 : 0x22c55e);
-    for (let i = 0; i < det.stands.length; i++) {
-      for (let j = i + 1; j < det.stands.length; j++) {
-        const s1 = det.stands[i].container, s2 = det.stands[j].container;
-        if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
-          this.overlayGfx.lineStyle(this.groupMoveMode ? 2.5 : 2, webColor, 0.65);
-          this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
+    // Coherency web (only for detachments that observe coherency)
+    if (observesCoherency) {
+      const webColor = !isCoherent ? 0xf59e0b : (this.groupMoveMode ? 0x38bdf8 : 0x22c55e);
+      for (let i = 0; i < det.stands.length; i++) {
+        for (let j = i + 1; j < det.stands.length; j++) {
+          const s1 = det.stands[i].container, s2 = det.stands[j].container;
+          if (Phaser.Math.Distance.Between(s1.x, s1.y, s2.x, s2.y) <= COHERENCY_PX + 1) {
+            this.overlayGfx.lineStyle(this.groupMoveMode ? 2.5 : 2, webColor, 0.65);
+            this.overlayGfx.lineBetween(s1.x, s1.y, s2.x, s2.y);
+          }
         }
       }
     }
