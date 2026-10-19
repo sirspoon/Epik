@@ -11555,6 +11555,272 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments = [];
   }
 
+    getCompanyCasualties(det) {
+    if (!det.companyCardId) return det.casualties || 0;
+    return this.detachments
+      .filter(d => d.companyCardId === det.companyCardId)
+      .reduce((sum, d) => sum + (d.casualties || 0), 0);
+  }
+
+  getCompanySubDetachments(template) {
+    if (template.cardType !== 'COMPANY' || template.standsCount <= 1) {
+      return [{ ...template, subName: template.name, subStands: template.standsCount, transportStands: (template.dedicatedTransport ? template.dedicatedTransport.standsCount : 0) }];
+    }
+    const total = template.standsCount;
+    const name = template.cardName || template.name;
+
+    // Specific bespoke company breakdowns
+    if (template.key === 'card_sm_battle_co') {
+      return [
+        { ...template, subName: name + ' - HQ', subStands: 1, transportStands: 1 },
+        { ...template, subName: name + ' - Tactical Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - Assault Detachment', subStands: 6, moveCm: 15, caf: 3, transportStands: 3 },
+        { ...template, subName: name + ' - Devastator Detachment', subStands: 6, weapon: { name: 'Lascannons & Heavy Missiles', rangeCm: 60, dice: 3, toHit: 4, tsm: -2 }, transportStands: 3 }
+      ];
+    }
+    if (template.key === 'card_eld_aspect_host') {
+      return [
+        { ...template, subName: name + ' - Exarch CHQ', subStands: 1, transportStands: 0 },
+        { ...template, subName: name + ' - Dire Avengers', subStands: 6, transportStands: 1 },
+        { ...template, subName: name + ' - Striking Scorpions', subStands: 6, caf: 4, transportStands: 1 },
+        { ...template, subName: name + ' - Fire Dragons', subStands: 6, weapon: { name: 'Fusion Guns', rangeCm: 25, dice: 3, toHit: 4, tsm: -3 }, transportStands: 1 }
+      ];
+    }
+    if (template.key === 'card_chs_world_eaters_co') {
+      return [
+        { ...template, subName: name + ' - Chaos Lord HQ', subStands: 1, transportStands: 1 },
+        { ...template, subName: name + ' - 1st CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - 2nd CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - Khorne Berzerkers', subStands: 6, caf: 4, transportStands: 3 }
+      ];
+    }
+    if (template.key === 'card_chs_death_guard_co') {
+      return [
+        { ...template, subName: name + ' - Chaos Lord HQ', subStands: 1, transportStands: 1 },
+        { ...template, subName: name + ' - 1st CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - 2nd CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - Plague Marines', subStands: 6, regeneration: true, transportStands: 3 }
+      ];
+    }
+    if (template.key === 'card_chs_emperors_children_co') {
+      return [
+        { ...template, subName: name + ' - Chaos Lord HQ', subStands: 1, transportStands: 1 },
+        { ...template, subName: name + ' - 1st CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - 2nd CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - Noise Marines', subStands: 6, weapon: { name: 'Sonic Blasters', rangeCm: 40, dice: 4, toHit: 4, tsm: -1 }, transportStands: 3 }
+      ];
+    }
+    if (template.key === 'card_chs_thousand_sons_co') {
+      return [
+        { ...template, subName: name + ' - Sorcerer Lord HQ', subStands: 1, isPsyker: true, psychicRank: 4, transportStands: 1 },
+        { ...template, subName: name + ' - 1st CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - 2nd CSM Detachment', subStands: 6, transportStands: 3 },
+        { ...template, subName: name + ' - Rubric Marines', subStands: 6, save: 4, transportStands: 3 }
+      ];
+    }
+    if (template.key === 'card_chs_renegades_co') {
+      return [
+        { ...template, subName: name + ' - Champion HQ', subStands: 3 },
+        { ...template, subName: name + ' - Chaos Marines', subStands: 6 },
+        { ...template, subName: name + ' - Beastman Warband', subStands: 6 },
+        { ...template, subName: name + ' - Cultist Detachment', subStands: 6 }
+      ];
+    }
+    if (template.key === 'card_chs_daemon_co') {
+      return [
+        { ...template, subName: name + ' - Minotaur Warband', subStands: 6, daemonicTerror: true },
+        { ...template, subName: name + ' - Troll Warband', subStands: 6, regeneration: true },
+        { ...template, subName: name + ' - Lesser Daemons', subStands: 8, daemonicTerror: true }
+      ];
+    }
+    if (template.key === 'card_ork_snakebite_co') {
+      return [
+        { ...template, subName: name + ' - Nobz & Boss', subStands: 4 },
+        { ...template, subName: name + ' - Boarboyz Outriders', subStands: 5, moveCm: 20, caf: 3 },
+        { ...template, subName: name + ' - 1st Boyz Mob', subStands: 7 },
+        { ...template, subName: name + ' - 2nd Boyz Mob', subStands: 8 }
+      ];
+    }
+    if (template.key === 'card_tyr_biotitan_host') {
+      return [
+        { ...template, subName: name + ' - Hierophant Bio-Titan', subStands: 1, maxShields: 8 },
+        { ...template, subName: name + ' - 1st Hierodule', subStands: 1, maxShields: 4 },
+        { ...template, subName: name + ' - 2nd Hierodule', subStands: 1, maxShields: 4 }
+      ];
+    }
+    if (template.key === 'card_eld_engine_host') {
+      return [
+        { ...template, subName: name + ' - Scorpion Super-Heavy', subStands: 1 },
+        { ...template, subName: name + ' - 1st Cobra Super-Heavy', subStands: 1 },
+        { ...template, subName: name + ' - 2nd Cobra Super-Heavy', subStands: 1 }
+      ];
+    }
+    if (template.key === 'card_am_stormblade_co' || template.key === 'card_sqt_goliath_battery') {
+      return [
+        { ...template, subName: name + ' #1', subStands: 1 },
+        { ...template, subName: name + ' #2', subStands: 1 },
+        { ...template, subName: name + ' #3', subStands: 1 }
+      ];
+    }
+
+    // Generic patterns by stand counts
+    const hasTrans = Boolean(template.dedicatedTransport);
+    const totalTrans = hasTrans ? (template.dedicatedTransport.standsCount || 0) : 0;
+
+    if (total === 19) {
+      const hqTrans = totalTrans >= 10 ? 1 : 0;
+      const detTrans = totalTrans >= 10 ? 3 : Math.floor(totalTrans / 3);
+      return [
+        { ...template, subName: name + ' - HQ', subStands: 1, transportStands: hqTrans },
+        { ...template, subName: name + ' - 1st Detachment', subStands: 6, transportStands: detTrans },
+        { ...template, subName: name + ' - 2nd Detachment', subStands: 6, transportStands: detTrans },
+        { ...template, subName: name + ' - 3rd Detachment', subStands: 6, transportStands: detTrans }
+      ];
+    }
+
+    if (total === 13) {
+      const hqTrans = totalTrans >= 7 ? 1 : 0;
+      const detTrans = totalTrans >= 7 ? 2 : Math.floor(totalTrans / 3);
+      return [
+        { ...template, subName: name + ' - HQ', subStands: 1, transportStands: hqTrans },
+        { ...template, subName: name + ' - 1st Detachment', subStands: 4, transportStands: detTrans },
+        { ...template, subName: name + ' - 2nd Detachment', subStands: 4, transportStands: detTrans },
+        { ...template, subName: name + ' - 3rd Detachment', subStands: 4, transportStands: detTrans }
+      ];
+    }
+
+    if (total === 10) {
+      return [
+        { ...template, subName: name + ' - Command Squadron', subStands: 1 },
+        { ...template, subName: name + ' - 1st Squadron', subStands: 3 },
+        { ...template, subName: name + ' - 2nd Squadron', subStands: 3 },
+        { ...template, subName: name + ' - 3rd Squadron', subStands: 3 }
+      ];
+    }
+
+    if (total === 16) {
+      return [
+        { ...template, subName: name + ' - CHQ', subStands: 1 },
+        { ...template, subName: name + ' - 1st Squadron', subStands: 5 },
+        { ...template, subName: name + ' - 2nd Squadron', subStands: 5 },
+        { ...template, subName: name + ' - 3rd Squadron', subStands: 5 }
+      ];
+    }
+
+    if (total === 17) {
+      const hqTrans = totalTrans >= 10 ? 1 : 0;
+      const detTrans = totalTrans >= 10 ? 3 : Math.floor(totalTrans / 3);
+      return [
+        { ...template, subName: name + ' - CHQ', subStands: 2, transportStands: hqTrans },
+        { ...template, subName: name + ' - 1st Platoon', subStands: 5, transportStands: detTrans },
+        { ...template, subName: name + ' - 2nd Platoon', subStands: 5, transportStands: detTrans },
+        { ...template, subName: name + ' - 3rd Platoon', subStands: 5, transportStands: detTrans }
+      ];
+    }
+
+    if (total === 32) {
+      return [
+        { ...template, subName: name + ' - CHQ', subStands: 2, transportStands: totalTrans >= 2 ? 2 : 0 },
+        { ...template, subName: name + ' - 1st Platoon', subStands: 10, transportStands: 0 },
+        { ...template, subName: name + ' - 2nd Platoon', subStands: 10, transportStands: 0 },
+        { ...template, subName: name + ' - 3rd Platoon', subStands: 10, transportStands: 0 }
+      ];
+    }
+
+    if (total === 30) {
+      return [
+        { ...template, subName: name + ' - Warlord & Hearthguard', subStands: 3 },
+        { ...template, subName: name + ' - 1st Brotherhood Detachment', subStands: 9 },
+        { ...template, subName: name + ' - 2nd Brotherhood Detachment', subStands: 9 },
+        { ...template, subName: name + ' - 3rd Brotherhood Detachment', subStands: 9 }
+      ];
+    }
+
+    if (total === 23) {
+      return [
+        { ...template, subName: name + ' - Warboss & Nobz Mob', subStands: 8 },
+        { ...template, subName: name + ' - 1st Boyz Mob', subStands: 5 },
+        { ...template, subName: name + ' - 2nd Boyz Mob', subStands: 5 },
+        { ...template, subName: name + ' - 3rd Boyz Mob', subStands: 5 }
+      ];
+    }
+
+    if (total === 24) {
+      return [
+        { ...template, subName: name + ' - Synapse / Leader Brood', subStands: 3, synapse: true },
+        { ...template, subName: name + ' - 1st Swarm Brood', subStands: 7 },
+        { ...template, subName: name + ' - 2nd Swarm Brood', subStands: 7 },
+        { ...template, subName: name + ' - 3rd Swarm Brood', subStands: 7 }
+      ];
+    }
+
+    if (total === 21) {
+      return [
+        { ...template, subName: name + ' - HQ / Leaders', subStands: 3 },
+        { ...template, subName: name + ' - 1st Detachment', subStands: 6 },
+        { ...template, subName: name + ' - 2nd Detachment', subStands: 6 },
+        { ...template, subName: name + ' - 3rd Detachment', subStands: 6 }
+      ];
+    }
+
+    if (total === 18) {
+      return [
+        { ...template, subName: name + ' - 1st Detachment', subStands: 6 },
+        { ...template, subName: name + ' - 2nd Detachment', subStands: 6 },
+        { ...template, subName: name + ' - 3rd Detachment', subStands: 6 }
+      ];
+    }
+
+    if (total === 15) {
+      return [
+        { ...template, subName: name + ' - Command Mob', subStands: 3 },
+        { ...template, subName: name + ' - 1st Mob', subStands: 6 },
+        { ...template, subName: name + ' - 2nd Mob', subStands: 6 }
+      ];
+    }
+
+    if (total === 9) {
+      return [
+        { ...template, subName: name + ' - 1st Battery/Squadron', subStands: 3 },
+        { ...template, subName: name + ' - 2nd Battery/Squadron', subStands: 3 },
+        { ...template, subName: name + ' - 3rd Battery/Squadron', subStands: 3 }
+      ];
+    }
+
+    if (total === 7) {
+      return [
+        { ...template, subName: name + ' - Knight Baron', subStands: 1 },
+        { ...template, subName: name + ' - 1st Knight Lance', subStands: 3 },
+        { ...template, subName: name + ' - 2nd Knight Lance', subStands: 3 }
+      ];
+    }
+
+    if (total === 4) {
+      return [
+        { ...template, subName: name + ' - Alpha Brood', subStands: 2 },
+        { ...template, subName: name + ' - Beta Brood', subStands: 2 }
+      ];
+    }
+
+    if (total === 3) {
+      return [
+        { ...template, subName: name + ' #1', subStands: 1 },
+        { ...template, subName: name + ' #2', subStands: 1 },
+        { ...template, subName: name + ' #3', subStands: 1 }
+      ];
+    }
+
+    // Fallback
+    const d1 = Math.ceil(total / 3);
+    const d2 = Math.ceil((total - d1) / 2);
+    const d3 = total - d1 - d2;
+    return [
+      { ...template, subName: name + ' - 1st Detachment', subStands: d1 },
+      { ...template, subName: name + ' - 2nd Detachment', subStands: d2 },
+      { ...template, subName: name + ' - 3rd Detachment', subStands: d3 }
+    ];
+  }
+
   spawnArmyLists(impKeys, orkKeys, useDeploymentPhase = true) {
     this.clearAllDetachments();
 
@@ -11570,71 +11836,83 @@ class NetEpicScene extends Phaser.Scene {
     const impY = useDeploymentPhase ? (BOARD_H - 220) : 770;
     const orkY = useDeploymentPhase ? 180 : 450;
 
-    const impCount = impKeys.length;
-    impKeys.forEach((key, idx) => {
-      const template = window.findCatalogUnit(key);
-      if (!template) return;
-      const spanX = Math.min(1400, Math.max(400, (impCount - 1) * 240));
-      const startX = (BOARD_W / 2) - (spanX / 2) + (impCount > 1 ? (idx * (spanX / (impCount - 1))) : 0) - 36;
-      const startY = impY + (idx % 2) * 35;
-      const mainDet = this.createDetachment({
-        ...template,
-        faction: 'IMPERIUM',
-        armyBook: template.armyBook || window.sideFaction.IMPERIUM || 'IMPERIUM',
-        id: `imp_${idx}_${key}`,
-        name: `${template.name} #${idx + 1}`,
-        startX: Math.round(startX),
-        startY: startY
-      });
+    const spawnSideCards = (keys, side, baseY) => {
+      const cardCount = keys.length;
+      const isImp = (side === 'IMPERIUM');
+      const sidePrefix = isImp ? 'imp' : 'ork';
 
-      // Automatically spawn and embark dedicated transports included in the Gold Card
-      if (template.dedicatedTransport) {
-        const tCfg = template.dedicatedTransport;
-        const transDet = this.createDetachment({
-          ...tCfg,
-          faction: 'IMPERIUM',
-          armyBook: template.armyBook || window.sideFaction.IMPERIUM || 'IMPERIUM',
-          id: `imp_${idx}_${key}_trans`,
-          name: `${tCfg.name} #${idx + 1}`,
-          startX: Math.round(startX),
-          startY: Math.min(BOARD_H - 45, startY + 45)
+      keys.forEach((key, cardIdx) => {
+        const template = window.findCatalogUnit(key);
+        if (!template) return;
+
+        const spanX = Math.min(1400, Math.max(400, (cardCount - 1) * 240));
+        const startX = (BOARD_W / 2) - (spanX / 2) + (cardCount > 1 ? (cardIdx * (spanX / (cardCount - 1))) : 0) - 36;
+        const startY = baseY + (isImp ? 1 : -1) * (cardIdx % 2) * 35;
+
+        const subConfigs = this.getCompanySubDetachments(template);
+        const isCompany = (template.cardType === 'COMPANY' && subConfigs.length > 1);
+
+        subConfigs.forEach((subCfg, subIdx) => {
+          let detX = startX;
+          let detY = startY;
+
+          if (isCompany) {
+            const numSubs = subConfigs.length;
+            const spread = Math.min(260, (numSubs - 1) * 75);
+            detX = Math.round(startX - (spread / 2) + (subIdx * (spread / (numSubs - 1))));
+            // Command/HQ stands placed slightly in rear of battle line
+            if (subCfg.subStands <= 2 && subIdx === 0) {
+              detY += isImp ? 42 : -42;
+            }
+          }
+
+          const detId = isCompany ? `${sidePrefix}_${cardIdx}_${key}_sub_${subIdx}` : `${sidePrefix}_${cardIdx}_${key}`;
+          const detName = isCompany ? subCfg.subName : `${template.name} #${cardIdx + 1}`;
+
+          const mainDet = this.createDetachment({
+            ...subCfg,
+            standsCount: subCfg.subStands,
+            faction: side,
+            armyBook: template.armyBook || window.sideFaction[side] || side,
+            id: detId,
+            name: detName,
+            companyCardId: isCompany ? `${sidePrefix}_${cardIdx}_${key}` : null,
+            companyCardKey: template.key,
+            companyName: template.cardName || template.name,
+            companyBreakPoint: template.breakPoint,
+            companyVpValue: template.vpValue,
+            companyMorale: template.morale,
+            companyTotalStands: template.standsCount,
+            isCompanyDetachment: isCompany,
+            startX: Math.round(detX),
+            startY: detY
+          });
+
+          // Automatically spawn and embark dedicated transports for this sub-detachment
+          if (template.dedicatedTransport && (subCfg.transportStands > 0 || (!isCompany && template.dedicatedTransport.standsCount > 0))) {
+            const tCfg = template.dedicatedTransport;
+            const tCount = isCompany ? subCfg.transportStands : tCfg.standsCount;
+            if (tCount > 0) {
+              const transDet = this.createDetachment({
+                ...tCfg,
+                standsCount: tCount,
+                faction: side,
+                armyBook: template.armyBook || window.sideFaction[side] || side,
+                id: `${detId}_trans`,
+                name: `${tCfg.name} (${detName})`,
+                companyCardId: isCompany ? `${sidePrefix}_${cardIdx}_${key}` : null,
+                startX: Math.round(detX),
+                startY: isImp ? Math.min(BOARD_H - 45, detY + 40) : Math.max(45, detY - 40)
+              });
+              this.embarkDetachment(mainDet, transDet, true);
+            }
+          }
         });
-        this.embarkDetachment(mainDet, transDet, true);
-      }
-    });
-
-    const orkCount = orkKeys.length;
-    orkKeys.forEach((key, idx) => {
-      const template = window.findCatalogUnit(key);
-      if (!template) return;
-      const spanX = Math.min(1400, Math.max(400, (orkCount - 1) * 240));
-      const startX = (BOARD_W / 2) - (spanX / 2) + (orkCount > 1 ? (idx * (spanX / (orkCount - 1))) : 0) - 36;
-      const startY = orkY - (idx % 2) * 35;
-      const mainDet = this.createDetachment({
-        ...template,
-        faction: 'ORKS',
-        armyBook: template.armyBook || window.sideFaction.ORKS || 'ORKS',
-        id: `ork_${idx}_${key}`,
-        name: `${template.name} #${idx + 1}`,
-        startX: Math.round(startX),
-        startY: startY
       });
+    };
 
-      // Automatically spawn and embark dedicated transports included in the Gold Card
-      if (template.dedicatedTransport) {
-        const tCfg = template.dedicatedTransport;
-        const transDet = this.createDetachment({
-          ...tCfg,
-          faction: 'ORKS',
-          armyBook: template.armyBook || window.sideFaction.ORKS || 'ORKS',
-          id: `ork_${idx}_${key}_trans`,
-          name: `${tCfg.name} #${idx + 1}`,
-          startX: Math.round(startX),
-          startY: Math.max(45, startY - 45)
-        });
-        this.embarkDetachment(mainDet, transDet, true);
-      }
-    });
+    spawnSideCards(impKeys, 'IMPERIUM', impY);
+    spawnSideCards(orkKeys, 'ORKS', orkY);
 
     // Select first player-controlled detachment by default
     this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction)) || this.detachments[0] || null;
@@ -13505,6 +13783,53 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   checkBreakPoint(det) {
+    // NetEpic Core Rules p. 41: Company Cards pool casualties across all constituent detachments
+    if (det.companyCardId) {
+      const coDets = this.detachments.filter(d => d.companyCardId === det.companyCardId);
+      const coCasualties = this.getCompanyCasualties(det);
+      const coBreakPoint = det.companyBreakPoint || det.breakPoint;
+      const coVpValue = det.companyVpValue || det.vpValue;
+      const coMorale = det.companyMorale || det.morale;
+      const alreadyBroken = coDets.some(d => d.companyBroken);
+
+      if (!alreadyBroken && coCasualties >= coBreakPoint) {
+        coDets.forEach(d => { d.companyBroken = true; d.broken = true; });
+        const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+        const scoringName = this.getSideName(scoringSide);
+        this.vp[scoringSide] += coVpValue;
+        window.sfx.playHorn();
+
+        const dc = this.getDetachmentCenter(det);
+        this.spawnFloatingText(dc.x, dc.y - 24, `🏢 ${det.companyName || 'COMPANY'} BROKEN! (+${coVpValue} VP)`, '#f59e0b', '14px');
+        this.log(`🏢 <b>${det.companyName || det.name}</b> reached Company Break Point (${coCasualties}/${coBreakPoint} lost)! <b>+${coVpValue} VP</b> to ${scoringName}. All constituent detachments must test Morale!`);
+
+        // Each surviving detachment makes an individual Morale check (NetEpic Core Rules p. 41)
+        coDets.forEach(coDet => {
+          if (coDet.stands.length === 0) return;
+          if (this.hasSynapseAura(coDet)) {
+            this.log(`🧬 <b>${coDet.name}</b>: Fearless under Hive Mind Synapse!`);
+            return;
+          }
+          const moraleRoll = Phaser.Math.Between(1, 6);
+          const cDetCenter = this.getDetachmentCenter(coDet);
+          if (moraleRoll < coMorale) {
+            coDet.order = 'FALL_BACK';
+            coDet.orderRevealed = true;
+            const engagedVictims = coDet.stands.filter(s => this.isStandEngaged(s));
+            engagedVictims.forEach(v => this.removeCasualty(coDet, v));
+            const routNote = engagedVictims.length > 0 ? ` (${engagedVictims.length} stand(s) in melee overrun & destroyed!)` : '';
+            this.updateDetachmentBadge(coDet);
+            this.spawnFloatingText(cDetCenter.x, cDetCenter.y - 20, `🏳️ FAILED MORALE → FALL BACK!`, '#f59e0b', '12px');
+            this.log(`🏳️ <b>${coDet.name}</b> failed Morale (${moraleRoll} < ${coMorale}+) → <b>FALL BACK!</b>${routNote}`);
+          } else {
+            this.spawnFloatingText(cDetCenter.x, cDetCenter.y - 20, `⚔️ MORALE HELD (${moraleRoll})`, '#fde047', '12px');
+            this.log(`⚔️ <b>${coDet.name}</b> passed Morale (${moraleRoll} >= ${coMorale}+)!`);
+          }
+        });
+      }
+      return;
+    }
+
     if (!det.broken && det.casualties >= det.breakPoint) {
       det.broken = true;
       const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
@@ -14421,7 +14746,7 @@ class NetEpicScene extends Phaser.Scene {
         let score = hitPotential * 10 + (7 - eDet.save);
         if (eDet.passengerDet) score += 18; // High priority: enemy transports carrying troops!
         if (eDet.isTitan) score += 16;      // Strip enemy Void Shields / Power Fields!
-        if (!eDet.broken && (eDet.casualties + 1 >= eDet.breakPoint)) score += 15;
+        if (!eDet.broken && (this.getCompanyCasualties(eDet) + 1 >= (eDet.companyBreakPoint || eDet.breakPoint))) score += 15;
         if (score > bestScore) {
           bestScore = score;
           bestTarget = eDet;
@@ -16091,7 +16416,9 @@ class NetEpicScene extends Phaser.Scene {
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit - (d.toHitPenalty || 0)}+, TSM ${d.weapon.tsm})`;
       const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
-      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${chaplainBadge}${apothecaryBadge}${techmarineBadge}${painboyBadge}${mekboyBadge}${warbossBadge}${deathrollaBadge}${dhBadge}${yarrickBadge}${commissarBadge}${baronBadge}${techpriestBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      const breakLabel = d.isCompanyDetachment ? `Co Break: ${this.getCompanyCasualties(d)}/${d.companyBreakPoint}` : `Break: ${d.breakPoint} (${d.casualties}/${d.breakPoint})`;
+      const coPrefix = d.isCompanyDetachment ? `[${d.companyName}] ` : '';
+      selTitle.innerText = `[${bookTag}] ${coPrefix}${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, ${breakLabel}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${chaplainBadge}${apothecaryBadge}${techmarineBadge}${painboyBadge}${mekboyBadge}${warbossBadge}${deathrollaBadge}${dhBadge}${yarrickBadge}${commissarBadge}${baronBadge}${techpriestBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? (d.inReserve ? 'Status: ☄️ Orbital Reserve' : 'Phase: Deployment')
