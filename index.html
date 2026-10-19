@@ -7100,6 +7100,7 @@ const UNIT_CATALOG = {
       "caf": 7,
       "pinningClass": 4,
       "isTitan": true,
+      "isAgile": true,
       "superHeavy": true,
       "holoField": true,
       "skimmer": true,
@@ -7113,6 +7114,78 @@ const UNIT_CATALOG = {
         "damagesBuildings": true
       },
       "standsCount": 1,
+      "color": 16096779,
+      "baseW": 34,
+      "baseH": 38
+    },
+    {
+      "key": "card_eld_revenant_pair",
+      "cardType": "SPECIAL",
+      "cardName": "Revenant Scout Titans (Pair)",
+      "armyBook": "ELDAR",
+      "name": "Revenant Scout Titans Pair",
+      "composition": "2 Revenant Scout Titans (Holo-Fields, Jump Jets, Agile)",
+      "points": 400,
+      "breakPoint": 1,
+      "morale": 1,
+      "vpValue": 4,
+      "moveCm": 30,
+      "save": 3,
+      "caf": 7,
+      "pinningClass": 4,
+      "isTitan": true,
+      "isAgile": true,
+      "superHeavy": true,
+      "holoField": true,
+      "skimmer": true,
+      "jump": true,
+      "specialAbilities": [
+        "Agile",
+        "HoloField",
+        "JumpJets",
+        "HardToHitOnCharge"
+      ],
+      "weapon": {
+        "name": "Twin Heavy Pulse Lasers & Missiles",
+        "rangeCm": 75,
+        "dice": 5,
+        "toHit": 3,
+        "tsm": -2,
+        "damagesBuildings": true
+      },
+      "salvos": [
+        {
+          "id": "rev_sq_pulsar",
+          "mount": "Arm Mounts",
+          "name": "Twin Heavy Pulse Lasers",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 2,
+          "tsm": -2,
+          "damagesBuildings": true
+        },
+        {
+          "id": "rev_sq_missiles",
+          "mount": "Shoulder",
+          "name": "Revenant Missile Launcher",
+          "rangeCm": 100,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": 0,
+          "barrage": true,
+          "barrageBp": 4
+        },
+        {
+          "id": "rev_sq_scatter",
+          "mount": "Wing",
+          "name": "Scatter Laser",
+          "rangeCm": 25,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": 0
+        }
+      ],
+      "standsCount": 2,
       "color": 16096779,
       "baseW": 34,
       "baseH": 38
