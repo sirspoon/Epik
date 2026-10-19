@@ -797,6 +797,35 @@ window.sfx = {
     // Deep artillery detonation boom
     setTimeout(() => this.playExplosion(true), 230);
   },
+  playPulsaHum(durationSec = 1.0) {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(85, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + durationSec);
+
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(14, now);
+    lfoGain.gain.setValueAtTime(25, now);
+    lfo.connect(osc.frequency);
+
+    gain.gain.setValueAtTime(0.24, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    lfo.start(now);
+    osc.start(now);
+    lfo.stop(now + durationSec);
+    osc.stop(now + durationSec);
+  },
   playExplosion(isBig = false) {
     const ctx = this.ensureCtx();
     if (!ctx) return;
@@ -4808,27 +4837,32 @@ const UNIT_CATALOG = {
     },
     {
           "key": "card_ork_pulsa_rokkit",
-          "cardType": "SUPPORT",
-          "cardName": "Pulsa Rokkit Battery",
-          "armyBook": "ORKS",
-          "name": "Pulsa Rokkit Heavy Artillery Battery",
-          "composition": "3 Pulsa Rokkits & Ground Shockwave Launch Platforms",
-          "points": 250,
-          "breakPoint": 2,
-          "morale": 4,
-          "vpValue": 3,
-          "moveCm": 5,
-          "save": 4,
-          "caf": 0,
-          "pinningClass": 2,
-          "weapon": {
-                "name": "Pulsa Seismic Ground Wave",
-                "rangeCm": 100,
-                "dice": 3,
-                "toHit": 4,
-                "tsm": -2,
-                "notes": "Heavy seismic shockwave disrupts infantry and vehicles across the impact zone."
-          },
+	  "cardType": "SUPPORT",
+	  "cardName": "Pulsa Rokkit Battery",
+	  "armyBook": "ORKS",
+	  "name": "Pulsa Rokkit Heavy Artillery Battery",
+	  "composition": "3 Pulsa Rokkits & Ground Shockwave Launch Platforms",
+	  "points": 250,
+	  "breakPoint": 2,
+	  "morale": 4,
+	  "vpValue": 3,
+	  "moveCm": 5,
+	  "save": 4,
+	  "caf": 0,
+	  "pinningClass": 2,
+	  "rokkitsRemaining": 3,
+	  "maxRokkits": 3,
+	  "hasFireArc": true,
+	  "fireArcDeg": 30,
+	  "weapon": {
+		"name": "Pulsa Seismic Ground Wave",
+		"pulsaRokkit": true,
+		"rangeCm": 100,
+		"dice": 1,
+		"toHit": 0,
+		"tsm": -6,
+		"notes": "NetEpic Gold: One-shot per carrier (3 total), 1 per turn on First Fire orders. 30° Arc. Range 50 + Art die x 5 cm. Scatters 2D6 cm. 1D6 Landing Table (Phut / Hummmmm... / Kaboom!)."
+	  },
           "standsCount": 3,
           "color": 1409085,
           "baseW": 24,
@@ -11046,6 +11080,7 @@ class NetEpicScene extends Phaser.Scene {
     this.waaaghActive = false;
     this.targetBuildingMode = false;
     this.smokeClouds = [];
+    this.pulsaFields = [];
 
     // Group Formation Move state (double-click any stand or use the HUD toggle button)
     this.groupMoveMode = true;
@@ -11076,6 +11111,7 @@ class NetEpicScene extends Phaser.Scene {
     this.deployGfx = this.add.graphics().setDepth(2);
     this.objGfx = this.add.graphics().setDepth(3);
     this.smokeGfx = this.add.graphics().setDepth(350);
+    this.pulsaGfx = this.add.graphics().setDepth(340);
     this.losGfx = this.add.graphics().setDepth(400);
     this.overlayGfx = this.add.graphics().setDepth(450);
 
@@ -14904,6 +14940,14 @@ class NetEpicScene extends Phaser.Scene {
       if (det.pinningClass > 1 && this.getBuildingAt(x, y)) {
         return false; // Non-infantry cannot enter buildings
       }
+      // Pulsa Seismic Fields: only Titans, Praetorians, Flyers & Skimmers can cross (NetEpic Gold p. 16)
+      if (this.pulsaFields && this.pulsaFields.length > 0 && !det.isTitan && !det.superHeavy && !det.skimmer && !det.flyer && !det.jump) {
+        for (const pf of this.pulsaFields) {
+          if (Phaser.Math.Distance.Between(x, y, pf.x, pf.y) <= pf.r) {
+            return false;
+          }
+        }
+      }
       if (!det.jump && !det.skimmer && this.isPointInImpassableRiver(x, y)) {
         return false; // Ground units cannot end in deep river water outside a bridge/ford
       }
@@ -14994,6 +15038,337 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
 
+  // --- BESPOKE ORK PULSA ROKKIT GRAPHICAL EFFECTS & RENDERER ---
+  spawnPulsaShockwaveFX(x, y, maxRadius = 30, type = 'HUM') {
+    const gfx = this.add.graphics().setDepth(440);
+    const state = { t: 0.05 };
+
+    const colors = {
+      PHUT:   { primary: 0x94a3b8, secondary: 0x64748b, core: 0xcbd5e1, dur: 450 },
+      HUM:    { primary: 0x06b6d4, secondary: 0x10b981, core: 0xa3e635, dur: 750 },
+      KABOOM: { primary: 0xf97316, secondary: 0x22c55e, core: 0xfef08a, dur: 950 }
+    }[type] || { primary: 0x06b6d4, secondary: 0x10b981, core: 0xa3e635, dur: 750 };
+
+    this.tweens.add({
+      targets: state,
+      t: 1,
+      duration: colors.dur,
+      ease: 'Cubic.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const r1 = maxRadius * state.t;
+        const alpha1 = Math.max(0, 1 - state.t * 0.85);
+
+        // Ring 1: Primary Shockwave Ring
+        gfx.lineStyle(type === 'KABOOM' ? 4 : 3, colors.primary, alpha1);
+        gfx.strokeCircle(x, y, r1);
+
+        // Ring 2: Trailing harmonic ripple
+        if (state.t > 0.2) {
+          const t2 = (state.t - 0.2) / 0.8;
+          const r2 = maxRadius * 0.8 * t2;
+          const alpha2 = Math.max(0, (1 - t2) * 0.7);
+          gfx.lineStyle(2, colors.secondary, alpha2);
+          gfx.strokeCircle(x, y, r2);
+        }
+
+        // Ring 3: Tertiary resonance
+        if (state.t > 0.4) {
+          const t3 = (state.t - 0.4) / 0.6;
+          const r3 = maxRadius * 0.55 * t3;
+          const alpha3 = Math.max(0, (1 - t3) * 0.6);
+          gfx.lineStyle(1.5, colors.core, alpha3);
+          gfx.strokeCircle(x, y, r3);
+        }
+
+        // Inner seismic flash
+        gfx.fillStyle(colors.core, alpha1 * 0.35);
+        gfx.fillCircle(x, y, r1 * 0.4);
+      },
+      onComplete: () => gfx.destroy()
+    });
+  }
+
+  drawPulsaFields(time = 0) {
+    if (!this.pulsaGfx) return;
+    this.pulsaGfx.clear();
+    if (!this.pulsaFields || this.pulsaFields.length === 0) return;
+
+    const t = time * 0.003;
+    this.pulsaFields.forEach(pf => {
+      const radius = pf.r || 15;
+      const pulse1 = (Math.sin(t * 3) + 1) * 0.5;
+      const pulse2 = (Math.cos(t * 2.5) + 1) * 0.5;
+
+      // 1. Outer seismic ripple ring expanding and fading
+      const rippleR = radius * (1.1 + 0.35 * ((t * 1.5) % 1));
+      const rippleAlpha = (1 - ((t * 1.5) % 1)) * 0.55;
+      this.pulsaGfx.lineStyle(2, 0x06b6d4, rippleAlpha);
+      this.pulsaGfx.strokeCircle(pf.x, pf.y, rippleR);
+
+      // 2. Base circular seismic hazard zone
+      this.pulsaGfx.fillStyle(0x10b981, 0.18 + 0.08 * pulse1);
+      this.pulsaGfx.fillCircle(pf.x, pf.y, radius);
+
+      // 3. Electric perimeter glow
+      this.pulsaGfx.lineStyle(2.5, 0x34d399, 0.75 + 0.25 * pulse2);
+      this.pulsaGfx.strokeCircle(pf.x, pf.y, radius);
+
+      // 4. Inner energetic resonance core
+      this.pulsaGfx.fillStyle(0xa3e635, 0.35 + 0.15 * pulse1);
+      this.pulsaGfx.fillCircle(pf.x, pf.y, radius * 0.45);
+
+      // 5. Crackling seismic discharge rays
+      const spikes = 6;
+      this.pulsaGfx.lineStyle(1.5, 0x67e8f9, 0.65);
+      for (let i = 0; i < spikes; i++) {
+        const ang = (i / spikes) * Math.PI * 2 + t * 0.8;
+        const innerX = pf.x + Math.cos(ang) * (radius * 0.3);
+        const innerY = pf.y + Math.sin(ang) * (radius * 0.3);
+        const outerX = pf.x + Math.cos(ang) * (radius * (0.85 + 0.15 * Math.sin(t * 5 + i)));
+        const outerY = pf.y + Math.sin(ang) * (radius * (0.85 + 0.15 * Math.sin(t * 5 + i)));
+        this.pulsaGfx.lineBetween(innerX, innerY, outerX, outerY);
+      }
+    });
+  }
+
+  // --- NETEPIC GOLD OFFICIAL PULSA ROKKIT RESOLUTION ENGINE (Army Book p. 16) ---
+  executePulsaRokkitAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+    if (firerDet.order !== 'FIRST_FIRE') {
+      this.log('⚠️ <b>Pulsa Rokkits</b> can only be launched on <b>First Fire</b> orders!');
+      return;
+    }
+    if (firerDet.rokkitFiredThisTurn) {
+      this.log('⚠️ <b>Pulsa Rokkits:</b> Maximum 1 rokkit may be fired per detachment per turn!');
+      return;
+    }
+    if ((firerDet.rokkitsRemaining || 0) <= 0) {
+      this.log('⚠️ All 3 Pulsa Rokkits in this detachment have already been expended!');
+      return;
+    }
+
+    // Find available launcher stand within 30° front arc of the target
+    const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
+    if (sol.validPairs.length === 0) {
+      this.log(`⚠️ <b>${firerDet.name}</b> has no stands with 30° front arc/LoS to <b>${targetDet.name}</b>.`);
+      return;
+    }
+    const shooterStand = sol.validPairs[0].shooter;
+    const targetStand = sol.validPairs[0].target;
+
+    // 1. Roll Artillery Die for Range: 50 + (Artillery Die x 5) cm
+    const artDieRoll = Phaser.Utils.Array.GetRandom([2, 4, 6, 8, 10, 'MISFIRE']);
+    firerDet.rokkitsRemaining = Math.max(0, (firerDet.rokkitsRemaining || 3) - 1);
+    firerDet.rokkitFiredThisTurn = true;
+    firerDet.fired = true;
+    this.updateDetachmentBadge(firerDet);
+
+    if (artDieRoll === 'MISFIRE') {
+      window.sfx.playLaser(true);
+      this.spawnFloatingText(shooterStand.container.x, shooterStand.container.y - 20, '⚠️ MISFIRE! FIZZLE!', '#f87171', '13px');
+      this.log(`⚠️ <b>MISFIRE!</b> The Pulsa Rokkit violently sputters and chokes on its launch rail! The rocket fails to ignite and is lost! (${firerDet.rokkitsRemaining} rokkits remaining)`);
+      this.showDiceRollTray('🎲 Pulsa Rokkit Launch: MISFIRE!', [
+        { label: 'Artillery Die', dice: [{ val: 'MISFIRE', cls: 'die-fail', tip: 'Failed to launch!' }] }
+      ]);
+      this.finishCombatActivation();
+      this.drawOverlays();
+      this.updateUI();
+      return;
+    }
+
+    // 2. Numeric range & Scatter
+    const maxRangeCm = 50 + (artDieRoll * 5); // 60cm to 100cm
+    const sx = shooterStand.container.x, sy = shooterStand.container.y;
+    const tx = targetStand.container.x, ty = targetStand.container.y;
+    const distPx = Phaser.Math.Distance.Between(sx, sy, tx, ty);
+    const distCm = distPx / PX_PER_CM;
+
+    let aimX = tx, aimY = ty;
+    let fellShort = false;
+    if (distCm > maxRangeCm) {
+      fellShort = true;
+      const angle = Math.atan2(ty - sy, tx - sx);
+      aimX = sx + Math.cos(angle) * (maxRangeCm * PX_PER_CM);
+      aimY = sy + Math.sin(angle) * (maxRangeCm * PX_PER_CM);
+    }
+
+    // Scatter 2D6 cm in random direction
+    const sD1 = Phaser.Math.Between(1, 6), sD2 = Phaser.Math.Between(1, 6);
+    const scatterDistCm = sD1 + sD2;
+    const scatterAngle = Math.random() * Math.PI * 2;
+    const landX = Phaser.Math.Clamp(aimX + Math.cos(scatterAngle) * (scatterDistCm * PX_PER_CM), 30, BOARD_W - 30);
+    const landY = Phaser.Math.Clamp(aimY + Math.sin(scatterAngle) * (scatterDistCm * PX_PER_CM), 30, BOARD_H - 30);
+
+    // Launch trajectory visual and sound
+    window.sfx.playBarrage();
+    this.spawnLaserFX(sx, sy, landX, landY, 0x10b981, true);
+
+    // 3. Landing 1D6 Roll on Pulsa Table
+    const pulsaRoll = Phaser.Math.Between(1, 6);
+    const PULSA_R_PX = 1.5 * PX_PER_CM; // 15px radius = 3cm small Pulsa template
+
+    // Find all stands under the 3cm template
+    const underTemplate = [];
+    const affectedDets = new Set([targetDet]);
+    this.detachments.forEach(d => {
+      if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+      d.stands.forEach(s => {
+        if (Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y) <= PULSA_R_PX + 4) {
+          underTemplate.push(s);
+          affectedDets.add(d);
+        }
+      });
+    });
+
+    let kills = 0, saves = 0;
+    const saveDiceUI = [];
+
+    // Damage resolution under 3cm template
+    underTemplate.forEach(victimStand => {
+      const vDet = victimStand.detachment;
+      if (!vDet || !vDet.stands.includes(victimStand)) return;
+      const vx = victimStand.container.x, vy = victimStand.container.y;
+      const isInfantry = (vDet.pinningClass === 1 || !vDet.superHeavy && !vDet.isTitan && !vDet.vehicle);
+
+      if (isInfantry) {
+        // All infantry stands under template take a hit at -6 TSM!
+        const neededSave = vDet.save + 6; // -6 TSM penalty
+        const saveRoll = Phaser.Math.Between(1, 6);
+        let saved = (saveRoll >= neededSave && neededSave <= 6);
+
+        // Titan void shields / Ghazghkull
+        if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
+          saved = true;
+        } else if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+          saved = true;
+        }
+
+        saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: needed ${neededSave}+ (-6 TSM)` });
+        if (saved) {
+          saves++;
+          this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+        } else {
+          kills++;
+          this.removeCasualty(vDet, victimStand);
+        }
+      } else {
+        // Vehicles/Titans/Buildings suffer hits equal to roll (or 6 on Kaboom) at -2 TSM
+        const hitsCount = (pulsaRoll === 6 ? 6 : (pulsaRoll === 1 ? 1 : pulsaRoll));
+        for (let h = 0; h < hitsCount; h++) {
+          if (!vDet.stands.includes(victimStand)) break;
+          if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+            saves++;
+            continue;
+          }
+          const neededSave = vDet.save + 2; // -2 TSM
+          const saveRoll = Phaser.Math.Between(1, 6);
+          if (saveRoll >= neededSave && neededSave <= 6) {
+            saves++;
+            saveDiceUI.push({ val: saveRoll, cls: 'die-pass', tip: `${vDet.name}: saved ${neededSave}+` });
+          } else {
+            kills++;
+            saveDiceUI.push({ val: saveRoll, cls: 'die-fail', tip: `${vDet.name}: failed ${neededSave}+` });
+            if (vDet.superHeavy) {
+              this.applySuperHeavyDamage(vDet, victimStand, false);
+            } else {
+              this.removeCasualty(vDet, victimStand);
+            }
+          }
+        }
+      }
+    });
+
+    // Knockback displacement for surviving models under the template
+    const pushRadius = (pulsaRoll === 6 ? 75 : PULSA_R_PX) + 8;
+    this.detachments.forEach(d => {
+      if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+      d.stands.forEach(s => {
+        const curDist = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
+        if (curDist <= pushRadius) {
+          const angle = curDist > 0.1 ? Math.atan2(s.container.y - landY, s.container.x - landX) : Math.random() * Math.PI * 2;
+          const targetX = Phaser.Math.Clamp(landX + Math.cos(angle) * (pushRadius + 8), 25, BOARD_W - 25);
+          const targetY = Phaser.Math.Clamp(landY + Math.sin(angle) * (pushRadius + 8), 25, BOARD_H - 25);
+
+          this.tweens.add({
+            targets: s.container,
+            x: targetX,
+            y: targetY,
+            duration: 400,
+            ease: 'Back.easeOut'
+          });
+          s.originX = targetX;
+          s.originY = targetY;
+          d.suppressedByPulsa = true;
+          d.fired = true; // Cannot fire this turn
+          this.updateDetachmentBadge(d);
+          this.spawnFloatingText(targetX, targetY, '⚡ DISRUPTED!', '#a3e635', '11px');
+        }
+      });
+    });
+
+    // Handle the 3 table outcomes
+    let outcomeLabel = '';
+    if (pulsaRoll === 1) {
+      outcomeLabel = '💨 PHUT!';
+      window.sfx.playPulsaHum(0.6);
+      this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'PHUT');
+      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#94a3b8', '14px');
+      this.log(`💨 <b>PHUT! (Roll 1):</b> The Pulsa Rokkit feebly unleashes a single ripple of energy before burning out. The template is removed.`);
+    } else if (pulsaRoll >= 2 && pulsaRoll <= 5) {
+      outcomeLabel = `⚡ HUMMMMM... (Roll ${pulsaRoll})`;
+      window.sfx.playPulsaHum(1.3);
+      if (this.cameras && this.cameras.main) this.cameras.main.shake(500, 0.008);
+      this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'HUM');
+      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#06b6d4', '15px');
+      this.pulsaFields.push({ id: 'pf_' + Date.now(), x: landX, y: landY, r: PULSA_R_PX, turnsRemaining: 2, expanded: false });
+      this.log(`⚡ <b>HUMMMMM... (Roll ${pulsaRoll}):</b> The Pulsa Rokkit emits violent subterranean seismic waves! The template remains in play as a persistent energy field!`);
+    } else if (pulsaRoll === 6) {
+      outcomeLabel = '💥 KABOOM! CRITICAL OVERLOAD!';
+      window.sfx.playExplosion(true);
+      window.sfx.playPulsaHum(1.8);
+      if (this.cameras && this.cameras.main) this.cameras.main.shake(700, 0.016);
+      this.spawnPulsaShockwaveFX(landX, landY, 75, 'KABOOM');
+      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#f97316', '16px');
+
+      // Secondary shockwave: all models within 6cm of template edge (dist <= 75px) hit on 3+ at -2 TSM!
+      this.detachments.forEach(d => {
+        if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+        d.stands.forEach(s => {
+          const dPx = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
+          if (dPx > PULSA_R_PX && dPx <= 75) {
+            affectedDets.add(d);
+            const toHitRoll = Phaser.Math.Between(1, 6);
+            if (toHitRoll >= 3) {
+              const neededSave = d.save + 2; // -2 TSM
+              const saveRoll = Phaser.Math.Between(1, 6);
+              if (saveRoll >= neededSave && neededSave <= 6) {
+                saves++;
+              } else {
+                kills++;
+                if (d.superHeavy) this.applySuperHeavyDamage(d, s, false);
+                else this.removeCasualty(d, s);
+              }
+            }
+          }
+        });
+      });
+      this.log(`💥 <b>KABOOM! (Roll 6):</b> The Pulsa generator tears itself apart in a cataclysmic 6cm shockwave! The generator is obliterated.`);
+    }
+
+    // Dice Tray summary
+    this.showDiceRollTray(`🚀 Pulsa Rokkit: ${outcomeLabel}`, [
+      { label: 'Artillery Die (Range)', dice: [{ val: artDieRoll, cls: 'die-pass', tip: `Max range: ${maxRangeCm}cm${fellShort ? ' (Fell Short!)' : ''}` }], summary: `${maxRangeCm}cm` },
+      { label: 'Scatter (2D6 cm)', dice: [{ val: sD1, cls: 'die-pass' }, { val: sD2, cls: 'die-pass' }], summary: `${scatterDistCm}cm` },
+      { label: 'Landing Table (1D6)', dice: [{ val: pulsaRoll, cls: pulsaRoll === 6 ? 'die-crit' : (pulsaRoll === 1 ? 'die-fail' : 'die-pass'), tip: outcomeLabel }], summary: outcomeLabel },
+      { label: 'Damage & Saves', dice: saveDiceUI, summary: `${kills} killed, ${saves} saved` }
+    ]);
+
+    affectedDets.forEach(d => this.checkBreakPoint(d));
+    this.finishCombatActivation();
+    this.drawOverlays();
+    this.updateUI();
+  }
+  
   // Teardrop Flame Template cone (Core Rules p. 30: ignores cover)
   spawnFlameFX(x1, y1, x2, y2) {
     const gfx = this.add.graphics().setDepth(435);
@@ -15651,7 +16026,11 @@ class NetEpicScene extends Phaser.Scene {
       deepStrikeUsed: false,
       deepStrikeActive: false,
       facingRad: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2, // South side faces North, North side faces South
-      hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy),                 // Titans & Super-Heavies: 180° front arc
+      hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy || cfg.hasFireArc || (cfg.weapon && cfg.weapon.pulsaRokkit)),
+      fireArcDeg: cfg.fireArcDeg || (cfg.weapon && cfg.weapon.pulsaRokkit ? 30 : 180),
+      rokkitsRemaining: cfg.rokkitsRemaining !== undefined ? cfg.rokkitsRemaining : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
+      maxRokkits: cfg.maxRokkits !== undefined ? cfg.maxRokkits : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
+      rokkitFiredThisTurn: false,
       maxSalvos: cfg.isTitan ? (cfg.maxSalvos || 3) : (cfg.superHeavy ? (cfg.maxSalvos || 2) : 1),
       salvosFired: 0,
       standsFired: new Set(),
@@ -16310,7 +16689,8 @@ class NetEpicScene extends Phaser.Scene {
     const det = shooterStand.detachment;
     if (!det.hasFireArc) return true;
     const ang = Phaser.Math.Angle.Between(shooterStand.container.x, shooterStand.container.y, tx, ty);
-    return Math.abs(Phaser.Math.Angle.Wrap(ang - (det.facingRad || 0))) <= Math.PI / 2 + 0.001;
+    const maxHalfArc = (det.fireArcDeg ? Phaser.Math.DegToRad(det.fireArcDeg / 2) : Math.PI / 2) + 0.001;
+    return Math.abs(Phaser.Math.Angle.Wrap(ang - (det.facingRad || 0))) <= maxHalfArc;
   }
 
   // Toggle Skimmer Pop-Up Attack (NetEpic Rules p. 22: Skimmers on First Fire can rise above blocking terrain to shoot)
@@ -16800,6 +17180,25 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
+    // 1.6 Check Persistent Pulsa Rokkit Seismic Energy Fields (NetEpic Gold Ork Army Book p. 16: blocks all Line of Sight except for Titans, flyers, and skimmers)
+    if (this.pulsaFields && this.pulsaFields.length > 0) {
+      const shooterDet = shooterStand.detachment;
+      const targetDet = targetStand.detachment;
+      const shooterCanSeeOver = shooterDet.isTitan || shooterDet.skimmer || shooterDet.flyer || shooterDet.poppedUp;
+      const targetCanSeeOver = targetDet.isTitan || targetDet.skimmer || targetDet.flyer || targetDet.poppedUp;
+      if (!shooterCanSeeOver && !targetCanSeeOver) {
+        for (const pf of this.pulsaFields) {
+          const c = new Phaser.Geom.Circle(pf.x, pf.y, pf.r);
+          if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
+            if (canFireIndirect) {
+              return { valid: true, indirect: true, reason: 'Indirect over Pulsa Seismic Field (-1 Hit)', distCm, coverMod: baseCoverMod };
+            }
+            return { valid: false, reason: 'Blocked by Pulsa Seismic Distortion', distCm, coverMod: 0, indirect: false };
+          }
+        }
+      }
+    }
+
     // 2. Check Woods (More than 2 cm = 20px of woods blocks direct LoS; edge <=2cm grants -1 cover)
     const steps = Math.max(10, Math.ceil(distPx / 4));
     let woodPixels = 0;
@@ -16900,6 +17299,31 @@ class NetEpicScene extends Phaser.Scene {
       if (bestTarget) validPairs.push(bestTarget);
     }
 
+    if (firerDet.weapon && firerDet.weapon.pulsaRokkit) {
+      if (validPairs.length === 0 || targetDet.stands.length === 0) {
+        return { validPairs: [], isSnapFire, isBarrage: false, isPulsaRokkit: true, templateTargets: [] };
+      }
+      const aimStand = validPairs[0].target;
+      const PULSA_R_PX = 1.5 * PX_PER_CM;
+      const caught = [];
+      this.detachments.forEach(d => {
+        if (d.faction === firerDet.faction || d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+        d.stands.forEach(s => {
+          if (Phaser.Math.Distance.Between(aimStand.container.x, aimStand.container.y, s.container.x, s.container.y) <= PULSA_R_PX + 4) {
+            caught.push(s);
+          }
+        });
+      });
+      return {
+        validPairs,
+        isSnapFire,
+        isBarrage: false,
+        isPulsaRokkit: true,
+        aimPoint: { x: aimStand.container.x, y: aimStand.container.y },
+        templateTargets: caught
+      };
+    }
+
     if (firerDet.weapon && firerDet.weapon.barrage) {
       if (validPairs.length === 0 || targetDet.stands.length === 0) {
         return { validPairs: [], isSnapFire, isBarrage: true, templateTargets: [], totalBp: 0, isIndirect: false };
@@ -16953,6 +17377,10 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- RANGED COMBAT & ARTILLERY BARRAGE RESOLUTION ENGINE ---
   executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+    if (firerDet.weapon && firerDet.weapon.pulsaRokkit) {
+      this.executePulsaRokkitAttack(firerDet, targetDet, isSnapFire, opts);
+      return;
+    }
     const split = Boolean(opts.split);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
@@ -17545,6 +17973,9 @@ class NetEpicScene extends Phaser.Scene {
     if (this._lastCamZoom !== this.cameras.main.zoom) {
       this._lastCamZoom = this.cameras.main.zoom;
       this.updateZoomLOD();
+    }
+    if (this.pulsaFields && this.pulsaFields.length > 0) {
+      this.drawPulsaFields(time);
     }
   }
 
@@ -18780,6 +19211,10 @@ class NetEpicScene extends Phaser.Scene {
     // Must have at least one stand NOT locked in Close Combat
     const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s));
     if (!hasUnengagedStand) return false;
+    if (det.weapon && det.weapon.pulsaRokkit) {
+      if ((det.rokkitsRemaining || 0) <= 0 || det.rokkitFiredThisTurn) return false;
+      if (this.phase !== 'COMBAT_FIRST') return false;
+    }
     if (this.phase === 'COMBAT_FIRST') return det.order === 'FIRST_FIRE';
     if (this.phase === 'COMBAT_ADVANCE') return det.order === 'ADVANCE';
     return false;
@@ -19248,6 +19683,26 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
+    // Expand persistent Pulsa Rokkit fields to 6cm templates and decrement turns (NetEpic Gold p. 16)
+    if (this.pulsaFields && this.pulsaFields.length > 0) {
+      this.pulsaFields.forEach(pf => {
+        if (!pf.expanded) {
+          pf.expanded = true;
+          pf.r = BARRAGE_RADIUS_PX; // Expands to 6cm barrage template!
+          this.log('⚡ <b>Seismic Waves Spread:</b> The Pulsa template expands outward into a <b>6cm persistent seismic hazard field</b>!');
+        }
+        pf.turnsRemaining--;
+      });
+      const expiredCount = this.pulsaFields.filter(pf => pf.turnsRemaining <= 0).length;
+      if (expiredCount > 0) {
+        this.log(`💨 <b>${expiredCount} Pulsa seismic distortion field(s)</b> have dissipated into the bedrock.`);
+      }
+      this.pulsaFields = this.pulsaFields.filter(pf => pf.turnsRemaining > 0);
+      if (this.pulsaFields.length === 0 && this.pulsaGfx) {
+        this.pulsaGfx.clear();
+      }
+    }
+
     // Dissipate persistent smoke screens at end of turn (NetEpic p. 3)
     if (this.smokeClouds && this.smokeClouds.length > 0) {
       this.log(`💨 Artillery smoke screens dissipate into the atmosphere.`);
@@ -19378,6 +19833,8 @@ class NetEpicScene extends Phaser.Scene {
       d.deepStrikeActive = false;
       d.salvosFired = 0;
       d.standsFired = new Set();
+      d.rokkitFiredThisTurn = false;
+      d.suppressedByPulsa = false;
       d.manualFacing = false;
       this.updateDetachmentBadge(d);
     });
@@ -19430,15 +19887,16 @@ class NetEpicScene extends Phaser.Scene {
       if (focus) {
         const s = d.stands[0];
         const r = Math.min(d.weapon.rangeCm, 60) * PX_PER_CM;
+        const halfArc = d.fireArcDeg ? Phaser.Math.DegToRad(d.fireArcDeg / 2) : Math.PI / 2;
         this.losGfx.fillStyle(col, 0.07);
-        this.losGfx.slice(s.container.x, s.container.y, r, f - Math.PI / 2, f + Math.PI / 2, false);
+        this.losGfx.slice(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
         this.losGfx.fillPath();
         this.losGfx.lineStyle(1.5, col, 0.55);
         this.losGfx.beginPath();
-        this.losGfx.arc(s.container.x, s.container.y, r, f - Math.PI / 2, f + Math.PI / 2, false);
+        this.losGfx.arc(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
         this.losGfx.strokePath();
-        this.losGfx.lineBetween(s.container.x + Math.cos(f - Math.PI / 2) * r, s.container.y + Math.sin(f - Math.PI / 2) * r,
-                                s.container.x + Math.cos(f + Math.PI / 2) * r, s.container.y + Math.sin(f + Math.PI / 2) * r);
+        this.losGfx.lineBetween(s.container.x + Math.cos(f - halfArc) * r, s.container.y + Math.sin(f - halfArc) * r,
+                                s.container.x + Math.cos(f + halfArc) * r, s.container.y + Math.sin(f + halfArc) * r);
       }
     });
 
@@ -19542,7 +20000,25 @@ class NetEpicScene extends Phaser.Scene {
       const target = this.targetDetachment;
       const sol = this.evaluateFireSolution(firer, target, false);
 
-      if (sol.isBarrage && sol.aimPoint) {
+      if (firer.weapon && firer.weapon.pulsaRokkit && sol.aimPoint) {
+        // Draw 3cm Diameter (15px radius) Small Pulsa Template with electric cyan/green reticle
+        const PULSA_R_PX = 1.5 * PX_PER_CM;
+        this.losGfx.fillStyle(0x10b981, 0.28);
+        this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, PULSA_R_PX);
+        this.losGfx.lineStyle(3, 0x06b6d4, 0.95);
+        this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, PULSA_R_PX);
+        this.losGfx.lineStyle(1.5, 0xa3e635, 0.9);
+        this.losGfx.lineBetween(sol.aimPoint.x - 8, sol.aimPoint.y, sol.aimPoint.x + 8, sol.aimPoint.y);
+        this.losGfx.lineBetween(sol.aimPoint.x, sol.aimPoint.y - 8, sol.aimPoint.x, sol.aimPoint.y + 8);
+
+        // Highlight targets currently in preliminary 3cm blast
+        if (sol.templateTargets) {
+          sol.templateTargets.forEach(ts => {
+            this.overlayGfx.lineStyle(2.5, 0x34d399, 1);
+            this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 18);
+          });
+        }
+      } else if (sol.isBarrage && sol.aimPoint) {
         // Draw 6cm Diameter (30px radius) Circular NetEpic Barrage Template!
         this.losGfx.fillStyle(0xf97316, 0.22);
         this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
@@ -19694,7 +20170,9 @@ class NetEpicScene extends Phaser.Scene {
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
     const synSuffix = det.synapse ? ' 🧠SYN' : '';
-    const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
+    const rokkitSuffix = (det.weapon && det.weapon.pulsaRokkit) ? ` 🚀${det.rokkitsRemaining || 0}/3` : '';
+    const pulsaSuppSuffix = det.suppressedByPulsa ? ' ⚡DISRUPTED' : '';
+    const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + rokkitSuffix + pulsaSuppSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
 
     // Highlight Snap Target and Snap Fire Shooters unmistakably during SNAP_INTERRUPT!
     if (this.phase === 'SNAP_INTERRUPT') {
@@ -20045,7 +20523,12 @@ class NetEpicScene extends Phaser.Scene {
             btnSplit.style.display = 'none';
           }
 
-          if (sol.isBarrage && sol.validPairs.length > 0) {
+          if (this.activatingDetachment.weapon && this.activatingDetachment.weapon.pulsaRokkit) {
+            const rokkitsLeft = this.activatingDetachment.rokkitsRemaining || 0;
+            btnFire.innerText = sol.validPairs.length > 0
+              ? `🚀 Launch Pulsa Rokkit (${rokkitsLeft}/3 rokkits ready) at ${this.targetDetachment.name}!`
+              : `🚫 ${this.targetDetachment.name} Outside 30° Front Arc / Out of Line of Sight`;
+          } else if (sol.isBarrage && sol.validPairs.length > 0) {
             const modeTag = sol.isIndirect ? '📡 INDIRECT (-1 Hit)' : '💥 DIRECT';
             btnFire.innerText = `${modeTag} Barrage at ${this.targetDetachment.name} (${sol.totalBp} BP → ${sol.templateTargets.length} stands under 6cm template!)`;
           } else {
@@ -20067,10 +20550,13 @@ class NetEpicScene extends Phaser.Scene {
         } else if (this.activatingDetachment) {
           btnFire.disabled = true;
           if (btnSplit) btnSplit.style.display = 'none';
+          const isPulsa = Boolean(this.activatingDetachment.weapon && this.activatingDetachment.weapon.pulsaRokkit);
           const isArt = this.activatingDetachment.weapon.barrage;
           const isSkim = this.activatingDetachment.skimmer && this.phase === 'COMBAT_FIRST';
           btnFire.innerText = isArt ? 'Tap an Enemy Stand to place 6cm Barrage Template' : 'Tap an Enemy Stand on the map to check LoS & Fire';
-          promptText.innerText = `${actSideName}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}${isSkim ? ', 🚀 Pop-Up available!' : ''}) — Tap an enemy unit!`;
+          promptText.innerText = isPulsa
+            ? `${actSideName}: ${this.activatingDetachment.name} — 30° Front Arc, Scatters 2D6cm, D6 Seismic Landing Table (${this.activatingDetachment.rokkitsRemaining || 0}/3 rokkits ready)! Tap an enemy stand in front arc.`
+            : `${actSideName}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}${isSkim ? ', 🚀 Pop-Up available!' : ''}) — Tap an enemy unit!`;
         }
       }
     }
