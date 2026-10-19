@@ -372,6 +372,20 @@
         </div>
       </div>
 
+      <!-- Table Size & Battlefield Dimensions -->
+      <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">📐 Table Dimensions:</div>
+          <div class="sub-text" id="table-size-desc" style="color:#a78bfa; font-weight:600;">6' × 4' Standard (185 × 125 cm)</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button id="table-size-STANDARD_6X4" class="btn-primary" onclick="window.setTableSize('STANDARD_6X4')" style="flex:1; min-width:115px; padding:6px 10px;">6' × 4' Standard</button>
+          <button id="table-size-GRAND_8X4" onclick="window.setTableSize('GRAND_8X4')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 4' Grand (3000+)</button>
+          <button id="table-size-APOCALYPSE_8X5" onclick="window.setTableSize('APOCALYPSE_8X5')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 5' Apocalypse (4000-5000)</button>
+        </div>
+        <div class="sub-text" style="color:#64748b;">Automatically scales with points budget, or tap to choose custom board size.</div>
+      </div>
+
       <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div>
           <div style="font-weight:700; color:#e2e8f0; font-size:0.84rem;">Quick Matchup Shuffle:</div>
@@ -454,6 +468,7 @@
       <div id="briefing-card" style="background:#1e293b; border:1px solid #475569; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
         <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
           <span id="briefing-map" style="font-weight:700; color:#38bdf8;">🗺️ Map: Industrial</span>
+          <span id="briefing-table" style="font-weight:700; color:#a78bfa;">📐 Table: 6' × 4' Standard</span>
           <span id="briefing-mode" style="font-weight:700; color:#4ade80;">🤖 Mode: vs North AI</span>
           <span id="briefing-budget" style="font-weight:700; color:#fde047;">🎯 Budget: 2000 pts</span>
         </div>
@@ -671,9 +686,45 @@
 <script>
 // --- SCALE & CONSTANTS ---
 const PX_PER_CM = 10;
-const BOARD_W = 185 * PX_PER_CM;
-const BOARD_H = 125 * PX_PER_CM;
-const DEPLOY_DEPTH_PX = 35 * PX_PER_CM; // 35 cm Deployment Zone depth from North/South edges
+
+// Table Dimension Presets (NetEpic Gold Core Rules p. 12: Standard 4x6 foot table = 125x185 cm)
+const TABLE_SIZES = {
+  STANDARD_6X4: {
+    id: 'STANDARD_6X4',
+    name: "6' × 4' Standard",
+    shortLabel: "6' × 4' Standard",
+    fullTitle: "6' × 4' Standard Table (185 × 125 cm)",
+    desc: 'Standard NetEpic tabletop: 185 × 125 cm (Recommended for 1000–2000 pts)',
+    widthCm: 185,
+    heightCm: 125,
+    deployDepthCm: 35
+  },
+  GRAND_8X4: {
+    id: 'GRAND_8X4',
+    name: "8' × 4' Grand Battle",
+    shortLabel: "8' × 4' Grand",
+    fullTitle: "8' × 4' Grand Battle Table (245 × 125 cm)",
+    desc: 'Extended 8-foot battle frontage: 245 × 125 cm (Recommended for 3000 pts)',
+    widthCm: 245,
+    heightCm: 125,
+    deployDepthCm: 35
+  },
+  APOCALYPSE_8X5: {
+    id: 'APOCALYPSE_8X5',
+    name: "8' × 5' Apocalypse",
+    shortLabel: "8' × 5' Apocalypse",
+    fullTitle: "8' × 5' Apocalypse Theater (245 × 155 cm)",
+    desc: 'Massive theater of war: 245 × 155 cm (Recommended for 4000–5000 pts)',
+    widthCm: 245,
+    heightCm: 155,
+    deployDepthCm: 42
+  }
+};
+
+window.tableSize = 'STANDARD_6X4';
+let BOARD_W = 185 * PX_PER_CM;
+let BOARD_H = 125 * PX_PER_CM;
+let DEPLOY_DEPTH_PX = 35 * PX_PER_CM; // Deployment Zone depth from North/South edges
 const COHERENCY_PX = 6 * PX_PER_CM;     // 6 cm
 const BARRAGE_RADIUS_PX = 3 * PX_PER_CM; // 3 cm radius = 6 cm diameter circular NetEpic Barrage Template
 const ROAD_BONUS_CM = 5;                // +5 cm NetEpic Road Movement Bonus
@@ -1018,6 +1069,11 @@ window.updateBriefingCard = function() {
     bMode.innerText = `🤖 Mode: ${modeLabel}`;
   }
   if (bBudget) bBudget.innerText = `🎯 Budget: ${window.pointsBudget} pts`;
+  const bTable = document.getElementById('briefing-table');
+  if (bTable) {
+    const tCfg = TABLE_SIZES[window.tableSize] || TABLE_SIZES.STANDARD_6X4;
+    bTable.innerText = `📐 Table: ${tCfg.shortLabel}`;
+  }
 
   const sMeta = window.getSideMeta ? window.getSideMeta('IMPERIUM') : FACTION_META.IMPERIUM;
   const nMeta = window.getSideMeta ? window.getSideMeta('ORKS') : FACTION_META.ORKS;
@@ -9559,12 +9615,44 @@ window.getRosterPoints = function(side) {
   }, 0);
 };
 
+window.setTableSize = function(sizeId) {
+  if (!TABLE_SIZES[sizeId]) return;
+  window.tableSize = sizeId;
+  const cfg = TABLE_SIZES[sizeId];
+  BOARD_W = cfg.widthCm * PX_PER_CM;
+  BOARD_H = cfg.heightCm * PX_PER_CM;
+  DEPLOY_DEPTH_PX = cfg.deployDepthCm * PX_PER_CM;
+
+  ['STANDARD_6X4', 'GRAND_8X4', 'APOCALYPSE_8X5'].forEach(s => {
+    const btn = document.getElementById(`table-size-${s}`);
+    if (btn) btn.className = (s === sizeId) ? 'btn-primary' : '';
+  });
+
+  const descEl = document.getElementById('table-size-desc');
+  if (descEl) descEl.innerText = `${cfg.name} (${cfg.widthCm} × ${cfg.heightCm} cm)`;
+
+  if (window.gameScene) {
+    window.gameScene.applyTableSize();
+  }
+  window.updateBriefingCard();
+};
+
 window.setPointsBudget = function(pts) {
   window.pointsBudget = pts;
   [1000, 2000, 3000, 4000, 5000].forEach(p => {
     const btn = document.getElementById(`pts-${p}`);
     if (btn) btn.className = (p === pts) ? 'btn-primary' : '';
   });
+
+  // Automatically enlarge battlefield for larger armies (NetEpic standard: 6x4 for 1000-2000, 8x4 for 3000, 8x5 for 4000-5000)
+  if (pts <= 2000) {
+    window.setTableSize('STANDARD_6X4');
+  } else if (pts === 3000) {
+    window.setTableSize('GRAND_8X4');
+  } else {
+    window.setTableSize('APOCALYPSE_8X5');
+  }
+
   window.renderArmyModal();
 };
 
@@ -9740,6 +9828,7 @@ window.openArmyModal = function() {
 window.startBattleFromBuilder = function(useDeploymentPhase) {
   document.getElementById('army-modal').style.display = 'none';
   if (window.gameScene) {
+    window.gameScene.applyTableSize();
     window.gameScene.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, useDeploymentPhase);
   }
 };
@@ -10061,6 +10150,26 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- PHASE 8: BATTLEFIELD MAP PRESETS & PROCEDURAL GENERATOR ---
+  applyTableSize() {
+    const cfg = TABLE_SIZES[window.tableSize] || TABLE_SIZES.STANDARD_6X4;
+    BOARD_W = cfg.widthCm * PX_PER_CM;
+    BOARD_H = cfg.heightCm * PX_PER_CM;
+    DEPLOY_DEPTH_PX = cfg.deployDepthCm * PX_PER_CM;
+
+    this.cameras.main.setBounds(0, 0, BOARD_W, BOARD_H);
+
+    if (this.grassTile) {
+      this.grassTile.setSize(BOARD_W, BOARD_H);
+      this.grassTile.setPosition(BOARD_W / 2, BOARD_H / 2);
+    }
+
+    this.loadMapConfig(window.mapPreset || 'INDUSTRIAL');
+    this.drawBattlefield();
+    this.drawDeploymentZones();
+    this.drawObjectives();
+    this.resetCamera();
+  }
+
   loadMapConfig(preset = 'INDUSTRIAL') {
     this.roads = [];
     this.rivers = [];
@@ -10070,6 +10179,11 @@ class NetEpicScene extends Phaser.Scene {
     this.objectives = [];
     this.fields = [];
     this.dirtTracks = [];
+
+    const scaleX = BOARD_W / (185 * PX_PER_CM);
+    const scaleY = BOARD_H / (125 * PX_PER_CM);
+    const sX = (v) => Math.round(v * scaleX);
+    const sY = (v) => Math.round(v * scaleY);
 
     if (preset === 'INDUSTRIAL') {
       // Highway network + Manufactorum, Cathedral, Silos, Hab-Blocks & Bunkers spread across the map
@@ -10106,12 +10220,18 @@ class NetEpicScene extends Phaser.Scene {
         { x: 1150, y: 920, r: 80 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (NW Hab-Block)', x: 375, y: 275, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Central Basilica)', x: 925, y: 620, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (East Manufactorum)', x: 1350, y: 505, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (SE Promethium Depot)', x: 1500, y: 900, owner: 'NEUTRAL' },
-        { id: 5, name: 'Obj #5 (West Bunker Delta)', x: 300, y: 492, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (NW Hab-Block)', x: sX(375), y: sY(275), owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Basilica)', x: sX(925), y: sY(620), owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Manufactorum)', x: sX(1350), y: sY(505), owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (SE Promethium Depot)', x: sX(1500), y: sY(900), owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (West Bunker Delta)', x: sX(300), y: sY(492), owner: 'NEUTRAL' }
       ];
+      if (scaleX > 1.15) {
+        this.objectives.push(
+          { id: 6, name: 'Obj #6 (West Flank Terminal)', x: Math.round(180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' },
+          { id: 7, name: 'Obj #7 (East Flank Bunker)', x: Math.round(BOARD_W - 180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' }
+        );
+      }
     } else if (preset === 'RIVER') {
       // River Lethe cutting East-West with 2 Bridges, 1 Ford, Riverbank roads, Bunkers, Silos & Monastery
       this.rivers = [
@@ -10155,12 +10275,18 @@ class NetEpicScene extends Phaser.Scene {
         { x: 1680, y: 880, r: 85 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (North Bastion)', x: 455, y: 462, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Central Bridge)', x: 980, y: 625, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (East Ford)', x: 1465, y: 625, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (NW Monastery Ruins)', x: 285, y: 290, owner: 'NEUTRAL' },
-        { id: 5, name: 'Obj #5 (SE Hab-Block)', x: 1515, y: 905, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (North Bastion)', x: sX(455), y: sY(462), owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Bridge)', x: sX(980), y: sY(625), owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Ford)', x: sX(1465), y: sY(625), owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (NW Monastery Ruins)', x: sX(285), y: sY(290), owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (SE Hab-Block)', x: sX(1515), y: sY(905), owner: 'NEUTRAL' }
       ];
+      if (scaleX > 1.15) {
+        this.objectives.push(
+          { id: 6, name: 'Obj #6 (West River Reach)', x: Math.round(180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' },
+          { id: 7, name: 'Obj #7 (East River Reach)', x: Math.round(BOARD_W - 180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' }
+        );
+      }
     } else if (preset === 'FOREST') {
       // Deathworld Jungle: Winding forest highway, trails, dense woodland copses, ruins & listening posts
       this.roads = [
@@ -10198,12 +10324,18 @@ class NetEpicScene extends Phaser.Scene {
         { x: 1040, y: 930, r: 95 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (North Auspex)', x: 635, y: 267, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Shrine Ruins)', x: 925, y: 610, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (Timber Mill)', x: 1550, y: 887, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (Hermit Chapel)', x: 275, y: 482, owner: 'NEUTRAL' },
-        { id: 5, name: 'Obj #5 (South Bastion)', x: 670, y: 960, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (North Auspex)', x: sX(635), y: sY(267), owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Shrine Ruins)', x: sX(925), y: sY(610), owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (Timber Mill)', x: sX(1550), y: sY(887), owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (Hermit Chapel)', x: sX(275), y: sY(482), owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (South Bastion)', x: sX(670), y: sY(960), owner: 'NEUTRAL' }
       ];
+      if (scaleX > 1.15) {
+        this.objectives.push(
+          { id: 6, name: 'Obj #6 (West Canopy Outpost)', x: Math.round(180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' },
+          { id: 7, name: 'Obj #7 (East Jungle Ancient)', x: Math.round(BOARD_W - 180 * scaleX), y: Math.round(BOARD_H / 2), owner: 'NEUTRAL' }
+        );
+      }
     } else {
       // PROCEDURAL RANDOM BATTLEFIELD GENERATOR - Fully spread across all quadrants!
       const hasRiver = Math.random() < 0.40;
@@ -11845,7 +11977,7 @@ class NetEpicScene extends Phaser.Scene {
         const template = window.findCatalogUnit(key);
         if (!template) return;
 
-        const spanX = Math.min(1400, Math.max(400, (cardCount - 1) * 240));
+        const spanX = Math.min(BOARD_W - 350, Math.max(400, (cardCount - 1) * 250));
         const startX = (BOARD_W / 2) - (spanX / 2) + (cardCount > 1 ? (cardIdx * (spanX / (cardCount - 1))) : 0) - 36;
         const startY = baseY + (isImp ? 1 : -1) * (cardIdx % 2) * 35;
 
@@ -14201,7 +14333,9 @@ class NetEpicScene extends Phaser.Scene {
     const aiUnits = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0 && !d.embarkedOn);
     if (aiUnits.length === 0) return;
 
-    const laneXs = [450, 720, 980, 1240, 1500, 580, 1380];
+    const scaleX = BOARD_W / (185 * PX_PER_CM);
+    const scaleY = BOARD_H / (125 * PX_PER_CM);
+    const laneXs = [450, 720, 980, 1240, 1500, 580, 1380].map(x => Math.round(x * scaleX));
     aiUnits.forEach((det, idx) => {
       if (det.deepStrike) {
         det.inReserve = false; // toggleReserveStatus will flip to true
