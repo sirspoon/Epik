@@ -7090,11 +7090,11 @@ const UNIT_CATALOG = {
       "cardName": "Revenant Scout Titan",
       "armyBook": "ELDAR",
       "name": "Revenant Scout Titan",
-      "composition": "1 Revenant Titan (Holo-Field)",
-      "points": 200,
+      "composition": "1 Revenant Scout Titan (250 pts, 3 VP, Holo-Field, Jump Jets, Agile)",
+      "points": 250,
       "breakPoint": 1,
-      "morale": 2,
-      "vpValue": 2,
+      "morale": 1,
+      "vpValue": 3,
       "moveCm": 30,
       "save": 3,
       "caf": 7,
@@ -7124,11 +7124,11 @@ const UNIT_CATALOG = {
       "cardName": "Revenant Scout Titans (Pair)",
       "armyBook": "ELDAR",
       "name": "Revenant Scout Titans Pair",
-      "composition": "2 Revenant Scout Titans (Holo-Fields, Jump Jets, Agile)",
-      "points": 400,
+      "composition": "2 Revenant Scout Titans (500 pts, 3 VP each, Holo-Fields, Jump Jets, Agile)",
+      "points": 500,
       "breakPoint": 1,
       "morale": 1,
-      "vpValue": 4,
+      "vpValue": 6,
       "moveCm": 30,
       "save": 3,
       "caf": 7,
@@ -18534,7 +18534,7 @@ class NetEpicScene extends Phaser.Scene {
   // Eldar Holo-Fields (07_eldar_army_book_v5 p. 4): Save improves with movement speed!
   getHoloFieldSave(det) {
     if (!det || !det.holoField) return null;
-    if (det.isTitan) {
+    if (det.isTitan && !det.isScoutTitan && !(det.name && det.name.toLowerCase().includes('revenant'))) {
       if (det.order === 'CHARGE') return 2;
       if (det.order === 'ADVANCE' || det.order === 'FALL_BACK') return 3;
       return 4;
