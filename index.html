@@ -2975,6 +2975,979 @@ const UNIT_CATALOG = {
       "baseW": 24,
       "baseH": 24
     }
+  ,
+    {
+        "key": "card_sm_vet_co",
+        "cardType": "COMPANY",
+        "cardName": "Veteran First Company",
+        "armyBook": "IMPERIUM",
+        "name": "First Veteran Company",
+        "composition": "Marine HQ stand & Command Rhino, 3 Veteran Detachments (19 stands & 10 Rhinos)",
+        "points": 850,
+        "breakPoint": 15,
+        "morale": 1,
+        "vpValue": 9,
+        "moveCm": 10,
+        "save": 5,
+        "caf": 4,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Bolters & Special Weapons",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "standsCount": 19,
+        "color": 1981066,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_vetco",
+            "armyBook": "IMPERIUM",
+            "name": "Veteran Rhino APCs",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolters",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 5,
+            "vpValue": 0,
+            "color": 2450411,
+            "standsCount": 10,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_ls_tornado",
+        "cardType": "SUPPORT",
+        "cardName": "Land Speeder Tornado Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Land Speeder Tornado Squadron",
+        "composition": "3 Land Speeder Tornados (Assault Cannons)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 30,
+        "save": 6,
+        "caf": 3,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Assault Cannon",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 3,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 26
+    },
+    {
+        "key": "card_sm_dread_punisher",
+        "cardType": "SUPPORT",
+        "cardName": "Punisher Dreadnought Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Punisher Dreadnought Squad",
+        "composition": "4 Punisher Dreadnoughts (Heavy Assault Cannons)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 3,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Assault Cannons",
+            "rangeCm": 50,
+            "dice": 3,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 22
+    },
+    {
+        "key": "card_sm_dread_furioso",
+        "cardType": "SUPPORT",
+        "cardName": "Furioso Dreadnought Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Blood Angels Furioso Dreadnought Squad",
+        "composition": "4 Furioso Dreadnoughts (Close Combat Power Fists & Heavy Flamers)",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 5,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Meltagun & Heavy Flamer",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1,
+            "ignoresCover": true
+        },
+        "salvos": [
+            {
+                "id": "furioso_melta",
+                "mount": "Right Fist",
+                "name": "Meltagun",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -1
+            },
+            {
+                "id": "furioso_flamer",
+                "mount": "Left Fist",
+                "name": "Heavy Flamer",
+                "rangeCm": 35,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": 0,
+                "ignoresCover": true
+            }
+        ],
+        "standsCount": 4,
+        "color": 10033947,
+        "baseW": 22,
+        "baseH": 22
+    },
+    {
+        "key": "card_sm_dread_venerable",
+        "cardType": "SPECIAL",
+        "cardName": "Venerable Dreadnought",
+        "armyBook": "IMPERIUM",
+        "name": "Venerable Dreadnought Ancient",
+        "composition": "1 Venerable Dreadnought (Hero / Inspirational Leader)",
+        "points": 50,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 15,
+        "save": 4,
+        "caf": 2,
+        "pinningClass": 2,
+        "specialAbilities": [
+            "Elite",
+            "HQ",
+            "Inspirational"
+        ],
+        "weapon": {
+            "name": "Assault Cannon & Heavy Flamer",
+            "rangeCm": 50,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": 0,
+            "ignoresCover": true
+        },
+        "salvos": [
+            {
+                "id": "ven_assault",
+                "mount": "Right Arm",
+                "name": "Twin Assault Cannon",
+                "rangeCm": 50,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": 0
+            },
+            {
+                "id": "ven_flamer",
+                "mount": "Left Arm",
+                "name": "Heavy Flamer",
+                "rangeCm": 35,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": 0,
+                "ignoresCover": true
+            }
+        ],
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 24
+    },
+    {
+        "key": "card_sm_scatolo_heavy",
+        "cardType": "SUPPORT",
+        "cardName": "Scatolo Heavy Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Scatolo Heavy Weapon Walker Squad",
+        "composition": "4 Heavy Weapon Scatolos (Lascannons)",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 1,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Heavy Lascannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+        },
+        "standsCount": 4,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 22
+    },
+    {
+        "key": "card_sm_scatolo_support",
+        "cardType": "SUPPORT",
+        "cardName": "Scatolo Support Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Scatolo Support Walker Squad",
+        "composition": "4 Support Scatolos (Heavy Bolters & Barrage Missiles)",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 2,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Heavy Bolters & Missiles",
+            "rangeCm": 50,
+            "dice": 3,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "salvos": [
+            {
+                "id": "scatolo_hb",
+                "mount": "Torso",
+                "name": "Heavy Bolters",
+                "rangeCm": 25,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": 0
+            },
+            {
+                "id": "scatolo_missile",
+                "mount": "Pod",
+                "name": "Barrage Missiles",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1,
+                "barrage": true,
+                "barrageBp": 4
+            }
+        ],
+        "standsCount": 4,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 22
+    },
+    {
+        "key": "card_sm_scatolo_assault",
+        "cardType": "SUPPORT",
+        "cardName": "Scatolo Assault Squad",
+        "armyBook": "IMPERIUM",
+        "name": "Scatolo Assault Walker Squad",
+        "composition": "4 Flamer Scatolos",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 4,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Heavy Flamer",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "ignoresCover": true
+        },
+        "standsCount": 4,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 22
+    },
+    {
+        "key": "card_sm_pred_vulkan",
+        "cardType": "SUPPORT",
+        "cardName": "Predator Vulkan Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "Salamanders Predator Vulkan Squadron",
+        "composition": "3 Predator Vulkans (Autocannon & Heavy Flamers)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 0,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Autocannon & Heavy Flamer",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "salvos": [
+            {
+                "id": "pred_vulk_ac",
+                "mount": "Turret",
+                "name": "Autocannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1
+            },
+            {
+                "id": "pred_vulk_flm",
+                "mount": "Sponsons",
+                "name": "Heavy Flamer",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0,
+                "ignoresCover": true
+            }
+        ],
+        "standsCount": 3,
+        "color": 1409085,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_sm_pred_jaghatai",
+        "cardType": "SUPPORT",
+        "cardName": "Predator Jaghatai Khan Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "White Scars Predator Jaghatai Khan Squadron",
+        "composition": "3 Predator Jaghatai Khans (Multi-Meltas & Heavy Flamers)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 3,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Multi-Meltas & Heavy Flamer",
+            "rangeCm": 25,
+            "dice": 3,
+            "toHit": 3,
+            "tsm": -2
+        },
+        "salvos": [
+            {
+                "id": "jaghatai_melta",
+                "mount": "Turret",
+                "name": "Multi-Melta",
+                "rangeCm": 25,
+                "dice": 2,
+                "toHit": 3,
+                "tsm": -2
+            },
+            {
+                "id": "jaghatai_flamer",
+                "mount": "Sponsons",
+                "name": "Heavy Flamer",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": 0,
+                "ignoresCover": true
+            }
+        ],
+        "standsCount": 3,
+        "color": 14870768,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_sm_molemortar",
+        "cardType": "SUPPORT",
+        "cardName": "Mole Mortar Battery",
+        "armyBook": "IMPERIUM",
+        "name": "Mole Mortar Subterranean Battery",
+        "composition": "3 Mole Mortars (Subterranean Torpedoes)",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 1,
+        "moveCm": 5,
+        "save": 7,
+        "caf": -3,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Subterranean Mole Mortar",
+            "rangeCm": 150,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "barrage": true,
+            "barrageBp": 1,
+            "ignoresCover": true
+        },
+        "standsCount": 3,
+        "color": 1981066,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_sm_tarantula",
+        "cardType": "SUPPORT",
+        "cardName": "Tarantula Support Battery",
+        "armyBook": "IMPERIUM",
+        "name": "Tarantula Automated Sentry Battery",
+        "composition": "5 Tarantula Automated Lascannon Platforms",
+        "points": 150,
+        "breakPoint": 3,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 5,
+        "save": 7,
+        "caf": -3,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Twin Lascannons (Quickdraw / RoF 2)",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -2
+        },
+        "standsCount": 5,
+        "color": 1981066,
+        "baseW": 18,
+        "baseH": 18
+    },
+    {
+        "key": "card_sm_rhino_squadron",
+        "cardType": "SUPPORT",
+        "cardName": "Rhino Transport Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino Armoured Transport Squadron",
+        "composition": "3 Rhinos (APC transports)",
+        "points": 50,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 1,
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 6,
+            "tsm": 0
+        },
+        "standsCount": 3,
+        "color": 1981066,
+        "baseW": 22,
+        "baseH": 30
+    },
+    {
+        "key": "card_sm_marauder",
+        "cardType": "SUPPORT",
+        "cardName": "Marauder Bomber Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "Marauder Heavy Bomber Squadron",
+        "composition": "3 Marauder Fighter-Bombers (Flyer)",
+        "points": 350,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 4,
+        "moveCm": 75,
+        "save": 3,
+        "caf": 2,
+        "pinningClass": 3,
+        "isFlyer": true,
+        "weapon": {
+            "name": "Battlecannons & Bomb Payload",
+            "rangeCm": 50,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "salvos": [
+            {
+                "id": "marauder_bc",
+                "mount": "Nose Turret",
+                "name": "Twin Battlecannon",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -2
+            },
+            {
+                "id": "marauder_las",
+                "mount": "Wings",
+                "name": "Lascannons",
+                "rangeCm": 50,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": -1
+            },
+            {
+                "id": "marauder_bombs",
+                "mount": "Bomb Bay",
+                "name": "Heavy Bomb Payload",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -2,
+                "barrage": true,
+                "barrageBp": 4
+            }
+        ],
+        "standsCount": 3,
+        "color": 4674921,
+        "baseW": 28,
+        "baseH": 32
+    },
+    {
+        "key": "card_sm_thunderbolt",
+        "cardType": "SUPPORT",
+        "cardName": "Thunderbolt Fighter Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "Thunderbolt Tactical Fighter Squadron",
+        "composition": "3 Thunderbolt Fighters (Flyer)",
+        "points": 250,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 3,
+        "moveCm": 100,
+        "save": 4,
+        "caf": 4,
+        "pinningClass": 3,
+        "isFlyer": true,
+        "weapon": {
+            "name": "Twin Autocannons & Rockets",
+            "rangeCm": 25,
+            "dice": 3,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "salvos": [
+            {
+                "id": "tbolt_ac",
+                "mount": "Nose",
+                "name": "Twin Autocannon",
+                "rangeCm": 25,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": -1
+            },
+            {
+                "id": "tbolt_rockets",
+                "mount": "Pylons",
+                "name": "Hellstrike Rockets",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1,
+                "barrage": true,
+                "barrageBp": 4
+            }
+        ],
+        "standsCount": 3,
+        "color": 3359061,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_sm_chapter_master",
+        "cardType": "SPECIAL",
+        "cardName": "Chapter Master",
+        "armyBook": "IMPERIUM",
+        "name": "Space Marine Chapter Master",
+        "composition": "Chapter Master stand & Command Rhino (Supreme Command HQ)",
+        "points": 100,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 5,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+        ],
+        "weapon": {
+            "name": "Master-Crafted Bolter & Relic Blade",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "standsCount": 1,
+        "color": 1920728,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_cm",
+            "armyBook": "IMPERIUM",
+            "name": "Master Command Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolter",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 1920728,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_legion_damned",
+        "cardType": "SPECIAL",
+        "cardName": "Legion of the Damned",
+        "armyBook": "IMPERIUM",
+        "name": "Legion of the Damned Squad",
+        "composition": "4 Legion of the Damned stands (Supernatural Fearless Spectral Marines)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 5,
+        "caf": 4,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "Fearless",
+            "Teleport",
+            "Terror"
+        ],
+        "weapon": {
+            "name": "Spectral Bolters",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 592139,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_sm_forward_observer",
+        "cardType": "SPECIAL",
+        "cardName": "Forward Observer",
+        "armyBook": "IMPERIUM",
+        "name": "Forward Observer Spotter Team",
+        "composition": "Forward Observer stand & Command Rhino (Stealth Spotter)",
+        "points": 50,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 5,
+        "caf": 2,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "HQ",
+            "Stealth",
+            "Spotter"
+        ],
+        "weapon": {
+            "name": "Bolt Pistol & Targeting Laser",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 1981066,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_fo",
+            "armyBook": "IMPERIUM",
+            "name": "Spotter Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolter",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 1981066,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_inquisitor",
+        "cardType": "SPECIAL",
+        "cardName": "Ordo-Malleus Inquisitor",
+        "armyBook": "IMPERIUM",
+        "name": "Ordo-Malleus Inquisitor Lord",
+        "composition": "Inquisitor stand & Command Rhino (Psycannon & Daemonhunter)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 6,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "PsychicSave4",
+            "Daemonhunter"
+        ],
+        "weapon": {
+            "name": "Psycannon",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 8330525,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_inq",
+            "armyBook": "IMPERIUM",
+            "name": "Inquisitorial Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolter",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 8330525,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_emperors_champion",
+        "cardType": "SPECIAL",
+        "cardName": "Emperor's Champion",
+        "armyBook": "IMPERIUM",
+        "name": "Black Templars Emperor's Champion",
+        "composition": "Emperor's Champion stand & Command Rhino (Glorious Duelist)",
+        "points": 100,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 7,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "HQ",
+            "Inspirational",
+            "Duelist"
+        ],
+        "weapon": {
+            "name": "Black Sword & Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 1579035,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_ec",
+            "armyBook": "IMPERIUM",
+            "name": "Crusade Command Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolter",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 1579035,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_iron_father",
+        "cardType": "SPECIAL",
+        "cardName": "Iron Father",
+        "armyBook": "IMPERIUM",
+        "name": "Iron Hands Iron Father",
+        "composition": "Iron Father stand & Command Rhino (Combat Leader & Mechanic)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 4,
+        "caf": 4,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "CombatLeader",
+            "Elite",
+            "HQ",
+            "Mechanic"
+        ],
+        "weapon": {
+            "name": "Bolt Pistol & Servo-Arm",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 3359061,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "sm_rhino_iron",
+            "armyBook": "IMPERIUM",
+            "name": "Gorgon Command Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Storm Bolter",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 6,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 3359061,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 30
+        }
+    },
+    {
+        "key": "card_sm_warhound_squadron",
+        "cardType": "SPECIAL",
+        "cardName": "Warhound Scout Squadron",
+        "armyBook": "IMPERIUM",
+        "name": "Warhound Scout Titan Pair",
+        "composition": "2 Warhound Scout Titans (Agile, 2 Void Shields each)",
+        "points": 250,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 3,
+        "moveCm": 25,
+        "save": 2,
+        "caf": 8,
+        "pinningClass": 4,
+        "isTitan": true,
+        "isAgile": true,
+        "weapon": {
+            "name": "Plasma Blastgun & Vulcan Mega-Bolter",
+            "rangeCm": 60,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -2,
+            "damagesBuildings": true
+        },
+        "salvos": [
+            {
+                "id": "warhound_sq_plasma",
+                "mount": "Right Arm",
+                "name": "Plasma Blastgun",
+                "rangeCm": 60,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -3,
+                "damagesBuildings": true
+            },
+            {
+                "id": "warhound_sq_vulcan",
+                "mount": "Left Arm",
+                "name": "Vulcan Mega-Bolter",
+                "rangeCm": 50,
+                "dice": 6,
+                "toHit": 5,
+                "tsm": -1
+            }
+        ],
+        "standsCount": 2,
+        "color": 1981066,
+        "baseW": 28,
+        "baseH": 32
+    }
   ],
   "ORKS": [
     {
@@ -6301,6 +7274,1561 @@ const UNIT_CATALOG = {
       "color": 16096779,
       "baseW": 20,
       "baseH": 20
+    }
+  ,
+    {
+        "key": "card_eld_defender_warhost",
+        "cardType": "COMPANY",
+        "cardName": "Defender Warhost",
+        "armyBook": "ELDAR",
+        "name": "Defender Armoured Warhost",
+        "composition": "3 Defender Detachments (18 Guardian stands & 9 Falcons)",
+        "points": 850,
+        "breakPoint": 14,
+        "morale": 3,
+        "vpValue": 9,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 0,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Shuriken Catapults",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 18,
+        "color": 16096779,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_falcon_warhost",
+            "armyBook": "ELDAR",
+            "name": "Warhost Falcon Grav-Tanks",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 1,
+            "morale": 3,
+            "pinningClass": 2,
+            "skimmer": true,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Pulse Laser & Scatter Laser",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2
+            },
+            "breakPoint": 5,
+            "vpValue": 0,
+            "color": 16096779,
+            "standsCount": 9,
+            "baseW": 24,
+            "baseH": 32
+        }
+    },
+    {
+        "key": "card_eld_jetbike_host",
+        "cardType": "COMPANY",
+        "cardName": "Jetbike Host",
+        "armyBook": "ELDAR",
+        "name": "Saim-Hann Jetbike Host",
+        "composition": "1 Vyper Squad & 2 Jetbike Squads (10 Jetbikes & 5 Vypers)",
+        "points": 550,
+        "breakPoint": 8,
+        "morale": 3,
+        "vpValue": 6,
+        "moveCm": 35,
+        "save": 6,
+        "caf": 2,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Shuriken Catapults & Cannons",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 15,
+        "color": 14251782,
+        "baseW": 22,
+        "baseH": 26
+    },
+    {
+        "key": "card_eld_spirit_host",
+        "cardType": "COMPANY",
+        "cardName": "Spirit Host",
+        "armyBook": "ELDAR",
+        "name": "Iyanden Spirit Host",
+        "composition": "Warlock stand, 1 Wraithguard Detachment & 2 Wraithlord Squads (4 Wraithguard & 8 Wraithlords)",
+        "points": 500,
+        "breakPoint": 5,
+        "morale": 1,
+        "vpValue": 5,
+        "moveCm": 10,
+        "save": 5,
+        "caf": 4,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Wraithcannons & Lascannons",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -2
+        },
+        "standsCount": 13,
+        "color": 15381256,
+        "baseW": 24,
+        "baseH": 24
+    },
+    {
+        "key": "card_eld_tempest_host",
+        "cardType": "COMPANY",
+        "cardName": "Tempest Host",
+        "armyBook": "ELDAR",
+        "name": "Tempest Super-Heavy Host",
+        "composition": "2 Tempest Squadrons (6 Tempest Grav-Tanks)",
+        "points": 900,
+        "breakPoint": 3,
+        "morale": 3,
+        "vpValue": 9,
+        "moveCm": 25,
+        "save": 1,
+        "caf": 4,
+        "pinningClass": 3,
+        "skimmer": true,
+        "weapon": {
+            "name": "Tempest Heavy Laser Battery & Shurikens",
+            "rangeCm": 100,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -3
+        },
+        "standsCount": 6,
+        "color": 11817737,
+        "baseW": 28,
+        "baseH": 36
+    },
+    {
+        "key": "card_eld_harlequin_masque",
+        "cardType": "COMPANY",
+        "cardName": "Harlequin Masque",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Grand Masque",
+        "composition": "Great Harlequin stand & Command Venom, 3 Harlequin Troupes (13 stands & 1 Venom)",
+        "points": 450,
+        "breakPoint": 7,
+        "morale": 2,
+        "vpValue": 5,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 6,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Harlequin's Kiss & Fusion Pistols",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+        },
+        "standsCount": 13,
+        "color": 12592851,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_venom_masque",
+            "armyBook": "ELDAR",
+            "name": "Command Venom Skimmer",
+            "moveCm": 35,
+            "save": 6,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "holoField": true,
+            "transportCapacity": 1,
+            "weapon": {
+                "name": "Shuriken Catapult",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 12592851,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 26
+        }
+    },
+    {
+        "key": "card_eld_knight_host",
+        "cardType": "COMPANY",
+        "cardName": "Eldar Knight Host",
+        "armyBook": "ELDAR",
+        "name": "Eldar Knight Household Host",
+        "composition": "Fire Knight Detachment, Bright Warrior Detachment, Towering Knight Detachment (9 Eldar Knights)",
+        "points": 800,
+        "breakPoint": 5,
+        "morale": 2,
+        "vpValue": 8,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 4,
+        "pinningClass": 3,
+        "holoField": true,
+        "weapon": {
+            "name": "Maelstrom Lasers & Psychic Lances",
+            "rangeCm": 75,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 9,
+        "color": 14251782,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_eld_warp_spiders",
+        "cardType": "SUPPORT",
+        "cardName": "Warp Spiders",
+        "armyBook": "ELDAR",
+        "name": "Warp Spider Aspect Warriors",
+        "composition": "4 Warp Spider stands (Warp Jump Generators & Death Spinners)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 30,
+        "save": 5,
+        "caf": 2,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "FireOnTheFly",
+            "WarpJump"
+        ],
+        "weapon": {
+            "name": "Death Spinners",
+            "rangeCm": 30,
+            "dice": 2,
+            "toHit": 3,
+            "tsm": 0,
+            "ignoresCover": true
+        },
+        "standsCount": 4,
+        "color": 10033947,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_shining_spears",
+        "cardType": "SUPPORT",
+        "cardName": "Shining Spears",
+        "armyBook": "ELDAR",
+        "name": "Shining Spear Aspect Jetbikes",
+        "composition": "4 Shining Spear Jetbikes (Laser Lances)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 35,
+        "save": 6,
+        "caf": 5,
+        "pinningClass": 2,
+        "skimmer": true,
+        "specialAbilities": [
+            "Elite",
+            "Skimmer"
+        ],
+        "weapon": {
+            "name": "Laser Lance & Shuriken",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 2450411,
+        "baseW": 22,
+        "baseH": 26
+    },
+    {
+        "key": "card_eld_pathfinders",
+        "cardType": "SUPPORT",
+        "cardName": "Alaitoc Pathfinders",
+        "armyBook": "ELDAR",
+        "name": "Alaitoc Rangers / Pathfinders",
+        "composition": "4 Pathfinder stands (Cameleoline Cloaks & Sniper Rifles)",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 1,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Infiltration",
+            "Sniper",
+            "Stealth"
+        ],
+        "weapon": {
+            "name": "Ranger Long Rifle",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 1409085,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_harlequins",
+        "cardType": "SUPPORT",
+        "cardName": "Harlequin Troupe",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Players Troupe",
+        "composition": "4 Harlequin stands (Acrobatic Close-Combat Masters)",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 6,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "MeleeReroll"
+        ],
+        "weapon": {
+            "name": "Shuriken Pistol & Harlequin's Kiss",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 8266446,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_death_jesters",
+        "cardType": "SUPPORT",
+        "cardName": "Death Jester Troupe",
+        "armyBook": "ELDAR",
+        "name": "Death Jester Heavy Weapon Troupe",
+        "composition": "4 Death Jester stands (Heavy Shrieker Cannons)",
+        "points": 250,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 3,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 3,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Terror"
+        ],
+        "weapon": {
+            "name": "Shrieker Cannons",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+        },
+        "standsCount": 4,
+        "color": 1579035,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_mimes",
+        "cardType": "SUPPORT",
+        "cardName": "Mime Troupe",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Mime Infiltration Troupe",
+        "composition": "4 Mime stands (Deep Strike Infiltrators)",
+        "points": 125,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 3,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "DeepStrike"
+        ],
+        "weapon": {
+            "name": "Pistols & Power Blades",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 4937059,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_harlequin_jetbikes",
+        "cardType": "SUPPORT",
+        "cardName": "Harlequin Jetbike Squadron",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Jetbike Troupe",
+        "composition": "5 Harlequin Jetbikes",
+        "points": 250,
+        "breakPoint": 3,
+        "morale": 2,
+        "vpValue": 3,
+        "moveCm": 35,
+        "save": 6,
+        "caf": 5,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Shuriken Catapults",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 5,
+        "color": 12592851,
+        "baseW": 22,
+        "baseH": 26
+    },
+    {
+        "key": "card_eld_war_walkers",
+        "cardType": "SUPPORT",
+        "cardName": "War Walker Squad",
+        "armyBook": "ELDAR",
+        "name": "War Walker Scout Squadron",
+        "composition": "3 War Walkers (Twin Heavy Weapons)",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 6,
+        "caf": 1,
+        "pinningClass": 2,
+        "weapon": {
+            "name": "Lascannon & Scatter Laser",
+            "rangeCm": 75,
+            "dice": 4,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "salvos": [
+            {
+                "id": "ww_lascannon",
+                "mount": "Right Mount",
+                "name": "Lascannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -2
+            },
+            {
+                "id": "ww_scatter",
+                "mount": "Left Mount",
+                "name": "Scatter Laser",
+                "rangeCm": 25,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": 0
+            }
+        ],
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 22,
+        "baseH": 24
+    },
+    {
+        "key": "card_eld_firestorm",
+        "cardType": "SUPPORT",
+        "cardName": "Firestorm AA Grav-Tank Squadron",
+        "armyBook": "ELDAR",
+        "name": "Firestorm Anti-Aircraft Grav-Tank Squadron",
+        "composition": "3 Firestorm AA Grav-Tanks",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 1,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Firestorm Laser Battery (AA)",
+            "rangeCm": 100,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": -2,
+            "isAA": true
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_peregrine",
+        "cardType": "SUPPORT",
+        "cardName": "Peregrine Squadron",
+        "armyBook": "ELDAR",
+        "name": "Peregrine Assault Grav-Tank Squadron",
+        "composition": "3 Peregrine Grav-Tanks (Skimmer Transports)",
+        "points": 200,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 2,
+        "pinningClass": 2,
+        "skimmer": true,
+        "transportCapacity": 1,
+        "weapon": {
+            "name": "Lascannon & Scatter Laser",
+            "rangeCm": 75,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -1
+        },
+        "salvos": [
+            {
+                "id": "peregrine_las",
+                "mount": "Turret",
+                "name": "Lascannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -2
+            },
+            {
+                "id": "peregrine_scatter",
+                "mount": "Coaxial",
+                "name": "Scatter Laser",
+                "rangeCm": 25,
+                "dice": 3,
+                "toHit": 5,
+                "tsm": 0
+            }
+        ],
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_wave_serpents",
+        "cardType": "SUPPORT",
+        "cardName": "Wave Serpent Squadron",
+        "armyBook": "ELDAR",
+        "name": "Wave Serpent Grav-Tank Squadron",
+        "composition": "2 Wave Serpents (Force Shielded APC Skimmers)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 1,
+        "pinningClass": 2,
+        "skimmer": true,
+        "transportCapacity": 2,
+        "weapon": {
+            "name": "Twin Bright Lances & Warp Wave Shield",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "salvos": [
+            {
+                "id": "ws_brightlance",
+                "mount": "Turret",
+                "name": "Twin Bright Lances",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": -2
+            },
+            {
+                "id": "ws_warpwave",
+                "mount": "Force Projector",
+                "name": "Warp Wave Energy Blast",
+                "rangeCm": 40,
+                "dice": 1,
+                "toHit": 4,
+                "tsm": 0
+            }
+        ],
+        "standsCount": 2,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_venoms",
+        "cardType": "SUPPORT",
+        "cardName": "Venom Squadron",
+        "armyBook": "ELDAR",
+        "name": "Venom Fast Transport Squadron",
+        "composition": "4 Venoms (Light Open-Topped Skimmers with Holo-Field)",
+        "points": 150,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 35,
+        "save": 6,
+        "caf": 1,
+        "pinningClass": 2,
+        "skimmer": true,
+        "holoField": true,
+        "transportCapacity": 1,
+        "weapon": {
+            "name": "Shuriken Catapults",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 4,
+        "color": 12592851,
+        "baseW": 22,
+        "baseH": 26
+    },
+    {
+        "key": "card_eld_bright_lance",
+        "cardType": "SUPPORT",
+        "cardName": "Bright Lance Battery",
+        "armyBook": "ELDAR",
+        "name": "Bright Lance Support Battery",
+        "composition": "3 Bright Lance Support Platforms",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 7,
+        "caf": -3,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Heavy Bright Lance",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 18,
+        "baseH": 18
+    },
+    {
+        "key": "card_eld_vibro_cannon",
+        "cardType": "SUPPORT",
+        "cardName": "Vibro-Cannon Battery",
+        "armyBook": "ELDAR",
+        "name": "Vibro-Cannon Support Battery",
+        "composition": "3 Vibro-Cannons (Harmonic Sonic Weapons)",
+        "points": 100,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 7,
+        "caf": -3,
+        "pinningClass": 1,
+        "weapon": {
+            "name": "Vibro-Cannon Beam",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": -2,
+            "damagesBuildings": true
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 18,
+        "baseH": 18
+    },
+    {
+        "key": "card_eld_unicorn",
+        "cardType": "SUPPORT",
+        "cardName": "Unicorn Grav-Tank Battery",
+        "armyBook": "ELDAR",
+        "name": "Unicorn Vibro Grav-Tank Battery",
+        "composition": "2 Unicorn Grav-Tanks (Mobile Vibro-Cannons)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 2,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Mobile Vibro-Cannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 2,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_warp_hunter",
+        "cardType": "SUPPORT",
+        "cardName": "Warp Hunter Battery",
+        "armyBook": "ELDAR",
+        "name": "Warp Hunter Grav-Tank Battery",
+        "composition": "2 Warp Hunters (Mounted Distortion Cannons)",
+        "points": 200,
+        "breakPoint": 1,
+        "morale": 3,
+        "vpValue": 2,
+        "moveCm": 25,
+        "save": 3,
+        "caf": 1,
+        "pinningClass": 2,
+        "skimmer": true,
+        "weapon": {
+            "name": "Mounted D-Cannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -3,
+            "damagesBuildings": true
+        },
+        "standsCount": 2,
+        "color": 14251782,
+        "baseW": 24,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_scorpion",
+        "cardType": "SUPPORT",
+        "cardName": "Scorpion Super-Heavy Grav-Tank",
+        "armyBook": "ELDAR",
+        "name": "Scorpion Super-Heavy Grav-Tank",
+        "composition": "1 Scorpion Super-Heavy Grav-Tank (Twin Heavy Pulse Lasers)",
+        "points": 250,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 3,
+        "moveCm": 20,
+        "save": 1,
+        "caf": 5,
+        "pinningClass": 3,
+        "skimmer": true,
+        "superHeavy": true,
+        "holoField": true,
+        "weapon": {
+            "name": "Twin Heavy Pulse Lasers",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 2,
+            "tsm": -2,
+            "damagesBuildings": true
+        },
+        "salvos": [
+            {
+                "id": "scorp_pulsar",
+                "mount": "Main Turret",
+                "name": "Twin Heavy Pulse Lasers",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 2,
+                "tsm": -2,
+                "damagesBuildings": true
+            },
+            {
+                "id": "scorp_shuriken",
+                "mount": "Hull Sponsons",
+                "name": "Shuriken Cannons",
+                "rangeCm": 25,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": -1
+            }
+        ],
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 34,
+        "baseH": 40
+    },
+    {
+        "key": "card_eld_cobra",
+        "cardType": "SUPPORT",
+        "cardName": "Cobra Super-Heavy Grav-Tank",
+        "armyBook": "ELDAR",
+        "name": "Cobra Super-Heavy Grav-Tank",
+        "composition": "1 Cobra Super-Heavy Grav-Tank (Heavy Distortion Cannon)",
+        "points": 250,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 3,
+        "moveCm": 20,
+        "save": 1,
+        "caf": 5,
+        "pinningClass": 3,
+        "skimmer": true,
+        "superHeavy": true,
+        "holoField": true,
+        "weapon": {
+            "name": "Heavy D-Cannon & Shurikens",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 3,
+            "tsm": -4,
+            "damagesBuildings": true
+        },
+        "salvos": [
+            {
+                "id": "cobra_dcannon",
+                "mount": "Central Hull",
+                "name": "Heavy Distortion Cannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 3,
+                "tsm": -4,
+                "damagesBuildings": true
+            },
+            {
+                "id": "cobra_shuriken",
+                "mount": "Hull Sponsons",
+                "name": "Shuriken Cannons",
+                "rangeCm": 25,
+                "dice": 2,
+                "toHit": 5,
+                "tsm": -1
+            }
+        ],
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 34,
+        "baseH": 40
+    },
+    {
+        "key": "card_eld_storm_serpent",
+        "cardType": "SUPPORT",
+        "cardName": "Storm Serpent Grav-Tank",
+        "armyBook": "ELDAR",
+        "name": "Storm Serpent Super-Heavy Grav-Tank",
+        "composition": "1 Storm Serpent Super-Heavy (Webway Gate Projector)",
+        "points": 300,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 3,
+        "moveCm": 20,
+        "save": 1,
+        "caf": 3,
+        "pinningClass": 3,
+        "skimmer": true,
+        "superHeavy": true,
+        "holoField": true,
+        "weapon": {
+            "name": "Quad Shuriken Cannons",
+            "rangeCm": 25,
+            "dice": 4,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 34,
+        "baseH": 40
+    },
+    {
+        "key": "card_eld_void_spinner",
+        "cardType": "SUPPORT",
+        "cardName": "Void Spinner Grav-Tank",
+        "armyBook": "ELDAR",
+        "name": "Void Spinner Super-Heavy Grav-Tank",
+        "composition": "1 Void Spinner (Heavy Monofilament Bombard)",
+        "points": 200,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 20,
+        "save": 1,
+        "caf": 3,
+        "pinningClass": 3,
+        "skimmer": true,
+        "superHeavy": true,
+        "weapon": {
+            "name": "Void Spinner Monofilament Cannon",
+            "rangeCm": 100,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -3,
+            "barrage": true,
+            "barrageBp": 8,
+            "ignoresCover": true
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 34,
+        "baseH": 40
+    },
+    {
+        "key": "card_eld_tempest",
+        "cardType": "SUPPORT",
+        "cardName": "Tempest Grav-Tank Squadron",
+        "armyBook": "ELDAR",
+        "name": "Tempest Super-Heavy Squadron",
+        "composition": "3 Tempest Grav-Tanks (Twin Heavy Lasers)",
+        "points": 500,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 5,
+        "moveCm": 25,
+        "save": 1,
+        "caf": 4,
+        "pinningClass": 3,
+        "skimmer": true,
+        "weapon": {
+            "name": "Tempest Heavy Lasers",
+            "rangeCm": 100,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -3
+        },
+        "standsCount": 3,
+        "color": 11817737,
+        "baseW": 28,
+        "baseH": 36
+    },
+    {
+        "key": "card_eld_fire_knights",
+        "cardType": "SUPPORT",
+        "cardName": "Fire Knight Detachment",
+        "armyBook": "ELDAR",
+        "name": "Fire Knight Household Detachment",
+        "composition": "3 Fire Knights (Fire Gale, Fire Reaper, Fire Storm)",
+        "points": 250,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 3,
+        "moveCm": 20,
+        "save": 3,
+        "caf": 2,
+        "pinningClass": 3,
+        "holoField": true,
+        "weapon": {
+            "name": "Maelstrom Laser & Psychic Lance",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_eld_bright_warriors",
+        "cardType": "SUPPORT",
+        "cardName": "Bright Warrior Detachment",
+        "armyBook": "ELDAR",
+        "name": "Bright Warrior Knight Detachment",
+        "composition": "3 Bright Warriors (Bright Stallion, Bright Stalker)",
+        "points": 300,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 3,
+        "moveCm": 25,
+        "save": 4,
+        "caf": 3,
+        "pinningClass": 3,
+        "holoField": true,
+        "weapon": {
+            "name": "Maelstrom Laser & Scatter Laser",
+            "rangeCm": 75,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_eld_towering_knights",
+        "cardType": "SUPPORT",
+        "cardName": "Towering Knight Detachment",
+        "armyBook": "ELDAR",
+        "name": "Towering Knight Heavy Detachment",
+        "composition": "3 Towering Knights (Towering Destroyer, Towering Fury)",
+        "points": 350,
+        "breakPoint": 2,
+        "morale": 2,
+        "vpValue": 4,
+        "moveCm": 25,
+        "save": 2,
+        "caf": 5,
+        "pinningClass": 3,
+        "holoField": true,
+        "weapon": {
+            "name": "Maelstrom Laser, Lascannons & Scatter Laser",
+            "rangeCm": 75,
+            "dice": 4,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 3,
+        "color": 14251782,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_eld_phoenix",
+        "cardType": "SUPPORT",
+        "cardName": "Phoenix Fighter-Bomber",
+        "armyBook": "ELDAR",
+        "name": "Phoenix Fighter-Bomber Aircraft",
+        "composition": "1 Phoenix Fighter-Bomber (Sonic Cannon & Plasma Bombs)",
+        "points": 300,
+        "breakPoint": 1,
+        "morale": 3,
+        "vpValue": 3,
+        "moveCm": 75,
+        "save": 3,
+        "caf": 2,
+        "pinningClass": 3,
+        "isFlyer": true,
+        "weapon": {
+            "name": "Sonic Cannon & Plasma Bombs",
+            "rangeCm": 75,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": -3,
+            "ignoresCover": true
+        },
+        "salvos": [
+            {
+                "id": "phoenix_sonic",
+                "mount": "Fuselage",
+                "name": "Sonic Cannon",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -3,
+                "ignoresCover": true
+            },
+            {
+                "id": "phoenix_bombs",
+                "mount": "Bomb Racks",
+                "name": "Plasma Bombs",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 3,
+                "tsm": -3,
+                "barrage": true,
+                "barrageBp": 8
+            }
+        ],
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 30,
+        "baseH": 32
+    },
+    {
+        "key": "card_eld_nightwings",
+        "cardType": "SUPPORT",
+        "cardName": "Nightwing Squadron",
+        "armyBook": "ELDAR",
+        "name": "Nightwing Interceptor Squadron",
+        "composition": "3 Nightwing Interceptors (Lascannons & Shurikens)",
+        "points": 300,
+        "breakPoint": 2,
+        "morale": 3,
+        "vpValue": 3,
+        "moveCm": 100,
+        "save": 3,
+        "caf": 4,
+        "pinningClass": 3,
+        "isFlyer": true,
+        "weapon": {
+            "name": "Twin Lascannons & Shurikens",
+            "rangeCm": 75,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": -2
+        },
+        "standsCount": 3,
+        "color": 1981066,
+        "baseW": 26,
+        "baseH": 28
+    },
+    {
+        "key": "card_eld_vampyre",
+        "cardType": "SUPPORT",
+        "cardName": "Vampyre Troop Carrier",
+        "armyBook": "ELDAR",
+        "name": "Vampyre Heavy Troop Carrier",
+        "composition": "1 Vampyre Troop Carrier (Transport 6 stands)",
+        "points": 100,
+        "breakPoint": 1,
+        "morale": 3,
+        "vpValue": 1,
+        "moveCm": 100,
+        "save": 4,
+        "caf": 0,
+        "pinningClass": 3,
+        "isFlyer": true,
+        "transportCapacity": 6,
+        "weapon": {
+            "name": "Shuriken Cannon Battery & Missiles",
+            "rangeCm": 25,
+            "dice": 4,
+            "toHit": 5,
+            "tsm": -1
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 32,
+        "baseH": 36
+    },
+    {
+        "key": "card_eld_warlock_titan",
+        "cardType": "SPECIAL",
+        "cardName": "Warlock Battle Titan",
+        "armyBook": "ELDAR",
+        "name": "Warlock Psychic Battle Titan",
+        "composition": "1 Warlock Titan (Agile, Holo-Field, 3+ Psychic Save, Psychic Lance)",
+        "points": 400,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 5,
+        "moveCm": 20,
+        "save": 2,
+        "caf": 12,
+        "pinningClass": 4,
+        "isTitan": true,
+        "isAgile": true,
+        "superHeavy": true,
+        "holoField": true,
+        "specialAbilities": [
+            "Agile",
+            "HoloField",
+            "PsychicSave3",
+            "Psyker"
+        ],
+        "weapon": {
+            "name": "Psychic Lance & Distortion Cannon",
+            "rangeCm": 75,
+            "dice": 4,
+            "toHit": 3,
+            "tsm": -3,
+            "damagesBuildings": true
+        },
+        "salvos": [
+            {
+                "id": "wt_psychic_lance",
+                "mount": "Right Arm",
+                "name": "Psychic Lance",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0,
+                "damagesBuildings": true
+            },
+            {
+                "id": "wt_dcannon",
+                "mount": "Left Arm",
+                "name": "Distortion Cannon",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 3,
+                "tsm": -4,
+                "damagesBuildings": true
+            },
+            {
+                "id": "wt_lascannon",
+                "mount": "Wing Mount",
+                "name": "Twin Wing Lascannons",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 3,
+                "tsm": -2
+            }
+        ],
+        "standsCount": 1,
+        "color": 8266446,
+        "baseW": 38,
+        "baseH": 42
+    },
+    {
+        "key": "card_eld_warlock",
+        "cardType": "SPECIAL",
+        "cardName": "Warlock Detachment",
+        "armyBook": "ELDAR",
+        "name": "Eldar Warlock Seer Council",
+        "composition": "Warlock stand & Command Falcon (Psyker Rank 2)",
+        "points": 125,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 2,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "HQ",
+            "Psyker"
+        ],
+        "weapon": {
+            "name": "Witchblade & Shuriken Pistol",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_falcon_warlock",
+            "armyBook": "ELDAR",
+            "name": "Council Command Falcon",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Pulse Laser & Scatter Laser",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 14251782,
+            "standsCount": 1,
+            "baseW": 24,
+            "baseH": 32
+        }
+    },
+    {
+        "key": "card_eld_bonesinger",
+        "cardType": "SPECIAL",
+        "cardName": "Bonesinger",
+        "armyBook": "ELDAR",
+        "name": "Eldar Bonesinger Artificer",
+        "composition": "Bonesinger stand & Command Falcon (Wraithbone Field Repair)",
+        "points": 125,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 1,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "HQ",
+            "Mechanic"
+        ],
+        "weapon": {
+            "name": "Laspistol & Psychocrystal Flute",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_falcon_bonesinger",
+            "armyBook": "ELDAR",
+            "name": "Artificer Command Falcon",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Pulse Laser & Scatter Laser",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 14251782,
+            "standsCount": 1,
+            "baseW": 24,
+            "baseH": 32
+        }
+    },
+    {
+        "key": "card_eld_spiritseer",
+        "cardType": "SPECIAL",
+        "cardName": "Spiritseer",
+        "armyBook": "ELDAR",
+        "name": "Iyanden Spiritseer Guide",
+        "composition": "Spiritseer stand & Command Falcon (Ghost Warrior Guide)",
+        "points": 100,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 2,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "HQ",
+            "SpiritGuide",
+            "Psyker"
+        ],
+        "weapon": {
+            "name": "Witchblade & Shuriken Pistol",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 15381256,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_falcon_spiritseer",
+            "armyBook": "ELDAR",
+            "name": "Spiritseer Command Falcon",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Pulse Laser & Scatter Laser",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 15381256,
+            "standsCount": 1,
+            "baseW": 24,
+            "baseH": 32
+        }
+    },
+    {
+        "key": "card_eld_exarchs",
+        "cardType": "SPECIAL",
+        "cardName": "Aspect Exarchs Detachment",
+        "armyBook": "ELDAR",
+        "name": "Council of Aspect Exarchs",
+        "composition": "4 Aspect Exarch stands (Ancient Relic Weapons)",
+        "points": 400,
+        "breakPoint": 2,
+        "morale": 1,
+        "vpValue": 4,
+        "moveCm": 20,
+        "save": 5,
+        "caf": 8,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ"
+        ],
+        "weapon": {
+            "name": "Ancient Relic Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 3,
+            "tsm": -1
+        },
+        "standsCount": 4,
+        "color": 14251782,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_solitaire",
+        "cardType": "SPECIAL",
+        "cardName": "Solitaire",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Solitaire",
+        "composition": "1 Solitaire stand (Deadly Lone Assassin without Soul)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 15,
+        "save": 4,
+        "caf": 10,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "Elite",
+            "Fearless",
+            "LoneWolf"
+        ],
+        "weapon": {
+            "name": "Neuro-Disruptor",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 2,
+            "tsm": -3,
+            "ignoresCover": true
+        },
+        "standsCount": 1,
+        "color": 1579035,
+        "baseW": 20,
+        "baseH": 20
+    },
+    {
+        "key": "card_eld_shadowseer",
+        "cardType": "SPECIAL",
+        "cardName": "Shadowseer",
+        "armyBook": "ELDAR",
+        "name": "Harlequin Shadowseer",
+        "composition": "Shadowseer stand & Command Venom (Master of Illusions & Veil of Tears)",
+        "points": 150,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 2,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 0,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "HQ",
+            "Psyker",
+            "VeilOfTears"
+        ],
+        "weapon": {
+            "name": "Hallucinogen Grenade Launcher",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": -1
+        },
+        "standsCount": 1,
+        "color": 12592851,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_venom_shadowseer",
+            "armyBook": "ELDAR",
+            "name": "Shadow Venom Skimmer",
+            "moveCm": 35,
+            "save": 6,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "holoField": true,
+            "transportCapacity": 1,
+            "weapon": {
+                "name": "Shuriken Catapult",
+                "rangeCm": 15,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 12592851,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 26
+        }
+    },
+    {
+        "key": "card_eld_forward_observer",
+        "cardType": "SPECIAL",
+        "cardName": "Forward Observer",
+        "armyBook": "ELDAR",
+        "name": "Eldar Forward Observer Team",
+        "composition": "Forward Observer stand & Command Falcon (Stealth Targeting)",
+        "points": 100,
+        "breakPoint": 1,
+        "morale": 1,
+        "vpValue": 1,
+        "moveCm": 10,
+        "save": 6,
+        "caf": 0,
+        "pinningClass": 1,
+        "specialAbilities": [
+            "HQ",
+            "Stealth",
+            "Spotter"
+        ],
+        "weapon": {
+            "name": "Targeting Laser & Shuriken Pistol",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+        },
+        "standsCount": 1,
+        "color": 14251782,
+        "baseW": 20,
+        "baseH": 20,
+        "dedicatedTransport": {
+            "key": "eld_falcon_fo",
+            "armyBook": "ELDAR",
+            "name": "Observer Command Falcon",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 1,
+            "morale": 2,
+            "pinningClass": 2,
+            "skimmer": true,
+            "transportCapacity": 2,
+            "weapon": {
+                "name": "Pulse Laser & Scatter Laser",
+                "rangeCm": 75,
+                "dice": 2,
+                "toHit": 4,
+                "tsm": -2
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 14251782,
+            "standsCount": 1,
+            "baseW": 24,
+            "baseH": 32
+        }
     }
   ],
   "CHAOS": [
@@ -13561,6 +16089,949 @@ class NetEpicScene extends Phaser.Scene {
       ctx.fillRect(4, 18, 4, 6); ctx.fillRect(16, 18, 4, 6);
       can.refresh();
     }
+
+    // ==========================================
+    // SPACE MARINE EXTENDED MINIATURE SPRITES
+    // ==========================================
+
+    // 77. Space Marine Drop Pod (24x24)
+    {
+      const can = this.textures.createCanvas('topdown_sm_drop_pod', 24, 24);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(12, 12, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#3b82f6';
+      for (let a = 0; a < 5; a++) {
+        const ang = (a * 72 * Math.PI) / 180 - Math.PI / 2;
+        const fx = 12 + Math.cos(ang) * 9;
+        const fy = 12 + Math.sin(ang) * 9;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(10, 10, 4, 4);
+      can.refresh();
+    }
+
+    // 78. Space Marine Thunderhawk Gunship (44x48)
+    {
+      const can = this.textures.createCanvas('topdown_sm_thunderhawk', 44, 48);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      // Main fuselage
+      ctx.fillRect(18, 10, 8, 32);
+      // Nose
+      ctx.beginPath();
+      ctx.moveTo(18, 10); ctx.lineTo(22, 2); ctx.lineTo(26, 10); ctx.closePath(); ctx.fill();
+      // Main delta wings
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.moveTo(18, 20); ctx.lineTo(2, 34); ctx.lineTo(18, 34); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(26, 20); ctx.lineTo(42, 34); ctx.lineTo(26, 34); ctx.closePath(); ctx.fill();
+      // Forward canards
+      ctx.beginPath();
+      ctx.moveTo(18, 14); ctx.lineTo(10, 18); ctx.lineTo(18, 18); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(26, 14); ctx.lineTo(34, 18); ctx.lineTo(26, 18); ctx.closePath(); ctx.fill();
+      // Dorsal heavy cannon
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(21, 0, 2, 16);
+      // Jet exhausts
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(19, 42, 6, 4);
+      can.refresh();
+    }
+
+    // 79. Land Speeder Tornado (28x32)
+    {
+      const can = this.textures.createCanvas('topdown_sm_speeder_tornado', 28, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(6, 8, 16, 20);
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.moveTo(6, 8); ctx.lineTo(14, 2); ctx.lineTo(22, 8); ctx.closePath(); ctx.fill();
+      // Twin crew
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath(); ctx.arc(10, 14, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(18, 14, 2, 0, Math.PI * 2); ctx.fill();
+      // Assault cannon under nose
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(13, 0, 2, 8);
+      can.refresh();
+    }
+
+    // 80. Land Speeder Typhoon (28x32)
+    {
+      const can = this.textures.createCanvas('topdown_sm_speeder_typhoon', 28, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(6, 8, 16, 20);
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.moveTo(6, 8); ctx.lineTo(14, 2); ctx.lineTo(22, 8); ctx.closePath(); ctx.fill();
+      // Missile pods on sides
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 10, 5, 12); ctx.fillRect(22, 10, 5, 12);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(2, 11, 3, 2); ctx.fillRect(23, 11, 3, 2);
+      ctx.fillRect(2, 15, 3, 2); ctx.fillRect(23, 15, 3, 2);
+      can.refresh();
+    }
+
+    // 81. Punisher Dreadnought (26x26)
+    {
+      const can = this.textures.createCanvas('topdown_sm_dread_punisher', 26, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(6, 6, 14, 14);
+      // Twin assault cannons
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 0, 5, 14); ctx.fillRect(20, 0, 5, 14);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(11, 9, 4, 2);
+      can.refresh();
+    }
+
+    // 82. Furioso Dreadnought (26x26)
+    {
+      const can = this.textures.createCanvas('topdown_sm_dread_furioso', 26, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(6, 6, 14, 14);
+      // Blood claws
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(2, 2, 4, 10); ctx.fillRect(20, 2, 4, 10);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(11, 9, 4, 2);
+      can.refresh();
+    }
+
+    // 83. Venerable Dreadnought (26x26)
+    {
+      const can = this.textures.createCanvas('topdown_sm_dread_venerable', 26, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(6, 6, 14, 14);
+      ctx.strokeStyle = '#fef08a';
+      ctx.strokeRect(7, 7, 12, 12);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 0, 4, 14); ctx.fillRect(20, 4, 4, 12);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(11, 9, 4, 3);
+      can.refresh();
+    }
+
+    // 84. Scatolo Heavy / Support Walker (24x26)
+    {
+      const can = this.textures.createCanvas('topdown_sm_scatolo', 24, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(6, 6, 12, 14);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(2, 2, 4, 10); ctx.fillRect(18, 2, 4, 10);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(3, 0, 2, 6);
+      can.refresh();
+    }
+
+    // 85. Predator Vulkan (32x40)
+    {
+      const can = this.textures.createCanvas('topdown_sm_pred_vulkan', 32, 40);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(6, 6, 20, 28);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 4, 4, 32); ctx.fillRect(26, 4, 4, 32);
+      // Turret
+      ctx.fillStyle = '#166534';
+      ctx.beginPath(); ctx.arc(16, 18, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(15, 2, 2, 16);
+      // Flame sponsons
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(0, 16, 3, 6); ctx.fillRect(29, 16, 3, 6);
+      can.refresh();
+    }
+
+    // 86. Predator Jaghatai Khan (32x40)
+    {
+      const can = this.textures.createCanvas('topdown_sm_pred_jaghatai', 32, 40);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(6, 6, 20, 28);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 4, 4, 32); ctx.fillRect(26, 4, 4, 32);
+      // Red stripes
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(12, 6, 8, 28);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 4, 4, 14);
+      can.refresh();
+    }
+
+    // 87. Sabre Tank-Hunter (30x38)
+    {
+      const can = this.textures.createCanvas('topdown_sm_sabre', 30, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(5, 6, 20, 26);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 4, 4, 30); ctx.fillRect(24, 4, 4, 30);
+      // Long barrel
+      ctx.fillRect(14, 0, 2, 20);
+      can.refresh();
+    }
+
+    // 88. Hunter AA Tank (30x38)
+    {
+      const can = this.textures.createCanvas('topdown_sm_hunter', 30, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(5, 6, 20, 26);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(2, 4, 4, 30); ctx.fillRect(24, 4, 4, 30);
+      // Triple SAM launcher pod
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(10, 10, 10, 12);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(11, 6, 2, 6); ctx.fillRect(14, 6, 2, 6); ctx.fillRect(17, 6, 2, 6);
+      can.refresh();
+    }
+
+    // 89. Light Artillery (Mole / Rapier / Tarantula) (26x22)
+    {
+      const can = this.textures.createCanvas('topdown_sm_artillery_light', 26, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(4, 4, 18, 14);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(1, 2, 3, 18); ctx.fillRect(22, 2, 3, 18);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(11, 0, 4, 12);
+      can.refresh();
+    }
+
+    // 90. Thunderbolt Fighter (32x34)
+    {
+      const can = this.textures.createCanvas('topdown_sm_thunderbolt', 32, 34);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(13, 6, 6, 22);
+      ctx.beginPath(); ctx.moveTo(13, 6); ctx.lineTo(16, 0); ctx.lineTo(19, 6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#475569';
+      ctx.beginPath(); ctx.moveTo(13, 12); ctx.lineTo(2, 24); ctx.lineTo(13, 24); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(19, 12); ctx.lineTo(30, 24); ctx.lineTo(19, 24); ctx.closePath(); ctx.fill();
+      can.refresh();
+    }
+
+    // 91. Marauder Bomber (38x42)
+    {
+      const can = this.textures.createCanvas('topdown_sm_marauder', 38, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(16, 6, 6, 32);
+      ctx.beginPath(); ctx.moveTo(16, 6); ctx.lineTo(19, 0); ctx.lineTo(22, 6); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(16, 14); ctx.lineTo(0, 28); ctx.lineTo(16, 30); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(22, 14); ctx.lineTo(38, 28); ctx.lineTo(22, 30); ctx.closePath(); ctx.fill();
+      can.refresh();
+    }
+
+    // 92. Legion of the Damned Squad (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_sm_legion_damned', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => {
+        ctx.fillStyle = '#09090b';
+        ctx.fillRect(mx - 2.5, my - 1.5, 5, 3.5);
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath(); ctx.arc(mx, my - 1.5, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ea580c';
+        ctx.fillRect(mx - 3, my, 1.5, 2); ctx.fillRect(mx + 1.5, my, 1.5, 2);
+      });
+      can.refresh();
+    }
+
+    // 93. Grey Knight Squad (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_sm_grey_knights', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(mx - 2.5, my - 1.5, 5, 3.5);
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath(); ctx.arc(mx, my - 1.5, 2, 0, Math.PI * 2); ctx.fill();
+        // Force halberd
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(mx + 1.5, my - 6, 1.5, 6);
+      });
+      can.refresh();
+    }
+
+    // 94. Space Marine Character Hero (20x20)
+    {
+      const can = this.textures.createCanvas('topdown_sm_character_hero', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath(); ctx.arc(10, 10, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(10, 10, 5, 0, Math.PI * 2); ctx.fill();
+      // Power sword
+      ctx.fillStyle = '#60a5fa';
+      ctx.fillRect(9, 0, 2, 8);
+      can.refresh();
+    }
+
+    // ==========================================
+    // ELDAR CRAFTWORLD MINIATURE SPRITES
+    // ==========================================
+
+    // Helper to draw an Eldar aspect or guardian trooper
+    const drawEldarTrooper = (ctx, mx, my, colArmor = '#d97706', colCrest = '#0f172a', weaponCol = '#1e293b') => {
+      // Slender torso
+      ctx.fillStyle = colArmor;
+      ctx.fillRect(mx - 1.8, my - 1.5, 3.6, 3);
+      // Tall crested helmet
+      ctx.fillStyle = colCrest;
+      ctx.beginPath();
+      ctx.ellipse(mx, my - 1.8, 1.6, 2.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Weapon held forward
+      ctx.fillStyle = weaponCol;
+      ctx.fillRect(mx + 0.5, my - 5, 1.5, 5);
+    };
+
+    // 95. Eldar Guardian Defenders (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_guardian', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#d97706', '#0f172a', '#334155'));
+      can.refresh();
+    }
+
+    // 96. Dire Avengers (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_dire_avenger', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#1d4ed8', '#38bdf8', '#0f172a'));
+      can.refresh();
+    }
+
+    // 97. Howling Banshees (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_howling_banshee', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#fef08a', '#dc2626', '#e2e8f0'));
+      can.refresh();
+    }
+
+    // 98. Striking Scorpions (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_striking_scorpion', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#15803d', '#22c55e', '#334155'));
+      can.refresh();
+    }
+
+    // 99. Fire Dragons (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_fire_dragon', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#ea580c', '#c2410c', '#94a3b8'));
+      can.refresh();
+    }
+
+    // 100. Swooping Hawks (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_swooping_hawk', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 8], [23, 8], [15, 14]];
+      pos.forEach(([mx, my]) => {
+        // Feathered wings
+        ctx.fillStyle = '#67e8f9';
+        ctx.beginPath();
+        ctx.moveTo(mx, my); ctx.lineTo(mx - 6, my - 4); ctx.lineTo(mx - 2, my + 3); ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(mx, my); ctx.lineTo(mx + 6, my - 4); ctx.lineTo(mx + 2, my + 3); ctx.closePath(); ctx.fill();
+        drawEldarTrooper(ctx, mx, my, '#0d9488', '#f8fafc', '#1e293b');
+      });
+      can.refresh();
+    }
+
+    // 101. Dark Reapers (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_dark_reaper', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 7], [23, 7], [15, 13]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#18181b', '#f8fafc', '#475569'));
+      can.refresh();
+    }
+
+    // 102. Warp Spiders (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_warp_spider', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 7], [23, 7], [15, 13]];
+      pos.forEach(([mx, my]) => {
+        // Warp generator on back
+        ctx.fillStyle = '#09090b';
+        ctx.fillRect(mx - 3, my + 1, 6, 3);
+        drawEldarTrooper(ctx, mx, my, '#991b1b', '#0f172a', '#cbd5e1');
+      });
+      can.refresh();
+    }
+
+    // 103. Alaitoc Pathfinders / Rangers (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_pathfinder', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#14532d';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 7], [23, 7], [15, 13]];
+      pos.forEach(([mx, my]) => {
+        // Camo cloak
+        ctx.fillStyle = '#166534';
+        ctx.beginPath(); ctx.arc(mx, my, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(mx + 0.5, my - 7, 1.2, 7);
+      });
+      can.refresh();
+    }
+
+    // 104. Harlequins Troupe (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_harlequin', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 7], [23, 7], [15, 13]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#c026d3', '#2563eb', '#facc15'));
+      can.refresh();
+    }
+
+    // 105. Death Jesters (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_death_jester', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[7, 7], [23, 7], [15, 13]];
+      pos.forEach(([mx, my]) => drawEldarTrooper(ctx, mx, my, '#18181b', '#f8fafc', '#0f172a'));
+      can.refresh();
+    }
+
+    // 106. Wraithguard (30x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_wraithguard', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 8], [14, 6], [22, 8], [15, 14]];
+      pos.forEach(([mx, my]) => {
+        // Elongated wraithbone head
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(mx - 2, my - 2, 4, 5);
+        ctx.fillStyle = '#ca8a04';
+        ctx.beginPath(); ctx.ellipse(mx, my - 3, 2, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(mx + 1, my - 7, 2, 7);
+      });
+      can.refresh();
+    }
+
+    // 107. Eldar Jetbikes (32x22)
+    {
+      const can = this.textures.createCanvas('topdown_eld_jetbike', 32, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 32, 22);
+      [[8, 11], [24, 11]].forEach(([bx, by]) => {
+        // Pointed canopy & hull
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.moveTo(bx - 4, by + 8); ctx.lineTo(bx, by - 9); ctx.lineTo(bx + 4, by + 8); ctx.closePath(); ctx.fill();
+        // Pilot
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath(); ctx.arc(bx, by, 1.8, 0, Math.PI * 2); ctx.fill();
+        // Stabilizers
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(bx - 5, by + 6, 2, 3); ctx.fillRect(bx + 3, by + 6, 2, 3);
+      });
+      can.refresh();
+    }
+
+    // 108. Shining Spears Jetbike (32x22)
+    {
+      const can = this.textures.createCanvas('topdown_eld_shining_spear', 32, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, 32, 22);
+      [[8, 11], [24, 11]].forEach(([bx, by]) => {
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath();
+        ctx.moveTo(bx - 4, by + 8); ctx.lineTo(bx, by - 9); ctx.lineTo(bx + 4, by + 8); ctx.closePath(); ctx.fill();
+        // Silver laser lance projecting forward
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(bx + 2, by - 14, 1.5, 14);
+      });
+      can.refresh();
+    }
+
+    // 109. Eldar Vyper (30x34)
+    {
+      const can = this.textures.createCanvas('topdown_eld_vyper', 30, 34);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      // Wide curved front hull
+      ctx.beginPath();
+      ctx.moveTo(15, 2); ctx.lineTo(26, 20); ctx.lineTo(4, 20); ctx.closePath(); ctx.fill();
+      // Rear engine fins
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(2, 20, 6, 12); ctx.fillRect(22, 20, 6, 12);
+      // Gunner cupola
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(15, 18, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(14, 2, 2, 12);
+      can.refresh();
+    }
+
+    // Helper for Eldar Grav-Tank Chassis (Falcon, Wave Serpent, Prism, etc.)
+    const drawGravTankHull = (ctx, colPrimary = '#d97706', colSecondary = '#b45309') => {
+      // Main curved aerodynamic body
+      ctx.fillStyle = colPrimary;
+      ctx.beginPath();
+      ctx.moveTo(16, 2);
+      ctx.bezierCurveTo(28, 12, 28, 28, 24, 38);
+      ctx.lineTo(8, 38);
+      ctx.bezierCurveTo(4, 28, 4, 12, 16, 2);
+      ctx.closePath();
+      ctx.fill();
+      // Rear thrust fins
+      ctx.fillStyle = colSecondary;
+      ctx.fillRect(2, 26, 5, 12); ctx.fillRect(25, 26, 5, 12);
+    };
+
+    // 110. Falcon Grav-Tank (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_falcon', 32, 42);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      // Turret
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.ellipse(16, 20, 5, 7, 0, 0, Math.PI * 2); ctx.fill();
+      // Pulse laser barrel
+      ctx.fillRect(15, 4, 2, 16);
+      can.refresh();
+    }
+
+    // 111. Wave Serpent (32x44)
+    {
+      const can = this.textures.createCanvas('topdown_eld_wave_serpent', 32, 44);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      // Forward force-field projector vanes
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(4, 2, 3, 10); ctx.fillRect(25, 2, 3, 10);
+      // Turret
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(16, 22, 5, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 112. Fire Prism (32x44)
+    {
+      const can = this.textures.createCanvas('topdown_eld_fire_prism', 32, 44);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      // Prismatic crystal cannon
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(15, 8, 2, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(16, 0); ctx.lineTo(19, 8); ctx.lineTo(13, 8); ctx.closePath(); ctx.fill();
+      can.refresh();
+    }
+
+    // 113. Firestorm AA Grav-Tank (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_firestorm', 32, 42);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      // Quad laser turret
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 4, 2, 14); ctx.fillRect(15, 2, 2, 16); ctx.fillRect(18, 4, 2, 14);
+      can.refresh();
+    }
+
+    // 114. Doomweaver Grav-Tank (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_doomweaver', 32, 42);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(12, 14, 8, 12);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(13, 10, 2, 4); ctx.fillRect(17, 10, 2, 4);
+      can.refresh();
+    }
+
+    // 115. Warp Hunter (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_warp_hunter', 32, 42);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#d97706', '#b45309');
+      // Massive D-cannon snout
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(13, 2, 6, 16);
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath(); ctx.arc(16, 6, 2, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 116. Peregrine Assault Grav-Tank (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_peregrine', 32, 42);
+      const ctx = can.getContext();
+      drawGravTankHull(ctx, '#b45309', '#78350f');
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 4, 4, 16);
+      can.refresh();
+    }
+
+    // 117. Venom Fast Transport (28x32)
+    {
+      const can = this.textures.createCanvas('topdown_eld_venom', 28, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#c026d3';
+      ctx.beginPath();
+      ctx.moveTo(14, 2); ctx.lineTo(24, 18); ctx.lineTo(4, 18); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#a21caf';
+      ctx.fillRect(1, 16, 4, 12); ctx.fillRect(23, 16, 4, 12);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(13, 2, 2, 10);
+      can.refresh();
+    }
+
+    // 118. War Walker (26x28)
+    {
+      const can = this.textures.createCanvas('topdown_eld_war_walker', 26, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      // Cockpit / chassis
+      ctx.beginPath(); ctx.ellipse(13, 14, 5, 7, 0, 0, Math.PI * 2); ctx.fill();
+      // Pilot canopy
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(13, 12, 3, 0, Math.PI * 2); ctx.fill();
+      // Twin weapon arms
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(3, 4, 3, 14); ctx.fillRect(20, 4, 3, 14);
+      can.refresh();
+    }
+
+    // 119. Wraithlord (28x30)
+    {
+      const can = this.textures.createCanvas('topdown_eld_wraithlord', 28, 30);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#eab308';
+      // Broad shoulders & curved shoulder vanes
+      ctx.beginPath();
+      ctx.ellipse(14, 14, 8, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Curved vanes
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(4, 14, 3, 10); ctx.fillRect(21, 14, 3, 10);
+      // Tall wraith head
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.ellipse(14, 9, 3, 5, 0, 0, Math.PI * 2); ctx.fill();
+      // Heavy weapon
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(21, 2, 3, 12);
+      can.refresh();
+    }
+
+    // 120. Support Weapon Platform (24x24)
+    {
+      const can = this.textures.createCanvas('topdown_eld_platform', 24, 24);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath(); ctx.arc(12, 12, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(12, 12, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(11, 0, 2, 12);
+      can.refresh();
+    }
+
+    // 121. Scorpion Super-Heavy Grav-Tank (40x48)
+    {
+      const can = this.textures.createCanvas('topdown_eld_scorpion', 40, 48);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(20, 4);
+      ctx.bezierCurveTo(36, 14, 36, 36, 32, 44);
+      ctx.lineTo(8, 44);
+      ctx.bezierCurveTo(4, 36, 4, 14, 20, 4);
+      ctx.closePath();
+      ctx.fill();
+      // Twin long heavy pulse lasers
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(16, 0, 3, 24); ctx.fillRect(21, 0, 3, 24);
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(2, 30, 6, 14); ctx.fillRect(32, 30, 6, 14);
+      can.refresh();
+    }
+
+    // 122. Cobra Super-Heavy Grav-Tank (40x48)
+    {
+      const can = this.textures.createCanvas('topdown_eld_cobra', 40, 48);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(20, 4);
+      ctx.bezierCurveTo(36, 14, 36, 36, 32, 44);
+      ctx.lineTo(8, 44);
+      ctx.bezierCurveTo(4, 36, 4, 14, 20, 4);
+      ctx.closePath();
+      ctx.fill();
+      // Giant central D-cannon
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(16, 2, 8, 20);
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath(); ctx.arc(20, 6, 3, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 123. Storm Serpent Super-Heavy (40x48)
+    {
+      const can = this.textures.createCanvas('topdown_eld_storm_serpent', 40, 48);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(20, 4); ctx.bezierCurveTo(36, 14, 36, 36, 32, 44); ctx.lineTo(8, 44); ctx.bezierCurveTo(4, 36, 4, 14, 20, 4); ctx.closePath(); ctx.fill();
+      // Webway portal generator coils
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.ellipse(20, 24, 8, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.ellipse(20, 24, 5, 8, 0, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 124. Void Spinner Super-Heavy (40x48)
+    {
+      const can = this.textures.createCanvas('topdown_eld_void_spinner', 40, 48);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(20, 4); ctx.bezierCurveTo(36, 14, 36, 36, 32, 44); ctx.lineTo(8, 44); ctx.bezierCurveTo(4, 36, 4, 14, 20, 4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(14, 14, 12, 18);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(15, 6, 4, 8); ctx.fillRect(21, 6, 4, 8);
+      can.refresh();
+    }
+
+    // 125. Tempest Super-Heavy Grav-Tank (36x44)
+    {
+      const can = this.textures.createCanvas('topdown_eld_tempest', 36, 44);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.moveTo(18, 4); ctx.bezierCurveTo(32, 14, 32, 34, 28, 40); ctx.lineTo(8, 40); ctx.bezierCurveTo(4, 34, 4, 14, 18, 4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(15, 2, 6, 18);
+      can.refresh();
+    }
+
+    // 126. Eldar Knight (32x34)
+    {
+      const can = this.textures.createCanvas('topdown_eld_knight', 32, 34);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath(); ctx.ellipse(16, 16, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+      // Shield generator
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(4, 12, 4, 8);
+      // Lance arm
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(24, 2, 3, 20);
+      can.refresh();
+    }
+
+    // 127. Revenant Scout Titan (36x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_revenant', 36, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      // Torso & head
+      ctx.beginPath(); ctx.ellipse(18, 18, 8, 12, 0, 0, Math.PI * 2); ctx.fill();
+      // Swept fins / wings
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.moveTo(18, 16); ctx.lineTo(4, 34); ctx.lineTo(12, 34); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(18, 16); ctx.lineTo(32, 34); ctx.lineTo(24, 34); ctx.closePath(); ctx.fill();
+      // Pulsar arms
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(6, 2, 3, 18); ctx.fillRect(27, 2, 3, 18);
+      can.refresh();
+    }
+
+    // 128. Phantom Battle Titan (46x52)
+    {
+      const can = this.textures.createCanvas('topdown_eld_phantom', 46, 52);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#f59e0b';
+      // Massive wraithbone torso & cowl
+      ctx.beginPath(); ctx.ellipse(23, 24, 12, 16, 0, 0, Math.PI * 2); ctx.fill();
+      // Shoulder vanes
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath(); ctx.moveTo(23, 18); ctx.lineTo(2, 40); ctx.lineTo(14, 40); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(23, 18); ctx.lineTo(44, 40); ctx.lineTo(32, 40); ctx.closePath(); ctx.fill();
+      // Twin Pulsar / D-cannon arm weapons
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(8, 0, 5, 26); ctx.fillRect(33, 0, 5, 26);
+      can.refresh();
+    }
+
+    // 129. Warlock Battle Titan (46x52)
+    {
+      const can = this.textures.createCanvas('topdown_eld_warlock_titan', 46, 52);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#7e22ce';
+      ctx.beginPath(); ctx.ellipse(23, 24, 12, 16, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#9333ea';
+      ctx.beginPath(); ctx.moveTo(23, 18); ctx.lineTo(2, 40); ctx.lineTo(14, 40); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(23, 18); ctx.lineTo(44, 40); ctx.lineTo(32, 40); ctx.closePath(); ctx.fill();
+      // Witchblade & Psychic Lance
+      ctx.fillStyle = '#a855f7';
+      ctx.fillRect(8, 0, 5, 26); ctx.fillRect(33, 0, 5, 26);
+      can.refresh();
+    }
+
+    // 130. Avatar of Khaine (28x28)
+    {
+      const can = this.textures.createCanvas('topdown_eld_avatar', 28, 28);
+      const ctx = can.getContext();
+      // Burning molten iron body
+      ctx.fillStyle = '#991b1b';
+      ctx.beginPath(); ctx.arc(14, 14, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath(); ctx.arc(14, 14, 8, 0, Math.PI * 2); ctx.fill();
+      // Molten cracks
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(12, 8, 4, 12);
+      // Wailing Doom Spear
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(20, 0, 3, 22);
+      can.refresh();
+    }
+
+    // 131. Eldar Character Farseer (20x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_character_farseer', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#ca8a04';
+      ctx.beginPath(); ctx.arc(10, 10, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.arc(10, 10, 4, 0, Math.PI * 2); ctx.fill();
+      // Witch staff
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14, 0, 2, 16);
+      can.refresh();
+    }
+
+    // 132. Eldar Character Warlock (20x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_character_warlock', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath(); ctx.arc(10, 10, 8, 0, Math.PI * 2); ctx.fill();
+      // Witchblade
+      ctx.fillStyle = '#67e8f9';
+      ctx.fillRect(14, 2, 2, 14);
+      can.refresh();
+    }
+
+    // 133. Eldar Character Hero / Exarch (20x20)
+    {
+      const can = this.textures.createCanvas('topdown_eld_character_hero', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath(); ctx.arc(10, 10, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(10, 10, 5, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
+    // 134. Nightwing Interceptor (34x36)
+    {
+      const can = this.textures.createCanvas('topdown_eld_nightwing', 34, 36);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.moveTo(17, 2); ctx.lineTo(24, 28); ctx.lineTo(10, 28); ctx.closePath(); ctx.fill();
+      // Forward-swept wings
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath(); ctx.moveTo(10, 16); ctx.lineTo(0, 10); ctx.lineTo(10, 24); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(24, 16); ctx.lineTo(34, 10); ctx.lineTo(24, 24); ctx.closePath(); ctx.fill();
+      can.refresh();
+    }
+
+    // 135. Phoenix Fighter-Bomber (40x42)
+    {
+      const can = this.textures.createCanvas('topdown_eld_phoenix', 40, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(20, 2); ctx.lineTo(38, 32); ctx.lineTo(2, 32); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(16, 12, 8, 26);
+      can.refresh();
+    }
+
+    // 136. Vampyre Troop Carrier (44x46)
+    {
+      const can = this.textures.createCanvas('topdown_eld_vampyre', 44, 46);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(22, 2); ctx.bezierCurveTo(42, 16, 42, 38, 36, 42); ctx.lineTo(8, 42); ctx.bezierCurveTo(2, 38, 2, 16, 22, 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.ellipse(22, 24, 8, 12, 0, 0, Math.PI * 2); ctx.fill();
+      can.refresh();
+    }
+
   }
 
   getOrkClan(cfg) {
@@ -13583,8 +17054,92 @@ class NetEpicScene extends Phaser.Scene {
     const subN = (cfg.subName || '').toLowerCase();
     const allText = `${k} ${n} ${subN}`.toLowerCase();
     const isOrk = (cfg.faction === 'ORKS' || cfg.armyBook === 'ORKS' || k.startsWith('card_ork_') || k.startsWith('ork_'));
+    const isEldar = (cfg.faction === 'ELDAR' || cfg.armyBook === 'ELDAR' || k.startsWith('card_eld_') || k.startsWith('eld_') || allText.includes('eldar') || allText.includes('aspect') || allText.includes('craftworld') || allText.includes('harlequin'));
 
-    // 1. Titans & Gargants
+    // ==========================================
+    // 1. ELDAR SPECIAL RESOLUTION (Craftworlds & Harlequins)
+    // ==========================================
+    if (isEldar) {
+      // Eldar Avatar of Khaine
+      if (allText.includes('avatar')) return 'topdown_eld_avatar';
+
+      // Eldar Titans
+      if (allText.includes('warlock_titan') || allText.includes('warlock titan')) return 'topdown_eld_warlock_titan';
+      if (allText.includes('phantom')) return 'topdown_eld_phantom';
+      if (allText.includes('revenant')) return 'topdown_eld_revenant';
+
+      // Eldar Knights
+      if (allText.includes('knight') && (allText.includes('fire') || allText.includes('bright') || allText.includes('towering') || cfg.cardType === 'COMPANY' || cfg.pinningClass === 3)) {
+        return 'topdown_eld_knight';
+      }
+
+      // Eldar Characters & Seers (Check BEFORE vehicle transports)
+      if (allText.includes('eldrad') || allText.includes('farseer')) return 'topdown_eld_character_farseer';
+      if (allText.includes('warlock') && !allText.includes('titan')) return 'topdown_eld_character_warlock';
+      if (allText.includes('spiritseer') || allText.includes('bonesinger') || allText.includes('exarch') || allText.includes('solitaire') || allText.includes('shadowseer') || allText.includes('observer')) {
+        return 'topdown_eld_character_hero';
+      }
+
+      // Eldar Infantry & Aspect Warriors (Check BEFORE superheavies to avoid 'striking scorpion' matching 'scorpion')
+      if (allText.includes('striking_scorpion') || allText.includes('striking scorpion')) return 'topdown_eld_striking_scorpion';
+      if (allText.includes('fire_dragon') || allText.includes('fire dragon')) return 'topdown_eld_fire_dragon';
+      if (allText.includes('dire_avenger') || allText.includes('avenger') || allText.includes('aspect_host')) return 'topdown_eld_dire_avenger';
+      if (allText.includes('banshee')) return 'topdown_eld_howling_banshee';
+      if (allText.includes('hawk')) return 'topdown_eld_swooping_hawk';
+      if (allText.includes('reaper')) return 'topdown_eld_dark_reaper';
+      if (allText.includes('warp_spider') || allText.includes('spider')) return 'topdown_eld_warp_spider';
+      if (allText.includes('pathfinder') || allText.includes('ranger')) return 'topdown_eld_pathfinder';
+      if (allText.includes('death_jester') || allText.includes('death jester')) return 'topdown_eld_death_jester';
+      if (allText.includes('harlequin') || allText.includes('mime')) return 'topdown_eld_harlequin';
+      if (allText.includes('wraithguard')) return 'topdown_eld_wraithguard';
+
+      // Eldar Super-Heavy Grav-Tanks (Engines of Vaul)
+      if (allText.includes('scorpion')) return 'topdown_eld_scorpion';
+      if (allText.includes('cobra')) return 'topdown_eld_cobra';
+      if (allText.includes('storm_serpent') || allText.includes('storm serpent')) return 'topdown_eld_storm_serpent';
+      if (allText.includes('void_spinner') || allText.includes('void spinner')) return 'topdown_eld_void_spinner';
+      if (allText.includes('tempest')) return 'topdown_eld_tempest';
+
+      // Eldar Flyers
+      if (allText.includes('nightwing')) return 'topdown_eld_nightwing';
+      if (allText.includes('phoenix')) return 'topdown_eld_phoenix';
+      if (allText.includes('vampyre')) return 'topdown_eld_vampyre';
+
+      // Eldar Grav-Tanks & Transports
+      if (allText.includes('prism')) return 'topdown_eld_fire_prism';
+      if (allText.includes('wave_serpent') || allText.includes('waveserpent') || allText.includes('serpent')) return 'topdown_eld_wave_serpent';
+      if (allText.includes('firestorm')) return 'topdown_eld_firestorm';
+      if (allText.includes('doomweaver')) return 'topdown_eld_doomweaver';
+      if (allText.includes('warp_hunter') || allText.includes('warp hunter')) return 'topdown_eld_warp_hunter';
+      if (allText.includes('peregrine')) return 'topdown_eld_peregrine';
+      if (allText.includes('venom')) return 'topdown_eld_venom';
+      if (allText.includes('falcon')) return 'topdown_eld_falcon';
+
+      // Eldar Jetbikes & Vypers
+      if (allText.includes('shining_spear') || allText.includes('shining spear')) return 'topdown_eld_shining_spear';
+      if (allText.includes('vyper')) return 'topdown_eld_vyper';
+      if (allText.includes('jetbike')) return 'topdown_eld_jetbike';
+
+      // Eldar Walkers & Heavy Support
+      if (allText.includes('wraithlord')) return 'topdown_eld_wraithlord';
+      if (allText.includes('war_walker') || allText.includes('war walker')) return 'topdown_eld_war_walker';
+      if (allText.includes('bright_lance') || allText.includes('bright lance') || allText.includes('vibro') || allText.includes('platform')) return 'topdown_eld_platform';
+
+      // Default Eldar Stand
+      return 'topdown_eld_guardian';
+    }
+
+    // ==========================================
+    // 2. AIRCRAFT & AIRBORNE ASSAULT (Check before Super-Heavies)
+    // ==========================================
+    if (allText.includes('thunderhawk')) return 'topdown_sm_thunderhawk';
+    if (allText.includes('thunderbolt')) return 'topdown_sm_thunderbolt';
+    if (allText.includes('marauder')) return 'topdown_sm_marauder';
+    if (allText.includes('drop_pod') || allText.includes('drop pod')) return 'topdown_sm_drop_pod';
+
+    // ==========================================
+    // 3. TITANS & GARGANTS
+    // ==========================================
     if (cfg.isTitan || allText.includes('gargant')) {
       if (allText.includes('warhound')) return 'topdown_warhound';
       if (allText.includes('reaver')) return 'topdown_warlord';
@@ -13592,7 +17147,9 @@ class NetEpicScene extends Phaser.Scene {
       return isOrk ? 'topdown_gargant' : 'topdown_warlord';
     }
 
-    // 2. Super-Heavies & Stompas & Mega-Squiggoths
+    // ==========================================
+    // 4. SUPER-HEAVIES, STOMPAS & MEGA-SQUIGGOTHS
+    // ==========================================
     if (cfg.superHeavy || allText.includes('stompa') || allText.includes('mega_squiggoth') || allText.includes('mega-squiggoth') || allText.includes('gibletgrinda') || allText.includes('skullhamma') || allText.includes('tour_wagon') || allText.includes('tour wagon') || allText.includes('blasta_bomma') || allText.includes('blasta bomma')) {
       if (allText.includes('blasta_bomma') || allText.includes('blasta bomma')) return 'topdown_ork_blasta_bomma';
       if (allText.includes('tour_wagon') || allText.includes('tour wagon') || allText.includes('rokker')) return 'topdown_ork_tour_wagon';
@@ -13605,13 +17162,17 @@ class NetEpicScene extends Phaser.Scene {
       return isOrk ? 'topdown_battlewagon' : 'topdown_baneblade';
     }
 
-    // 3. Characters (Single Hero Stands)
-    if (cfg.isCharacter) {
+    // ==========================================
+    // 5. CHARACTERS & HERO STANDS
+    // ==========================================
+    if (cfg.isCharacter || allText.includes('chapter_master') || allText.includes('champion') || allText.includes('calgar') || allText.includes('tigurius') || allText.includes('apothecary') || allText.includes('chaplain') || allText.includes('techmarine') || allText.includes('iron_father') || allText.includes('inquisitor') || allText.includes('bjorn')) {
       if (allText.includes('apothecary')) return 'topdown_character_apothecary';
       if (allText.includes('chaplain')) return 'topdown_character_chaplain';
-      if (allText.includes('techmarine') || allText.includes('techpriest') || allText.includes('tech-priest')) return 'topdown_character_techmarine';
-      if (allText.includes('tigurius') || allText.includes('librarian') || (cfg.isPsyker && !isOrk)) return 'topdown_character_librarian';
+      if (allText.includes('techmarine') || allText.includes('techpriest') || allText.includes('tech-priest') || allText.includes('iron_father')) return 'topdown_character_techmarine';
+      if (allText.includes('tigurius') || allText.includes('librarian')) return 'topdown_character_librarian';
+      if (allText.includes('champion') || allText.includes('chapter_master') || allText.includes('inquisitor')) return 'topdown_sm_character_hero';
       if (allText.includes('calgar') || allText.includes('captain') || allText.includes('commissar')) return 'topdown_character_captain';
+      if (allText.includes('bjorn')) return 'topdown_sm_dread_venerable';
       
       // Ork Characters
       if (allText.includes('runtherd')) return 'topdown_ork_runtherd';
@@ -13621,8 +17182,9 @@ class NetEpicScene extends Phaser.Scene {
       if (allText.includes('mek')) return 'topdown_ork_mek';
     }
 
-    // 4. Ork Walkers, Beasts, Flyers & Speedstas
-    // Mekboy Speedstas & Dragstas
+    // ==========================================
+    // 6. ORK WALKERS, BEASTS, FLYERS & SPEEDSTAS
+    // ==========================================
     if (allText.includes('bubble_chukka') || allText.includes('bubble chukka')) return 'topdown_ork_speedsta_bubble';
     if (allText.includes('destrukta_rokkits') || allText.includes('destrukta') || allText.includes('destruktor')) return 'topdown_ork_speedsta_destrukta';
     if (allText.includes('dragsta')) return 'topdown_ork_dragsta';
@@ -13630,35 +17192,53 @@ class NetEpicScene extends Phaser.Scene {
     if (allText.includes('lifta_droppa') || allText.includes('lifta-droppa') || allText.includes('lifta droppa')) return 'topdown_ork_speedsta_lifta';
     if (allText.includes('renegade_mekboy') || allText.includes('renegade mekboy')) return 'topdown_ork_dragsta';
 
-    // Ork Aircraft & Airborne Assault
     if (allText.includes('blasta_bomma') || allText.includes('blasta bomma')) return 'topdown_ork_blasta_bomma';
     if (allText.includes('heavy_bomma') || (allText.includes('bomma') && !allText.includes('fighta'))) return 'topdown_ork_heavy_bomma';
     if (allText.includes('landa')) return 'topdown_ork_landa';
-    if (allText.includes('supa_transport_rokkit') || allText.includes('supa transport rokkit') || allText.includes('trans\'ort rokkit')) return 'topdown_ork_supa_transport_rokkit';
+    if (allText.includes('supa_transport_rokkit') || allText.includes('supa transport rokkit') || allText.includes("trans'ort rokkit")) return 'topdown_ork_supa_transport_rokkit';
     if (allText.includes('copta') || allText.includes('kopta') || allText.includes('copter')) return 'topdown_ork_copta';
-    if (allText.includes('fighta')) return 'topdown_ork_fighta';
+    if (allText.includes('fighta') && isOrk) return 'topdown_ork_fighta';
 
-    // Ork Beasts & Walkers
     if (allText.includes('cyberwyvern')) return 'topdown_ork_cyberwyverns';
     if (allText.includes('squiggoth')) return 'topdown_ork_squiggoth';
     if (allText.includes('tinbot')) return 'topdown_ork_tinbotz';
     if (allText.includes('onslaughter')) return 'topdown_ork_onslaughter';
 
-    // Ork Artillery Batteries
     if (allText.includes('hop_splat') || allText.includes('hop-splat') || allText.includes('hop splat')) return 'topdown_ork_hop_splat';
     if (allText.includes('pulsa_rokkit') || allText.includes('pulsa rokkit') || allText.includes('pulsa')) return 'topdown_ork_pulsa_rokkit';
     if (allText.includes('squig_katapult') || allText.includes('squig katapult') || allText.includes('squig catapult')) return 'topdown_ork_squig_katapult';
     if (allText.includes('doomdiver') || allText.includes('magna kannon')) return 'topdown_ork_doomdiver';
-    if (allText.includes('lobba') || allText.includes('shokk') || allText.includes('zzap') || allText.includes('traktor') || allText.includes('soopa') || allText.includes('battery')) return 'topdown_ork_artillery';
+    if (isOrk && (allText.includes('lobba') || allText.includes('shokk') || allText.includes('zzap') || allText.includes('traktor') || allText.includes('soopa') || allText.includes('battery'))) return 'topdown_ork_artillery';
 
-    // 5. Dreadnoughts & Walkers
-    if (allText.includes('bjorn') || allText.includes('dread') || allText.includes('dreadnought')) {
-      if (isOrk || allText.includes('kan')) return 'topdown_ork_kans';
+    // ==========================================
+    // 7. SPACE MARINE SPECIALIZED UNITS & VEHICLES
+    // ==========================================
+    // Special Infantry (Check before generic checks)
+    if (allText.includes('legion_damned') || allText.includes('legion of the damned')) return 'topdown_sm_legion_damned';
+    if (allText.includes('grey_knights') || allText.includes('grey knight') || allText.includes('daemonhunter')) return 'topdown_sm_grey_knights';
+
+    // Space Marine Dreadnoughts & Scatolos
+    if (allText.includes('venerable')) return 'topdown_sm_dread_venerable';
+    if (allText.includes('furioso')) return 'topdown_sm_dread_furioso';
+    if (allText.includes('punisher')) return 'topdown_sm_dread_punisher';
+    if (allText.includes('scatolo')) return 'topdown_sm_scatolo';
+    if (allText.includes('dread') || allText.includes('dreadnought')) {
+      if (isOrk) return 'topdown_ork_kans';
       return 'topdown_dreadnought';
     }
-    if (allText.includes('kan')) return 'topdown_ork_kans';
+    if (allText.includes('killa_kan') || allText.includes('killa kan') || allText.includes('kan mob')) return 'topdown_ork_kans';
 
-    // 6. Vehicles & Tanks
+    // Space Marine Tanks & Vehicles
+    if (allText.includes('vulkan')) return 'topdown_sm_pred_vulkan';
+    if (allText.includes('jaghatai')) return 'topdown_sm_pred_jaghatai';
+    if (allText.includes('sabre')) return 'topdown_sm_sabre';
+    if (allText.includes('hunter aa') || allText.includes('hunter_aa') || (allText.includes('hunter') && !allText.includes('daemonhunter'))) return 'topdown_sm_hunter';
+    if (allText.includes('molemortar') || allText.includes('rapier') || allText.includes('tarantula')) return 'topdown_sm_artillery_light';
+
+    if (allText.includes('tornado')) return 'topdown_sm_speeder_tornado';
+    if (allText.includes('typhoon')) return 'topdown_sm_speeder_typhoon';
+    if (allText.includes('speeder')) return 'topdown_speeder';
+
     if (allText.includes('landraider') || allText.includes('land raider') || allText.includes('crusader')) {
       if (isOrk) return 'topdown_ork_landraider';
       return 'topdown_landraider';
@@ -13667,7 +17247,6 @@ class NetEpicScene extends Phaser.Scene {
     if (allText.includes('whirlwind')) return 'topdown_whirlwind';
     if (allText.includes('razorback')) return 'topdown_razorback';
     if (allText.includes('pred')) return 'topdown_predator';
-    if (allText.includes('speeder') || allText.includes('typhoon')) return 'topdown_speeder';
     if (allText.includes('rhino')) {
       if (isOrk) return 'topdown_ork_rhino';
       return 'topdown_rhino';
@@ -13684,19 +17263,23 @@ class NetEpicScene extends Phaser.Scene {
     if (allText.includes('wagon') || allText.includes('bonebreaka') || allText.includes('bonecruncha') || allText.includes('lungbursta') || allText.includes('braincrusha') || allText.includes('gutrippa') || allText.includes('flakwagon')) return 'topdown_battlewagon';
     if (allText.includes('bugg') || allText.includes('trukk') || allText.includes('wartrak') || allText.includes('scorcher')) return 'topdown_ork_buggy';
 
-    // 7. Bikes & Outriders
+    // ==========================================
+    // 8. BIKES & OUTRIDERS
+    // ==========================================
     if (allText.includes('boarboy') || allText.includes('boar')) return 'topdown_ork_boarboyz';
     if (allText.includes('bike')) {
       if (isOrk) return 'topdown_ork_bikes';
       return 'topdown_bikes';
     }
 
-    // 8. Infantry Squads
+    // ==========================================
+    // 9. INFANTRY SQUADS
+    // ==========================================
     if (allText.includes('deathskull_shootas') || allText.includes('deathskull shoota') || allText.includes('deathskull shootaz')) return 'topdown_ork_deathskull_shootas';
     if (allText.includes('madboy')) return 'topdown_ork_madboyz';
     if (allText.includes('freebooter')) return 'topdown_ork_freebooterz';
     if (allText.includes('wildboy')) return 'topdown_ork_wildboyz';
-    if (allText.includes('terminator') || allText.includes('term_') || allText.includes('grey_knights')) return 'topdown_terminator';
+    if (allText.includes('terminator') || allText.includes('term_')) return 'topdown_terminator';
     if (allText.includes('scout')) return 'topdown_scouts';
     if (allText.includes('devastator') || allText.includes('heavy weapon')) return 'topdown_devastator';
     if (allText.includes('stormboy')) return 'topdown_ork_stormboyz';
