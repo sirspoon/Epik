@@ -1451,7 +1451,31 @@ const UNIT_CATALOG = {
       "standsCount": 19,
       "color": 6333946,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_scoutco",
+        "armyBook": "IMPERIUM",
+        "name": "HQ Command Rhino",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
     },
     {
       "key": "card_sm_landraider_co",
@@ -2600,7 +2624,31 @@ const UNIT_CATALOG = {
       "isCharacter": true,
       "color": 3900150,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_tigurius",
+        "armyBook": "IMPERIUM",
+        "name": "Command Rhino",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
     },
     {
       "key": "card_sm_chaplain",
@@ -2633,7 +2681,31 @@ const UNIT_CATALOG = {
       },
       "color": 988970,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_chaplain",
+        "armyBook": "IMPERIUM",
+        "name": "Command Rhino",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
     },
     {
       "key": "card_sm_techmarine",
@@ -2666,7 +2738,31 @@ const UNIT_CATALOG = {
       },
       "color": 12131356,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_techmarine",
+        "armyBook": "IMPERIUM",
+        "name": "Command Rhino",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
     },
     {
       "key": "card_sm_apothecary",
@@ -2698,7 +2794,31 @@ const UNIT_CATALOG = {
       },
       "color": 16317180,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_apothecary",
+        "armyBook": "IMPERIUM",
+        "name": "Command Rhino",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
     },
     {
       "key": "card_sm_bjorn",
@@ -4349,7 +4469,32 @@ const UNIT_CATALOG = {
       "standsCount": 19,
       "color": 14251782,
       "baseW": 20,
-      "baseH": 20
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "eld_waveserpent_host",
+        "armyBook": "ELDAR",
+        "name": "Wave Serpent Transports",
+        "moveCm": 30,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "skimmer": true,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Twin Bright Lances",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2
+        },
+        "breakPoint": 2,
+        "vpValue": 0,
+        "color": 14251782,
+        "standsCount": 3,
+        "baseW": 24,
+        "baseH": 30
+      }
     },
     {
       "key": "card_eld_windrider_host",
@@ -10614,6 +10759,793 @@ class NetEpicScene extends Phaser.Scene {
       ctx.fillRect(32, 26, 4, 7);
       can.refresh();
     }
+
+    // 15. Space Marine Chief Apothecary (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_character_apothecary', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(mx - 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.arc(mx + 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(mx - 3.5, my - 2, 7, 5);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(mx - 4.5, my, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 5.5, my - 1, 2, 2);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(mx - 5.5, my - 6, 2, 5);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 5, my - 7.5, 1, 1.8);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(mx + 4.5, my, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(mx + 3.8, my - 5, 2, 4);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 1.5, my - 2.8, 3, 1.2);
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(mx + 2, my + 2, 1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(mx + 1.5, my + 3, 1, 2.5);
+      can.refresh();
+    }
+
+    // 16. Space Marine Chapter Chaplain (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_character_chaplain', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#450a0a';
+      ctx.fillRect(mx - 4.5, my + 2, 9, 4);
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(mx - 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.arc(mx + 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#09090b';
+      ctx.fillRect(mx - 3.5, my - 2, 7, 5);
+      ctx.fillStyle = '#09090b';
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(mx - 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.arc(mx + 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f1f5f9';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mx - 1.4, my - 2.8, 1, 1);
+      ctx.fillRect(mx + 0.4, my - 2.8, 1, 1);
+      ctx.fillRect(mx - 0.8, my - 1.2, 1.6, 1);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(mx + 3.8, my - 8, 1.8, 7);
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(mx + 2, my - 7);
+      ctx.lineTo(mx + 7.5, my - 7);
+      ctx.lineTo(mx + 4.7, my - 9.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(mx - 5.5, my - 4.5, 1.8, 3.5);
+      can.refresh();
+    }
+
+    // 17. Space Marine Master Techmarine (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_character_techmarine', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(mx - 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.arc(mx + 3, my + 3, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(mx - 3.5, my - 2, 7, 5);
+      ctx.fillStyle = '#b91c1c';
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(mx - 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.arc(mx + 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mx - 5.5, my - 1, 2, 2);
+      ctx.fillStyle = '#b91c1c';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(mx - 1.2, my - 2.8, 2.4, 1.2);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(mx + 3, my + 3);
+      ctx.lineTo(mx + 5.5, my - 3);
+      ctx.lineTo(mx + 2, my - 7);
+      ctx.stroke();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(mx + 0.5, my - 8.5, 1.5, 2);
+      ctx.fillRect(mx + 3, my - 8.5, 1.5, 2);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(mx - 5.5, my - 6, 2, 3);
+      can.refresh();
+    }
+
+    // 18. Chief Librarian Tigurius / Librarian (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_character_librarian', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#7c3aed';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2.5, 4.2, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#1d4ed8';
+      ctx.fillRect(mx - 3.5, my - 2, 7, 5);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(mx - 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.arc(mx + 4.5, my, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#c084fc';
+      ctx.fillRect(mx - 1.4, my - 2.8, 2.8, 1.2);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(mx + 4, my - 8, 1.6, 7.5);
+      ctx.fillStyle = '#c084fc';
+      ctx.beginPath();
+      ctx.arc(mx + 4.8, my - 8.5, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(mx + 4.8, my - 8.5, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(mx - 5.5, my - 4, 2.2, 2.8);
+      can.refresh();
+    }
+
+    // 19. Chapter Master / Captain (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_character_captain', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(mx - 5, my + 1, 10, 5);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(mx, my - 4, 3.8, Math.PI * 0.8, Math.PI * 2.2);
+      ctx.stroke();
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(mx - 3.5, my - 2, 7, 5);
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(mx - 4.5, my, 2.8, 0, Math.PI * 2);
+      ctx.arc(mx + 4.5, my, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 1.4, my - 2.8, 2.8, 1.2);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(mx + 4, my - 8.5, 1.6, 7.5);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(mx + 4.4, my - 8.5, 0.8, 7.5);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(mx - 5.8, my - 5, 2.5, 4);
+      can.refresh();
+    }
+
+    // 20. Space Marine Dreadnought (26x26 Armored Walker)
+    {
+      const can = this.textures.createCanvas('topdown_dreadnought', 26, 26);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 26, 26);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(3, 16, 5, 8);
+      ctx.fillRect(18, 16, 5, 8);
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(5, 5, 16, 15);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(5, 5, 16, 15);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 7, 10, 10);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(10, 8.5, 6, 1.5);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(1, 4, 4, 12);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(1.5, 1, 1.4, 5);
+      ctx.fillRect(3.2, 1, 1.4, 5);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(21, 4, 4, 12);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(21, 1, 1.3, 4);
+      ctx.fillRect(23.7, 1, 1.3, 4);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(7, 20, 2.5, 4);
+      ctx.fillRect(16.5, 20, 2.5, 4);
+      can.refresh();
+    }
+
+    // 21. Space Marine Land Speeder (28x32 Antigrav Skimmer)
+    {
+      const can = this.textures.createCanvas('topdown_speeder', 28, 32);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e40af';
+      ctx.beginPath();
+      ctx.moveTo(14, 2);
+      ctx.lineTo(26, 26);
+      ctx.lineTo(2, 26);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(8, 12, 12, 8);
+      ctx.fillStyle = '#1e40af';
+      ctx.beginPath();
+      ctx.arc(11, 15, 2.2, 0, Math.PI * 2);
+      ctx.arc(17, 15, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(10, 14, 2, 0.8);
+      ctx.fillRect(16, 14, 2, 0.8);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(13, 0, 2, 4);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(1, 18, 4, 8);
+      ctx.fillRect(23, 18, 4, 8);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(1.5, 17, 1.2, 2);
+      ctx.fillRect(3.3, 17, 1.2, 2);
+      ctx.fillRect(23.5, 17, 1.2, 2);
+      ctx.fillRect(25.3, 17, 1.2, 2);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(6, 26, 5, 4);
+      ctx.fillRect(17, 26, 5, 4);
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(7, 29, 3, 2);
+      ctx.fillRect(18, 29, 3, 2);
+      can.refresh();
+    }
+
+    // 22. Space Marine Whirlwind (30x38 Missile Artillery Tank)
+    {
+      const can = this.textures.createCanvas('topdown_whirlwind', 30, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 1, 6, 36);
+      ctx.fillRect(23, 1, 6, 36);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 3; y < 36; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(23, y); ctx.lineTo(29, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(7, 3, 16, 32);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeRect(7, 3, 16, 32);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 4, 14, 4);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 12, 14, 18);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(8, 12, 14, 18);
+      for (let col = 0; col < 3; col++) {
+        for (let row = 0; row < 4; row++) {
+          const cx = 10 + col * 4;
+          const cy = 14 + row * 4;
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(cx - 1, cy - 1, 3, 3);
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(cx - 0.5, cy - 0.5, 2, 2);
+        }
+      }
+      ctx.fillStyle = '#cbd5e1';
+      ctx.beginPath();
+      ctx.arc(15, 9, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      can.refresh();
+    }
+
+    // 23. Space Marine Razorback IFV (30x38 Twin Lascannon Tank)
+    {
+      const can = this.textures.createCanvas('topdown_razorback', 30, 38);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 1, 6, 36);
+      ctx.fillRect(23, 1, 6, 36);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 3; y < 36; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(23, y); ctx.lineTo(29, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(7, 3, 16, 32);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeRect(7, 3, 16, 32);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 4, 14, 4);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.beginPath();
+      ctx.arc(15, 17, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#93c5fd';
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 1, 2.2, 15);
+      ctx.fillRect(15.8, 1, 2.2, 15);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(12, 0, 2.2, 2);
+      ctx.fillRect(15.8, 0, 2.2, 2);
+      can.refresh();
+    }
+
+    // 24. Space Marine Vindicator (30x40 Siege Tank with Demolisher Cannon & Dozer Blade)
+    {
+      const can = this.textures.createCanvas('topdown_vindicator', 30, 40);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 4, 6, 34);
+      ctx.fillRect(23, 4, 6, 34);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 6; y < 38; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(23, y); ctx.lineTo(29, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1e40af';
+      ctx.fillRect(7, 6, 16, 32);
+      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeRect(7, 6, 16, 32);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(8, 7, 14, 10);
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.arc(15, 9, 4.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(15, 9, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(0, 0, 30, 5);
+      ctx.fillStyle = '#0f172a';
+      for (let x = 0; x < 30; x += 6) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0); ctx.lineTo(x + 3, 0); ctx.lineTo(x + 1, 5); ctx.lineTo(x - 2, 5); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.strokeStyle = '#71717a';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, 30, 5);
+      can.refresh();
+    }
+
+    // 25. Space Marine Combat Bikes (32x22 Dual Bike Stand)
+    {
+      const can = this.textures.createCanvas('topdown_bikes', 32, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, 32, 22);
+      const drawBike = (bx) => {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(bx - 2, 1, 4, 6);
+        ctx.fillRect(bx - 2, 15, 4, 6);
+        ctx.fillStyle = '#1e40af';
+        ctx.fillRect(bx - 3, 5, 6, 12);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(bx - 2.5, 0, 1.2, 3);
+        ctx.fillRect(bx + 1.3, 0, 1.2, 3);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(bx - 4, 6, 8, 1.2);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(bx - 2.5, 8, 5, 4);
+        ctx.fillStyle = '#1e40af';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(bx - 3.2, 9, 1.8, 0, Math.PI * 2);
+        ctx.arc(bx + 3.2, 9, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#1e40af';
+        ctx.beginPath();
+        ctx.arc(bx, 7.5, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(bx - 1, 7, 2, 0.8);
+      };
+      drawBike(8);
+      drawBike(24);
+      can.refresh();
+    }
+
+    // 26. Space Marine Scouts (30x20 Recon Squad)
+    {
+      const can = this.textures.createCanvas('topdown_scouts', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[5, 6], [14, 5], [24, 7], [9, 14], [20, 14]];
+      pos.forEach(([sx, sy]) => {
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(sx - 3, sy - 1, 6, 4.5);
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        ctx.arc(sx, sy - 1, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(sx - 1, sy - 1.5, 2, 0.8);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(sx + 0.8, sy - 6, 1.2, 6.5);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(sx + 0.5, sy - 3.5, 1.8, 1.2);
+      });
+      can.refresh();
+    }
+
+    // 27. Ork Warboss / Ghazghkull (28x28 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_ork_warboss', 28, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 28, 28);
+      const mx = 14, my = 14;
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(mx - 0.8, my - 13, 1.6, 9);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(mx, my - 11, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 4, my - 12, 8, 1.2);
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(mx - 6, my, 4, 0, Math.PI * 2);
+      ctx.arc(mx + 6, my, 4, 0, Math.PI * 2);
+      ctx.arc(mx, my + 1, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(mx - 4.5, my - 2, 9, 6);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(mx - 4.5, my - 2, 9, 6);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(mx - 3, my - 5, 6, 3);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(mx - 3.2, my - 6, 1.4, 2.5);
+      ctx.fillRect(mx + 1.8, my - 6, 1.4, 2.5);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx - 1.8, my - 3.5, 1.2, 1);
+      ctx.fillRect(mx + 0.6, my - 3.5, 1.2, 1);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(mx - 10, my - 6, 4, 7);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.beginPath();
+      ctx.moveTo(mx - 10, my - 6); ctx.lineTo(mx - 12, my - 12); ctx.lineTo(mx - 9, my - 6);
+      ctx.moveTo(mx - 7, my - 6); ctx.lineTo(mx - 5, my - 12); ctx.lineTo(mx - 6, my - 6);
+      ctx.fill();
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(mx - 11, my - 10, 2, 3);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mx + 6, my - 9, 3.8, 8);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(mx + 7, my - 12, 1.5, 4);
+      ctx.fillRect(mx + 8.8, my - 12, 1.5, 4);
+      can.refresh();
+    }
+
+    // 28. Ork Painboy / Mad Dok (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_ork_dok', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(mx - 4, my, 2.8, 0, Math.PI * 2);
+      ctx.arc(mx + 4, my, 2.8, 0, Math.PI * 2);
+      ctx.arc(mx, my + 1, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillRect(mx - 3, my - 2, 6, 5);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(mx - 1.5, my - 1, 1.5, 2);
+      ctx.fillRect(mx + 1, my, 1.2, 2.5);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(mx + 0.5, my - 3.2, 1.8, 1.8);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(mx - 6, my - 7, 2, 6);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(mx - 5.5, my - 5.5, 1, 3);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(mx + 4, my - 6, 1.8, 5);
+      can.refresh();
+    }
+
+    // 29. Ork Mekboy (20x20 Hero Stand)
+    {
+      const can = this.textures.createCanvas('topdown_ork_mek', 20, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 20, 20);
+      const mx = 10, my = 10;
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(mx - 3.5, my + 1, 7, 4);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mx + 2, my + 3, 1.8, 3.5);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(mx - 4, my, 2.8, 0, Math.PI * 2);
+      ctx.arc(mx + 4, my, 2.8, 0, Math.PI * 2);
+      ctx.arc(mx, my, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(mx, my - 2, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(mx - 2, my - 3.2, 4, 1.5);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(mx - 6, my - 6, 2, 6);
+      ctx.fillRect(mx - 7, my - 7.5, 4, 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mx + 4, my - 7, 2.5, 6);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(mx + 4.2, my - 8.5, 2.1, 2);
+      can.refresh();
+    }
+
+    // 30. Ork Killa Kan / Deff Dread (28x28 Walker)
+    {
+      const can = this.textures.createCanvas('topdown_ork_kans', 28, 28);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 28, 28);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(4, 18, 5, 7);
+      ctx.fillRect(19, 18, 5, 7);
+      ctx.fillStyle = '#7f1d1d';
+      ctx.beginPath();
+      ctx.arc(14, 13, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#44403c';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(10, 8, 8, 2.5);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(11, 8.5, 6, 1.5);
+      ctx.fillStyle = '#78716c';
+      ctx.fillRect(1, 10, 4, 3);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.beginPath();
+      ctx.arc(3, 7, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#dc2626';
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(23, 2, 3, 12);
+      ctx.fillStyle = '#44403c';
+      ctx.fillRect(8, 20, 2.5, 5);
+      ctx.fillRect(17.5, 20, 2.5, 5);
+      can.refresh();
+    }
+
+    // 31. Ork Warbuggy / Trukk (28x36 Combat Vehicle)
+    {
+      const can = this.textures.createCanvas('topdown_ork_buggy', 28, 36);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(1, 3, 6, 10);
+      ctx.fillRect(21, 3, 6, 10);
+      ctx.fillRect(1, 23, 6, 10);
+      ctx.fillRect(21, 23, 6, 10);
+      ctx.fillStyle = '#991b1b';
+      ctx.fillRect(6, 5, 16, 26);
+      ctx.strokeStyle = '#44403c';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(6, 5, 16, 26);
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(8, 2, 12, 5);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(7, 0, 2, 3);
+      ctx.fillRect(19, 0, 2, 3);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(8, 10, 12, 10);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(14, 15, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(13, 18, 2, 8);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.arc(14, 25, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      can.refresh();
+    }
+
+    // 32. Ork Stormboyz (30x20 Jump Rokkit Mob)
+    {
+      const can = this.textures.createCanvas('topdown_ork_stormboyz', 30, 20);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 30, 20);
+      const pos = [[6, 6], [15, 5], [24, 6], [10, 14], [20, 14]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#78716c';
+        ctx.fillRect(ox - 1.5, oy + 1, 3, 4.5);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(ox - 1.2, oy + 5, 2.4, 2.5);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(ox - 0.7, oy + 5, 1.4, 1.5);
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(ox - 2.8, oy, 2.2, 0, Math.PI * 2);
+        ctx.arc(ox + 2.8, oy, 2.2, 0, Math.PI * 2);
+        ctx.arc(ox, oy - 1, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 4.5, oy - 4.5, 1.8, 4.5);
+      });
+      can.refresh();
+    }
+
+    // 33. Ork Nobz Mob (32x22 Heavy 'Eavy Armour Mob)
+    {
+      const can = this.textures.createCanvas('topdown_ork_nobz', 32, 22);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(0, 0, 32, 22);
+      const pos = [[7, 6], [16, 5], [25, 6], [11, 15], [22, 15]];
+      pos.forEach(([ox, oy]) => {
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.arc(ox - 3.5, oy, 2.8, 0, Math.PI * 2);
+        ctx.arc(ox + 3.5, oy, 2.8, 0, Math.PI * 2);
+        ctx.arc(ox, oy - 1, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#44403c';
+        ctx.fillRect(ox - 2.5, oy - 3, 5, 3);
+        ctx.fillStyle = '#78716c';
+        ctx.beginPath();
+        ctx.arc(ox, oy - 1.5, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 3.8, oy - 3.5, 1.5, 1.8);
+        ctx.fillRect(ox + 2.3, oy - 3.5, 1.5, 1.8);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(ox - 5, oy - 5.5, 2, 5.5);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(ox + 2, oy - 5.5, 2.5, 4.5);
+      });
+      can.refresh();
+    }
+
+    // 34. Imperial Guard Chimera IFV (32x40)
+    {
+      const can = this.textures.createCanvas('topdown_chimera', 32, 40);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 2, 6, 36);
+      ctx.fillRect(25, 2, 6, 36);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 4; y < 36; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(25, y); ctx.lineTo(31, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#3f3f46';
+      ctx.fillRect(7, 4, 18, 32);
+      ctx.strokeStyle = '#71717a';
+      ctx.strokeRect(7, 4, 18, 32);
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(8, 4, 16, 6);
+      ctx.fillStyle = '#27272a';
+      ctx.beginPath();
+      ctx.arc(13, 14, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 1, 2, 12);
+      can.refresh();
+    }
+
+    // 35. Imperial Guard Basilisk Artillery (32x42)
+    {
+      const can = this.textures.createCanvas('topdown_basilisk', 32, 42);
+      const ctx = can.getContext();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(1, 2, 6, 38);
+      ctx.fillRect(25, 2, 6, 38);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      for (let y = 4; y < 38; y += 4) {
+        ctx.beginPath();
+        ctx.moveTo(1, y); ctx.lineTo(7, y);
+        ctx.moveTo(25, y); ctx.lineTo(31, y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#3f3f46';
+      ctx.fillRect(7, 6, 18, 32);
+      ctx.strokeStyle = '#71717a';
+      ctx.strokeRect(7, 6, 18, 32);
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(8, 6, 16, 6);
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(8, 16, 16, 18);
+      ctx.fillStyle = '#52525b';
+      ctx.fillRect(10, 18, 12, 6);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(14.5, 0, 3, 22);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(13.8, 0, 4.4, 3);
+      can.refresh();
+    }
   }
 
   getTopDownTextureKey(cfg) {
@@ -10621,27 +11553,67 @@ class NetEpicScene extends Phaser.Scene {
     const k = (cfg.key || '').toLowerCase();
     const n = (cfg.name || '').toLowerCase();
 
+    // 1. Titans
     if (cfg.isTitan) {
       if (k.includes('warhound') || n.includes('warhound')) return 'topdown_warhound';
       if (k.includes('reaver') || n.includes('reaver')) return 'topdown_warlord';
-      if (k.includes('gargant') || n.includes('gargant')) return 'topdown_gargant';
+      if (k.includes('gargant') || n.includes('gargant') || k.includes('stompa') || n.includes('stompa')) return 'topdown_gargant';
       return 'topdown_warlord';
     }
 
+    // 2. Super-Heavies
     if (cfg.superHeavy) {
       if (k.includes('baneblade') || n.includes('baneblade') || k.includes('shadowsword') || n.includes('shadowsword') || k.includes('stormhammer')) return 'topdown_baneblade';
-      if (k.includes('battlewagon') || n.includes('battlewagon') || k.includes('fortress') || n.includes('fortress')) return 'topdown_battlewagon';
+      if (k.includes('battlewagon') || n.includes('battlewagon') || k.includes('fortress') || n.includes('fortress') || k.includes('bonebreaka') || k.includes('bonecruncha')) return 'topdown_battlewagon';
       return 'topdown_baneblade';
     }
 
-    if (k.includes('landraider') || n.includes('land raider')) return 'topdown_landraider';
-    if (k.includes('predator') || n.includes('predator')) return 'topdown_predator';
-    if (k.includes('rhino') || n.includes('rhino') || k.includes('razorback') || n.includes('razorback')) return 'topdown_rhino';
-    if (k.includes('leman') || n.includes('leman russ')) return 'topdown_lemanruss';
+    // 3. Characters (Single Hero Stands)
+    if (cfg.isCharacter) {
+      if (k.includes('apothecary') || n.includes('apothecary')) return 'topdown_character_apothecary';
+      if (k.includes('chaplain') || n.includes('chaplain')) return 'topdown_character_chaplain';
+      if (k.includes('techmarine') || n.includes('techmarine') || k.includes('techpriest') || n.includes('tech-priest')) return 'topdown_character_techmarine';
+      if (k.includes('tigurius') || n.includes('tigurius') || k.includes('librarian') || n.includes('librarian') || (cfg.isPsyker && cfg.faction === 'IMPERIUM')) return 'topdown_character_librarian';
+      if (k.includes('calgar') || n.includes('calgar') || k.includes('captain') || n.includes('captain') || k.includes('commissar') || n.includes('commissar')) return 'topdown_character_captain';
+      if (k.includes('warboss') || n.includes('warboss') || k.includes('ghazghkull') || n.includes('ghazghkull')) return 'topdown_ork_warboss';
+      if (k.includes('painboy') || n.includes('painboy') || k.includes('dok') || n.includes('dok')) return 'topdown_ork_dok';
+      if (k.includes('mek') || n.includes('mek')) return 'topdown_ork_mek';
+      if (k.includes('weirdboy') || n.includes('weirdboy')) return 'topdown_ork_warboss';
+    }
 
-    if (k.includes('terminator') || n.includes('terminator')) return 'topdown_terminator';
+    // 4. Dreadnoughts & Walkers
+    if (k.includes('bjorn') || n.includes('bjorn') || k.includes('dread') || n.includes('dreadnought')) {
+      if (cfg.faction === 'ORKS' || k.includes('kan') || n.includes('kan')) return 'topdown_ork_kans';
+      return 'topdown_dreadnought';
+    }
+    if (k.includes('kan') || n.includes('kan')) return 'topdown_ork_kans';
+
+    // 5. Vehicles & Tanks
+    if (k.includes('landraider') || n.includes('land raider') || k.includes('crusader') || n.includes('crusader')) return 'topdown_landraider';
+    if (k.includes('vindic') || n.includes('vindicator')) return 'topdown_vindicator';
+    if (k.includes('whirlwind') || n.includes('whirlwind')) return 'topdown_whirlwind';
+    if (k.includes('razorback') || n.includes('razorback')) return 'topdown_razorback';
+    if (k.includes('pred') || n.includes('predator')) return 'topdown_predator';
+    if (k.includes('speeder') || n.includes('speeder') || k.includes('typhoon')) return 'topdown_speeder';
+    if (k.includes('rhino') || n.includes('rhino')) return 'topdown_rhino';
+    if (k.includes('leman') || n.includes('leman russ')) return 'topdown_lemanruss';
+    if (k.includes('basilisk') || n.includes('basilisk') || k.includes('earthshaker')) return 'topdown_basilisk';
+    if (k.includes('chimera') || n.includes('chimera')) return 'topdown_chimera';
+
+    // Ork Vehicles
+    if (k.includes('wagon') || n.includes('wagon') || k.includes('bonebreaka') || k.includes('bonecruncha') || k.includes('lungbursta') || k.includes('braincrusha') || k.includes('gutrippa')) return 'topdown_battlewagon';
+    if (k.includes('bugg') || n.includes('buggy') || k.includes('trukk') || n.includes('trukk') || k.includes('wartrak') || n.includes('wartrak') || k.includes('scorcher')) return 'topdown_ork_buggy';
+
+    // 6. Bikes & Outriders
+    if (k.includes('bike') || n.includes('bike') || k.includes('boarboy') || n.includes('boarboy')) return 'topdown_bikes';
+
+    // 7. Infantry Squads
+    if (k.includes('terminator') || n.includes('terminator') || k.includes('term_') || k.includes('grey_knights')) return 'topdown_terminator';
+    if (k.includes('scout') || n.includes('scout')) return 'topdown_scouts';
     if (k.includes('devastator') || n.includes('devastator') || k.includes('heavy weapon')) return 'topdown_devastator';
+    if (k.includes('stormboy') || n.includes('stormboy')) return 'topdown_ork_stormboyz';
     if (k.includes('assault') || n.includes('assault marine')) return 'topdown_assault';
+    if (k.includes('nob') || n.includes('nobz')) return 'topdown_ork_nobz';
 
     if (cfg.faction === 'ORKS') {
       return 'topdown_ork_boyz';
@@ -12248,6 +13220,14 @@ class NetEpicScene extends Phaser.Scene {
         { ...template, subName: name + ' - Devastator Detachment', subStands: 6, weapon: { name: 'Lascannons & Heavy Missiles', rangeCm: 60, dice: 3, toHit: 4, tsm: -2 }, transportStands: 3 }
       ];
     }
+    if (template.key === 'card_sm_scout_co') {
+      return [
+        { ...template, subName: name + ' - HQ', subStands: 1, transportStands: 1 },
+        { ...template, subName: name + ' - 1st Scout Detachment', subStands: 6, transportStands: 0 },
+        { ...template, subName: name + ' - 2nd Scout Detachment', subStands: 6, transportStands: 0 },
+        { ...template, subName: name + ' - 3rd Scout Detachment', subStands: 6, transportStands: 0 }
+      ];
+    }
     if (template.key === 'card_eld_aspect_host') {
       return [
         { ...template, subName: name + ' - Exarch CHQ', subStands: 1, transportStands: 0 },
@@ -12537,7 +13517,8 @@ class NetEpicScene extends Phaser.Scene {
           }
 
           const detId = isCompany ? `${sidePrefix}_${cardIdx}_${key}_sub_${subIdx}` : `${sidePrefix}_${cardIdx}_${key}`;
-          const detName = isCompany ? subCfg.subName : `${template.name} #${cardIdx + 1}`;
+          const cleanCharName = template.name.replace(/\s*&\s*Command Rhino|\s*&\s*Cmd Rhino/i, '');
+          const detName = isCompany ? subCfg.subName : (template.isCharacter ? cleanCharName : `${template.name} #${cardIdx + 1}`);
 
           const mainDet = this.createDetachment({
             ...subCfg,
@@ -12569,7 +13550,7 @@ class NetEpicScene extends Phaser.Scene {
                 faction: side,
                 armyBook: template.armyBook || window.sideFaction[side] || side,
                 id: `${detId}_trans`,
-                name: `${tCfg.name} (${detName})`,
+                name: `${tCfg.name} (${detName.replace(/\s*&\s*Command Rhino|\s*&\s*Cmd Rhino/i, '')})`,
                 companyCardId: isCompany ? `${sidePrefix}_${cardIdx}_${key}` : null,
                 startX: Math.round(detX),
                 startY: isImp ? Math.min(BOARD_H - 45, detY + 40) : Math.max(45, detY - 40)
