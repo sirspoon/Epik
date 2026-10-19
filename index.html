@@ -286,8 +286,8 @@
   <div class="modal-card">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — 6 FACTIONS, ARMY & AI SETUP</div>
-        <div class="sub-text">Choose from 6 Armies: 🛡️ Imperium, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats!</div>
+        <div style="font-size:1.05rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — 8 FACTIONS, ARMY & AI SETUP</div>
+        <div class="sub-text">Choose from 8 Armies: 🛡️ Adeptus Astartes, 🪖 Adeptus Militaris, ⚙️ Adeptus Mechanicus, 🟢 Orks, 💎 Eldar, 🔥 Chaos, 🧬 Tyranids & ⚒️ Squats!</div>
       </div>
       <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
         <span class="sub-text" style="font-weight:700;">Map:</span>
@@ -382,7 +382,7 @@
       <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:6px 10px;" title="Automatically pan camera to follow AI actions and Snap Fire targets">🎥 Follow Cam</button>
       <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:6px 10px;" title="Click to switch Battlefield Map Preset or Generate Random Map">🗺️ Map: Industrial</button>
       <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:6px 10px;" title="Click to switch AI opponent side or 2-Player mode">🤖 AI: ORKS</button>
-      <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Armies (6 Factions)</button>
+      <button onclick="window.openArmyModal()" style="min-width:auto; padding:6px 10px;">🛠️ Armies (8 Factions)</button>
       <button onclick="window.gameScene.resetCamera()" style="min-width:auto; padding:6px 10px;">Recenter</button>
     </div>
   </div>
@@ -823,10 +823,22 @@ window.toggleAICam = function() {
 // --- PHASE 5–11: NETEPIC GOLD v5 6-FACTION CATALOG (IMPERIUM, ORKS, ELDAR, CHAOS, TYRANIDS & SQUATS) ---
 const FACTION_META = {
   IMPERIUM: {
-    key: 'IMPERIUM', short: 'IMP', icon: '🛡️', name: 'Imperium',
-    fullTitle: '🛡️ IMPERIUM (Astartes & Titan Legions)',
+    key: 'IMPERIUM', short: 'AST', icon: '🛡️', name: 'Astartes',
+    fullTitle: '🛡️ ADEPTUS ASTARTES (SPACE MARINES)',
     colorHex: '#60a5fa', borderHex: '#3b82f6', phaserColor: 0x3b82f6,
     traitDesc: 'Void Shields (4+ Repair), Terminators (4+/6+f Fixed Save) & Combined Arms'
+  },
+  MILITARIS: {
+    key: 'MILITARIS', short: 'MIL', icon: '🪖', name: 'Militaris',
+    fullTitle: '🪖 ADEPTUS MILITARIS (IMPERIAL GUARD)',
+    colorHex: '#86efac', borderHex: '#16a34a', phaserColor: 0x16a34a,
+    traitDesc: 'Chain of Command (Commissar Morale Re-roll Aura 25cm & HQ Orders), Heavy Tank Battalions & Massive Artillery'
+  },
+  MECHANICUS: {
+    key: 'MECHANICUS', short: 'AM', icon: '⚙️', name: 'Mechanicus',
+    fullTitle: '⚙️ ADEPTUS MECHANICUS & TITAN LEGIONS',
+    colorHex: '#f87171', borderHex: '#dc2626', phaserColor: 0xdc2626,
+    traitDesc: 'Bionics & Titan Shields (4+ Repair / Dispersion Fields), Imperial Knights (Ion Shield Save) & Ordinatus Siege Engines'
   },
   ORKS: {
     key: 'ORKS', short: 'ORK', icon: '🟢', name: 'Orks',
@@ -860,7 +872,7 @@ const FACTION_META = {
   }
 };
 
-const FACTION_KEYS = ['IMPERIUM', 'ORKS', 'ELDAR', 'CHAOS', 'TYRANIDS', 'SQUATS'];
+const FACTION_KEYS = ['IMPERIUM', 'MILITARIS', 'MECHANICUS', 'ORKS', 'ELDAR', 'CHAOS', 'TYRANIDS', 'SQUATS'];
 
 const UNIT_CATALOG = {
   "IMPERIUM": [
@@ -4489,6 +4501,1635 @@ const UNIT_CATALOG = {
       "baseH": 20
     }
   ]
+,
+  "MILITARIS": [
+  {
+    "key": "card_mil_tac_platoon",
+    "cardType": "SUPPORT",
+    "cardName": "Tactical Infantry Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Tactical Infantry Platoon",
+    "composition": "10 Tactical stands (Lasguns)",
+    "points": 200,
+    "breakPoint": 5,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 10,
+    "save": 6,
+    "caf": 0,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Lasguns",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 10,
+    "color": 1409085,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_mil_heavy_platoon",
+    "cardType": "SUPPORT",
+    "cardName": "Heavy Infantry Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Heavy Weapon Infantry Platoon",
+    "composition": "5 Heavy Weapon stands",
+    "points": 200,
+    "breakPoint": 3,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 10,
+    "save": 6,
+    "caf": 0,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Heavy Weapons & Lascannons",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 5,
+      "tsm": -1
+    },
+    "standsCount": 5,
+    "color": 1467700,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_mil_assault_platoon",
+    "cardType": "SUPPORT",
+    "cardName": "Assault Infantry Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Assault Infantry Platoon (Jump)",
+    "composition": "5 Assault stands (Jump Packs)",
+    "points": 100,
+    "breakPoint": 3,
+    "morale": 4,
+    "vpValue": 1,
+    "moveCm": 15,
+    "save": 6,
+    "caf": 1,
+    "pinningClass": 1,
+    "jump": true,
+    "weapon": {
+      "name": "Pistols & Chainswords",
+      "rangeCm": 25,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 5,
+    "color": 2278750,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_mil_storm_troopers",
+    "cardType": "SUPPORT",
+    "cardName": "Storm Trooper Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Storm Trooper Elite Platoon",
+    "composition": "5 Storm Trooper stands (Carapace Armor)",
+    "points": 150,
+    "breakPoint": 3,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 10,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Hotshot Hellguns",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 5,
+    "color": 1409085,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_mil_ogryns",
+    "cardType": "SUPPORT",
+    "cardName": "Ogryn Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Ogryn Abhuman Assault Platoon",
+    "composition": "4 Ogryn stands (6+ Fixed Save)",
+    "points": 125,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 1,
+    "moveCm": 10,
+    "save": 5,
+    "fixedSave": 6,
+    "caf": 6,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Ripper Guns",
+      "rangeCm": 10,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": -1
+    },
+    "standsCount": 4,
+    "color": 8702998,
+    "baseW": 22,
+    "baseH": 22
+  },
+  {
+    "key": "card_mil_ratlings",
+    "cardType": "SUPPORT",
+    "cardName": "Ratling Sniper Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Ratling Sniper Infiltrator Platoon",
+    "composition": "4 Ratling stands (Infiltrators)",
+    "points": 100,
+    "breakPoint": 4,
+    "morale": 4,
+    "vpValue": 1,
+    "moveCm": 10,
+    "save": 6,
+    "caf": -1,
+    "pinningClass": 1,
+    "deepStrike": true,
+    "weapon": {
+      "name": "Sniper Rifles",
+      "rangeCm": 75,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 4,
+    "color": 6660877,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_mil_rough_riders",
+    "cardType": "SUPPORT",
+    "cardName": "Rough Rider Squad",
+    "armyBook": "MILITARIS",
+    "name": "Rough Rider Outrider Cavalry",
+    "composition": "10 Rough Rider stands",
+    "points": 200,
+    "breakPoint": 5,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 6,
+    "caf": 3,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Hunting Lances",
+      "rangeCm": 25,
+      "dice": 1,
+      "toHit": 6,
+      "tsm": 0
+    },
+    "standsCount": 10,
+    "color": 4906624,
+    "baseW": 22,
+    "baseH": 26
+  },
+  {
+    "key": "card_mil_sentinels",
+    "cardType": "SUPPORT",
+    "cardName": "Sentinel Squad",
+    "armyBook": "MILITARIS",
+    "name": "Sentinel Walker Scout Squad",
+    "composition": "5 Sentinels",
+    "points": 150,
+    "breakPoint": 3,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 25,
+    "save": 6,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Autocannons",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": 0
+    },
+    "standsCount": 5,
+    "color": 8843180,
+    "baseW": 22,
+    "baseH": 24
+  },
+  {
+    "key": "card_mil_mech_tac",
+    "cardType": "SUPPORT",
+    "cardName": "Mechanized Tactical Platoon",
+    "armyBook": "MILITARIS",
+    "name": "Mechanized Tactical Platoon",
+    "composition": "6 Tactical stands & 3 Chimeras",
+    "points": 250,
+    "breakPoint": 5,
+    "morale": 4,
+    "vpValue": 3,
+    "moveCm": 10,
+    "save": 6,
+    "caf": 0,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Lasguns",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 6,
+    "color": 1409085,
+    "baseW": 20,
+    "baseH": 20,
+    "dedicatedTransport": {
+      "key": "mil_chimera_tac",
+      "armyBook": "MILITARIS",
+      "name": "Tactical Chimera APCs",
+      "moveCm": 20,
+      "save": 3,
+      "caf": 1,
+      "morale": 4,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0
+      },
+      "breakPoint": 2,
+      "vpValue": 0,
+      "color": 1483594,
+      "standsCount": 3,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_mil_leman_russ",
+    "cardType": "SUPPORT",
+    "cardName": "Leman Russ Squadron",
+    "armyBook": "MILITARIS",
+    "name": "Leman Russ Battle Tank Squadron",
+    "composition": "3 Leman Russ Tanks",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 3,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Battlecannon & Lascannon",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 5,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 1409085,
+    "baseW": 24,
+    "baseH": 32
+  },
+  {
+    "key": "card_mil_demolisher",
+    "cardType": "SUPPORT",
+    "cardName": "Demolisher Squadron",
+    "armyBook": "MILITARIS",
+    "name": "Demolisher Siege Tank Squadron",
+    "composition": "3 Demolisher Siege Tanks",
+    "points": 250,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 3,
+    "moveCm": 20,
+    "save": 3,
+    "caf": 3,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Demolisher Siege Cannon",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 1467700,
+    "baseW": 24,
+    "baseH": 32
+  },
+  {
+    "key": "card_mil_hellhound",
+    "cardType": "SUPPORT",
+    "cardName": "Hellhound Squadron",
+    "armyBook": "MILITARIS",
+    "name": "Hellhound Flame Tank Squadron",
+    "composition": "3 Hellhounds",
+    "points": 150,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 3,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Inferno Cannon",
+      "rangeCm": 25,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0,
+      "isFlame": true,
+      "template": true
+    },
+    "standsCount": 3,
+    "color": 14251782,
+    "baseW": 22,
+    "baseH": 30
+  },
+  {
+    "key": "card_mil_basilisk",
+    "cardType": "SUPPORT",
+    "cardName": "Basilisk Battery",
+    "armyBook": "MILITARIS",
+    "name": "Basilisk Heavy Artillery Battery",
+    "composition": "3 Basilisks (Heavy Artillery)",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Earthshaker Heavy Artillery",
+      "rangeCm": 120,
+      "dice": 1,
+      "toHit": 3,
+      "tsm": -2,
+      "barrage": true,
+      "barrageBp": 3,
+      "indirect": true,
+      "canSmoke": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 1332013,
+    "baseW": 26,
+    "baseH": 34
+  },
+  {
+    "key": "card_mil_manticore",
+    "cardType": "SUPPORT",
+    "cardName": "Manticore Battery",
+    "armyBook": "MILITARIS",
+    "name": "Manticore Rocket Artillery Battery",
+    "composition": "3 Manticores (Rocket Battery)",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Manticore Rocket Barrage",
+      "rangeCm": 150,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": 0,
+      "barrage": true,
+      "barrageBp": 6,
+      "indirect": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 1467700,
+    "baseW": 26,
+    "baseH": 34
+  },
+  {
+    "key": "card_mil_griffon",
+    "cardType": "SUPPORT",
+    "cardName": "Griffon Battery",
+    "armyBook": "MILITARIS",
+    "name": "Griffon Heavy Mortar Battery",
+    "composition": "3 Griffons (Siege Mortars)",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Heavy Siege Mortars",
+      "rangeCm": 80,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": 0,
+      "barrage": true,
+      "barrageBp": 2,
+      "indirect": true,
+      "canSmoke": true
+    },
+    "standsCount": 3,
+    "color": 5078031,
+    "baseW": 24,
+    "baseH": 30
+  },
+  {
+    "key": "card_mil_deathstrike",
+    "cardType": "SUPPORT",
+    "cardName": "Deathstrike Battery",
+    "armyBook": "MILITARIS",
+    "name": "Deathstrike ICBM Missile Battery",
+    "composition": "3 Deathstrike Launchers",
+    "points": 250,
+    "breakPoint": 2,
+    "morale": 4,
+    "vpValue": 3,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Vortex ICBM Missiles",
+      "rangeCm": 200,
+      "dice": 1,
+      "toHit": 3,
+      "tsm": -3,
+      "barrage": true,
+      "barrageBp": 8,
+      "indirect": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 1013358,
+    "baseW": 26,
+    "baseH": 36
+  },
+  {
+    "key": "card_mil_baneblade",
+    "cardType": "SPECIAL",
+    "cardName": "Baneblade Super-Heavy Tank",
+    "armyBook": "MILITARIS",
+    "name": "Baneblade Super-Heavy Tank",
+    "composition": "1 Super-Heavy Tank",
+    "points": 225,
+    "breakPoint": 1,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 15,
+    "save": 2,
+    "caf": 6,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Baneblade Cannon & Lascannons",
+      "rangeCm": 75,
+      "dice": 4,
+      "toHit": 4,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 1332013,
+    "baseW": 32,
+    "baseH": 40
+  },
+  {
+    "key": "card_mil_shadowsword",
+    "cardType": "SPECIAL",
+    "cardName": "Shadowsword Titan-Hunter",
+    "armyBook": "MILITARIS",
+    "name": "Shadowsword Titan-Hunter",
+    "composition": "1 Volcano Cannon Titan-Hunter",
+    "points": 225,
+    "breakPoint": 1,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 15,
+    "save": 2,
+    "caf": 6,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Volcano Titan-Killer Cannon",
+      "rangeCm": 90,
+      "dice": 3,
+      "toHit": 3,
+      "tsm": -4,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 1013358,
+    "baseW": 32,
+    "baseH": 40
+  },
+  {
+    "key": "card_mil_stormhammer",
+    "cardType": "SPECIAL",
+    "cardName": "Stormhammer Super-Heavy Tank",
+    "armyBook": "MILITARIS",
+    "name": "Stormhammer Super-Heavy Tank",
+    "composition": "1 Multi-Turret Super-Heavy Tank",
+    "points": 225,
+    "breakPoint": 1,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 15,
+    "save": 2,
+    "caf": 7,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Dual Battlecannons & 4 Lascannons",
+      "rangeCm": 75,
+      "dice": 6,
+      "toHit": 4,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 1467700,
+    "baseW": 34,
+    "baseH": 42
+  },
+  {
+    "key": "card_mil_commissar_general",
+    "cardType": "SPECIAL",
+    "cardName": "Commissar General",
+    "armyBook": "MILITARIS",
+    "name": "Commissar General & Command Chimera",
+    "composition": "Commissar General & Command Chimera (25cm Aura)",
+    "points": 100,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 3,
+    "fixedSave": 5,
+    "caf": 7,
+    "pinningClass": 2,
+    "standsCount": 1,
+    "isCharacter": true,
+    "baseW": 22,
+    "baseH": 22,
+    "weapon": {
+      "name": "Power Sword & Bolt Pistol",
+      "rangeCm": 25,
+      "dice": 2,
+      "toHit": 3,
+      "tsm": -1
+    },
+    "characterRules": {
+      "commissar": true,
+      "moraleAuraCm": 25,
+      "rerollArmorSave": true
+    },
+    "color": 988970
+  },
+  {
+    "key": "card_mil_inquisitor",
+    "cardType": "SPECIAL",
+    "cardName": "Inquisitor Lord",
+    "armyBook": "MILITARIS",
+    "name": "Inquisitor Lord & Command Chimera",
+    "composition": "Inquisitor Lord & Command Chimera (Psyker 3)",
+    "points": 100,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 3,
+    "fixedSave": 4,
+    "caf": 6,
+    "pinningClass": 2,
+    "standsCount": 1,
+    "isCharacter": true,
+    "isPsyker": true,
+    "psychicRank": 3,
+    "baseW": 22,
+    "baseH": 22,
+    "weapon": {
+      "name": "Psycannon & Force Rod",
+      "rangeCm": 35,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -1
+    },
+    "characterRules": {
+      "psyker": true,
+      "spells": [
+        "mind_blast",
+        "purge_psyker",
+        "destroy_daemon"
+      ]
+    },
+    "color": 8266446
+  },
+  {
+    "key": "card_mil_regimental_hq",
+    "cardType": "SPECIAL",
+    "cardName": "Regimental Command Staff",
+    "armyBook": "MILITARIS",
+    "name": "Regimental Command Staff (Colonel)",
+    "composition": "Colonel, 5 Tactical stands & 3 Chimeras",
+    "points": 250,
+    "breakPoint": 3,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 10,
+    "save": 6,
+    "caf": 2,
+    "pinningClass": 1,
+    "standsCount": 6,
+    "isCharacter": true,
+    "baseW": 20,
+    "baseH": 20,
+    "weapon": {
+      "name": "Master-Lasguns & Command Comms",
+      "rangeCm": 50,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": 0
+    },
+    "characterRules": {
+      "colonel": true,
+      "armyInitiativeBonus": 1,
+      "moraleAuraCm": 25
+    },
+    "color": 1332013,
+    "dedicatedTransport": {
+      "key": "mil_chimera_hq",
+      "armyBook": "MILITARIS",
+      "name": "Regimental Command Chimeras",
+      "moveCm": 20,
+      "save": 3,
+      "caf": 1,
+      "morale": 4,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0
+      },
+      "breakPoint": 2,
+      "vpValue": 0,
+      "color": 1483594,
+      "standsCount": 3,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_mil_capitol",
+    "cardType": "SPECIAL",
+    "cardName": "Capitol Imperialis",
+    "armyBook": "MILITARIS",
+    "name": "Capitol Imperialis Land Fortress",
+    "composition": "1 Mobile Command Behemoth (6 Void Shields)",
+    "points": 450,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 5,
+    "moveCm": 10,
+    "save": 1,
+    "caf": 12,
+    "pinningClass": 4,
+    "isTitan": true,
+    "superHeavy": true,
+    "shieldType": "VOID",
+    "maxShields": 6,
+    "transportCapacity": 6,
+    "weapon": {
+      "name": "Behemoth Super-Cannon & 6 Lascannons",
+      "rangeCm": 100,
+      "dice": 6,
+      "toHit": 3,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 1332013,
+    "baseW": 38,
+    "baseH": 44
+  },
+  {
+    "key": "card_mil_tac_co",
+    "cardType": "COMPANY",
+    "cardName": "Tactical Infantry Company",
+    "armyBook": "MILITARIS",
+    "name": "Tactical Infantry Company",
+    "composition": "HQ & 3 Tactical Platoons (32 stands & 2 Rhinos)",
+    "points": 600,
+    "breakPoint": 18,
+    "morale": 4,
+    "vpValue": 7,
+    "moveCm": 10,
+    "save": 6,
+    "caf": 0,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Company Lasgun Volley",
+      "rangeCm": 50,
+      "dice": 4,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 32,
+    "color": 1409085,
+    "baseW": 20,
+    "baseH": 20,
+    "dedicatedTransport": {
+      "key": "mil_rhino_co",
+      "armyBook": "MILITARIS",
+      "name": "Company Command Rhinos",
+      "moveCm": 25,
+      "save": 4,
+      "caf": 0,
+      "morale": 4,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Storm Bolters",
+        "rangeCm": 15,
+        "dice": 1,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "breakPoint": 1,
+      "vpValue": 0,
+      "color": 1483594,
+      "standsCount": 2,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_mil_leman_co",
+    "cardType": "COMPANY",
+    "cardName": "Leman Russ Company",
+    "armyBook": "MILITARIS",
+    "name": "Leman Russ Armored Company",
+    "composition": "Command Tank & 3 Tank Squadrons (10 Tanks)",
+    "points": 550,
+    "breakPoint": 5,
+    "morale": 4,
+    "vpValue": 6,
+    "moveCm": 20,
+    "save": 3,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Armored Company Battlecannons",
+      "rangeCm": 75,
+      "dice": 5,
+      "toHit": 4,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 10,
+    "color": 1409085,
+    "baseW": 24,
+    "baseH": 32
+  }
+],
+  "MECHANICUS": [
+  {
+    "key": "card_am_mech_tac",
+    "cardType": "SUPPORT",
+    "cardName": "Tech-Guard Mechanized Platoon",
+    "armyBook": "MECHANICUS",
+    "name": "Skitarii Mechanized Tactical Platoon",
+    "composition": "6 Tactical stands & 3 Chimeras",
+    "points": 275,
+    "breakPoint": 5,
+    "morale": 3,
+    "vpValue": 3,
+    "moveCm": 10,
+    "save": 5,
+    "caf": 1,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Galvanic Lasguns",
+      "rangeCm": 50,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 6,
+    "color": 14427686,
+    "baseW": 20,
+    "baseH": 20,
+    "dedicatedTransport": {
+      "key": "am_chimera_tac",
+      "armyBook": "MECHANICUS",
+      "name": "Skitarii Chimera APCs",
+      "moveCm": 20,
+      "save": 3,
+      "caf": 1,
+      "morale": 3,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0
+      },
+      "breakPoint": 2,
+      "vpValue": 0,
+      "color": 12131356,
+      "standsCount": 3,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_am_mech_assault",
+    "cardType": "SUPPORT",
+    "cardName": "Tech-Guard Assault Platoon",
+    "armyBook": "MECHANICUS",
+    "name": "Skitarii Assault Jump Platoon",
+    "composition": "6 Assault stands & 3 Chimeras",
+    "points": 225,
+    "breakPoint": 5,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 5,
+    "caf": 3,
+    "pinningClass": 1,
+    "jump": true,
+    "weapon": {
+      "name": "Arc Pistols & Taser Swords",
+      "rangeCm": 25,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 6,
+    "color": 15680580,
+    "baseW": 20,
+    "baseH": 20,
+    "dedicatedTransport": {
+      "key": "am_chimera_assault",
+      "armyBook": "MECHANICUS",
+      "name": "Assault Chimera APCs",
+      "moveCm": 20,
+      "save": 3,
+      "caf": 1,
+      "morale": 3,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0
+      },
+      "breakPoint": 2,
+      "vpValue": 0,
+      "color": 12131356,
+      "standsCount": 3,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_am_heavy_platoon",
+    "cardType": "SUPPORT",
+    "cardName": "Tech-Guard Heavy Platoon",
+    "armyBook": "MECHANICUS",
+    "name": "Skitarii Heavy Weapon Platoon",
+    "composition": "6 Heavy Weapon stands",
+    "points": 250,
+    "breakPoint": 3,
+    "morale": 3,
+    "vpValue": 3,
+    "moveCm": 10,
+    "save": 5,
+    "caf": 1,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Heavy Arc & Lascannons",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 5,
+      "tsm": -1
+    },
+    "standsCount": 6,
+    "color": 12131356,
+    "baseW": 20,
+    "baseH": 20
+  },
+  {
+    "key": "card_am_leman_russ",
+    "cardType": "SUPPORT",
+    "cardName": "Tech-Guard Leman Russ Squadron",
+    "armyBook": "MECHANICUS",
+    "name": "Skitarii Leman Russ Squadron",
+    "composition": "3 Leman Russ Tanks",
+    "points": 225,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 3,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Battlecannon & Lascannon",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 5,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 10033947,
+    "baseW": 24,
+    "baseH": 32
+  },
+  {
+    "key": "card_am_hellhound",
+    "cardType": "SUPPORT",
+    "cardName": "Hellhound Squadron",
+    "armyBook": "MECHANICUS",
+    "name": "Hellhound Purge Tank Squadron",
+    "composition": "3 Hellhounds",
+    "points": 150,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 3,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Fire Thrower",
+      "rangeCm": 25,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": 0,
+      "isFlame": true,
+      "template": true
+    },
+    "standsCount": 3,
+    "color": 14251782,
+    "baseW": 22,
+    "baseH": 30
+  },
+  {
+    "key": "card_am_hunter",
+    "cardType": "SUPPORT",
+    "cardName": "Hunter AA Battery",
+    "armyBook": "MECHANICUS",
+    "name": "Hunter Anti-Aircraft Battery",
+    "composition": "3 Hunter SAM Tanks",
+    "points": 150,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 2,
+    "moveCm": 25,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "SAM Missile Launcher",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 5,
+      "tsm": -1
+    },
+    "standsCount": 3,
+    "color": 8330525,
+    "baseW": 24,
+    "baseH": 30
+  },
+  {
+    "key": "card_am_sabre",
+    "cardType": "SUPPORT",
+    "cardName": "Sabre Tank-Hunter Squadron",
+    "armyBook": "MECHANICUS",
+    "name": "Sabre Tank-Hunter Squadron",
+    "composition": "3 Sabre Tank-Hunters",
+    "points": 100,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 1,
+    "moveCm": 25,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Autocannon",
+      "rangeCm": 75,
+      "dice": 1,
+      "toHit": 5,
+      "tsm": -2
+    },
+    "standsCount": 3,
+    "color": 12131356,
+    "baseW": 22,
+    "baseH": 30
+  },
+  {
+    "key": "card_am_basilisk",
+    "cardType": "SUPPORT",
+    "cardName": "Basilisk Battery",
+    "armyBook": "MECHANICUS",
+    "name": "Basilisk Heavy Battery",
+    "composition": "3 Basilisks",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Earthshaker Heavy Artillery",
+      "rangeCm": 150,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -2,
+      "barrage": true,
+      "barrageBp": 3,
+      "indirect": true,
+      "canSmoke": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 10033947,
+    "baseW": 26,
+    "baseH": 34
+  },
+  {
+    "key": "card_am_bombard",
+    "cardType": "SUPPORT",
+    "cardName": "Bombard Siege Battery",
+    "armyBook": "MECHANICUS",
+    "name": "Bombard Heavy Siege Battery",
+    "composition": "3 Bombards",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 10,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Siege Mortar",
+      "rangeCm": 150,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": -3,
+      "barrage": true,
+      "barrageBp": 4,
+      "indirect": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 8330525,
+    "baseW": 26,
+    "baseH": 34
+  },
+  {
+    "key": "card_am_manticore",
+    "cardType": "SUPPORT",
+    "cardName": "Manticore Battery",
+    "armyBook": "MECHANICUS",
+    "name": "Manticore Rocket Battery",
+    "composition": "3 Manticores",
+    "points": 200,
+    "breakPoint": 2,
+    "morale": 3,
+    "vpValue": 2,
+    "moveCm": 15,
+    "save": 4,
+    "caf": 0,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Rocket Battery",
+      "rangeCm": 200,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": 0,
+      "barrage": true,
+      "barrageBp": 6,
+      "indirect": true,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 10033947,
+    "baseW": 26,
+    "baseH": 34
+  },
+  {
+    "key": "card_am_paladins",
+    "cardType": "SUPPORT",
+    "cardName": "Knight Paladin Detachment",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Paladin Detachment",
+    "composition": "3 Knight Paladins (Ion Shield / Battlecannon)",
+    "points": 300,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 20,
+    "save": 3,
+    "fixedSave": 5,
+    "caf": 4,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Battlecannon & Heavy Bolters",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -2
+    },
+    "standsCount": 3,
+    "color": 14427686,
+    "baseW": 26,
+    "baseH": 26
+  },
+  {
+    "key": "card_am_lancers",
+    "cardType": "SUPPORT",
+    "cardName": "Knight Lancer Detachment",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Lancer Detachment",
+    "composition": "3 Knight Lancers (Ion Shield / Power Lance)",
+    "points": 300,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 25,
+    "save": 3,
+    "fixedSave": 5,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Battlecannon & Power Lance",
+      "rangeCm": 75,
+      "dice": 1,
+      "toHit": 4,
+      "tsm": -2
+    },
+    "standsCount": 3,
+    "color": 15680580,
+    "baseW": 26,
+    "baseH": 26
+  },
+  {
+    "key": "card_am_errants",
+    "cardType": "SUPPORT",
+    "cardName": "Knight Errant Detachment",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Errant Detachment",
+    "composition": "3 Knight Errants (Ion Shield / Thermal Cannon)",
+    "points": 250,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 3,
+    "moveCm": 20,
+    "save": 3,
+    "fixedSave": 5,
+    "caf": 3,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Thermal Cannon",
+      "rangeCm": 25,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -3
+    },
+    "standsCount": 3,
+    "color": 16281969,
+    "baseW": 26,
+    "baseH": 26
+  },
+  {
+    "key": "card_am_crusaders",
+    "cardType": "SUPPORT",
+    "cardName": "Knight Crusader Detachment",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Crusader Detachment",
+    "composition": "3 Knight Crusaders (Quake Cannon & Lascannons)",
+    "points": 500,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 5,
+    "moveCm": 15,
+    "save": 2,
+    "fixedSave": 5,
+    "caf": 3,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Quake Cannon & Lascannons",
+      "rangeCm": 100,
+      "dice": 3,
+      "toHit": 3,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 12131356,
+    "baseW": 28,
+    "baseH": 28
+  },
+  {
+    "key": "card_am_castellans",
+    "cardType": "SUPPORT",
+    "cardName": "Knight Castellan Detachment",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Castellan Detachment",
+    "composition": "3 Knight Castellans (Quake Cannon & Autocannons)",
+    "points": 500,
+    "breakPoint": 2,
+    "morale": 2,
+    "vpValue": 5,
+    "moveCm": 15,
+    "save": 2,
+    "fixedSave": 5,
+    "caf": 3,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Quake Cannon & Autocannons",
+      "rangeCm": 100,
+      "dice": 3,
+      "toHit": 3,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 3,
+    "color": 10033947,
+    "baseW": 28,
+    "baseH": 28
+  },
+  {
+    "key": "card_am_warhound",
+    "cardType": "SPECIAL",
+    "cardName": "Warhound Scout Titan",
+    "armyBook": "MECHANICUS",
+    "name": "Warhound Scout Titan",
+    "composition": "1 Warhound Scout Titan (2 Void Shields)",
+    "points": 125,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 2,
+    "moveCm": 25,
+    "save": 2,
+    "caf": 8,
+    "pinningClass": 4,
+    "isTitan": true,
+    "superHeavy": true,
+    "shieldType": "VOID",
+    "maxShields": 2,
+    "weapon": {
+      "name": "Plasma Blastgun & Mega-Bolter",
+      "rangeCm": 65,
+      "dice": 5,
+      "toHit": 3,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 14427686,
+    "baseW": 34,
+    "baseH": 38
+  },
+  {
+    "key": "card_am_reaver",
+    "cardType": "SPECIAL",
+    "cardName": "Reaver Battle Titan",
+    "armyBook": "MECHANICUS",
+    "name": "Reaver Battle Titan",
+    "composition": "1 Reaver Battle Titan (4 Void Shields)",
+    "points": 300,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 4,
+    "moveCm": 20,
+    "save": 2,
+    "caf": 12,
+    "pinningClass": 4,
+    "isTitan": true,
+    "superHeavy": true,
+    "shieldType": "VOID",
+    "maxShields": 4,
+    "weapon": {
+      "name": "Gatling Blaster & Turbo-Laser",
+      "rangeCm": 75,
+      "dice": 6,
+      "toHit": 3,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 12131356,
+    "baseW": 38,
+    "baseH": 42
+  },
+  {
+    "key": "card_am_warlord",
+    "cardType": "SPECIAL",
+    "cardName": "Warlord Battle Titan",
+    "armyBook": "MECHANICUS",
+    "name": "Warlord Battle Titan",
+    "composition": "1 Warlord Battle Titan (6 Void Shields)",
+    "points": 500,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 5,
+    "moveCm": 15,
+    "save": 2,
+    "caf": 14,
+    "pinningClass": 4,
+    "isTitan": true,
+    "superHeavy": true,
+    "shieldType": "VOID",
+    "maxShields": 6,
+    "weapon": {
+      "name": "Volcano Cannon & Plasma Destructor",
+      "rangeCm": 90,
+      "dice": 6,
+      "toHit": 3,
+      "tsm": -3,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 10033947,
+    "baseW": 40,
+    "baseH": 44
+  },
+  {
+    "key": "card_am_knight_baron",
+    "cardType": "SPECIAL",
+    "cardName": "Knight Baron",
+    "armyBook": "MECHANICUS",
+    "name": "Imperial Knight Baron",
+    "composition": "1 Knight Baron (Battlecannon, Power Lance, 25cm Aura)",
+    "points": 200,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 2,
+    "moveCm": 25,
+    "save": 2,
+    "fixedSave": 4,
+    "caf": 6,
+    "pinningClass": 2,
+    "standsCount": 1,
+    "isCharacter": true,
+    "baseW": 28,
+    "baseH": 28,
+    "weapon": {
+      "name": "Battlecannon & Power Lance",
+      "rangeCm": 75,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -2
+    },
+    "characterRules": {
+      "baron": true,
+      "armyInitiativeBonus": 1,
+      "moraleAuraCm": 25
+    },
+    "color": 15680580
+  },
+  {
+    "key": "card_am_techpriest",
+    "cardType": "SPECIAL",
+    "cardName": "Archmagos Tech-Priest",
+    "armyBook": "MECHANICUS",
+    "name": "Archmagos Tech-Priest & Cmd Rhino",
+    "composition": "Tech-Priest Master & Command Rhino",
+    "points": 100,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 2,
+    "moveCm": 20,
+    "save": 2,
+    "fixedSave": 4,
+    "caf": 5,
+    "pinningClass": 2,
+    "standsCount": 1,
+    "isCharacter": true,
+    "baseW": 22,
+    "baseH": 22,
+    "weapon": {
+      "name": "Omnissian Axe & Plasma Pistol",
+      "rangeCm": 25,
+      "dice": 2,
+      "toHit": 4,
+      "tsm": -1
+    },
+    "characterRules": {
+      "techpriest": true,
+      "shieldRepairBonus": 1
+    },
+    "color": 8330525
+  },
+  {
+    "key": "card_am_ordinatus_mars",
+    "cardType": "SPECIAL",
+    "cardName": "Ordinatus Mars",
+    "armyBook": "MECHANICUS",
+    "name": "Ordinatus Mars Siege Engine",
+    "composition": "1 Ordinatus Mars (Sonic Disruptor / Dispersion Field)",
+    "points": 350,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 4,
+    "moveCm": 10,
+    "save": 2,
+    "fixedSave": 4,
+    "caf": 5,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Sonic Disruptor",
+      "rangeCm": 100,
+      "dice": 1,
+      "toHit": 2,
+      "tsm": -3,
+      "barrage": true,
+      "barrageBp": 10,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 12131356,
+    "baseW": 34,
+    "baseH": 42
+  },
+  {
+    "key": "card_am_skitarii_co",
+    "cardType": "COMPANY",
+    "cardName": "Tech-Guard Mechanized Company",
+    "armyBook": "MECHANICUS",
+    "name": "Tech-Guard Mechanized Company",
+    "composition": "Tactical HQ & 3 Mechanized Platoons (19 stands & 10 Chimeras)",
+    "points": 750,
+    "breakPoint": 15,
+    "morale": 3,
+    "vpValue": 8,
+    "moveCm": 10,
+    "save": 5,
+    "caf": 1,
+    "pinningClass": 1,
+    "weapon": {
+      "name": "Tech-Guard Mass Lasguns",
+      "rangeCm": 50,
+      "dice": 4,
+      "toHit": 5,
+      "tsm": 0
+    },
+    "standsCount": 19,
+    "color": 14427686,
+    "baseW": 20,
+    "baseH": 20,
+    "dedicatedTransport": {
+      "key": "am_chimera_co",
+      "armyBook": "MECHANICUS",
+      "name": "Company Chimera APCs",
+      "moveCm": 20,
+      "save": 3,
+      "caf": 1,
+      "morale": 3,
+      "pinningClass": 2,
+      "transportCapacity": 2,
+      "weapon": {
+        "name": "Multi-Lasers",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0
+      },
+      "breakPoint": 5,
+      "vpValue": 0,
+      "color": 12131356,
+      "standsCount": 10,
+      "baseW": 22,
+      "baseH": 30
+    }
+  },
+  {
+    "key": "card_am_ordinatus_golgotha",
+    "cardType": "SPECIAL",
+    "cardName": "Ordinatus Golgotha",
+    "armyBook": "MECHANICUS",
+    "name": "Ordinatus Golgotha Super-Siege Engine",
+    "composition": "1 Ordinatus Golgotha (Hellfire Missiles / Dispersion Field)",
+    "points": 350,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 4,
+    "moveCm": 10,
+    "save": 2,
+    "fixedSave": 4,
+    "caf": 5,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Hellfire Missiles",
+      "rangeCm": 120,
+      "dice": 1,
+      "toHit": 2,
+      "tsm": -2,
+      "barrage": true,
+      "barrageBp": 6,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 12131356,
+    "baseW": 34,
+    "baseH": 42
+  },
+  {
+    "key": "card_am_ordinatus_armageddon",
+    "cardType": "SPECIAL",
+    "cardName": "Ordinatus Armageddon",
+    "armyBook": "MECHANICUS",
+    "name": "Ordinatus Armageddon Super-Siege Engine",
+    "composition": "1 Ordinatus Armageddon (Nova Cannon / Dispersion Field)",
+    "points": 500,
+    "breakPoint": 1,
+    "morale": 1,
+    "vpValue": 5,
+    "moveCm": 10,
+    "save": 2,
+    "fixedSave": 4,
+    "caf": 5,
+    "pinningClass": 3,
+    "superHeavy": true,
+    "weapon": {
+      "name": "Nova Cannon",
+      "rangeCm": 150,
+      "dice": 1,
+      "toHit": 2,
+      "tsm": -4,
+      "damagesBuildings": true
+    },
+    "standsCount": 1,
+    "color": 10033947,
+    "baseW": 36,
+    "baseH": 44
+  },
+  {
+    "key": "card_am_leman_co",
+    "cardType": "COMPANY",
+    "cardName": "Tech-Guard Leman Russ Company",
+    "armyBook": "MECHANICUS",
+    "name": "Tech-Guard Leman Russ Company",
+    "composition": "10 Tech-Guard Leman Russ Tanks",
+    "points": 650,
+    "breakPoint": 5,
+    "morale": 3,
+    "vpValue": 8,
+    "moveCm": 20,
+    "save": 3,
+    "caf": 2,
+    "pinningClass": 2,
+    "weapon": {
+      "name": "Battlecannon & Lascannon",
+      "rangeCm": 75,
+      "dice": 6,
+      "toHit": 4,
+      "tsm": -2,
+      "damagesBuildings": true
+    },
+    "standsCount": 10,
+    "color": 12131356,
+    "baseW": 24,
+    "baseH": 32
+  }
+]
 };
 
 const DEFAULT_ROSTERS = {
@@ -4500,6 +6141,23 @@ const DEFAULT_ROSTERS = {
     "card_sm_speeders",
     "card_sm_warhound",
     "card_sm_calgar"
+  ],
+  "MILITARIS": [
+      "card_mil_leman_russ",
+      "card_mil_mech_tac",
+      "card_mil_heavy_platoon",
+      "card_mil_basilisk",
+      "card_mil_sentinels",
+      "card_mil_regimental_hq",
+      "card_mil_demolisher"
+  ],
+  "MECHANICUS": [
+      "card_am_warlord",
+      "card_am_warhound",
+      "card_am_paladins",
+      "card_am_mech_tac",
+      "card_am_knight_baron",
+      "card_am_techpriest"
   ],
   "ORKS": [
     "card_ork_boyz",
@@ -4739,7 +6397,7 @@ window.renderArmyModal = function() {
       colTrait.style.color = meta.colorHex;
     }
 
-    // Render 6-Faction selector tabs
+    // Render 8-Faction selector tabs
     const tabsEl = document.getElementById(`${prefix}-faction-tabs`);
     if (tabsEl) {
       tabsEl.innerHTML = '';
@@ -8270,10 +9928,10 @@ class NetEpicScene extends Phaser.Scene {
             const yrRoll = Phaser.Math.Between(1, 6);
             if (yrRoll >= neededSave && neededSave <= 6) {
               saved = true;
-              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Yarrick Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
             }
           }
-          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Yarrick Iron Will'))) {
+          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
             saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
           }
 
@@ -8435,10 +10093,10 @@ class NetEpicScene extends Phaser.Scene {
             const yrRoll = Phaser.Math.Between(1, 6);
             if (yrRoll >= neededSave && neededSave <= 6) {
               saved = true;
-              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Yarrick Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
             }
           }
-          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Yarrick Iron Will'))) {
+          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
             saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
           }
 
@@ -10345,9 +12003,13 @@ class NetEpicScene extends Phaser.Scene {
       }
       if (d.maxShields && d.shields < d.maxShields) {
         const downed = d.maxShields - d.shields;
+        const hasTechpriest = this.detachments.some(td =>
+          td.faction === d.faction && td.stands.length > 0 && td.characterRules && td.characterRules.techpriest
+        );
+        const repairThreshold = hasTechpriest ? 3 : 4;
         let repaired = 0;
         for (let i = 0; i < downed; i++) {
-          if (Phaser.Math.Between(1, 6) >= 4) repaired++;
+          if (Phaser.Math.Between(1, 6) >= repairThreshold) repaired++;
         }
         if (repaired > 0) {
           d.shields += repaired;
@@ -11143,7 +12805,10 @@ class NetEpicScene extends Phaser.Scene {
       const charBadge = d.isCharacter ? ' | 👑 Hero' : '';
       const psyBadge = d.isPsyker ? ` | 🔮 Psyker (${d.psychicRank || 3})` : '';
       const calgarBadge = (d.characterRules && d.characterRules.calgar) ? ' | 🦅 Chapter Master' : '';
-      const yarrickBadge = (d.characterRules && d.characterRules.yarrick) ? ' | 🦾 Commissar' : '';
+      const yarrickBadge = (d.characterRules && d.characterRules.yarrick) ? ' | 🦾 Commissar Yarrick' : '';
+      const commissarBadge = (d.characterRules && d.characterRules.commissar) ? ' | 🪖 Commissar' : '';
+      const baronBadge = (d.characterRules && d.characterRules.baron) ? ' | 🛡️ Knight Baron' : '';
+      const techpriestBadge = (d.characterRules && d.characterRules.techpriest) ? ' | ⚙️ Tech-Priest' : '';
       const bjornBadge = (d.characterRules && d.characterRules.bjorn) ? ' | 🐺 Dreadnought' : '';
       const ghazBadge = (d.characterRules && d.characterRules.ghazghkull) ? ` | 🟢 ${d.characterRules.waaaghAvailable ? 'WAAAGH! Ready' : 'WAAAGH! Used'}` : '';
       const abaddonBadge = (d.characterRules && d.characterRules.abaddon) ? ' | ⚔️ Warmaster' : '';
@@ -11161,7 +12826,7 @@ class NetEpicScene extends Phaser.Scene {
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit - (d.toHitPenalty || 0)}+, TSM ${d.weapon.tsm})`;
       const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
-      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${yarrickBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${yarrickBadge}${commissarBadge}${baronBadge}${techpriestBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? (d.inReserve ? 'Status: ☄️ Orbital Reserve' : 'Phase: Deployment')
