@@ -1626,12 +1626,17 @@ class NetEpicScene extends Phaser.Scene {
     this.woods = [];
     this.buildings = [];
     this.objectives = [];
+    this.fields = [];
+    this.dirtTracks = [];
 
-    this.boardGfx = this.add.graphics();
-    this.deployGfx = this.add.graphics();
-    this.objGfx = this.add.graphics();
-    this.losGfx = this.add.graphics();
-    this.overlayGfx = this.add.graphics();
+    this.createGrassTexture();
+    this.grassTile = this.add.tileSprite(BOARD_W / 2, BOARD_H / 2, BOARD_W, BOARD_H, 'grass_canvas').setDepth(0);
+
+    this.boardGfx = this.add.graphics().setDepth(1);
+    this.deployGfx = this.add.graphics().setDepth(2);
+    this.objGfx = this.add.graphics().setDepth(3);
+    this.losGfx = this.add.graphics().setDepth(400);
+    this.overlayGfx = this.add.graphics().setDepth(450);
 
     this.detachments = [];
     window.initCombatLogResize();
@@ -1645,6 +1650,91 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
+  // --- PROCEDURAL GRASSLAND TEXTURE GENERATOR (Tabletop static grass flock & meadow tufts) ---
+  createGrassTexture() {
+    if (this.textures.exists('grass_canvas')) return;
+    const canvasTexture = this.textures.createCanvas('grass_canvas', 512, 512);
+    const ctx = canvasTexture.getContext();
+
+    // 1. Base grassland wash - rich, authentic tabletop static grass green
+    ctx.fillStyle = '#416a34';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Soft rolling meadow tonal gradients / cloud light variation
+    const grad1 = ctx.createRadialGradient(160, 140, 20, 256, 256, 280);
+    grad1.addColorStop(0, 'rgba(88, 142, 68, 0.45)');
+    grad1.addColorStop(0.5, 'rgba(65, 106, 52, 0.15)');
+    grad1.addColorStop(1, 'rgba(44, 76, 37, 0.45)');
+    ctx.fillStyle = grad1;
+    ctx.fillRect(0, 0, 512, 512);
+
+    const grad2 = ctx.createRadialGradient(380, 390, 30, 320, 320, 260);
+    grad2.addColorStop(0, 'rgba(102, 158, 76, 0.35)');
+    grad2.addColorStop(0.6, 'rgba(56, 92, 46, 0.1)');
+    grad2.addColorStop(1, 'rgba(38, 66, 32, 0.4)');
+    ctx.fillStyle = grad2;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 3. Dense micro-stippling noise (tabletop static grass / flock texture)
+    const speckCols = [
+      'rgba(38, 66, 32, 0.55)',   // deep turf shadow
+      'rgba(52, 88, 43, 0.50)',   // medium grass
+      'rgba(76, 126, 58, 0.50)',  // bright meadow green
+      'rgba(96, 153, 72, 0.40)',  // sunlit spring blade
+      'rgba(122, 142, 70, 0.30)', // dry thatch / khaki stalk
+      'rgba(74, 60, 42, 0.25)',   // rich loamy soil speck
+      'rgba(142, 168, 90, 0.25)'  // golden moss fleck
+    ];
+
+    let seed = 49297;
+    function rnd() {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    }
+
+    // 12,000 micro-stipples across the 512x512 tile
+    for (let i = 0; i < 12000; i++) {
+      const px = Math.floor(rnd() * 512);
+      const py = Math.floor(rnd() * 512);
+      const col = speckCols[Math.floor(rnd() * speckCols.length)];
+      const size = rnd() < 0.85 ? 1 : (rnd() < 0.95 ? 2 : 3);
+      ctx.fillStyle = col;
+      ctx.fillRect(px, py, size, size);
+    }
+
+    // 4. Fine grass blade tufts (short angled directional strokes)
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 1400; i++) {
+      const tx = Math.floor(rnd() * 512);
+      const ty = Math.floor(rnd() * 512);
+      const angle = -Math.PI / 2 + (rnd() - 0.5) * 0.9;
+      const len = 3 + rnd() * 4;
+      const bladeCol = rnd() < 0.5 ? 'rgba(92, 156, 68, 0.5)' : (rnd() < 0.8 ? 'rgba(42, 74, 35, 0.6)' : 'rgba(125, 150, 75, 0.45)');
+      ctx.strokeStyle = bladeCol;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + Math.cos(angle) * len, ty + Math.sin(angle) * len);
+      ctx.stroke();
+    }
+
+    // 5. Subtle wildflower specks (buttercups, meadow daisies, clover)
+    const flowerCols = [
+      'rgba(240, 230, 160, 0.6)', // buttercup
+      'rgba(220, 235, 245, 0.55)', // daisy white
+      'rgba(195, 140, 205, 0.45)'  // clover / heather
+    ];
+    for (let i = 0; i < 90; i++) {
+      const fx = Math.floor(rnd() * 512);
+      const fy = Math.floor(rnd() * 512);
+      ctx.fillStyle = flowerCols[Math.floor(rnd() * flowerCols.length)];
+      ctx.beginPath();
+      ctx.arc(fx, fy, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    canvasTexture.refresh();
+  }
+
   // --- PHASE 8: BATTLEFIELD MAP PRESETS & PROCEDURAL GENERATOR ---
   loadMapConfig(preset = 'INDUSTRIAL') {
     this.roads = [];
@@ -1652,126 +1742,243 @@ class NetEpicScene extends Phaser.Scene {
     this.bridges = [];
     this.woods = [];
     this.buildings = [];
+    this.objectives = [];
+    this.fields = [];
+    this.dirtTracks = [];
 
     if (preset === 'INDUSTRIAL') {
-      // Crossroads road network + Manufactorum & Hab-Blocks + flanking Woods
+      // Highway network + Manufactorum, Cathedral, Silos, Hab-Blocks & Bunkers spread across the map
       this.roads = [
         { x1: 925, y1: 0, x2: 925, y2: BOARD_H, width: 36, name: 'Imperial Highway (+5cm Move)' },
-        { x1: 120, y1: 625, x2: BOARD_W - 120, y2: 625, width: 32, name: 'Supply Road (+5cm Move)' }
+        { x1: 100, y1: 625, x2: BOARD_W - 100, y2: 625, width: 32, name: 'Sector Ring Road (+5cm Move)' },
+        { x1: 925, y1: 300, x2: 1650, y2: 300, width: 28, name: 'Factory Spur (+5cm Move)' },
+        { x1: 200, y1: 950, x2: 925, y2: 950, width: 28, name: 'Depot Spur (+5cm Move)' }
       ];
-      this.woods = [
-        { x: 560, y: 625, r: 105 },
-        { x: 1320, y: 625, r: 105 }
+      this.dirtTracks = [
+        { points: [{ x: 380, y: 625 }, { x: 280, y: 520 }, { x: 230, y: 350 }], width: 14, name: 'Farmstead Trail' },
+        { points: [{ x: 925, y: 950 }, { x: 1220, y: 920 }, { x: 1540, y: 980 }], width: 14, name: 'Pipeline Track' }
+      ];
+      this.fields = [
+        { x: 120, y: 200, w: 260, h: 160, boundary: 'WALL', color: 0x3d6830, alpha: 0.22, name: 'North Paddock' },
+        { x: 150, y: 740, w: 290, h: 180, boundary: 'HEDGE', color: 0x487635, alpha: 0.24, name: 'Agri-Pasture' },
+        { x: 1420, y: 160, w: 250, h: 160, boundary: 'WALL', color: 0x355e2c, alpha: 0.2, name: 'East Paddock' },
+        { x: 1080, y: 760, w: 280, h: 160, boundary: 'HEDGE', color: 0x527d3b, alpha: 0.22, name: 'South Meadow' }
       ];
       this.buildings = [
-        { x: 840, y: 445, w: 170, h: 120, name: 'Manufactorum' },
-        { x: 310, y: 565, w: 125, h: 110, name: 'Hab-Block West' },
-        { x: 1455, y: 565, w: 125, h: 110, name: 'Hab-Block East' }
+        { x: 810, y: 540, w: 230, h: 160, type: 'CATHEDRAL', name: "St. Katherine's Basilica" },
+        { x: 1260, y: 440, w: 180, h: 130, type: 'MANUFACTORUM', name: 'Manufactorum Primus' },
+        { x: 1420, y: 840, w: 160, h: 120, type: 'SILO', name: 'Promethium Depot' },
+        { x: 230, y: 440, w: 140, h: 105, type: 'BUNKER', name: 'Command Bunker Delta' },
+        { x: 300, y: 220, w: 150, h: 110, type: 'HAB_BLOCK', name: 'Hab-Block Tertius' },
+        { x: 620, y: 900, w: 160, h: 115, type: 'MANUFACTORUM', name: 'Munitorum Warehouse' }
+      ];
+      this.woods = [
+        { x: 1240, y: 220, r: 85 },
+        { x: 490, y: 840, r: 90 },
+        { x: 150, y: 560, r: 80 },
+        { x: 1680, y: 620, r: 95 },
+        { x: 550, y: 340, r: 75 },
+        { x: 1150, y: 920, r: 80 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (Hab-Block West)', x: 372, y: 620, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (West Crossroads)', x: 740, y: 625, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (East Crossroads)', x: 1120, y: 625, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (Hab-Block East)', x: 1517, y: 620, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (NW Hab-Block)', x: 375, y: 275, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Basilica)', x: 925, y: 620, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Manufactorum)', x: 1350, y: 505, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (SE Promethium Depot)', x: 1500, y: 900, owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (West Bunker Delta)', x: 300, y: 492, owner: 'NEUTRAL' }
       ];
     } else if (preset === 'RIVER') {
-      // River Styx cutting East-West with 2 Bridges, 1 Ford, Approach Roads & Bridgehead Bunkers
+      // River Lethe cutting East-West with 2 Bridges, 1 Ford, Riverbank roads, Bunkers, Silos & Monastery
       this.rivers = [
-        { y: 580, h: 90, name: 'River Styx (Impassable except Bridges / Jump Units)' }
+        { y: 580, h: 90, name: 'River Lethe (Impassable except Bridges / Jump Units)' }
       ];
       this.bridges = [
-        { x: 500, y: 566, w: 96, h: 118, name: 'West Bridge' },
-        { x: 900, y: 566, w: 84, h: 118, name: 'Central Shallow Ford', isFord: true },
-        { x: 1280, y: 566, w: 96, h: 118, name: 'East Bridge' }
+        { x: 420, y: 566, w: 100, h: 118, name: 'West Bastion Bridge' },
+        { x: 925, y: 566, w: 110, h: 118, name: 'Central Highway Bridge' },
+        { x: 1420, y: 566, w: 90, h: 118, name: 'East Shallow Ford', isFord: true }
       ];
       this.roads = [
-        { x1: 548, y1: 0, x2: 548, y2: BOARD_H, width: 34, name: 'West Bridge Road (+5cm Move)' },
-        { x1: 1328, y1: 0, x2: 1328, y2: BOARD_H, width: 34, name: 'East Bridge Road (+5cm Move)' }
+        { x1: 470, y1: 0, x2: 470, y2: BOARD_H, width: 32, name: 'West Bridge Highway (+5cm Move)' },
+        { x1: 980, y1: 0, x2: 980, y2: BOARD_H, width: 36, name: 'Central Expressway (+5cm Move)' },
+        { x1: 100, y1: 450, x2: BOARD_W - 100, y2: 450, width: 28, name: 'North Riverbank Road (+5cm Move)' },
+        { x1: 100, y1: 740, x2: BOARD_W - 100, y2: 740, width: 28, name: 'South Riverbank Road (+5cm Move)' }
+      ];
+      this.dirtTracks = [
+        { points: [{ x: 980, y: 820 }, { x: 1200, y: 890 }, { x: 1480, y: 960 }], width: 14, name: 'Riverside Farm Track' },
+        { points: [{ x: 470, y: 390 }, { x: 340, y: 330 }, { x: 210, y: 250 }], width: 14, name: 'Highland Trail' }
+      ];
+      this.fields = [
+        { x: 150, y: 220, w: 260, h: 170, boundary: 'HEDGE', color: 0x487635, alpha: 0.24, name: 'Highland Pasture' },
+        { x: 620, y: 820, w: 280, h: 170, boundary: 'WALL', color: 0x3d6830, alpha: 0.22, name: 'Water Meadow' },
+        { x: 1460, y: 230, w: 240, h: 170, boundary: 'HEDGE', color: 0x527d3b, alpha: 0.22, name: 'Orchard Paddock' }
       ];
       this.buildings = [
-        { x: 350, y: 445, w: 120, h: 95, name: 'North Bridge Bunker' },
-        { x: 1410, y: 705, w: 120, h: 95, name: 'South Bridge Bunker' }
+        { x: 380, y: 410, w: 150, h: 105, type: 'BUNKER', name: 'North Bastion' },
+        { x: 920, y: 720, w: 150, h: 105, type: 'BUNKER', name: 'South Redoubt' },
+        { x: 1350, y: 400, w: 150, h: 115, type: 'SILO', name: 'Water Pumping Station' },
+        { x: 200, y: 230, w: 170, h: 120, type: 'CATHEDRAL', name: 'Highland Monastery Ruins' },
+        { x: 1440, y: 850, w: 150, h: 110, type: 'HAB_BLOCK', name: 'Riverside Hab-Block' },
+        { x: 580, y: 910, w: 160, h: 115, type: 'MANUFACTORUM', name: 'Munitions Depot' }
       ];
       this.woods = [
-        { x: 735, y: 455, r: 95 },
-        { x: 1130, y: 790, r: 95 }
+        { x: 680, y: 270, r: 85 },
+        { x: 1600, y: 370, r: 90 },
+        { x: 180, y: 680, r: 85 },
+        { x: 1280, y: 780, r: 95 },
+        { x: 250, y: 950, r: 80 },
+        { x: 800, y: 340, r: 75 },
+        { x: 1680, y: 880, r: 85 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (West Bridge)', x: 548, y: 495, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Central Ford)', x: 942, y: 625, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (East Bridge)', x: 1328, y: 755, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (South Bank Woods)', x: 1130, y: 790, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (North Bastion)', x: 455, y: 462, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Bridge)', x: 980, y: 625, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (East Ford)', x: 1465, y: 625, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (NW Monastery Ruins)', x: 285, y: 290, owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (SE Hab-Block)', x: 1515, y: 905, owner: 'NEUTRAL' }
       ];
     } else if (preset === 'FOREST') {
-      // Deathworld Jungle: Dense woods, winding road, and temple ruins
+      // Deathworld Jungle: Winding forest highway, trails, dense woodland copses, ruins & listening posts
       this.roads = [
-        { x1: 420, y1: BOARD_H, x2: 760, y2: 625, width: 30, name: 'Jungle Track (+5cm Move)' },
-        { x1: 760, y1: 625, x2: 1140, y2: 625, width: 30, name: 'Jungle Track (+5cm Move)' },
-        { x1: 1140, y1: 625, x2: 1440, y2: 0, width: 30, name: 'Jungle Track (+5cm Move)' }
+        { x1: 420, y1: BOARD_H, x2: 700, y2: 850, width: 32, name: 'Jungle Highway (+5cm Move)' },
+        { x1: 700, y1: 850, x2: 925, y2: 625, width: 32, name: 'Jungle Highway (+5cm Move)' },
+        { x1: 925, y1: 625, x2: 1240, y2: 400, width: 32, name: 'Jungle Highway (+5cm Move)' },
+        { x1: 1240, y1: 400, x2: 1500, y2: 0, width: 32, name: 'Jungle Highway (+5cm Move)' },
+        { x1: 925, y1: 625, x2: 1560, y2: 860, width: 28, name: 'Timber Spur (+5cm Move)' }
       ];
-      this.woods = [
-        { x: 390, y: 580, r: 115 },
-        { x: 700, y: 480, r: 105 },
-        { x: 1160, y: 760, r: 105 },
-        { x: 1470, y: 650, r: 115 }
+      this.dirtTracks = [
+        { points: [{ x: 700, y: 850 }, { x: 480, y: 680 }, { x: 290, y: 490 }, { x: 230, y: 310 }], width: 14, name: 'Pilgrim Trail' },
+        { points: [{ x: 1240, y: 400 }, { x: 950, y: 310 }, { x: 680, y: 270 }], width: 14, name: 'North Patrol Trail' }
+      ];
+      this.fields = [
+        { x: 460, y: 200, w: 270, h: 170, boundary: 'WALL', color: 0x3d6830, alpha: 0.22, name: 'Ancient Clearing' },
+        { x: 1180, y: 770, w: 280, h: 180, boundary: 'HEDGE', color: 0x487635, alpha: 0.24, name: 'Timber Paddock' },
+        { x: 140, y: 730, w: 220, h: 160, boundary: 'HEDGE', color: 0x355e2c, alpha: 0.2, name: 'West Glade' }
       ];
       this.buildings = [
-        { x: 875, y: 565, w: 130, h: 115, name: 'Shrine Ruins' },
-        { x: 640, y: 720, w: 110, h: 90, name: 'Listening Post' }
+        { x: 830, y: 540, w: 190, h: 140, type: 'CATHEDRAL', name: 'Shrine of the Primarch' },
+        { x: 570, y: 220, w: 130, h: 95, type: 'BUNKER', name: 'North Auspex Bunker' },
+        { x: 1350, y: 310, w: 140, h: 105, type: 'SILO', name: 'Promethium Wellhead' },
+        { x: 600, y: 910, w: 140, h: 100, type: 'BUNKER', name: 'South Bastion Outpost' },
+        { x: 1470, y: 830, w: 160, h: 115, type: 'MANUFACTORUM', name: 'Old Timber Mill' },
+        { x: 210, y: 430, w: 130, h: 105, type: 'CATHEDRAL', name: 'Hermit Chapel Ruins' }
+      ];
+      this.woods = [
+        { x: 250, y: 230, r: 95 },
+        { x: 340, y: 710, r: 105 },
+        { x: 170, y: 950, r: 90 },
+        { x: 1100, y: 230, r: 100 },
+        { x: 1650, y: 250, r: 110 },
+        { x: 610, y: 570, r: 95 },
+        { x: 1250, y: 630, r: 105 },
+        { x: 1040, y: 930, r: 95 }
       ];
       this.objectives = [
-        { id: 1, name: 'Obj #1 (West Jungle)', x: 390, y: 580, owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Listening Post)', x: 695, y: 765, owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (Shrine Ruins)', x: 940, y: 622, owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (East Jungle)', x: 1470, y: 650, owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (North Auspex)', x: 635, y: 267, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Shrine Ruins)', x: 925, y: 610, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (Timber Mill)', x: 1550, y: 887, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (Hermit Chapel)', x: 275, y: 482, owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (South Bastion)', x: 670, y: 960, owner: 'NEUTRAL' }
       ];
     } else {
-      // PROCEDURAL RANDOM BATTLEFIELD GENERATOR
-      const hasRiver = Math.random() < 0.45;
+      // PROCEDURAL RANDOM BATTLEFIELD GENERATOR - Fully spread across all quadrants!
+      const hasRiver = Math.random() < 0.40;
       if (hasRiver) {
-        const riverY = Phaser.Math.Between(555, 605);
-        this.rivers.push({ y: riverY, h: 84, name: ' Slag River (Impassable except Bridges / Jump)' });
-        const b1X = Phaser.Math.Between(420, 660);
-        const b2X = Phaser.Math.Between(1180, 1420);
+        const riverY = Phaser.Math.Between(560, 610);
+        this.rivers.push({ y: riverY, h: 86, name: 'Slag River (Impassable except Bridges / Jump)' });
+        const b1X = Phaser.Math.Between(420, 620);
+        const b2X = Phaser.Math.Between(1200, 1400);
         this.bridges.push(
-          { x: b1X - 45, y: riverY - 12, w: 90, h: 108, name: 'West Crossing' },
-          { x: b2X - 45, y: riverY - 12, w: 90, h: 108, name: 'East Crossing' }
+          { x: b1X - 45, y: riverY - 14, w: 90, h: 114, name: 'West Crossing' },
+          { x: 925 - 45, y: riverY - 14, w: 90, h: 114, name: 'Central Shallow Ford', isFord: true },
+          { x: b2X - 45, y: riverY - 14, w: 90, h: 114, name: 'East Crossing' }
         );
         this.roads.push(
           { x1: b1X, y1: 0, x2: b1X, y2: BOARD_H, width: 32, name: 'West Sector Road (+5cm)' },
-          { x1: b2X, y1: 0, x2: b2X, y2: BOARD_H, width: 32, name: 'East Sector Road (+5cm)' }
+          { x1: b2X, y1: 0, x2: b2X, y2: BOARD_H, width: 32, name: 'East Sector Road (+5cm)' },
+          { x1: 100, y1: riverY - 130, x2: BOARD_W - 100, y2: riverY - 130, width: 28, name: 'North River Road (+5cm)' },
+          { x1: 100, y1: riverY + 130, x2: BOARD_W - 100, y2: riverY + 130, width: 28, name: 'South River Road (+5cm)' }
         );
       } else {
-        const roadX = Phaser.Math.Between(780, 1080);
-        const roadY = Phaser.Math.Between(540, 700);
+        const roadX = Phaser.Math.Between(850, 1000);
+        const roadY = Phaser.Math.Between(580, 660);
         this.roads.push(
           { x1: roadX, y1: 0, x2: roadX, y2: BOARD_H, width: 34, name: 'Sector Highway (+5cm)' },
-          { x1: 140, y1: roadY, x2: BOARD_W - 140, y2: roadY, width: 30, name: 'Perimeter Road (+5cm)' }
+          { x1: 100, y1: roadY, x2: BOARD_W - 100, y2: roadY, width: 32, name: 'Trans-Sector Road (+5cm)' },
+          { x1: roadX, y1: 300, x2: 1650, y2: 300, width: 26, name: 'North Lateral Spur (+5cm)' },
+          { x1: 200, y1: 940, x2: roadX, y2: 940, width: 26, name: 'South Lateral Spur (+5cm)' }
         );
       }
 
-      const bNames = ['Ruined Basilica', 'Munitorum Depot', 'Promethium Silo', 'Command Bunker'];
-      const bXs = [Phaser.Math.Between(320, 560), Phaser.Math.Between(820, 1020), Phaser.Math.Between(1280, 1500)];
-      bXs.forEach((bx, idx) => {
-        const by = hasRiver ? (idx % 2 === 0 ? Phaser.Math.Between(410, 460) : Phaser.Math.Between(700, 760)) : Phaser.Math.Between(450, 710);
-        this.buildings.push({ x: bx, y: by, w: Phaser.Math.Between(115, 145), h: Phaser.Math.Between(95, 120), name: bNames[idx % bNames.length] });
+      // Procedural Agricultural Fields
+      this.fields = [
+        { x: Phaser.Math.Between(120, 240), y: Phaser.Math.Between(200, 260), w: Phaser.Math.Between(220, 280), h: Phaser.Math.Between(150, 180), boundary: 'WALL', color: 0x3d6830, alpha: 0.22, name: 'North Pasture' },
+        { x: Phaser.Math.Between(140, 260), y: Phaser.Math.Between(750, 820), w: Phaser.Math.Between(240, 300), h: Phaser.Math.Between(160, 190), boundary: 'HEDGE', color: 0x487635, alpha: 0.24, name: 'South Paddock' },
+        { x: Phaser.Math.Between(1380, 1480), y: Phaser.Math.Between(200, 270), w: Phaser.Math.Between(220, 270), h: Phaser.Math.Between(150, 180), boundary: 'HEDGE', color: 0x527d3b, alpha: 0.22, name: 'East Enclosure' }
+      ];
+
+      // Procedural Dirt Tracks
+      this.dirtTracks = [
+        { points: [{ x: 380, y: 625 }, { x: 260, y: 520 }, { x: 210, y: 340 }], width: 14, name: 'West Country Lane' },
+        { points: [{ x: 925, y: 880 }, { x: 1220, y: 920 }, { x: 1520, y: 970 }], width: 14, name: 'South Country Lane' }
+      ];
+
+      // Procedural Buildings spread across 6 distinct sectors
+      const buildingTemplates = [
+        { name: "St. Katherine's Basilica", type: 'CATHEDRAL', w: 200, h: 145 },
+        { name: 'Manufactorum Primus', type: 'MANUFACTORUM', w: 170, h: 125 },
+        { name: 'Command Bunker Delta', type: 'BUNKER', w: 140, h: 100 },
+        { name: 'Promethium Storage Vats', type: 'SILO', w: 150, h: 115 },
+        { name: 'Hab-Block Tertius', type: 'HAB_BLOCK', w: 150, h: 110 },
+        { name: 'Munitorum Armory', type: 'MANUFACTORUM', w: 160, h: 115 },
+        { name: 'Forward Bastion Redoubt', type: 'BUNKER', w: 140, h: 100 }
+      ];
+
+      const sectors = [
+        { bx: Phaser.Math.Between(220, 380), by: Phaser.Math.Between(220, 320) },  // North-West
+        { bx: Phaser.Math.Between(1320, 1500), by: Phaser.Math.Between(220, 320) }, // North-East
+        { bx: Phaser.Math.Between(800, 1020), by: Phaser.Math.Between(530, 680) },  // Center
+        { bx: Phaser.Math.Between(200, 360), by: Phaser.Math.Between(460, 560) },  // West-Center
+        { bx: Phaser.Math.Between(1320, 1520), by: Phaser.Math.Between(720, 860) }, // South-East
+        { bx: Phaser.Math.Between(580, 780), by: Phaser.Math.Between(880, 960) }   // South-West
+      ];
+
+      sectors.forEach((sec, idx) => {
+        const tmpl = buildingTemplates[idx % buildingTemplates.length];
+        this.buildings.push({
+          x: sec.bx,
+          y: sec.by,
+          w: tmpl.w,
+          h: tmpl.h,
+          type: tmpl.type,
+          name: tmpl.name
+        });
       });
 
-      const wXs = [Phaser.Math.Between(460, 720), Phaser.Math.Between(1120, 1380), Phaser.Math.Between(780, 1060)];
-      wXs.forEach((wx, idx) => {
-        const wy = hasRiver ? (idx % 2 === 0 ? Phaser.Math.Between(710, 800) : Phaser.Math.Between(420, 480)) : Phaser.Math.Between(460, 780);
-        // Avoid overlapping buildings
-        const overlapsB = this.buildings.some(b => Phaser.Math.Distance.Between(wx, wy, b.x + b.w / 2, b.y + b.h / 2) < 150);
+      // Procedural Woods spread across open zones avoiding building collisions
+      const woodSpots = [
+        { x: Phaser.Math.Between(540, 700), y: Phaser.Math.Between(240, 340), r: 85 },
+        { x: Phaser.Math.Between(1560, 1720), y: Phaser.Math.Between(340, 460), r: 90 },
+        { x: Phaser.Math.Between(150, 300), y: Phaser.Math.Between(680, 780), r: 85 },
+        { x: Phaser.Math.Between(1120, 1280), y: Phaser.Math.Between(740, 860), r: 90 },
+        { x: Phaser.Math.Between(480, 640), y: Phaser.Math.Between(720, 840), r: 80 },
+        { x: Phaser.Math.Between(1160, 1320), y: Phaser.Math.Between(240, 340), r: 85 },
+        { x: Phaser.Math.Between(1640, 1740), y: Phaser.Math.Between(760, 880), r: 85 }
+      ];
+
+      woodSpots.forEach(ws => {
+        const overlapsB = this.buildings.some(b => Phaser.Math.Distance.Between(ws.x, ws.y, b.x + b.w / 2, b.y + b.h / 2) < (ws.r + 60));
         if (!overlapsB) {
-          this.woods.push({ x: wx, y: wy, r: Phaser.Math.Between(85, 110) });
+          this.woods.push(ws);
         }
       });
 
+      // 5 Strategic Objectives distributed across all sectors
       this.objectives = [
-        { id: 1, name: 'Obj #1 (West Flank)', x: Phaser.Math.Between(400, 540), y: hasRiver ? 490 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (West Center)', x: Phaser.Math.Between(740, 880), y: hasRiver ? 740 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
-        { id: 3, name: 'Obj #3 (East Center)', x: Phaser.Math.Between(1020, 1160), y: hasRiver ? 490 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' },
-        { id: 4, name: 'Obj #4 (East Flank)', x: Phaser.Math.Between(1340, 1480), y: hasRiver ? 740 : Phaser.Math.Between(520, 720), owner: 'NEUTRAL' }
+        { id: 1, name: 'Obj #1 (North-West Sector)', x: sectors[0].bx + 70, y: sectors[0].by + 55, owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Central Objective)', x: sectors[2].bx + 80, y: sectors[2].by + 60, owner: 'NEUTRAL' },
+        { id: 3, name: 'Obj #3 (North-East Sector)', x: sectors[1].bx + 70, y: sectors[1].by + 55, owner: 'NEUTRAL' },
+        { id: 4, name: 'Obj #4 (South-East Sector)', x: sectors[4].bx + 70, y: sectors[4].by + 55, owner: 'NEUTRAL' },
+        { id: 5, name: 'Obj #5 (West Flank Sector)', x: sectors[3].bx + 70, y: sectors[3].by + 50, owner: 'NEUTRAL' }
       ];
     }
   }
@@ -1814,20 +2021,99 @@ class NetEpicScene extends Phaser.Scene {
     }
     this.terrainLabels = [];
 
-    // Base battlefield turf
-    this.boardGfx.fillStyle(0x1b261a, 1);
-    this.boardGfx.fillRect(0, 0, BOARD_W, BOARD_H);
-
-    // Subtle organic ground patches & moss/soil contours (deterministic pseudo-random so it stays consistent)
-    for (let i = 0; i < 38; i++) {
+    // 0. Natural meadow elevation contours & rolling pasture shadows (Translucent washes over the procedural grass TileSprite)
+    for (let i = 0; i < 42; i++) {
       const gx = ((i * 271 + 97) % (BOARD_W - 160)) + 80;
       const gy = ((i * 193 + 53) % (BOARD_H - 120)) + 60;
-      const gr = 45 + (i % 5) * 22;
-      this.boardGfx.fillStyle(i % 3 === 0 ? 0x222f1f : (i % 3 === 1 ? 0x162015 : 0x24281e), 0.55);
+      const gr = 55 + (i % 6) * 28;
+      const col = i % 3 === 0 ? 0x2e4a24 : (i % 3 === 1 ? 0x62923e : 0x36582a);
+      const alpha = i % 2 === 0 ? 0.22 : 0.16;
+      this.boardGfx.fillStyle(col, alpha);
       this.boardGfx.fillCircle(gx, gy, gr);
     }
 
-    // Scattered battlefield shell craters & scorch marks
+    // 1. Agricultural Fields & Pastures (Pasture tint enclosures bounded by Hedgerows or Drystone Walls)
+    (this.fields || []).forEach(f => {
+      const fieldCol = f.color || 0x446830;
+      this.boardGfx.fillStyle(fieldCol, f.alpha || 0.22);
+      this.boardGfx.fillRect(f.x, f.y, f.w, f.h);
+
+      if (f.boundary === 'WALL') {
+        // Heavy drystone stone wall with capstones
+        this.boardGfx.lineStyle(4, 0x57534e, 0.85);
+        this.boardGfx.strokeRect(f.x, f.y, f.w, f.h);
+        this.boardGfx.lineStyle(2, 0xa8a29e, 0.75);
+        this.boardGfx.strokeRect(f.x, f.y, f.w, f.h);
+      } else {
+        // Lush leafy hedgerow - series of small overlapping shrubbery circles
+        const step = 14;
+        for (let x = f.x; x <= f.x + f.w; x += step) {
+          this.boardGfx.fillStyle(0x14532d, 0.92);
+          this.boardGfx.fillCircle(x + ((x % 3) - 1) * 2, f.y, 6);
+          this.boardGfx.fillCircle(x + ((x % 3) - 1) * 2, f.y + f.h, 6);
+          this.boardGfx.fillStyle(0x22c55e, 0.75);
+          this.boardGfx.fillCircle(x, f.y - 1, 3.5);
+          this.boardGfx.fillCircle(x, f.y + f.h - 1, 3.5);
+        }
+        for (let y = f.y; y <= f.y + f.h; y += step) {
+          this.boardGfx.fillStyle(0x14532d, 0.92);
+          this.boardGfx.fillCircle(f.x, y + ((y % 3) - 1) * 2, 6);
+          this.boardGfx.fillCircle(f.x + f.w, y + ((y % 3) - 1) * 2, 6);
+          this.boardGfx.fillStyle(0x22c55e, 0.75);
+          this.boardGfx.fillCircle(f.x - 1, y, 3.5);
+          this.boardGfx.fillCircle(f.x + f.w - 1, y, 3.5);
+        }
+      }
+      if (f.name) {
+        const flbl = this.add.text(f.x + f.w / 2, f.y + 14, `🌾 ${f.name.toUpperCase()}`, {
+          fontSize: '9px', color: '#fef08a', fontStyle: 'bold', backgroundColor: 'rgba(20, 83, 45, 0.7)', padding: { x: 3, y: 1 }
+        }).setOrigin(0.5).setDepth(4);
+        this.terrainLabels.push(flbl);
+      }
+    });
+
+    // 2. Dirt Tracks (Rural cart ruts branching off roads to farms, bunkers & woods)
+    (this.dirtTracks || []).forEach(dt => {
+      const pts = dt.points || [];
+      if (pts.length < 2) return;
+      const dw = dt.width || 14;
+
+      // Packed earthy roadbed
+      this.boardGfx.lineStyle(dw, 0x5a4833, 0.78);
+      for (let i = 0; i < pts.length - 1; i++) {
+        this.boardGfx.lineBetween(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
+      }
+
+      // Twin pressed wheel ruts
+      this.boardGfx.lineStyle(2.5, 0x3d3020, 0.85);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p1 = pts[i], p2 = pts[i + 1];
+        const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const perpX = Math.cos(angle + Math.PI / 2);
+        const perpY = Math.sin(angle + Math.PI / 2);
+        const offset = dw * 0.3;
+        this.boardGfx.lineBetween(p1.x + perpX * offset, p1.y + perpY * offset, p2.x + perpX * offset, p2.y + perpY * offset);
+        this.boardGfx.lineBetween(p1.x - perpX * offset, p1.y - perpY * offset, p2.x - perpX * offset, p2.y - perpY * offset);
+      }
+
+      // Grassy median strip in the center
+      this.boardGfx.lineStyle(2, 0x486b36, 0.65);
+      for (let i = 0; i < pts.length - 1; i++) {
+        this.boardGfx.lineBetween(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
+      }
+
+      if (dt.name && pts.length >= 2) {
+        const midIdx = Math.floor(pts.length / 2);
+        const mx = pts[midIdx].x;
+        const my = pts[midIdx].y;
+        const dtlbl = this.add.text(mx, my, `🚜 ${dt.name.toUpperCase()}`, {
+          fontSize: '9px', color: '#fed7aa', backgroundColor: 'rgba(40, 30, 20, 0.75)', padding: { x: 3, y: 1 }
+        }).setOrigin(0.5).setDepth(4);
+        this.terrainLabels.push(dtlbl);
+      }
+    });
+
+    // 3. Scattered battlefield shell craters & scorch marks
     const craters = [
       { x: 240, y: 420, r: 16 }, { x: 470, y: 760, r: 13 }, { x: 690, y: 380, r: 18 },
       { x: 820, y: 740, r: 15 }, { x: 1060, y: 420, r: 17 }, { x: 1210, y: 690, r: 14 },
@@ -1844,17 +2130,17 @@ class NetEpicScene extends Phaser.Scene {
       this.boardGfx.fillCircle(c.x + 1, c.y + 1, c.r * 0.52);
     });
 
-    // 10 cm Tactical Grid
-    this.boardGfx.lineStyle(1, 0x2a3928, 0.62);
+    // 4. Subtle 10 cm Tactical Military Grid
+    this.boardGfx.lineStyle(1, 0x1e361a, 0.35);
     for (let x = 0; x <= BOARD_W; x += 10 * PX_PER_CM) this.boardGfx.lineBetween(x, 0, x, BOARD_H);
     for (let y = 0; y <= BOARD_H; y += 10 * PX_PER_CM) this.boardGfx.lineBetween(0, y, BOARD_W, y);
 
     // Centerline
     const centerY = BOARD_H / 2;
-    this.boardGfx.lineStyle(2, 0x475569, 0.32);
+    this.boardGfx.lineStyle(2, 0x334155, 0.35);
     this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
 
-    // 1. Rivers (Muddy banks + shallow & deep water channels + current ripples)
+    // 5. Rivers (Muddy banks + shallow & deep water channels + current ripples)
     this.rivers.forEach(rv => {
       // Muddy/rocky outer shoreline banks
       this.boardGfx.fillStyle(0x44403c, 0.85);
@@ -1880,11 +2166,11 @@ class NetEpicScene extends Phaser.Scene {
       }
       const lbl = this.add.text(210, rv.y + rv.h / 2, `🌊 ${rv.name.toUpperCase()}`, {
         fontSize: '10px', color: '#bae6fd', fontStyle: 'bold', backgroundColor: 'rgba(12, 74, 110, 0.78)', padding: { x: 4, y: 1 }
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
       this.terrainLabels.push(lbl);
     });
 
-    // 2. Roads (+5cm Bonus Movement — gravel roadbed, paved stone/tarmac surface, curb stones & dashed yellow lane line)
+    // 6. Roads (+5cm Bonus Movement — gravel roadbed, paved stone/tarmac surface, curb stones & dashed yellow lane line)
     this.roads.forEach(rd => {
       const rw = rd.width || 32;
       // Gravel shoulder bed
@@ -1915,11 +2201,11 @@ class NetEpicScene extends Phaser.Scene {
       const ly = (rd.y1 + rd.y2) / 2 + (rd.y1 === rd.y2 ? -24 : -180);
       const lbl = this.add.text(lx, Phaser.Math.Clamp(ly, 380, 860), '🛣️ ROAD (+5cm Move)', {
         fontSize: '10px', color: '#fde047', backgroundColor: 'rgba(15, 23, 42, 0.75)', padding: { x: 3, y: 1 }
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
       this.terrainLabels.push(lbl);
     });
 
-    // 3. Bridges & Shallow Fords across Rivers
+    // 7. Bridges & Shallow Fords across Rivers
     this.bridges.forEach(br => {
       if (br.isFord) {
         // Shallow stepping-stone & gravel ford with white water foam
@@ -1961,11 +2247,11 @@ class NetEpicScene extends Phaser.Scene {
       }
       const lbl = this.add.text(br.x + br.w / 2, br.y + br.h / 2, br.name.toUpperCase(), {
         fontSize: '10px', color: '#ffffff', fontStyle: 'bold', backgroundColor: 'rgba(15, 23, 42, 0.78)', padding: { x: 3, y: 1 }
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
       this.terrainLabels.push(lbl);
     });
 
-    // 4. Woods (Rich forest floor + fallen logs + 18-24 multi-layered tree canopies per wood!)
+    // 8. Woods (Rich forest floor + fallen logs + multi-layered tree canopies)
     this.woods.forEach(w => {
       // Soft outer forest shadow
       this.boardGfx.fillStyle(0x09190c, 0.55);
@@ -2012,20 +2298,16 @@ class NetEpicScene extends Phaser.Scene {
       treePositions.push({ tx: w.x - 6, ty: w.y + 4, tr: 19, shade: 0 });
 
       treePositions.forEach(t => {
-        // Tree drop shadow
         this.boardGfx.fillStyle(0x051107, 0.55);
         this.boardGfx.fillCircle(t.tx + 3, t.ty + 4, t.tr);
-        // Main tree crown
         const crownCol = t.shade === 0 ? 0x166534 : (t.shade === 1 ? 0x15803d : 0x14532d);
         this.boardGfx.fillStyle(crownCol, 0.92);
         this.boardGfx.fillCircle(t.tx, t.ty, t.tr);
         this.boardGfx.lineStyle(1.2, 0x052e16, 0.75);
         this.boardGfx.strokeCircle(t.tx, t.ty, t.tr);
-        // Mid foliage layer
         const midCol = t.shade === 0 ? 0x22c55e : (t.shade === 1 ? 0x16a34a : 0x15803d);
         this.boardGfx.fillStyle(midCol, 0.75);
         this.boardGfx.fillCircle(t.tx - 2, t.ty - 2, t.tr * 0.66);
-        // Sunlit top canopy highlight
         this.boardGfx.fillStyle(0x4ade80, 0.55);
         this.boardGfx.fillCircle(t.tx - 4, t.ty - 4, t.tr * 0.34);
       });
@@ -2033,80 +2315,13 @@ class NetEpicScene extends Phaser.Scene {
       const lbl = this.add.text(w.x, w.y, '🌲 WOODS\n(-1 Cover / >2cm Blocks LoS)', {
         fontSize: '10px', color: '#bbf7d0', align: 'center', fontStyle: 'bold',
         backgroundColor: 'rgba(5, 46, 22, 0.78)', padding: { x: 4, y: 2 }
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
       this.terrainLabels.push(lbl);
     });
 
-    // 5. Buildings (Architectural fortified complexes: Courtyard slab, perimeter walls, corner bastions, pitched roof wings, windows & rubble)
+    // 9. Detailed 6mm Tabletop Architectural Buildings
     this.buildings.forEach(b => {
-      // Building drop shadow
-      this.boardGfx.fillStyle(0x020617, 0.65);
-      this.boardGfx.fillRect(b.x + 6, b.y + 7, b.w, b.h);
-
-      // Outer ferrocrete compound courtyard slab
-      this.boardGfx.fillStyle(0x1e293b, 0.98);
-      this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
-      this.boardGfx.lineStyle(3, 0x94a3b8, 1);
-      this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
-
-      // Courtyard paving grid lines
-      this.boardGfx.lineStyle(1, 0x334155, 0.7);
-      for (let gx = b.x + 20; gx < b.x + b.w; gx += 20) this.boardGfx.lineBetween(gx, b.y + 4, gx, b.y + b.h - 4);
-      for (let gy = b.y + 20; gy < b.y + b.h; gy += 20) this.boardGfx.lineBetween(b.x + 4, gy, b.x + b.w - 4, gy);
-
-      // West & East Structural Roof Wings + Central Hall
-      const pad = 10;
-      const wingW = Math.floor((b.w - pad * 2) * 0.32);
-      const wingH = b.h - pad * 2;
-      // Main roof structure
-      this.boardGfx.fillStyle(0x334155, 0.98);
-      this.boardGfx.fillRect(b.x + pad, b.y + pad, b.w - pad * 2, wingH);
-      this.boardGfx.lineStyle(2, 0xcbd5e1, 0.95);
-      this.boardGfx.strokeRect(b.x + pad, b.y + pad, b.w - pad * 2, wingH);
-
-      // Sloped roof ridges & Darker North/South roof pitches
-      this.boardGfx.fillStyle(0x475569, 0.95);
-      this.boardGfx.fillRect(b.x + pad + 2, b.y + pad + 2, b.w - pad * 2 - 4, Math.floor(wingH / 2) - 2);
-      this.boardGfx.lineStyle(2, 0xe2e8f0, 0.85);
-      this.boardGfx.lineBetween(b.x + pad, b.y + b.h / 2, b.x + b.w - pad, b.y + b.h / 2);
-
-      // Rooftop skylights / armour vents / buttress ribs
-      for (let rx = b.x + pad + 14; rx < b.x + b.w - pad - 12; rx += 22) {
-        this.boardGfx.lineStyle(1.2, 0x64748b, 0.8);
-        this.boardGfx.lineBetween(rx, b.y + pad, rx, b.y + b.h - pad);
-        this.boardGfx.fillStyle(0x0f172a, 0.85);
-        this.boardGfx.fillRect(rx - 5, b.y + pad + 8, 8, 10);
-        this.boardGfx.fillRect(rx - 5, b.y + b.h - pad - 18, 8, 10);
-      }
-
-      // 4 Corner Bastion Towers (fortified bunker corners)
-      const bw = 14, bh = 14;
-      const corners = [
-        { cx: b.x - 2, cy: b.y - 2 },
-        { cx: b.x + b.w - bw + 2, cy: b.y - 2 },
-        { cx: b.x - 2, cy: b.y + b.h - bh + 2 },
-        { cx: b.x + b.w - bw + 2, cy: b.y + b.h - bh + 2 }
-      ];
-      corners.forEach(c => {
-        this.boardGfx.fillStyle(0x475569, 1);
-        this.boardGfx.fillRect(c.cx, c.cy, bw, bh);
-        this.boardGfx.lineStyle(1.8, 0xe2e8f0, 1);
-        this.boardGfx.strokeRect(c.cx, c.cy, bw, bh);
-        this.boardGfx.fillStyle(0x0f172a, 0.9);
-        this.boardGfx.fillCircle(c.cx + bw / 2, c.cy + bh / 2, 3);
-      });
-
-      // Battle-damaged rubble pile on one side
-      this.boardGfx.fillStyle(0x64748b, 0.8);
-      this.boardGfx.fillCircle(b.x + b.w - 18, b.y + b.h - 14, 9);
-      this.boardGfx.fillStyle(0x94a3b8, 0.75);
-      this.boardGfx.fillCircle(b.x + b.w - 23, b.y + b.h - 11, 5);
-
-      const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `🏰 ${b.name.toUpperCase()}\n(Infantry Garrison: -2 Hit / 4+ Sv)`, {
-        fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold',
-        backgroundColor: 'rgba(15, 23, 42, 0.84)', padding: { x: 4, y: 2 }
-      }).setOrigin(0.5);
-      this.terrainLabels.push(lbl);
+      this.drawDetailedBuilding(b);
     });
 
     this.boardGfx.lineStyle(4, 0x94a3b8, 1);
@@ -2116,13 +2331,296 @@ class NetEpicScene extends Phaser.Scene {
     if (!this.orkDeployLabel) {
       this.orkDeployLabel = this.add.text(BOARD_W / 2, DEPLOY_DEPTH_PX - 18, '▲ NORTH DEPLOYMENT ZONE (35 CM) — Drag units to position ▲', {
         fontSize: '12px', fontStyle: 'bold', color: '#4ade80', backgroundColor: 'rgba(15, 23, 42, 0.8)'
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
     }
     if (!this.impDeployLabel) {
       this.impDeployLabel = this.add.text(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18, '▼ SOUTH DEPLOYMENT ZONE (35 CM) — Drag units to position ▼', {
         fontSize: '12px', fontStyle: 'bold', color: '#60a5fa', backgroundColor: 'rgba(15, 23, 42, 0.8)'
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setDepth(4);
     }
+  }
+
+  // --- DETAILED 6MM SCALE ARCHITECTURAL BUILDING RENDERER ---
+  drawDetailedBuilding(b) {
+    // 1. Cast shadow
+    this.boardGfx.fillStyle(0x0a140d, 0.6);
+    this.boardGfx.fillRect(b.x + 8, b.y + 10, b.w, b.h);
+
+    // 2. Concrete compound perimeter slab
+    this.boardGfx.fillStyle(0x272e39, 0.98);
+    this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
+    this.boardGfx.lineStyle(2, 0x64748b, 0.95);
+    this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
+
+    // Courtyard slab paving joints
+    this.boardGfx.lineStyle(1, 0x334155, 0.65);
+    for (let gx = b.x + 24; gx < b.x + b.w; gx += 24) this.boardGfx.lineBetween(gx, b.y + 2, gx, b.y + b.h - 2);
+    for (let gy = b.y + 24; gy < b.y + b.h; gy += 24) this.boardGfx.lineBetween(b.x + 2, gy, b.x + b.w - 2, gy);
+
+    const pad = 10;
+    const innerW = b.w - pad * 2;
+    const innerH = b.h - pad * 2;
+
+    if (b.type === 'CATHEDRAL') {
+      // --- GOTHIC CATHEDRAL / BASILICA ---
+      // Peaked nave roof structure
+      this.boardGfx.fillStyle(0x1e3a47, 0.98); // verdigris slate
+      this.boardGfx.fillRect(b.x + pad, b.y + pad, innerW, innerH);
+      // North roof pitch highlight
+      this.boardGfx.fillStyle(0x2d5363, 0.85);
+      this.boardGfx.fillRect(b.x + pad + 2, b.y + pad + 2, innerW - 4, Math.floor(innerH / 2) - 2);
+      // Main roof ridge
+      this.boardGfx.lineStyle(2, 0x94a3b8, 0.95);
+      this.boardGfx.lineBetween(b.x + pad, b.y + b.h / 2, b.x + b.w - pad, b.y + b.h / 2);
+
+      // Gothic external buttresses projecting out from exterior walls
+      for (let bx = b.x + pad + 16; bx < b.x + b.w - pad - 12; bx += 22) {
+        this.boardGfx.fillStyle(0x475569, 1);
+        this.boardGfx.fillRect(bx - 3, b.y + pad - 6, 6, 7);
+        this.boardGfx.fillRect(bx - 3, b.y + b.h - pad - 1, 6, 7);
+        this.boardGfx.lineStyle(1, 0x94a3b8, 0.7);
+        this.boardGfx.lineBetween(bx, b.y + pad, bx, b.y + b.h - pad);
+      }
+
+      // Transept cross wing
+      const transW = Math.floor(innerW * 0.42);
+      const transX = b.x + pad + Math.floor((innerW - transW) / 2);
+      this.boardGfx.fillStyle(0x1e293b, 0.95);
+      this.boardGfx.fillRect(transX, b.y + 3, transW, b.h - 6);
+      this.boardGfx.lineStyle(2, 0x64748b, 1);
+      this.boardGfx.strokeRect(transX, b.y + 3, transW, b.h - 6);
+
+      // Great Rose Window / central sanctum dome
+      this.boardGfx.fillStyle(0x0284c7, 0.9);
+      this.boardGfx.fillCircle(b.x + b.w / 2, b.y + b.h / 2, 13);
+      this.boardGfx.fillStyle(0xfacc15, 0.85);
+      this.boardGfx.fillCircle(b.x + b.w / 2, b.y + b.h / 2, 6);
+      this.boardGfx.lineStyle(1.5, 0xffffff, 0.9);
+      this.boardGfx.strokeCircle(b.x + b.w / 2, b.y + b.h / 2, 13);
+
+      // Ruined courtyard section showing checkerboard marble floor tiles
+      const ruinX = b.x + pad + 4;
+      const ruinY = b.y + pad + 4;
+      const ruinSize = Math.min(36, Math.floor(innerH * 0.45));
+      this.boardGfx.fillStyle(0x0f172a, 0.95);
+      this.boardGfx.fillRect(ruinX, ruinY, ruinSize, ruinSize);
+      for (let ty = 0; ty < ruinSize; ty += 8) {
+        for (let tx = 0; tx < ruinSize; tx += 8) {
+          if (((tx / 8) + (ty / 8)) % 2 === 0) {
+            this.boardGfx.fillStyle(0xe2e8f0, 0.9);
+            this.boardGfx.fillRect(ruinX + tx, ruinY + ty, 8, 8);
+          }
+        }
+      }
+
+      // Fallen masonry & broken pillar blocks
+      this.boardGfx.fillStyle(0x64748b, 0.95);
+      this.boardGfx.fillCircle(ruinX + ruinSize + 5, ruinY + 8, 4);
+      this.boardGfx.fillCircle(ruinX + ruinSize + 9, ruinY + 18, 6);
+      this.boardGfx.fillCircle(ruinX + 10, ruinY + ruinSize + 6, 5);
+
+    } else if (b.type === 'MANUFACTORUM') {
+      // --- INDUSTRIAL MANUFACTORUM ---
+      this.boardGfx.fillStyle(0x334155, 0.98);
+      this.boardGfx.fillRect(b.x + pad, b.y + pad, innerW, innerH);
+      this.boardGfx.lineStyle(2, 0x475569, 1);
+      this.boardGfx.strokeRect(b.x + pad, b.y + pad, innerW, innerH);
+
+      // Corrugated saw-tooth industrial roofs with translucent skylights
+      const sawToothCount = Math.max(3, Math.floor(innerW / 32));
+      const toothW = innerW / sawToothCount;
+      for (let i = 0; i < sawToothCount; i++) {
+        const sx = b.x + pad + i * toothW;
+        this.boardGfx.fillStyle(0x475569, 0.92);
+        this.boardGfx.fillRect(sx + 2, b.y + pad + 2, toothW * 0.74, innerH - 4);
+        this.boardGfx.fillStyle(0x38bdf8, 0.7);
+        this.boardGfx.fillRect(sx + toothW * 0.74, b.y + pad + 4, toothW * 0.22, innerH - 8);
+        this.boardGfx.lineStyle(1, 0x94a3b8, 0.75);
+        this.boardGfx.lineBetween(sx + toothW * 0.74, b.y + pad + 2, sx + toothW * 0.74, b.y + pad + innerH - 2);
+      }
+
+      // Twin industrial blast chimneys / smokestacks
+      const s1x = b.x + pad + 18, s1y = b.y + pad + 16;
+      const s2x = b.x + b.w - pad - 18, s2y = b.y + pad + 16;
+      [{ cx: s1x, cy: s1y }, { cx: s2x, cy: s2y }].forEach(st => {
+        this.boardGfx.fillStyle(0x0f172a, 0.6);
+        this.boardGfx.fillCircle(st.cx + 2, st.cy + 3, 10);
+        this.boardGfx.fillStyle(0x57534e, 1);
+        this.boardGfx.fillCircle(st.cx, st.cy, 9);
+        this.boardGfx.lineStyle(2, 0xa8a29e, 0.95);
+        this.boardGfx.strokeCircle(st.cx, st.cy, 9);
+        this.boardGfx.fillStyle(0x1c1917, 1);
+        this.boardGfx.fillCircle(st.cx, st.cy, 5.5);
+      });
+
+      // Cargo loading bay with diagonal hazard stripes
+      const bayW = Math.min(52, Math.floor(innerW * 0.45));
+      const bayH = 10;
+      const bayX = b.x + pad + Math.floor((innerW - bayW) / 2);
+      const bayY = b.y + b.h - pad - 2;
+      this.boardGfx.fillStyle(0x0f172a, 1);
+      this.boardGfx.fillRect(bayX, bayY, bayW, bayH);
+      for (let hx = 0; hx < bayW; hx += 8) {
+        this.boardGfx.fillStyle(0xfacc15, 1);
+        this.boardGfx.beginPath();
+        this.boardGfx.moveTo(bayX + hx, bayY);
+        this.boardGfx.lineTo(bayX + hx + 4, bayY);
+        this.boardGfx.lineTo(bayX + hx + 1, bayY + bayH);
+        this.boardGfx.lineTo(bayX + hx - 3, bayY + bayH);
+        this.boardGfx.fillPath();
+      }
+
+    } else if (b.type === 'BUNKER') {
+      // --- FORTIFIED COMMAND BUNKER / BASTION ---
+      // Angled ferrocrete glacis berm
+      this.boardGfx.fillStyle(0x334155, 0.98);
+      this.boardGfx.fillRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8);
+      this.boardGfx.lineStyle(3, 0x475569, 1);
+      this.boardGfx.strokeRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8);
+
+      // Heavy armored core casemate
+      const coreX = b.x + 16, coreY = b.y + 14;
+      const coreW = b.w - 32, coreH = b.h - 28;
+      this.boardGfx.fillStyle(0x1e293b, 1);
+      this.boardGfx.fillRect(coreX, coreY, coreW, coreH);
+      this.boardGfx.lineStyle(2, 0x94a3b8, 1);
+      this.boardGfx.strokeRect(coreX, coreY, coreW, coreH);
+
+      // Armored observation cupola / periscope dome
+      const cupX = b.x + b.w / 2, cupY = b.y + b.h / 2;
+      this.boardGfx.fillStyle(0x475569, 1);
+      this.boardGfx.fillCircle(cupX, cupY, 11);
+      this.boardGfx.lineStyle(2, 0xcbd5e1, 1);
+      this.boardGfx.strokeCircle(cupX, cupY, 11);
+      this.boardGfx.fillStyle(0x0284c7, 0.95);
+      this.boardGfx.fillCircle(cupX - 2, cupY - 2, 4);
+
+      // Vision slit embrasures
+      this.boardGfx.fillStyle(0x020617, 1);
+      this.boardGfx.fillRect(coreX + 8, coreY - 3, 14, 4);
+      this.boardGfx.fillRect(coreX + coreW - 22, coreY - 3, 14, 4);
+      this.boardGfx.fillRect(coreX + 8, coreY + coreH - 1, 14, 4);
+      this.boardGfx.fillRect(coreX + coreW - 22, coreY + coreH - 1, 14, 4);
+
+      // Motorized hydraulic blast door
+      this.boardGfx.fillStyle(0x64748b, 1);
+      this.boardGfx.fillRect(b.x + b.w / 2 - 12, b.y + b.h - 10, 24, 8);
+      this.boardGfx.lineStyle(1.5, 0xfacc15, 0.9);
+      this.boardGfx.strokeRect(b.x + b.w / 2 - 12, b.y + b.h - 10, 24, 8);
+
+      // Sandbag perimeter revetments on corners
+      this.boardGfx.fillStyle(0x785e3a, 0.95);
+      for (let i = 0; i < 4; i++) {
+        this.boardGfx.fillCircle(b.x + 6 + i * 5, b.y + 7, 3);
+        this.boardGfx.fillCircle(b.x + b.w - 6 - i * 5, b.y + 7, 3);
+      }
+
+    } else if (b.type === 'SILO') {
+      // --- PROMETHIUM SILO / REFINERY ---
+      this.boardGfx.fillStyle(0x1e293b, 0.95);
+      this.boardGfx.fillRect(b.x + pad, b.y + pad, innerW, innerH);
+
+      // Chemical fuel spillage puddle on concrete
+      this.boardGfx.fillStyle(0x14532d, 0.48);
+      this.boardGfx.fillCircle(b.x + b.w * 0.65, b.y + b.h * 0.65, 18);
+      this.boardGfx.fillStyle(0x0f172a, 0.52);
+      this.boardGfx.fillCircle(b.x + b.w * 0.63, b.y + b.h * 0.64, 10);
+
+      // Cylindrical storage tanks with domed metallic tops
+      const tankCount = b.w > 150 ? 3 : 2;
+      const tankR = Math.min(26, Math.floor((b.w - 30) / (tankCount * 2)));
+      const spacing = innerW / (tankCount + 1);
+
+      for (let i = 1; i <= tankCount; i++) {
+        const tx = b.x + pad + spacing * i;
+        const ty = b.y + b.h / 2;
+        this.boardGfx.fillStyle(0x020617, 0.55);
+        this.boardGfx.fillCircle(tx + 3, ty + 4, tankR);
+        this.boardGfx.fillStyle(0x475569, 1);
+        this.boardGfx.fillCircle(tx, ty, tankR);
+        this.boardGfx.lineStyle(2, 0x94a3b8, 1);
+        this.boardGfx.strokeCircle(tx, ty, tankR);
+        this.boardGfx.fillStyle(0x64748b, 0.85);
+        this.boardGfx.fillCircle(tx - tankR * 0.25, ty - tankR * 0.25, tankR * 0.55);
+        this.boardGfx.fillStyle(0x1e293b, 1);
+        this.boardGfx.fillCircle(tx, ty, 4.5);
+        this.boardGfx.lineStyle(1, 0xfacc15, 0.9);
+        this.boardGfx.strokeCircle(tx, ty, 4.5);
+      }
+
+      // Connecting gantry walkway & yellow safety railings
+      this.boardGfx.lineStyle(4, 0x334155, 0.95);
+      this.boardGfx.lineBetween(b.x + pad + spacing, b.y + b.h / 2, b.x + pad + spacing * tankCount, b.y + b.h / 2);
+      this.boardGfx.lineStyle(1.5, 0xeab308, 0.9);
+      this.boardGfx.lineBetween(b.x + pad + spacing, b.y + b.h / 2 - 3, b.x + pad + spacing * tankCount, b.y + b.h / 2 - 3);
+      this.boardGfx.lineBetween(b.x + pad + spacing, b.y + b.h / 2 + 3, b.x + pad + spacing * tankCount, b.y + b.h / 2 + 3);
+
+      // Pipeline manifold
+      this.boardGfx.lineStyle(3, 0x64748b, 1);
+      this.boardGfx.lineBetween(b.x + pad + spacing, b.y + b.h / 2, b.x + 4, b.y + b.h / 2);
+
+    } else {
+      // --- HAB-BLOCK / FORTRESS HOUSING ---
+      this.boardGfx.fillStyle(0x334155, 0.98);
+      this.boardGfx.fillRect(b.x + pad, b.y + pad, innerW, innerH);
+      this.boardGfx.lineStyle(2, 0x64748b, 1);
+      this.boardGfx.strokeRect(b.x + pad, b.y + pad, innerW, innerH);
+
+      // Tiered central penthouse / comms deck
+      const phW = Math.floor(innerW * 0.6);
+      const phH = Math.floor(innerH * 0.55);
+      const phX = b.x + pad + Math.floor((innerW - phW) / 2);
+      const phY = b.y + pad + Math.floor((innerH - phH) / 2);
+      this.boardGfx.fillStyle(0x1e293b, 1);
+      this.boardGfx.fillRect(phX, phY, phW, phH);
+      this.boardGfx.lineStyle(2, 0x94a3b8, 1);
+      this.boardGfx.strokeRect(phX, phY, phW, phH);
+
+      // Window aperture rows
+      for (let wx = b.x + pad + 10; wx < b.x + b.w - pad - 8; wx += 16) {
+        this.boardGfx.fillStyle(0x090d16, 0.9);
+        this.boardGfx.fillRect(wx, b.y + pad + 4, 8, 5);
+        this.boardGfx.fillRect(wx, b.y + b.h - pad - 9, 8, 5);
+      }
+
+      // Rooftop ventilation turbine & antenna
+      const fanX = phX + phW * 0.3;
+      const fanY = phY + phH * 0.5;
+      this.boardGfx.fillStyle(0x475569, 1);
+      this.boardGfx.fillCircle(fanX, fanY, 7);
+      this.boardGfx.lineStyle(1.5, 0xcbd5e1, 1);
+      this.boardGfx.strokeCircle(fanX, fanY, 7);
+      this.boardGfx.fillStyle(0x0f172a, 1);
+      this.boardGfx.fillCircle(fanX, fanY, 3);
+
+      const dishX = phX + phW * 0.72;
+      const dishY = phY + phH * 0.5;
+      this.boardGfx.lineStyle(2, 0xe2e8f0, 0.9);
+      this.boardGfx.strokeCircle(dishX, dishY, 5);
+      this.boardGfx.lineBetween(dishX, dishY, dishX + 4, dishY - 6);
+
+      // Corner bastion reinforcements
+      const cw = 12, ch = 12;
+      [
+        { cx: b.x, cy: b.y },
+        { cx: b.x + b.w - cw, cy: b.y },
+        { cx: b.x, cy: b.y + b.h - ch },
+        { cx: b.x + b.w - cw, cy: b.y + b.h - ch }
+      ].forEach(c => {
+        this.boardGfx.fillStyle(0x475569, 1);
+        this.boardGfx.fillRect(c.cx, c.cy, cw, ch);
+        this.boardGfx.lineStyle(1.5, 0x94a3b8, 1);
+        this.boardGfx.strokeRect(c.cx, c.cy, cw, ch);
+      });
+    }
+
+    // Building Garrison Label
+    const icon = b.type === 'CATHEDRAL' ? '🏰' : (b.type === 'MANUFACTORUM' ? '🏭' : (b.type === 'BUNKER' ? '🛡️' : (b.type === 'SILO' ? '🛢️' : '🏢')));
+    const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `${icon} ${b.name.toUpperCase()}\n(Garrison: -2 Hit / 4+ Sv)`, {
+      fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold',
+      backgroundColor: 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
+    }).setOrigin(0.5).setDepth(4);
+    this.terrainLabels.push(lbl);
   }
 
   // --- PHASE 12: VISUAL 3D/2D DICE ROLL TRAY & TITAN / SUPER-HEAVY STATUS DATA SHEET ---
@@ -2426,6 +2924,22 @@ class NetEpicScene extends Phaser.Scene {
       const projY = rd.y1 + t * (rd.y2 - rd.y1);
       if (Phaser.Math.Distance.Between(x, y, projX, projY) <= (rd.width || 32) / 2 + 14) {
         return true;
+      }
+    }
+    if (this.dirtTracks) {
+      for (const dt of this.dirtTracks) {
+        const pts = dt.points || [];
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p1 = pts[i], p2 = pts[i + 1];
+          const l2 = Phaser.Math.Distance.Squared(p1.x, p1.y, p2.x, p2.y);
+          if (l2 === 0) continue;
+          const t = Phaser.Math.Clamp(((x - p1.x) * (p2.x - p1.x) + (y - p1.y) * (p2.y - p1.y)) / l2, 0, 1);
+          const projX = p1.x + t * (p2.x - p1.x);
+          const projY = p1.y + t * (p2.y - p1.y);
+          if (Phaser.Math.Distance.Between(x, y, projX, projY) <= (dt.width || 14) / 2 + 10) {
+            return true;
+          }
+        }
       }
     }
     return false;
@@ -2779,10 +3293,20 @@ class NetEpicScene extends Phaser.Scene {
 
     const spacing = 36;
     for (let i = 0; i < cfg.standsCount; i++) {
-      const sx = cfg.startX + (i % 3) * spacing;
-      const sy = cfg.startY + Math.floor(i / 3) * spacing;
+      let sx = cfg.startX + (i % 3) * spacing;
+      let sy = cfg.startY + Math.floor(i / 3) * spacing;
 
-      const container = this.add.container(sx, sy);
+      // Safe deployment check: if initial stand position overlaps an impassable building, nudge outward to clear ground
+      const bOverlap = this.getBuildingAt(sx, sy);
+      if (bOverlap) {
+        if (cfg.faction === 'IMPERIUM') {
+          sy = Math.min(BOARD_H - 45, bOverlap.y + bOverlap.h + 24 + Math.floor(i / 3) * spacing);
+        } else {
+          sy = Math.max(45, bOverlap.y - 24 - Math.floor(i / 3) * spacing);
+        }
+      }
+
+      const container = this.add.container(sx, sy).setDepth(60);
       container.setSize(cfg.baseW + 12, cfg.baseH + 12);
       container.setInteractive({ draggable: true });
 
