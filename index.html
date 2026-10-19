@@ -11238,12 +11238,26 @@ class NetEpicScene extends Phaser.Scene {
 
     const facingDeg = Math.round(((Phaser.Math.RadToDeg(focusTitan.facingRad || 0) + 360) % 360));
     const compass = facingDeg >= 225 && facingDeg < 315 ? 'NORTH ▲' : (facingDeg >= 45 && facingDeg < 135 ? 'SOUTH ▼' : (facingDeg >= 135 && facingDeg < 225 ? 'WEST ◀' : 'EAST ▶'));
-    const salvosLeft = Math.max(0, (focusTitan.maxSalvos || 1) - (focusTitan.salvosFired || 0));
+    const maxS = focusTitan.maxSalvos || 1;
+    const firedS = focusTitan.salvosFired || 0;
+    const salvosLeft = Math.max(0, maxS - firedS);
+    let salvoPipsHtml = '<div style="margin-top:4px; display:flex; gap:4px; flex-wrap:wrap;">';
+    for (let i = 0; i < maxS; i++) {
+      const isReady = i >= firedS;
+      const salvoName = this.getSalvoWeaponName ? this.getSalvoWeaponName(focusTitan, i) : `Salvo ${i + 1}`;
+      const dice = Math.max(1, Math.round((focusTitan.weapon ? focusTitan.weapon.dice : 6) / maxS));
+      salvoPipsHtml += `<span class="vp-box" style="font-size:0.65rem; padding:2px 6px; background:${isReady ? '#0369a1' : '#1e293b'}; color:${isReady ? '#38bdf8' : '#64748b'}; border:1px solid ${isReady ? '#0284c7' : '#334155'};">
+        ${isReady ? '●' : '○'} Salvo ${i + 1}: ${salvoName} (${dice}d) [${isReady ? 'READY' : 'FIRED'}]
+      </span>`;
+    }
+    salvoPipsHtml += '</div>';
+
     const dmgHistory = (focusTitan.damageLog && focusTitan.damageLog.length > 0)
       ? `<div style="color:#fca5a5; margin-top:2px;">💥 Hits Taken: ${focusTitan.damageLog.join(' | ')}</div>`
       : '';
     wpnEl.innerHTML =
-      `<div>🧭 <b>Facing:</b> ${compass} (180° Front Arc) | 🎯 <b>Weapon Salvos Ready:</b> ${salvosLeft}/${focusTitan.maxSalvos || 1} | ⚔️ <b>CAF:</b> ${focusTitan.damageState === 'HEAVY' ? Math.floor(focusTitan.caf / 2) : focusTitan.caf}</div>` +
+      `<div>🧭 <b>Facing:</b> ${compass} (180° Front Arc) | 🎯 <b>Weapon Salvos Ready:</b> ${salvosLeft}/${maxS} | ⚔️ <b>CAF:</b> ${focusTitan.damageState === 'HEAVY' ? Math.floor(focusTitan.caf / 2) : focusTitan.caf}</div>` +
+      salvoPipsHtml +
       dmgHistory;
   }
 
@@ -13356,6 +13370,39 @@ class NetEpicScene extends Phaser.Scene {
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
 
+  // Derive thematic weapon system name for Titan / Super-Heavy salvos
+  getSalvoWeaponName(det, salvoIdx = 0) {
+    if (!det) return 'Weapon System';
+    const maxS = det.maxSalvos || 1;
+    const rawName = (det.weapon && det.weapon.name) ? det.weapon.name : 'Heavy Weapon';
+    const parts = rawName.split(/&|,|\band\b/i).map(s => s.trim()).filter(Boolean);
+
+    if (parts.length >= maxS && parts[salvoIdx]) {
+      return parts[salvoIdx];
+    }
+
+    if (det.isTitan) {
+      if (maxS === 3) {
+        const mounts = ['Left Arm Mount', 'Right Arm Mount', 'Carapace Battery'];
+        if (parts[salvoIdx]) return `${mounts[salvoIdx]} (${parts[salvoIdx]})`;
+        if (salvoIdx === 0 && parts[0]) return `Left Arm (${parts[0]})`;
+        if (salvoIdx === 1 && parts[1]) return `Right Arm (${parts[1]})`;
+        return mounts[salvoIdx];
+      } else if (maxS === 2) {
+        const mounts = ['Primary Arm Mount', 'Secondary Arm Mount'];
+        if (parts[salvoIdx]) return `${mounts[salvoIdx]} (${parts[salvoIdx]})`;
+        return mounts[salvoIdx];
+      }
+    } else if (det.superHeavy) {
+      const mounts = ['Main Turret Battery', 'Sponson & Secondary Weapons'];
+      if (parts[salvoIdx]) return `${mounts[salvoIdx]} (${parts[salvoIdx]})`;
+      return mounts[salvoIdx] || `Weapon System ${salvoIdx + 1}`;
+    }
+
+    if (parts[salvoIdx]) return parts[salvoIdx];
+    return `Weapon System ${salvoIdx + 1}`;
+  }
+
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
     if (!firerDet || !targetDet || firerDet.embarkedOn || targetDet.embarkedOn || firerDet.inReserve || targetDet.inReserve) {
@@ -13448,7 +13495,27 @@ class NetEpicScene extends Phaser.Scene {
       sol.barrageStats = this.getBarrageStats(sol.totalBp, firerDet.weapon.tsm);
     }
     const dicePerStand = isSalvoUnit ? Math.max(1, Math.round(firerDet.weapon.dice * salvoFrac)) : firerDet.weapon.dice;
-    const salvoTag = isSalvoUnit ? ` [Weapon Salvo${salvosUsed > 1 ? 's' : ''} ${(firerDet.salvosFired || 0) + 1}${salvosUsed > 1 ? `–${(firerDet.salvosFired || 0) + salvosUsed}` : ''}/${firerDet.maxSalvos}]` : (split ? ' [Split Fire: 1 stand]' : '');
+
+    let salvoTag = '';
+    let shotDesc = '';
+    if (isSalvoUnit) {
+      if (split) {
+        const salvoIdx = firerDet.salvosFired || 0;
+        const salvoWpn = this.getSalvoWeaponName(firerDet, salvoIdx);
+        salvoTag = ` [Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: ${salvoWpn}]`;
+        shotDesc = `Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: <b>${salvoWpn}</b> (${dicePerStand} dice)`;
+      } else {
+        salvoTag = ` [All ${salvosUsed} Salvos (${salvosUsed * dicePerStand} dice)]`;
+        shotDesc = `<b>All ${salvosUsed} Weapon Salvos</b> (${firerDet.weapon.name}, ${salvosUsed * dicePerStand} dice)`;
+      }
+    } else if (split) {
+      const standIdx = firerDet.stands.indexOf(sol.validPairs[0].shooter) + 1;
+      salvoTag = ` [Split Fire: Stand #${standIdx}]`;
+      shotDesc = `Stand #${standIdx} (${firerDet.weapon.name}, ${dicePerStand} dice) [Split Fire]`;
+    } else {
+      const totalDiceEst = sol.validPairs.length * dicePerStand;
+      shotDesc = `Full Volley (${sol.validPairs.length} stands, ${totalDiceEst} dice)`;
+    }
 
     // Dice Tray collectors
     const hitDiceUI = [];
@@ -13648,7 +13715,7 @@ class NetEpicScene extends Phaser.Scene {
 
     const dmgPenNote = firerDet.toHitPenalty ? ` [Damaged ${firerDet.toHitPenalty} Hit]` : '';
     const popNote = firerDet.poppedUp ? ' [🚀 POP-UP]' : '';
-    this.log(`🔥 <b>${firerDet.name}</b>${popNote} fires <i>${wpn.name}</i> (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
+    this.log(`🔥 <b>${firerDet.name}</b>${popNote} unleashes ${shotDesc} (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
 
     sol.validPairs.forEach(pair => {
       if (targetDet.stands.length === 0) return;
@@ -15601,7 +15668,15 @@ class NetEpicScene extends Phaser.Scene {
     } else {
       // Remaining stands / weapon salvos can now pick another target
       this.targetDetachment = null;
-      this.log(`🎯 <b>${firer.name}</b> still has ${firer.maxSalvos > 1 ? `${firer.maxSalvos - firer.salvosFired} weapon salvo(s)` : `${firer.stands.filter(s => !firer.standsFired.has(s.id)).length} stand(s)`} ready — tap another enemy (or click Done).`);
+      if (firer.maxSalvos > 1) {
+        const nextSalvoIdx = firer.salvosFired || 0;
+        const nextWpn = this.getSalvoWeaponName(firer, nextSalvoIdx);
+        const remSalvos = firer.maxSalvos - nextSalvoIdx;
+        this.log(`🎯 <b>${firer.name}</b> still has <b>${remSalvos} weapon salvo(s)</b> ready! Next up: <b>${nextWpn}</b> — tap another enemy target (or click Done/Skip).`);
+      } else {
+        const remStands = firer.stands.filter(s => !(firer.standsFired && firer.standsFired.has(s.id))).length;
+        this.log(`🎯 <b>${firer.name}</b> still has <b>${remStands} stand(s)</b> ready to fire — tap another enemy target (or click Done/Skip).`);
+      }
       this.drawOverlays();
       this.updateUI();
     }
@@ -16003,7 +16078,26 @@ class NetEpicScene extends Phaser.Scene {
         });
       }
 
+      const activeSplitShooter = (sol.validPairs.length > 0 && !firer.isTitan && !firer.superHeavy)
+        ? sol.validPairs[0].shooter
+        : null;
+
       firer.stands.forEach(shooter => {
+        // If this stand has already fired during split fire, do NOT draw firing rays from it!
+        if (firer.standsFired && firer.standsFired.has(shooter.id)) {
+          this.overlayGfx.lineStyle(1.5, 0x64748b, 0.4);
+          this.overlayGfx.strokeCircle(shooter.container.x, shooter.container.y, 14);
+          return;
+        }
+
+        // Highlight the specific stand primed for the next Split Fire shot
+        if (shooter === activeSplitShooter) {
+          this.overlayGfx.lineStyle(2.5, 0x38bdf8, 1);
+          this.overlayGfx.strokeCircle(shooter.container.x, shooter.container.y, 20);
+          this.overlayGfx.lineStyle(1.5, 0xfde047, 0.95);
+          this.overlayGfx.strokeCircle(shooter.container.x, shooter.container.y, 16);
+        }
+
         if (target.stands.length === 0) return;
         let chosen = target.stands[0];
         let bestCheck = this.checkStandLoS(shooter, chosen);
@@ -16450,9 +16544,17 @@ class NetEpicScene extends Phaser.Scene {
           if (canSplit && btnSplit) {
             btnSplit.style.display = 'block';
             btnSplit.disabled = false;
-            btnSplit.innerText = isSalvoUnit
-              ? `🎯 Fire 1 Salvo (${(this.activatingDetachment.salvosFired || 0) + 1}/${this.activatingDetachment.maxSalvos})`
-              : `🎯 Split Fire (1 Stand)`;
+            if (isSalvoUnit) {
+              const nextIdx = this.activatingDetachment.salvosFired || 0;
+              const wName = this.getSalvoWeaponName(this.activatingDetachment, nextIdx);
+              const salvoDice = Math.max(1, Math.round(this.activatingDetachment.weapon.dice / this.activatingDetachment.maxSalvos));
+              btnSplit.innerText = `🎯 Fire Salvo ${nextIdx + 1}/${this.activatingDetachment.maxSalvos}: ${wName} (${salvoDice}d)`;
+            } else {
+              const activeShooter = sol.validPairs[0].shooter;
+              const standIdx = this.activatingDetachment.stands.indexOf(activeShooter) + 1;
+              const standDice = this.activatingDetachment.weapon.dice;
+              btnSplit.innerText = `🎯 Split Fire: Stand #${standIdx} (${standDice}d)`;
+            }
           } else if (btnSplit) {
             btnSplit.style.display = 'none';
           }
@@ -16461,10 +16563,17 @@ class NetEpicScene extends Phaser.Scene {
             const modeTag = sol.isIndirect ? '📡 INDIRECT (-1 Hit)' : '💥 DIRECT';
             btnFire.innerText = `${modeTag} Barrage at ${this.targetDetachment.name} (${sol.totalBp} BP → ${sol.templateTargets.length} stands under 6cm template!)`;
           } else {
-            const salvoInfo = isSalvoUnit ? ` (All ${salvosRemaining} Salvos)` : '';
-            btnFire.innerText = sol.validPairs.length > 0
-              ? `🔥 Fire at ${this.targetDetachment.name} (${sol.validPairs.length} stands in LoS)${salvoInfo}`
-              : `🚫 No LoS / Out of Range/Arc to ${this.targetDetachment.name}`;
+            if (isSalvoUnit) {
+              const allDice = Math.max(1, Math.round(this.activatingDetachment.weapon.dice * (salvosRemaining / this.activatingDetachment.maxSalvos)));
+              btnFire.innerText = sol.validPairs.length > 0
+                ? `🔥 Fire All Remaining Weapons (${salvosRemaining} Salvo${salvosRemaining > 1 ? 's' : ''}, ${allDice}d) at ${this.targetDetachment.name}`
+                : `🚫 No LoS / Out of Arc to ${this.targetDetachment.name}`;
+            } else {
+              const totalRollDice = sol.validPairs.length * this.activatingDetachment.weapon.dice;
+              btnFire.innerText = sol.validPairs.length > 0
+                ? `🔥 Fire Full Volley (${sol.validPairs.length} Stand${sol.validPairs.length > 1 ? 's' : ''}, ${totalRollDice}d) at ${this.targetDetachment.name}`
+                : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+            }
           }
           promptText.innerText = sol.isBarrage
             ? `Orange 6cm Circle = Barrage Template | Orange ray = Indirect Fire (-1 Hit) | Green ray = Direct LoS`
