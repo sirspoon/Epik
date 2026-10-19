@@ -23880,6 +23880,93 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
+  // Calculate safe, legal Drop Zone for AI Deep Strike / Teleport detachments
+  findSafeAIDeepStrikeLocation(det) {
+    const count = det.stands.length;
+    // Adapt columns to detachment size so formations are compact rectangles rather than long lines
+    const cols = count > 14 ? 5 : (count > 8 ? 4 : (count > 3 ? 3 : count));
+    const standW = (det.stands[0] && det.stands[0].baseW) || 22;
+    const standH = (det.stands[0] && det.stands[0].baseH) || 22;
+    const spacingX = Math.max(standW + 6, 28);
+    const spacingY = Math.max(standH + 6, 28);
+    const homeDirY = det.faction === 'IMPERIUM' ? 1 : -1; // Toward friendly deployment edge
+    const minGap = MIN_ENEMY_GAP_PX + 6; // Safe buffer above minimum 34px threshold
+
+    const enemyStands = [];
+    this.detachments.forEach(d => {
+      if (d.faction !== det.faction && d.stands.length > 0 && !d.embarkedOn && !d.inReserve) {
+        d.stands.forEach(s => enemyStands.push(s));
+      }
+    });
+
+    const computePositions = (cx, cy) => {
+      const positions = [];
+      for (let i = 0; i < count; i++) {
+        const col = (i % cols) - (cols - 1) / 2;
+        const row = Math.floor(i / cols);
+        const sx = Phaser.Math.Clamp(cx + col * spacingX, 35, BOARD_W - 35);
+        const sy = Phaser.Math.Clamp(cy + row * spacingY * homeDirY, 35, BOARD_H - 35);
+        positions.push({ x: sx, y: sy });
+      }
+      return positions;
+    };
+
+    const isValid = (positions) => {
+      for (let i = 0; i < positions.length; i++) {
+        const p = positions[i];
+        if (p.x < 35 || p.x > BOARD_W - 35 || p.y < 35 || p.y > BOARD_H - 35) return false;
+        if (!det.jump && !det.skimmer && this.isPointInImpassableRiver(p.x, p.y)) return false;
+        if (det.pinningClass > 1 && this.getBuildingAt(p.x, p.y)) return false;
+        if (det.order !== 'CHARGE') {
+          for (let e = 0; e < enemyStands.length; e++) {
+            const es = enemyStands[e];
+            const d = Phaser.Math.Distance.Between(p.x, p.y, es.container.x, es.container.y);
+            if (d < minGap) return false;
+          }
+        }
+      }
+      return true;
+    };
+
+    const candidateCenters = [];
+    // Prioritize unowned/enemy objectives first
+    const sortedObjs = [...this.objectives].sort((a, b) => {
+      const aEnemy = a.owner !== det.faction ? 1 : 0;
+      const bEnemy = b.owner !== det.faction ? 1 : 0;
+      return bEnemy - aEnemy;
+    });
+
+    for (const obj of sortedObjs) {
+      for (let dist = 60; dist <= 240; dist += 30) {
+        const baseAngle = det.faction === 'IMPERIUM' ? Math.PI / 2 : -Math.PI / 2;
+        for (let aIdx = 0; aIdx < 12; aIdx++) {
+          const ang = baseAngle + (aIdx === 0 ? 0 : (aIdx % 2 === 1 ? 1 : -1) * Math.ceil(aIdx / 2) * (Math.PI / 6));
+          const cx = Phaser.Math.Clamp(obj.x + Math.cos(ang) * dist, 60, BOARD_W - 60);
+          const cy = Phaser.Math.Clamp(obj.y + Math.sin(ang) * dist, 60, BOARD_H - 60);
+          candidateCenters.push({ x: cx, y: cy, targetObj: obj, distToObj: dist });
+        }
+      }
+    }
+
+    // Midfield tactical positions if objectives are heavily packed
+    for (let gx = 150; gx <= BOARD_W - 150; gx += 120) {
+      for (let gy = 120; gy <= BOARD_H - 120; gy += 100) {
+        candidateCenters.push({ x: gx, y: gy, targetObj: null, distToObj: 999 });
+      }
+    }
+
+    for (const cand of candidateCenters) {
+      const positions = computePositions(cand.x, cand.y);
+      if (isValid(positions)) {
+        return { center: { x: cand.x, y: cand.y }, positions };
+      }
+    }
+
+    // Ultimate fallback: AI deployment zone
+    const fbY = det.faction === 'IMPERIUM' ? BOARD_H - 120 : 120;
+    return { center: { x: BOARD_W / 2, y: fbY }, positions: computePositions(BOARD_W / 2, fbY) };
+  }
+
   executeAIMove() {
     const unmoved = this.detachments.filter(d => d.faction === this.activePlayer && d.stands.length > 0 && !d.moved && !d.embarkedOn);
     if (unmoved.length === 0) return;
@@ -23931,29 +24018,16 @@ class NetEpicScene extends Phaser.Scene {
       det.inReserve = false;
       det.stands.forEach(s => s.container.setAlpha(1));
 
-      // Choose an unowned/enemy Objective or flank position to Deep Strike onto!
-      let dropX = BOARD_W / 2;
-      let dropY = BOARD_H / 2;
-      const targetObjs = this.objectives.filter(o => o.owner !== det.faction);
-      if (targetObjs.length > 0) {
-        const chosenObj = targetObjs[Phaser.Math.Between(0, targetObjs.length - 1)];
-        const offsetDir = det.faction === 'ORKS' ? -55 : 55;
-        dropX = chosenObj.x + Phaser.Math.Between(-45, 45);
-        dropY = chosenObj.y + offsetDir;
-      }
-
-      const cols = Math.min(3, Math.ceil(det.stands.length / 2));
-      const spacing = 32;
-      const dirY = det.faction === 'IMPERIUM' ? 1 : -1;
-      det.stands.forEach((s, i) => {
-        const col = (i % cols) - (cols - 1) / 2;
-        const row = Math.floor(i / cols);
-        s.container.x = Phaser.Math.Clamp(dropX + col * spacing, 35, BOARD_W - 35);
-        s.container.y = Phaser.Math.Clamp(dropY + row * spacing * dirY, 35, BOARD_H - 35);
+      const dropData = this.findSafeAIDeepStrikeLocation(det);
+      dropData.positions.forEach((pos, i) => {
+        if (det.stands[i]) {
+          det.stands[i].container.x = pos.x;
+          det.stands[i].container.y = pos.y;
+        }
       });
 
       this.updateDetachmentBadgePos(det);
-      this.panCameraTo(dropX, dropY, 700);
+      this.panCameraTo(dropData.center.x, dropData.center.y, 700);
       this.drawOverlays();
 
       this.aiTimerPending = true;
@@ -24026,7 +24100,7 @@ class NetEpicScene extends Phaser.Scene {
           anchorY = s.container.y;
         });
 
-        if (!this.checkTerrainMoveRule(det)) {
+        if (!this.checkTerrainMoveRule(det) || !this.checkCoherency(det)) {
           this.undoDetachmentMove();
         } else {
           this.animateAIMoveAndConfirm(det, null, true);
@@ -24167,18 +24241,23 @@ class NetEpicScene extends Phaser.Scene {
       s.dragStartY = s.container.y;
     });
 
+    let foundValid = false;
     // Try scales from 1.0 down to 0.0 to find the furthest valid group move that respects maxMovePx, coherency, MIN_ENEMY_GAP_PX, and terrain rules
     for (let step = 10; step >= 0; step--) {
       const scale = step / 10;
       let tdx = dx * scale;
       let tdy = dy * scale;
 
+      let minDx = -Infinity, maxDx = Infinity;
+      let minDy = -Infinity, maxDy = Infinity;
       movable.forEach(s => {
-        if (s.dragStartX + tdx < 18) tdx = 18 - s.dragStartX;
-        if (s.dragStartX + tdx > BOARD_W - 18) tdx = (BOARD_W - 18) - s.dragStartX;
-        if (s.dragStartY + tdy < 18) tdy = 18 - s.dragStartY;
-        if (s.dragStartY + tdy > BOARD_H - 18) tdy = (BOARD_H - 18) - s.dragStartY;
+        minDx = Math.max(minDx, 18 - s.dragStartX);
+        maxDx = Math.min(maxDx, (BOARD_W - 18) - s.dragStartX);
+        minDy = Math.max(minDy, 18 - s.dragStartY);
+        maxDy = Math.min(maxDy, (BOARD_H - 18) - s.dragStartY);
       });
+      tdx = Phaser.Math.Clamp(tdx, minDx, maxDx);
+      tdy = Phaser.Math.Clamp(tdy, minDy, maxDy);
 
       movable.forEach(s => {
         s.container.x = s.dragStartX + tdx;
@@ -24196,8 +24275,16 @@ class NetEpicScene extends Phaser.Scene {
       );
 
       if (withinAllowance && coherent && engageOk && terrainOk && pinnedOk) {
+        foundValid = true;
         break;
       }
+    }
+
+    if (!foundValid) {
+      movable.forEach(s => {
+        s.container.x = s.dragStartX;
+        s.container.y = s.dragStartY;
+      });
     }
 
     this.syncEmbarkedPassengers(det);
@@ -24391,6 +24478,11 @@ class NetEpicScene extends Phaser.Scene {
     const det = this.activatingDetachment;
     if (!det) return;
     if (this.isRotatingGizmo) this.closeRotationGizmo();
+    if (this.isFactionAI(det.faction) && det.deepStrikeActive) {
+      det.deepStrikeActive = false;
+      det.inReserve = true;
+      det.stands.forEach(s => s.container.setAlpha(0.75));
+    }
     det.stands.forEach(s => {
       s.container.x = s.originX;
       s.container.y = s.originY;
@@ -24437,8 +24529,19 @@ class NetEpicScene extends Phaser.Scene {
           !this.checkEngagementMoveRule(det) ||
           !this.checkFallBackMoveRule(det) ||
           !this.checkTerrainMoveRule(det)) {
+        console.warn(`[AI Safety] Move failed validation for ${det.name} (${det.order}). Reverting safely.`);
+        if (det.deepStrikeActive) {
+          det.deepStrikeActive = false;
+          det.deepStrikeUsed = true;
+          det.inReserve = false;
+        }
         this.undoDetachmentMove();
         det.moved = true;
+        const alerts = ['engagement-alert', 'coherency-alert', 'fallback-alert', 'terrain-alert'];
+        alerts.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
         this.finishMovementActivation();
         return;
       }
@@ -24607,6 +24710,12 @@ class NetEpicScene extends Phaser.Scene {
   finishMovementActivation() {
     this.activatingDetachment = null;
     this.selectedDetachment = null;
+
+    const alerts = ['engagement-alert', 'coherency-alert', 'fallback-alert', 'terrain-alert'];
+    alerts.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
 
     const otherSide = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
     const otherHasMove = this.detachments.some(d => d.faction === otherSide && d.stands.length > 0 && !d.moved && !d.embarkedOn);
