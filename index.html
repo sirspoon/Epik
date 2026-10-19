@@ -624,7 +624,8 @@
       <div id="deployment-controls" class="btn-row" style="display:none;">
         <button id="btn-deploy-group" onclick="window.gameScene.toggleGroupMove()">🔗 Group Move: ON (Double-Click)</button>
         <button onclick="window.gameScene.compactSelectedDetachment()">📐 Tight Formation</button>
-        <button onclick="window.gameScene.rotateSelectedFacing()" title="Rotate unit 45° to orient 180° Forward Firing Arc">🔄 Rotate Facing (45°)</button>
+        <button onclick="window.gameScene.rotateSelectedFacing()" title="Rotate unit (Hold unit on battlefield or click here to open Interactive Rotation Dial)">🔄 Rotate Facing (Dial)</button>
+        <button id="btn-deploy-separate" onclick="window.gameScene.resolveDetachmentSpacing()" title="Auto-space stands to prevent physical base overlap">🛡️ Auto-Space Bases</button>
         <button id="btn-deploy-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-deploy-reserve" class="btn-cc" onclick="window.gameScene.toggleReserveStatus()" style="display:none;">☄️ Hold in Orbital Reserve (Deep Strike)</button>
         <button class="btn-confirm" onclick="window.gameScene.finishDeploymentPhase()">⚔️ Lock Deployment & Start Turn 1 (Orders Phase)</button>
@@ -645,7 +646,8 @@
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
         <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔗 Group Move: OFF (Double-Click)</button>
         <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight Formation</button>
-        <button id="btn-move-rotate" onclick="window.gameScene.rotateSelectedFacing()" style="display:none;" title="Pivot unit 45° to orient 180° Forward Firing Arc">🔄 Pivot Facing (45°)</button>
+        <button id="btn-move-rotate" onclick="window.gameScene.rotateSelectedFacing()" style="display:none;" title="Hold unit on battlefield or click here to open the Interactive Rotation Dial">🔄 Rotate Facing (Dial)</button>
+        <button id="btn-move-separate" onclick="window.gameScene.resolveDetachmentSpacing()" style="display:none;" title="Auto-space stands to prevent physical base overlap">🛡️ Auto-Space Bases</button>
         <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-move-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
         <button id="btn-move-deepstrike" class="btn-cc" onclick="window.gameScene.triggerDeepStrikeMode()" style="display:none;">☄️ Deep Strike / Teleport Anywhere!</button>
@@ -15035,6 +15037,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- PHASE 8: ROADS (+5CM MOVE), RIVERS/BRIDGES & BUILDING GARRISON HELPERS ---
   isPointOnRoad(x, y) {
+    if (!this.roads || this.roads.length === 0) return false;
     for (const rd of this.roads) {
       const l2 = Phaser.Math.Distance.Squared(rd.x1, rd.y1, rd.x2, rd.y2);
       let t = 0;
@@ -16194,6 +16197,10 @@ class NetEpicScene extends Phaser.Scene {
       deepStrikeUsed: false,
       deepStrikeActive: false,
       facingRad: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2, // South side faces North, North side faces South
+      startMoveFacing: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2,
+      isTitan: Boolean(cfg.isTitan),
+      isPraetorian: Boolean(cfg.isPraetorian || cfg.praetorian || (cfg.superHeavy && cfg.command)),
+      isAgile: Boolean(cfg.agile || (cfg.faction === 'ELDAR' && cfg.isTitan)),
       hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy || cfg.hasFireArc || (cfg.weapon && cfg.weapon.pulsaRokkit)),
       fireArcDeg: cfg.fireArcDeg || (cfg.weapon && cfg.weapon.pulsaRokkit ? 30 : 180),
       rokkitsRemaining: cfg.rokkitsRemaining !== undefined ? cfg.rokkitsRemaining : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
@@ -16308,6 +16315,8 @@ class NetEpicScene extends Phaser.Scene {
       container.add(items);
 
       const sCfg = (cfg.standConfigs && cfg.standConfigs[i]) || null;
+      const baseW = cfg.baseW || 22;
+      const baseH = cfg.baseH || 22;
       const standObj = {
         id: `${cfg.id}_s${i}`,
         label: sCfg ? sCfg.label : (cfg.isTitan ? 'TITAN' : (cfg.superHeavy ? 'HULL' : `#${i + 1}`)),
@@ -16316,6 +16325,11 @@ class NetEpicScene extends Phaser.Scene {
         detachment: det,
         container,
         baseBg,
+        baseW,
+        baseH,
+        baseRadius: Math.max(baseW, baseH) * 0.5,
+        facingRad: det.facingRad || 0,
+        startMoveFacing: det.facingRad || 0,
         pip,
         topDownSprite,
         geoDetails,
@@ -16834,17 +16848,300 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
-  // --- PHASE 12: FACING & 180° FRONT FIRE ARCS (Titans & Super-Heavies; Infantry & standard vehicles fire 360°) ---
+  // --- PHASE 12: FACING, NETEPIC TURN RULES, TOUCH ROTATION GIZMO & BASE SPACING ---
   applyStandFacing(det) {
     if (!det) return;
     const baseRot = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2; // Model art "front" in local space
-    det.stands.forEach(s => { if (s.container) s.container.rotation = (det.facingRad || 0) - baseRot; });
+    det.stands.forEach(s => {
+      const standFacing = s.facingRad !== undefined ? s.facingRad : (det.facingRad || 0);
+      if (s.container) s.container.rotation = standFacing - baseRot;
+    });
   }
 
   setDetachmentFacing(det, rad) {
     if (!det) return;
-    det.facingRad = Phaser.Math.Angle.Wrap(rad);
+    const oldFacing = det.facingRad || 0;
+    const newFacing = Phaser.Math.Angle.Wrap(rad);
+    const delta = Phaser.Math.Angle.Wrap(newFacing - oldFacing);
+    det.facingRad = newFacing;
+    det.stands.forEach(s => {
+      s.facingRad = Phaser.Math.Angle.Wrap((s.facingRad !== undefined ? s.facingRad : oldFacing) + delta);
+    });
     this.applyStandFacing(det);
+  }
+
+  setStandFacing(stand, rad) {
+    if (!stand) return;
+    const det = stand.detachment;
+    const baseRot = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2;
+    stand.facingRad = Phaser.Math.Angle.Wrap(rad);
+    if (stand.container) stand.container.rotation = stand.facingRad - baseRot;
+    if (det && det.stands.length === 1) {
+      det.facingRad = stand.facingRad;
+    }
+  }
+
+  getCompassHeading(rad) {
+    const deg = (Phaser.Math.RadToDeg(rad) + 360) % 360;
+    const dirs = ['E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N', 'NNE', 'NE', 'ENE'];
+    const idx = Math.round(deg / 22.5) % 16;
+    return dirs[idx];
+  }
+
+  // NetEpic Gold Rules pp. 19, 44, 47:
+  // - Titans & Praetorians (Imperator, Warlord, Reaver, Warhound, Great Gargant, Slasha Gargant, Banelord):
+  //   Ponderous war engines: maximum 90° total turn during movement!
+  // - Agile Titans (Eldar Phantom / Warlock): Agile special ability grants unlimited turns (360° free).
+  // - Vehicles: At the end of movement, must face direction of travel but may make a 45° correction.
+  // - Stationary Vehicles: Free pivot.
+  // - Infantry: 360° all-around vision & movement; free facing.
+  getTurnLimits(det) {
+    const isDeploy = this.phase === 'DEPLOYMENT';
+    if (isDeploy) {
+      return { type: 'FREE', maxTurnDeg: 360, arcHalfDeg: 180, label: 'DEPLOYMENT: 360° FREE' };
+    }
+
+    const isTitanOrPraetorian = Boolean(det.isTitan || det.isPraetorian);
+    const isAgile = Boolean(det.isAgile || (det.faction === 'ELDAR' && det.isTitan));
+
+    if (isTitanOrPraetorian) {
+      if (isAgile) {
+        return { type: 'AGILE_TITAN', maxTurnDeg: 360, arcHalfDeg: 180, label: 'AGILE TITAN: UNLIMITED TURNS' };
+      }
+      return {
+        type: 'TITAN_90',
+        maxTurnDeg: 90,
+        arcHalfDeg: 45, // +/- 45° from start facing = 90° total turning cone
+        baseAngle: det.startMoveFacing !== undefined ? det.startMoveFacing : (det.facingRad || 0),
+        label: 'TITAN / GARGANT: 90° MAX TURN'
+      };
+    }
+
+    const didTravel = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 10);
+    if (det.hasFireArc && didTravel) {
+      let dx = 0, dy = 0;
+      det.stands.forEach(s => { dx += s.container.x - s.originX; dy += s.container.y - s.originY; });
+      const travelAngle = Math.atan2(dy, dx);
+      return {
+        type: 'VEHICLE_45',
+        maxTurnDeg: 90,
+        arcHalfDeg: 45, // NetEpic Gold p. 19: 45° correction at end of travel
+        baseAngle: travelAngle,
+        label: 'VEHICLE MOVE: ±45° CORRECTION'
+      };
+    }
+
+    if (det.hasFireArc) {
+      return { type: 'VEHICLE_PIVOT', maxTurnDeg: 360, arcHalfDeg: 180, label: 'STATIONARY PIVOT: 360°' };
+    }
+
+    return { type: 'INFANTRY_FREE', maxTurnDeg: 360, arcHalfDeg: 180, label: 'INFANTRY: 360° FREE FACING' };
+  }
+
+  clampAngleToTurnLimits(det, targetAngle) {
+    const limits = this.getTurnLimits(det);
+    if (limits.type === 'FREE' || limits.type === 'AGILE_TITAN' || limits.type === 'VEHICLE_PIVOT' || limits.type === 'INFANTRY_FREE') {
+      return { angle: Phaser.Math.Angle.Wrap(targetAngle), clamped: false, limits };
+    }
+
+    const baseAngle = limits.baseAngle !== undefined ? limits.baseAngle : (det.startMoveFacing || 0);
+    const maxDiff = Phaser.Math.DegToRad(limits.arcHalfDeg);
+    let diff = Phaser.Math.Angle.Wrap(targetAngle - baseAngle);
+
+    let clamped = false;
+    if (Math.abs(diff) > maxDiff) {
+      clamped = true;
+      diff = Math.sign(diff) * maxDiff;
+    }
+
+    return {
+      angle: Phaser.Math.Angle.Wrap(baseAngle + diff),
+      clamped,
+      limits
+    };
+  }
+
+  // --- TOUCH / POINTER HOLD-TO-ROTATE GIZMO ---
+  startHoldRotateTimer(stand, pointer) {
+    this.cancelHoldRotateTimer();
+    if (!stand || !stand.detachment || this.isFactionAI(stand.detachment.faction)) return;
+    this.holdRotateStand = stand;
+    this.holdRotateStartX = pointer.worldX;
+    this.holdRotateStartY = pointer.worldY;
+    this.holdRotateTimer = setTimeout(() => {
+      this.openRotationGizmo(stand);
+    }, 380);
+  }
+
+  cancelHoldRotateTimer() {
+    if (this.holdRotateTimer) {
+      clearTimeout(this.holdRotateTimer);
+      this.holdRotateTimer = null;
+    }
+  }
+
+  openRotationGizmo(stand) {
+    if (!stand || !stand.detachment) return;
+    const det = stand.detachment;
+    if (this.isFactionAI(det.faction)) return;
+    const allowed = this.phase === 'DEPLOYMENT' || (this.phase === 'MOVEMENT' && this.activatingDetachment === det);
+    if (!allowed) return;
+
+    this.cancelHoldRotateTimer();
+    this.isDraggingStand = false;
+    this.isRotatingGizmo = true;
+    this.rotatingStand = stand;
+    this.rotatingDetachment = det;
+
+    const currentAngle = stand.facingRad !== undefined ? stand.facingRad : (det.facingRad || 0);
+    this.gizmoInitialAngle = currentAngle;
+    this.gizmoLastAngle = currentAngle;
+
+    if (!this.rotationGizmoContainer) return;
+    this.rotationGizmoContainer.setPosition(stand.container.x, stand.container.y);
+    this.rotationGizmoContainer.setVisible(true);
+    this.renderRotationGizmoGraphics(currentAngle);
+    this.drawOverlays();
+  }
+
+  closeRotationGizmo() {
+    if (!this.isRotatingGizmo) return;
+    const det = this.rotatingDetachment;
+    const stand = this.rotatingStand;
+
+    this.isRotatingGizmo = false;
+    if (this.rotationGizmoContainer) {
+      this.rotationGizmoContainer.setVisible(false);
+    }
+
+    if (det && stand) {
+      const deg = Math.round(((Phaser.Math.RadToDeg(stand.facingRad || 0) + 360) % 360));
+      const compass = this.getCompassHeading(stand.facingRad || 0);
+      this.spawnFloatingText(stand.container.x, stand.container.y - 32, `🔄 FACING: ${deg}° (${compass})`, '#38bdf8', '11px');
+    }
+
+    this.rotatingStand = null;
+    this.rotatingDetachment = null;
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  handleRotationGizmoDrag(pointer) {
+    if (!this.isRotatingGizmo || !this.rotatingStand) return;
+    const stand = this.rotatingStand;
+    const det = stand.detachment;
+    const cx = stand.container.x;
+    const cy = stand.container.y;
+
+    const rawAngle = Phaser.Math.Angle.Between(cx, cy, pointer.worldX, pointer.worldY);
+    const clampedResult = this.clampAngleToTurnLimits(det, rawAngle);
+    const targetAngle = clampedResult.angle;
+
+    const delta = Phaser.Math.Angle.Wrap(targetAngle - this.gizmoLastAngle);
+    if (Math.abs(delta) < 0.003) return;
+    this.gizmoLastAngle = targetAngle;
+
+    // Preserve individual unit offsets: rotate all stands in formation by delta angle
+    const baseRot = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2;
+    det.stands.forEach(s => {
+      s.facingRad = Phaser.Math.Angle.Wrap((s.facingRad !== undefined ? s.facingRad : (det.facingRad || 0)) + delta);
+      if (s.container) s.container.rotation = s.facingRad - baseRot;
+    });
+    det.facingRad = Phaser.Math.Angle.Wrap((det.facingRad || 0) + delta);
+    det.manualFacing = true;
+
+    this.renderRotationGizmoGraphics(targetAngle, clampedResult);
+    this.drawOverlays();
+  }
+
+  renderRotationGizmoGraphics(angle, clampedResult = null) {
+    if (!this.rotatingStand || !this.gizmoGfx) return;
+    const stand = this.rotatingStand;
+    const det = stand.detachment;
+    const limits = clampedResult ? clampedResult.limits : this.getTurnLimits(det);
+    const isClamped = clampedResult ? clampedResult.clamped : false;
+
+    this.gizmoGfx.clear();
+    const R = 52;
+
+    // 1. Dial Backdrop
+    this.gizmoGfx.fillStyle(0x0f172a, 0.58);
+    this.gizmoGfx.fillCircle(0, 0, R + 6);
+
+    // 2. NetEpic Gold Turning Sector Limits (Titans/Gargants 90° max; Vehicles 45° correction)
+    if (limits.type === 'TITAN_90' || limits.type === 'VEHICLE_45') {
+      const baseAng = limits.baseAngle !== undefined ? limits.baseAngle : (det.startMoveFacing || 0);
+      const halfArc = Phaser.Math.DegToRad(limits.arcHalfDeg);
+
+      // Allowed turning arc in soft tactical green
+      this.gizmoGfx.fillStyle(0x22c55e, 0.22);
+      this.gizmoGfx.slice(0, 0, R, baseAng - halfArc, baseAng + halfArc, false);
+      this.gizmoGfx.fillPath();
+
+      // Blocked / restricted sector in warning red
+      this.gizmoGfx.fillStyle(0xef4444, 0.12);
+      this.gizmoGfx.slice(0, 0, R, baseAng + halfArc, baseAng - halfArc + Math.PI * 2, false);
+      this.gizmoGfx.fillPath();
+
+      // Cone boundary vectors
+      this.gizmoGfx.lineStyle(2, 0x22c55e, 0.85);
+      this.gizmoGfx.lineBetween(0, 0, Math.cos(baseAng - halfArc) * R, Math.sin(baseAng - halfArc) * R);
+      this.gizmoGfx.lineBetween(0, 0, Math.cos(baseAng + halfArc) * R, Math.sin(baseAng + halfArc) * R);
+    }
+
+    // 3. Dial Ring & Cardinal Ticks
+    const ringCol = isClamped ? 0xef4444 : (limits.type === 'TITAN_90' ? 0xfacc15 : 0x38bdf8);
+    this.gizmoGfx.lineStyle(2, ringCol, 0.85);
+    this.gizmoGfx.strokeCircle(0, 0, R);
+
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4;
+      const isMajor = k % 2 === 0;
+      const tLen = isMajor ? 8 : 4;
+      this.gizmoGfx.lineStyle(isMajor ? 2 : 1, 0x94a3b8, 0.7);
+      this.gizmoGfx.lineBetween(
+        Math.cos(a) * (R - tLen), Math.sin(a) * (R - tLen),
+        Math.cos(a) * R, Math.sin(a) * R
+      );
+    }
+
+    // 4. Direction Needle & Heading Knob
+    const needleCol = isClamped ? 0xef4444 : 0x38bdf8;
+    this.gizmoGfx.lineStyle(3, needleCol, 0.95);
+    this.gizmoGfx.lineBetween(
+      Math.cos(angle) * 18, Math.sin(angle) * 18,
+      Math.cos(angle) * R, Math.sin(angle) * R
+    );
+
+    const tipX = Math.cos(angle) * R;
+    const tipY = Math.sin(angle) * R;
+    this.gizmoGfx.fillStyle(needleCol, 1);
+    this.gizmoGfx.fillTriangle(
+      tipX + Math.cos(angle) * 8, tipY + Math.sin(angle) * 8,
+      tipX + Math.cos(angle + 2.4) * 8, tipY + Math.sin(angle + 2.4) * 8,
+      tipX + Math.cos(angle - 2.4) * 8, tipY + Math.sin(angle - 2.4) * 8
+    );
+
+    this.gizmoGfx.fillStyle(isClamped ? 0xef4444 : 0x0284c7, 0.9);
+    this.gizmoGfx.lineStyle(2, 0xffffff, 1);
+    this.gizmoGfx.fillCircle(tipX, tipY, 7);
+    this.gizmoGfx.strokeCircle(tipX, tipY, 7);
+
+    // 5. HUD Readout
+    const deg = Math.round(((Phaser.Math.RadToDeg(angle) + 360) % 360));
+    const compass = this.getCompassHeading(angle);
+    const startFacing = det.startMoveFacing !== undefined ? det.startMoveFacing : angle;
+    const diffDeg = Math.round(Phaser.Math.RadToDeg(Phaser.Math.Angle.Wrap(angle - startFacing)));
+    const diffStr = (diffDeg >= 0 ? '+' : '') + diffDeg + '°';
+
+    const clampWarn = isClamped ? ' ⚠️ LIMIT REACHED' : '';
+    if (this.gizmoText) {
+      this.gizmoText.setText(`${det.name}: ${deg}° (${compass}) [Turn: ${diffStr}]${clampWarn}`);
+      this.gizmoText.setColor(isClamped ? '#f87171' : '#38bdf8');
+    }
+    if (this.gizmoSubText) {
+      this.gizmoSubText.setText(`${limits.label} • Tap ✔ to confirm`);
+    }
   }
 
   rotateSelectedFacing() {
@@ -16852,18 +17149,150 @@ class NetEpicScene extends Phaser.Scene {
     if (!det || det.stands.length === 0 || this.isFactionAI(det.faction)) return;
     const allowed = this.phase === 'DEPLOYMENT' || (this.phase === 'MOVEMENT' && this.activatingDetachment === det);
     if (!allowed) return;
-    this.setDetachmentFacing(det, (det.facingRad || 0) + Math.PI / 4);
-    det.manualFacing = true;
+
+    if (this.isRotatingGizmo) {
+      this.closeRotationGizmo();
+      return;
+    }
+
+    // Open Interactive Rotation Dial centered on primary stand
+    this.openRotationGizmo(det.stands[0]);
+  }
+
+  // --- STAND SPACING & PHYSICAL OVERLAP PREVENTION ---
+  getMinStandDistance(s1, s2, isMeleeContact = false) {
+    const r1 = s1.baseRadius || 11;
+    const r2 = s2.baseRadius || 11;
+    if (isMeleeContact) {
+      return (r1 + r2) * 0.75; // Touch edge-to-edge in Close Combat without stacking into same coordinate
+    }
+    return r1 + r2 + 2; // Physical base clearance
+  }
+
+  checkStandOverlap(stand, testX = null, testY = null) {
+    const x = testX !== null ? testX : stand.container.x;
+    const y = testY !== null ? testY : stand.container.y;
+    const det = stand.detachment;
+    const isCharge = det && det.order === 'CHARGE';
+
+    const collisions = [];
+    for (const otherDet of this.detachments) {
+      if (otherDet.embarkedOn || otherDet.inReserve || otherDet.stands.length === 0) continue;
+      const isEnemy = otherDet.faction !== det.faction;
+
+      for (const os of otherDet.stands) {
+        if (os === stand) continue;
+        const ox = os.container.x, oy = os.container.y;
+        const dist = Phaser.Math.Distance.Between(x, y, ox, oy);
+        const isMeleeContact = isEnemy && isCharge && dist <= (stand.baseRadius + os.baseRadius + 8);
+        const minDist = this.getMinStandDistance(stand, os, isMeleeContact);
+
+        if (dist < minDist) {
+          collisions.push({
+            otherStand: os,
+            otherDet,
+            dist,
+            minDist,
+            isMeleeContact
+          });
+        }
+      }
+    }
+    return {
+      overlapping: collisions.length > 0,
+      collisions
+    };
+  }
+
+  resolveStandOverlap(stand, allowMoveClamp = true) {
+    const det = stand.detachment;
+    const maxMovePx = (this.phase === 'MOVEMENT' && det.order && !det.deepStrikeActive)
+      ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM
+      : Infinity;
+
+    for (let iter = 0; iter < 4; iter++) {
+      const check = this.checkStandOverlap(stand);
+      if (!check.overlapping) break;
+
+      for (const col of check.collisions) {
+        const os = col.otherStand;
+        let dx = stand.container.x - os.container.x;
+        let dy = stand.container.y - os.container.y;
+        let d = Math.hypot(dx, dy);
+
+        if (d < 0.001) {
+          const dispersalAngle = (stand.id ? stand.id.charCodeAt(stand.id.length - 1) : 1) * 1.25;
+          dx = Math.cos(dispersalAngle);
+          dy = Math.sin(dispersalAngle);
+          d = 1;
+        }
+
+        const overlap = col.minDist - d;
+        if (overlap > 0) {
+          const nx = dx / d;
+          const ny = dy / d;
+          let targetX = stand.container.x + nx * (overlap + 1);
+          let targetY = stand.container.y + ny * (overlap + 1);
+
+          if (allowMoveClamp && this.phase === 'MOVEMENT' && maxMovePx < 90000) {
+            const distFromOrig = Phaser.Math.Distance.Between(stand.originX, stand.originY, targetX, targetY);
+            if (distFromOrig > maxMovePx) {
+              const ang = Phaser.Math.Angle.Between(stand.originX, stand.originY, targetX, targetY);
+              targetX = stand.originX + Math.cos(ang) * maxMovePx;
+              targetY = stand.originY + Math.sin(ang) * maxMovePx;
+            }
+          }
+
+          if (this.phase === 'DEPLOYMENT') {
+            const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
+            const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+            targetX = Phaser.Math.Clamp(targetX, 20, BOARD_W - 20);
+            targetY = Phaser.Math.Clamp(targetY, minY, maxY);
+          } else {
+            targetX = Phaser.Math.Clamp(targetX, 18, BOARD_W - 18);
+            targetY = Phaser.Math.Clamp(targetY, 18, BOARD_H - 18);
+          }
+
+          stand.container.x = targetX;
+          stand.container.y = targetY;
+        }
+      }
+    }
+    this.updateDetachmentBadgePos(det);
+  }
+
+  resolveDetachmentSpacing(targetDet = null) {
+    const det = targetDet || this.activatingDetachment || this.selectedDetachment;
+    if (!det || det.stands.length === 0 || this.isFactionAI(det.faction)) return;
+
+    let overlapsFixed = 0;
+    det.stands.forEach(s => {
+      const check = this.checkStandOverlap(s);
+      if (check.overlapping) {
+        this.resolveStandOverlap(s, true);
+        overlapsFixed++;
+      }
+    });
+
+    if (det.stands.length > 1 && !this.checkCoherency(det)) {
+      this.compactSelectedDetachment(det.stands[0]);
+    }
+
     this.drawOverlays();
     this.updateUI();
+
+    if (overlapsFixed > 0) {
+      this.spawnFloatingText(det.stands[0].container.x, det.stands[0].container.y - 30, '🛡️ BASES SPACED', '#38bdf8', '11px');
+    }
   }
 
   isInFireArc(shooterStand, tx, ty) {
     const det = shooterStand.detachment;
     if (!det.hasFireArc) return true;
     const ang = Phaser.Math.Angle.Between(shooterStand.container.x, shooterStand.container.y, tx, ty);
+    const facing = shooterStand.facingRad !== undefined ? shooterStand.facingRad : (det.facingRad || 0);
     const maxHalfArc = (det.fireArcDeg ? Phaser.Math.DegToRad(det.fireArcDeg / 2) : Math.PI / 2) + 0.001;
-    return Math.abs(Phaser.Math.Angle.Wrap(ang - (det.facingRad || 0))) <= maxHalfArc;
+    return Math.abs(Phaser.Math.Angle.Wrap(ang - facing)) <= maxHalfArc;
   }
 
   // Toggle Skimmer Pop-Up Attack (NetEpic Rules p. 22: Skimmers on First Fire can rise above blocking terrain to shoot)
@@ -18185,6 +18614,42 @@ class NetEpicScene extends Phaser.Scene {
     this.input.addPointer(1);
     const cam = this.cameras.main;
 
+    this.isRotatingGizmo = false;
+    this.rotatingStand = null;
+    this.rotatingDetachment = null;
+    this.holdRotateTimer = null;
+    this.holdRotateStand = null;
+    this.holdRotateStartX = 0;
+    this.holdRotateStartY = 0;
+    this.gizmoInitialAngle = 0;
+    this.gizmoLastAngle = 0;
+
+    // Interactive Touch/Mouse Rotation Gizmo Container
+    this.rotationGizmoContainer = this.add.container(0, 0).setDepth(200).setVisible(false);
+    this.gizmoGfx = this.add.graphics();
+    this.gizmoCenterBtn = this.add.container(0, 0);
+    const cBg = this.add.circle(0, 0, 16, 0x0f172a, 0.95).setStrokeStyle(2, 0x22c55e);
+    const cTxt = this.add.text(0, 0, '✔', { fontSize: '13px', fontStyle: 'bold', color: '#22c55e' }).setOrigin(0.5);
+    this.gizmoCenterBtn.add([cBg, cTxt]);
+    this.gizmoCenterBtn.setSize(34, 34);
+    this.gizmoCenterBtn.setInteractive({ useHandCursor: true });
+    this.gizmoCenterBtn.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) event.stopPropagation();
+      this.closeRotationGizmo();
+    });
+
+    this.gizmoText = this.add.text(0, -68, '', {
+      fontSize: '11px', fontStyle: 'bold', backgroundColor: '#0f172a',
+      color: '#38bdf8', padding: { x: 7, y: 3 }
+    }).setOrigin(0.5);
+
+    this.gizmoSubText = this.add.text(0, 66, 'Drag dial to rotate • Tap ✔ to finish', {
+      fontSize: '9px', fontStyle: 'bold', backgroundColor: '#020617',
+      color: '#94a3b8', padding: { x: 5, y: 2 }
+    }).setOrigin(0.5);
+
+    this.rotationGizmoContainer.add([this.gizmoGfx, this.gizmoCenterBtn, this.gizmoText, this.gizmoSubText]);
+
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5));
       this.updateZoomLOD();
@@ -18194,7 +18659,19 @@ class NetEpicScene extends Phaser.Scene {
       if (!gameObject.standData) return;
       const clickedDet = gameObject.standData.detachment;
 
+      if (this.isRotatingGizmo) {
+        this.closeRotationGizmo();
+        return;
+      }
+
       if (this.phase === 'SNAP_INTERRUPT' || this.phase === 'COMBAT_CC' || this.phase === 'END_PHASE') return;
+
+      if (!this.isFactionAI(clickedDet.faction)) {
+        if ((this.phase === 'MOVEMENT' && this.activatingDetachment === clickedDet) ||
+            (this.phase === 'DEPLOYMENT' && clickedDet.faction === this.activePlayer)) {
+          this.startHoldRotateTimer(gameObject.standData, pointer);
+        }
+      }
 
       // Detect Double-Click / Double-Tap (< 380ms on the same detachment) to toggle Group Formation Move!
       const now = Date.now();
@@ -18232,6 +18709,10 @@ class NetEpicScene extends Phaser.Scene {
 
     this.input.on('dragstart', (pointer, gameObject) => {
       if (!gameObject.standData) return;
+      if (this.isRotatingGizmo) {
+        this.isDraggingStand = false;
+        return;
+      }
       const stand = gameObject.standData;
       const det = stand.detachment;
 
@@ -18270,6 +18751,11 @@ class NetEpicScene extends Phaser.Scene {
 
     this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
       if (!gameObject.standData) return;
+      if (this.holdRotateTimer) {
+        const dHold = Phaser.Math.Distance.Between(this.holdRotateStartX, this.holdRotateStartY, pointer.worldX, pointer.worldY);
+        if (dHold > 8) this.cancelHoldRotateTimer();
+      }
+      if (this.isRotatingGizmo) return;
       const stand = gameObject.standData;
       const det = stand.detachment;
       if (this.isFactionAI(det.faction)) return;
@@ -18419,14 +18905,30 @@ class NetEpicScene extends Phaser.Scene {
       this.drawOverlays();
     });
 
-    this.input.on('dragend', () => {
+    this.input.on('dragend', (pointer, gameObject) => {
       this.isDraggingStand = false;
+      if (gameObject && gameObject.standData) {
+        this.resolveStandOverlap(gameObject.standData, true);
+      }
+      if (this.selectedDetachment && this.groupMoveMode) {
+        this.resolveDetachmentSpacing(this.selectedDetachment);
+      }
       this.drawOverlays();
       this.updateUI();
     });
 
     // Allow clicking/tapping any open spot on the battlefield during Deep Strike mode to position the Drop Zone!
+    this.input.on('pointerup', (pointer) => {
+      this.cancelHoldRotateTimer();
+    });
+
     this.input.on('pointerdown', (pointer, currentlyOver) => {
+      if (this.isRotatingGizmo && this.rotatingStand) {
+        const dGizmo = Phaser.Math.Distance.Between(this.rotatingStand.container.x, this.rotatingStand.container.y, pointer.worldX, pointer.worldY);
+        if (dGizmo > 80) {
+          this.closeRotationGizmo();
+        }
+      }
       if (this.phase === 'MOVEMENT' && this.activatingDetachment && this.activatingDetachment.deepStrikeActive &&
           !this.isFactionAI(this.activatingDetachment.faction) && (!currentlyOver || currentlyOver.length === 0)) {
         const det = this.activatingDetachment;
@@ -18447,6 +18949,14 @@ class NetEpicScene extends Phaser.Scene {
 
     this.lastPinchDist = 0;
     this.input.on('pointermove', (pointer) => {
+      if (this.isRotatingGizmo && pointer.isDown) {
+        this.handleRotationGizmoDrag(pointer);
+        return;
+      }
+      if (this.holdRotateTimer) {
+        const dHold = Phaser.Math.Distance.Between(this.holdRotateStartX, this.holdRotateStartY, pointer.worldX, pointer.worldY);
+        if (dHold > 8) this.cancelHoldRotateTimer();
+      }
       if (this.isDraggingStand) return;
       const p1 = this.input.pointer1, p2 = this.input.pointer2;
       if (p1.isDown && p2.isDown) {
@@ -19191,10 +19701,13 @@ class NetEpicScene extends Phaser.Scene {
 
     det.orderRevealed = true;
     this.activatingDetachment = det;
+    det.startMoveFacing = det.facingRad || 0;
+    det.manualFacing = false;
     let pinnedCount = 0;
     det.stands.forEach(s => {
       s.originX = s.container.x;
       s.originY = s.container.y;
+      s.startMoveFacing = s.facingRad !== undefined ? s.facingRad : (det.facingRad || 0);
       s.pinnedAtStart = this.isStandPinned(s);
       if (s.pinnedAtStart) pinnedCount++;
     });
@@ -19218,7 +19731,18 @@ class NetEpicScene extends Phaser.Scene {
   undoDetachmentMove() {
     const det = this.activatingDetachment;
     if (!det) return;
-    det.stands.forEach(s => { s.container.x = s.originX; s.container.y = s.originY; });
+    if (this.isRotatingGizmo) this.closeRotationGizmo();
+    det.stands.forEach(s => {
+      s.container.x = s.originX;
+      s.container.y = s.originY;
+      if (s.startMoveFacing !== undefined) {
+        this.setStandFacing(s, s.startMoveFacing);
+      }
+    });
+    if (det.startMoveFacing !== undefined) {
+      det.facingRad = det.startMoveFacing;
+    }
+    this.applyStandFacing(det);
     this.syncEmbarkedPassengers(det);
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
@@ -19245,6 +19769,8 @@ class NetEpicScene extends Phaser.Scene {
   confirmDetachmentMove() {
     const det = this.activatingDetachment;
     if (!det) return;
+    if (this.isRotatingGizmo) this.closeRotationGizmo();
+    this.resolveDetachmentSpacing(det);
     if (det.order !== 'FIRST_FIRE' && !this.checkCoherency(det)) return;
     if (!this.checkEngagementMoveRule(det)) return;
     if (!this.checkFallBackMoveRule(det)) return;
@@ -20071,12 +20597,12 @@ class NetEpicScene extends Phaser.Scene {
     this.overlayGfx.clear();
     this.losGfx.clear();
 
-    // 0. Facing chevrons for all units with a 180° front arc + arc wedge for the selected/active one
+    // 0. Facing chevrons for all units with a 180° front arc + arc wedge for each stand of the selected/active one
     this.detachments.forEach(d => {
       if (!d.hasFireArc || d.embarkedOn || d.inReserve || d.stands.length === 0) return;
-      const f = d.facingRad || 0;
       const col = this.getSideMeta(d.faction).phaserColor || 0xffffff;
       d.stands.forEach(s => {
+        const f = s.facingRad !== undefined ? s.facingRad : (d.facingRad || 0);
         const cx = s.container.x, cy = s.container.y;
         const tipX = cx + Math.cos(f) * 34, tipY = cy + Math.sin(f) * 34;
         this.overlayGfx.lineStyle(3, col, 0.95);
@@ -20086,18 +20612,36 @@ class NetEpicScene extends Phaser.Scene {
       });
       const focus = (d === this.selectedDetachment || d === this.activatingDetachment);
       if (focus) {
-        const s = d.stands[0];
-        const r = Math.min(d.weapon.rangeCm, 60) * PX_PER_CM;
-        const halfArc = d.fireArcDeg ? Phaser.Math.DegToRad(d.fireArcDeg / 2) : Math.PI / 2;
-        this.losGfx.fillStyle(col, 0.07);
-        this.losGfx.slice(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
-        this.losGfx.fillPath();
-        this.losGfx.lineStyle(1.5, col, 0.55);
-        this.losGfx.beginPath();
-        this.losGfx.arc(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
-        this.losGfx.strokePath();
-        this.losGfx.lineBetween(s.container.x + Math.cos(f - halfArc) * r, s.container.y + Math.sin(f - halfArc) * r,
-                                s.container.x + Math.cos(f + halfArc) * r, s.container.y + Math.sin(f + halfArc) * r);
+        d.stands.forEach(s => {
+          const f = s.facingRad !== undefined ? s.facingRad : (d.facingRad || 0);
+          const rangeCm = (s.weapon && s.weapon.rangeCm) ? s.weapon.rangeCm : (d.weapon ? d.weapon.rangeCm : 50);
+          const r = Math.min(rangeCm, 60) * PX_PER_CM;
+          const halfArc = d.fireArcDeg ? Phaser.Math.DegToRad(d.fireArcDeg / 2) : Math.PI / 2;
+          this.losGfx.fillStyle(col, 0.06);
+          this.losGfx.slice(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
+          this.losGfx.fillPath();
+          this.losGfx.lineStyle(1.5, col, 0.45);
+          this.losGfx.beginPath();
+          this.losGfx.arc(s.container.x, s.container.y, r, f - halfArc, f + halfArc, false);
+          this.losGfx.strokePath();
+          this.losGfx.lineBetween(s.container.x + Math.cos(f - halfArc) * r, s.container.y + Math.sin(f - halfArc) * r,
+                                  s.container.x + Math.cos(f + halfArc) * r, s.container.y + Math.sin(f + halfArc) * r);
+        });
+      }
+    });
+
+    // 0b. Base overlap collision warning rings (units cannot occupy the same physical space)
+    this.detachments.forEach(d => {
+      if (d.embarkedOn || d.inReserve) return;
+      const isSelOrAct = (d === this.selectedDetachment || d === this.activatingDetachment);
+      if (isSelOrAct || this.phase === 'DEPLOYMENT') {
+        d.stands.forEach(s => {
+          const check = this.checkStandOverlap(s);
+          if (check.overlapping) {
+            this.overlayGfx.lineStyle(2.5, 0xef4444, 0.9);
+            this.overlayGfx.strokeCircle(s.container.x, s.container.y, (s.baseRadius || 11) + 4);
+          }
+        });
       }
     });
 
@@ -20350,7 +20894,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   updateDetachmentBadgePos(det) {
-    if (det.stands.length === 0) return;
+    if (!det || !det.badge || det.stands.length === 0) return;
     let avgX = 0, minY = Infinity;
     det.stands.forEach(s => {
       avgX += s.container.x;
@@ -20571,7 +21115,8 @@ class NetEpicScene extends Phaser.Scene {
           btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
           document.getElementById('btn-move-group').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-move-compact').style.display = isAct ? 'block' : 'none';
-          document.getElementById('btn-move-rotate').style.display = (isAct && this.selectedDetachment.hasFireArc) ? 'block' : 'none';
+          document.getElementById('btn-move-rotate').style.display = isAct ? 'block' : 'none';
+          document.getElementById('btn-move-separate').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-auto-fallback').style.display = (isAct && this.selectedDetachment.order === 'FALL_BACK') ? 'block' : 'none';
           document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
