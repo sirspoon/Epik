@@ -2492,6 +2492,26 @@ const UNIT_CATALOG = {
         "tsm": -2,
         "damagesBuildings": true
       },
+      "salvos": [
+              {
+                      "id": "warhound_plasma",
+                      "mount": "Right Arm",
+                      "name": "Plasma Blastgun",
+                      "rangeCm": 60,
+                      "dice": 2,
+                      "toHit": 3,
+                      "tsm": -3
+              },
+              {
+                      "id": "warhound_bolter",
+                      "mount": "Left Arm",
+                      "name": "Vulcan Mega-Bolter",
+                      "rangeCm": 45,
+                      "dice": 4,
+                      "toHit": 4,
+                      "tsm": -1
+              }
+      ],
       "standsCount": 1,
       "color": 1920728,
       "baseW": 34,
@@ -2524,6 +2544,38 @@ const UNIT_CATALOG = {
         "tsm": -3,
         "damagesBuildings": true
       },
+      "salvos": [
+              {
+                      "id": "reaver_melta",
+                      "mount": "Right Arm",
+                      "name": "Melta Cannon",
+                      "rangeCm": 60,
+                      "dice": 2,
+                      "toHit": 3,
+                      "tsm": -3,
+                      "damagesBuildings": true
+              },
+              {
+                      "id": "reaver_gatling",
+                      "mount": "Left Arm",
+                      "name": "Gatling Blaster",
+                      "rangeCm": 60,
+                      "dice": 4,
+                      "toHit": 4,
+                      "tsm": -2
+              },
+              {
+                      "id": "reaver_missile",
+                      "mount": "Carapace",
+                      "name": "Apocalypse Missile Launcher",
+                      "rangeCm": 75,
+                      "dice": 3,
+                      "toHit": 4,
+                      "tsm": -2,
+                      "barrage": true,
+                      "barrageBp": 3
+              }
+      ],
       "standsCount": 1,
       "color": 1982639,
       "baseW": 38,
@@ -2549,13 +2601,18 @@ const UNIT_CATALOG = {
       "shieldType": "VOID",
       "maxShields": 6,
       "weapon": {
-        "name": "Volcano Cannon & Plasma Destructor",
+        "name": "Volcano Cannon, Plasma Destructor & Mega-Bolters",
         "rangeCm": 90,
-        "dice": 6,
+        "dice": 9,
         "toHit": 3,
-        "tsm": -3,
+        "tsm": -4,
         "damagesBuildings": true
       },
+      "salvos": [
+        { "id": "warlord_volcano", "mount": "Right Arm", "name": "Volcano Cannon", "rangeCm": 90, "dice": 2, "toHit": 3, "tsm": -4, "damagesBuildings": true },
+        { "id": "warlord_plasma", "mount": "Left Arm", "name": "Plasma Destructor", "rangeCm": 60, "dice": 3, "toHit": 3, "tsm": -3 },
+        { "id": "warlord_carapace", "mount": "Carapace", "name": "Carapace Mega-Bolter Battery", "rangeCm": 45, "dice": 4, "toHit": 4, "tsm": -1 }
+      ],
       "standsCount": 1,
       "color": 1981066,
       "baseW": 40,
@@ -2578,13 +2635,17 @@ const UNIT_CATALOG = {
       "pinningClass": 3,
       "superHeavy": true,
       "weapon": {
-        "name": "Baneblade Cannon & Lascannons",
+        "name": "Turret Battlecannon & Sponson Weapons",
         "rangeCm": 75,
-        "dice": 4,
+        "dice": 5,
         "toHit": 4,
         "tsm": -2,
         "damagesBuildings": true
       },
+      "salvos": [
+        { "id": "baneblade_turret", "mount": "Turret", "name": "Turret Battlecannon & Demolisher", "rangeCm": 75, "dice": 2, "toHit": 4, "tsm": -2, "damagesBuildings": true },
+        { "id": "baneblade_sponsons", "mount": "Sponsons", "name": "Sponson Lascannons & Heavy Bolters", "rangeCm": 50, "dice": 3, "toHit": 4, "tsm": -1 }
+      ],
       "standsCount": 1,
       "color": 1981066,
       "baseW": 32,
@@ -4080,6 +4141,36 @@ const UNIT_CATALOG = {
         "tsm": -2,
         "damagesBuildings": true
       },
+      "salvos": [
+              {
+                      "id": "slasha_soopa",
+                      "mount": "Arm Mount",
+                      "name": "Soopa Gun",
+                      "rangeCm": 75,
+                      "dice": 2,
+                      "toHit": 4,
+                      "tsm": -3,
+                      "damagesBuildings": true
+              },
+              {
+                      "id": "slasha_belly",
+                      "mount": "Torso",
+                      "name": "Belly Cannon",
+                      "rangeCm": 60,
+                      "dice": 3,
+                      "toHit": 4,
+                      "tsm": -2
+              },
+              {
+                      "id": "slasha_shootas",
+                      "mount": "Hull Towers",
+                      "name": "Twin Big Shootas & Rokkits",
+                      "rangeCm": 45,
+                      "dice": 3,
+                      "toHit": 5,
+                      "tsm": -1
+              }
+      ],
       "standsCount": 1,
       "color": 1409085,
       "baseW": 38,
@@ -4105,13 +4196,18 @@ const UNIT_CATALOG = {
       "shieldType": "POWER",
       "maxShields": 6,
       "weapon": {
-        "name": "Mega-Choppa, Belly Gun & Gut Buster",
+        "name": "Belly Gun, Guts Buster & Shoota Battery",
         "rangeCm": 90,
-        "dice": 8,
+        "dice": 10,
         "toHit": 3,
         "tsm": -4,
         "damagesBuildings": true
       },
+      "salvos": [
+        { "id": "gargant_belly", "mount": "Torso", "name": "Belly Gun", "rangeCm": 90, "dice": 2, "toHit": 3, "tsm": -4, "barrage": true, "barrageBp": 4, "damagesBuildings": true },
+        { "id": "gargant_guts", "mount": "Arm Mount", "name": "Guts Buster & Snapper", "rangeCm": 60, "dice": 3, "toHit": 3, "tsm": -3, "damagesBuildings": true },
+        { "id": "gargant_shootas", "mount": "Carapace & Towers", "name": "Kustom Zzappas & Big Shootas", "rangeCm": 50, "dice": 5, "toHit": 5, "tsm": -1 }
+      ],
       "standsCount": 1,
       "color": 1332013,
       "baseW": 42,
@@ -4619,7 +4715,7 @@ const UNIT_CATALOG = {
           "cardName": "Renegade Mekboyz",
           "armyBook": "ORKS",
           "name": "Renegade Mekboyz Speedsta Warband",
-          "composition": "8 Mekboy Dragstas & Speedstas (Any mix of Bubble Chukkas, Destruktas, Dragstas, Kustom Kannons & Lifta-Droppas)",
+          "composition": "8 Mekboy Dragstas & Speedstas (Bubble Chukkas, Destruktas, Dragstas, Kustom Kannons & Lifta-Droppas)",
           "points": 600,
           "breakPoint": 4,
           "morale": 4,
@@ -4629,14 +4725,24 @@ const UNIT_CATALOG = {
           "caf": 3,
           "pinningClass": 2,
           "weapon": {
-                "name": "Kustom Weapons & Force Projectors",
+                "name": "Mekboy Speedsta Battery",
                 "rangeCm": 75,
-                "dice": 8,
+                "dice": 1,
                 "toHit": 4,
                 "tsm": -2,
-                "notes": "Mekboy rocket-boosted propulsion engines grant +2D6cm move (+4D6cm on Charge)."
+                "notes": "Each Speedsta has its own unique kustom weapon. Rocket-boosted propulsion grants +2D6cm move (+4D6cm on Charge)."
           },
           "standsCount": 8,
+          "standConfigs": [
+                { "label": "Bubble Chukka", "textureKey": "topdown_ork_speedsta_bubble", "weapon": { "name": "Bubble Chukka Force Projector", "rangeCm": 50, "dice": 1, "toHit": 4, "tsm": -2, "bubbleChukka": true } },
+                { "label": "Destrukta Rokkits", "textureKey": "topdown_ork_speedsta_destrukta", "weapon": { "name": "Destruktor Rokkits Barrage", "rangeCm": 75, "dice": 3, "toHit": 4, "tsm": -2, "barrage": true, "barrageBp": 3 } },
+                { "label": "Mekboy Dragsta", "textureKey": "topdown_ork_dragsta", "weapon": { "name": "Twin Big Shootas & Deflektor", "rangeCm": 25, "dice": 2, "toHit": 5, "tsm": 0, "deflektorField": true } },
+                { "label": "Kustom Kannon", "textureKey": "topdown_ork_speedsta_kannon", "weapon": { "name": "Rotary Kustom Kannon", "rangeCm": 75, "dice": 4, "toHit": 5, "tsm": -2 } },
+                { "label": "Lifta-Droppa", "textureKey": "topdown_ork_speedsta_lifta", "weapon": { "name": "Lifta-Droppa Grav Beam", "rangeCm": 75, "dice": 1, "toHit": 4, "tsm": -4, "liftaDroppa": true } },
+                { "label": "Kustom Kannon #2", "textureKey": "topdown_ork_speedsta_kannon", "weapon": { "name": "Rotary Kustom Kannon", "rangeCm": 75, "dice": 4, "toHit": 5, "tsm": -2 } },
+                { "label": "Mekboy Dragsta #2", "textureKey": "topdown_ork_dragsta", "weapon": { "name": "Twin Big Shootas & Deflektor", "rangeCm": 25, "dice": 2, "toHit": 5, "tsm": 0, "deflektorField": true } },
+                { "label": "Destrukta Rokkits #2", "textureKey": "topdown_ork_speedsta_destrukta", "weapon": { "name": "Destruktor Rokkits Barrage", "rangeCm": 75, "dice": 3, "toHit": 4, "tsm": -2, "barrage": true, "barrageBp": 3 } }
+          ],
           "color": 1409085,
           "baseW": 24,
           "baseH": 28
@@ -6062,6 +6168,36 @@ const UNIT_CATALOG = {
         "tsm": -3,
         "damagesBuildings": true
       },
+      "salvos": [
+              {
+                      "id": "phantom_pulsar",
+                      "mount": "Right Arm",
+                      "name": "Twin Pulsar Cannon",
+                      "rangeCm": 90,
+                      "dice": 2,
+                      "toHit": 3,
+                      "tsm": -4,
+                      "damagesBuildings": true
+              },
+              {
+                      "id": "phantom_dcannon",
+                      "mount": "Left Arm",
+                      "name": "Distortion Cannon (D-Cannon)",
+                      "rangeCm": 50,
+                      "dice": 2,
+                      "toHit": 3,
+                      "tsm": -3
+              },
+              {
+                      "id": "phantom_scatter",
+                      "mount": "Shoulder Mount",
+                      "name": "Scatter Laser Battery",
+                      "rangeCm": 50,
+                      "dice": 4,
+                      "toHit": 4,
+                      "tsm": -1
+              }
+      ],
       "standsCount": 1,
       "color": 11817737,
       "baseW": 38,
@@ -6895,6 +7031,38 @@ const UNIT_CATALOG = {
         "tsm": -3,
         "damagesBuildings": true
       },
+      "salvos": [
+              {
+                      "id": "banelord_hellstrike",
+                      "mount": "Right Arm",
+                      "name": "Hellstrike Siege Cannon",
+                      "rangeCm": 90,
+                      "dice": 2,
+                      "toHit": 3,
+                      "tsm": -4,
+                      "damagesBuildings": true
+              },
+              {
+                      "id": "banelord_havoc",
+                      "mount": "Carapace",
+                      "name": "Havoc Missile Launcher Battery",
+                      "rangeCm": 75,
+                      "dice": 4,
+                      "toHit": 4,
+                      "tsm": -2,
+                      "barrage": true,
+                      "barrageBp": 3
+              },
+              {
+                      "id": "banelord_doom",
+                      "mount": "Tail & Hull",
+                      "name": "Doomfist Combustor & Bolters",
+                      "rangeCm": 45,
+                      "dice": 3,
+                      "toHit": 4,
+                      "tsm": -2
+              }
+      ],
       "standsCount": 1,
       "color": 8330525,
       "baseW": 38,
@@ -16031,7 +16199,8 @@ class NetEpicScene extends Phaser.Scene {
       rokkitsRemaining: cfg.rokkitsRemaining !== undefined ? cfg.rokkitsRemaining : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
       maxRokkits: cfg.maxRokkits !== undefined ? cfg.maxRokkits : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
       rokkitFiredThisTurn: false,
-      maxSalvos: cfg.isTitan ? (cfg.maxSalvos || 3) : (cfg.superHeavy ? (cfg.maxSalvos || 2) : 1),
+      salvos: cfg.salvos ? JSON.parse(JSON.stringify(cfg.salvos)) : null,
+      maxSalvos: cfg.salvos ? cfg.salvos.length : (cfg.isTitan ? (cfg.maxSalvos || 3) : (cfg.superHeavy ? (cfg.maxSalvos || 2) : 1)),
       salvosFired: 0,
       standsFired: new Set(),
       locationDamage: { head: 'ONLINE', weapons: 'ONLINE', reactor: 'ONLINE', legs: 'ONLINE' },
@@ -16124,7 +16293,8 @@ class NetEpicScene extends Phaser.Scene {
       }
 
       // Procedural top-down unit miniature sprite (visible when zoomed in)
-      const texKey = this.getTopDownTextureKey(cfg);
+      const sCfgPre = (cfg.standConfigs && cfg.standConfigs[i]) || null;
+      const texKey = (sCfgPre && sCfgPre.textureKey) ? sCfgPre.textureKey : this.getTopDownTextureKey(sCfgPre ? { ...cfg, ...sCfgPre } : cfg);
       let topDownSprite = null;
       if (texKey && this.textures.exists(texKey)) {
         topDownSprite = this.add.image(0, 0, texKey);
@@ -16137,9 +16307,12 @@ class NetEpicScene extends Phaser.Scene {
 
       container.add(items);
 
+      const sCfg = (cfg.standConfigs && cfg.standConfigs[i]) || null;
       const standObj = {
         id: `${cfg.id}_s${i}`,
-        label: cfg.isTitan ? 'TITAN' : (cfg.superHeavy ? 'HULL' : `#${i + 1}`),
+        label: sCfg ? sCfg.label : (cfg.isTitan ? 'TITAN' : (cfg.superHeavy ? 'HULL' : `#${i + 1}`)),
+        weapon: sCfg ? sCfg.weapon : null,
+        topDownTextureKey: sCfg ? sCfg.textureKey : null,
         detachment: det,
         container,
         baseBg,
@@ -17106,7 +17279,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- LINE OF SIGHT, SKIMMER POP-UP, BUILDING GARRISONS, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 22, 26, 28, 33 & 36) ---
-  checkStandLoS(shooterStand, targetStand, isSnapFire = false) {
+  checkStandLoS(shooterStand, targetStand, isSnapFire = false, customWpn = null) {
     if (shooterStand.detachment.embarkedOn || targetStand.detachment.embarkedOn ||
         shooterStand.detachment.inReserve || targetStand.detachment.inReserve) {
       return { valid: false, reason: 'In Reserve / Embarked', distCm: 0, coverMod: 0, indirect: false };
@@ -17125,7 +17298,7 @@ class NetEpicScene extends Phaser.Scene {
     const distPx = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
     const distCm = distPx / PX_PER_CM;
 
-    const wpn = shooterStand.detachment.weapon;
+    const wpn = customWpn || shooterStand.weapon || shooterStand.detachment.weapon;
     if (distCm > wpn.rangeCm) {
       return { valid: false, reason: 'Out of Range', distCm, coverMod: 0, indirect: false };
     }
@@ -17246,6 +17419,30 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Derive thematic weapon system name for Titan / Super-Heavy salvos
+    // Get the specific weapon profile for a salvo (supports authentic independent multi-weapon loadouts!)
+  getSalvoWeapon(det, salvoIdx = 0) {
+    if (!det) return { name: 'Heavy Weapon', rangeCm: 50, dice: 2, toHit: 4, tsm: -1 };
+    if (det.salvos && det.salvos[salvoIdx]) {
+      return det.salvos[salvoIdx];
+    }
+    const maxS = det.maxSalvos || 1;
+    const rawName = (det.weapon && det.weapon.name) ? det.weapon.name : 'Heavy Weapon';
+    const parts = rawName.split(/&|,|\band\b/i).map(s => s.trim()).filter(Boolean);
+    const partName = (parts.length >= maxS && parts[salvoIdx]) ? parts[salvoIdx] : this.getSalvoWeaponName(det, salvoIdx);
+    const diceFrac = Math.max(1, Math.round((det.weapon ? det.weapon.dice : 2) / maxS));
+    return {
+      name: partName,
+      rangeCm: (det.weapon && det.weapon.rangeCm) || 50,
+      dice: diceFrac,
+      toHit: (det.weapon && det.weapon.toHit) || 4,
+      tsm: (det.weapon && det.weapon.tsm) !== undefined ? det.weapon.tsm : -1,
+      damagesBuildings: Boolean(det.weapon && det.weapon.damagesBuildings),
+      barrage: Boolean(det.weapon && det.weapon.barrage),
+      barrageBp: det.weapon ? det.weapon.barrageBp : 2,
+      isFlame: Boolean(det.weapon && det.weapon.isFlame)
+    };
+  }
+
   getSalvoWeaponName(det, salvoIdx = 0) {
     if (!det) return 'Weapon System';
     const maxS = det.maxSalvos || 1;
@@ -17284,11 +17481,16 @@ class NetEpicScene extends Phaser.Scene {
       return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet && firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     }
     const validPairs = [];
+    const isSalvoUnit = (firerDet.maxSalvos || 1) > 1;
+    const activeSalvoIdx = isSalvoUnit ? (firerDet.salvosFired || 0) : 0;
+    const activeSalvoWpn = isSalvoUnit ? this.getSalvoWeapon(firerDet, activeSalvoIdx) : null;
+
     for (const shooter of firerDet.stands) {
       if (firerDet.standsFired && firerDet.standsFired.has(shooter.id)) continue;
+      const standWpn = activeSalvoWpn || shooter.weapon || firerDet.weapon;
       let bestTarget = null;
       for (const target of targetDet.stands) {
-        const res = this.checkStandLoS(shooter, target, isSnapFire);
+        const res = this.checkStandLoS(shooter, target, isSnapFire, standWpn);
         if (res.valid) {
           // Prefer direct LoS over indirect fire when choosing aim stand
           if (!bestTarget || (!res.indirect && bestTarget.res.indirect) || (res.indirect === bestTarget.res.indirect && res.distCm < bestTarget.res.distCm)) {
@@ -17388,37 +17590,35 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    // Split Fire: Titans / Super-Heavies fire one weapon salvo at a time; normal detachments fire one stand at a time
+    // Multi-Weapon Salvo & Stand System
     const isSalvoUnit = (firerDet.maxSalvos || 1) > 1;
-    const salvosRemaining = Math.max(1, (firerDet.maxSalvos || 1) - (firerDet.salvosFired || 0));
-    const salvosUsed = isSalvoUnit ? (split ? 1 : salvosRemaining) : 0;
+    const salvoIdx = firerDet.salvosFired || 0;
+    const activeSalvoWpn = isSalvoUnit ? this.getSalvoWeapon(firerDet, salvoIdx) : null;
     if (split && !isSalvoUnit) sol.validPairs = [sol.validPairs[0]];
-    const salvoFrac = isSalvoUnit ? salvosUsed / firerDet.maxSalvos : 1;
-    if (sol.isBarrage) {
-      sol.totalBp = Math.max(1, Math.round(sol.validPairs.length * (firerDet.weapon.barrageBp || 2) * salvoFrac));
-      sol.barrageStats = this.getBarrageStats(sol.totalBp, firerDet.weapon.tsm);
+
+    const activeShooter = sol.validPairs[0].shooter;
+    const activeWpn = activeSalvoWpn || activeShooter.weapon || firerDet.weapon;
+
+    if (activeWpn.barrage) {
+      sol.isBarrage = true;
+      sol.totalBp = activeWpn.barrageBp || activeWpn.dice || 2;
+      sol.barrageStats = this.getBarrageStats(sol.totalBp, activeWpn.tsm);
     }
-    const dicePerStand = isSalvoUnit ? Math.max(1, Math.round(firerDet.weapon.dice * salvoFrac)) : firerDet.weapon.dice;
 
     let salvoTag = '';
     let shotDesc = '';
     if (isSalvoUnit) {
-      if (split) {
-        const salvoIdx = firerDet.salvosFired || 0;
-        const salvoWpn = this.getSalvoWeaponName(firerDet, salvoIdx);
-        salvoTag = ` [Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: ${salvoWpn}]`;
-        shotDesc = `Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: <b>${salvoWpn}</b> (${dicePerStand} dice)`;
-      } else {
-        salvoTag = ` [All ${salvosUsed} Salvos (${salvosUsed * dicePerStand} dice)]`;
-        shotDesc = `<b>All ${salvosUsed} Weapon Salvos</b> (${firerDet.weapon.name}, ${salvosUsed * dicePerStand} dice)`;
-      }
+      salvoTag = ` [Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: ${activeWpn.name}]`;
+      shotDesc = `Salvo ${salvoIdx + 1}/${firerDet.maxSalvos}: <b>${activeWpn.name}</b> (${activeWpn.rangeCm}cm, ${activeWpn.dice}d, Hit ${activeWpn.toHit}+, TSM ${activeWpn.tsm})`;
     } else if (split) {
-      const standIdx = firerDet.stands.indexOf(sol.validPairs[0].shooter) + 1;
-      salvoTag = ` [Split Fire: Stand #${standIdx}]`;
-      shotDesc = `Stand #${standIdx} (${firerDet.weapon.name}, ${dicePerStand} dice) [Split Fire]`;
+      const standIdx = firerDet.stands.indexOf(activeShooter) + 1;
+      const standLabel = activeShooter.label || `Stand #${standIdx}`;
+      salvoTag = ` [Split Fire: ${standLabel}]`;
+      shotDesc = `<b>${standLabel}</b> [${activeWpn.name}] (${activeWpn.rangeCm}cm, ${activeWpn.dice}d, Hit ${activeWpn.toHit}+, TSM ${activeWpn.tsm}) [Split Fire]`;
     } else {
-      const totalDiceEst = sol.validPairs.length * dicePerStand;
-      shotDesc = `Full Volley (${sol.validPairs.length} stands, ${totalDiceEst} dice)`;
+      let totalDiceEst = 0;
+      sol.validPairs.forEach(p => { totalDiceEst += (p.shooter.weapon ? p.shooter.weapon.dice : firerDet.weapon.dice); });
+      shotDesc = `Full Volley (${sol.validPairs.length} stands, ${totalDiceEst} total attacks)`;
     }
 
     // Dice Tray collectors
@@ -17623,12 +17823,13 @@ class NetEpicScene extends Phaser.Scene {
 
     sol.validPairs.forEach(pair => {
       if (targetDet.stands.length === 0) return;
+      const curWpn = activeSalvoWpn || pair.shooter.weapon || firerDet.weapon;
+      const curDice = curWpn.dice || 1;
       const coverMod = pair.res.coverMod;
       const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
-      // Modifiers penalize the shooter by increasing the needed To-Hit roll
-      const neededToHit = wpn.toHit - snapMod - coverMod + waaaghMod;
+      const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod;
 
-      for (let d = 0; d < dicePerStand; d++) {
+      for (let d = 0; d < curDice; d++) {
         if (targetDet.stands.length === 0) break;
         totalDice++;
         let roll = Phaser.Math.Between(1, 6);
@@ -17693,7 +17894,7 @@ class NetEpicScene extends Phaser.Scene {
           const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
           const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
           const doomPen = targetDet.doomed ? 1 : 0;
-          let neededSave = baseSave - wpn.tsm + doomPen; // e.g. Save 3+ with TSM -1 becomes 4+
+          let neededSave = baseSave - curWpn.tsm + doomPen; // e.g. Save 3+ with TSM -1 becomes 4+
           if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
           const holoSave = this.getHoloFieldSave(targetDet);
           if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
@@ -20040,6 +20241,10 @@ class NetEpicScene extends Phaser.Scene {
         });
       }
 
+      const isSalvoUnit = (firer.maxSalvos || 1) > 1;
+      const activeSalvoIdx = isSalvoUnit ? (firer.salvosFired || 0) : 0;
+      const activeSalvoWpn = isSalvoUnit ? this.getSalvoWeapon(firer, activeSalvoIdx) : null;
+
       const activeSplitShooter = (sol.validPairs.length > 0 && !firer.isTitan && !firer.superHeavy)
         ? sol.validPairs[0].shooter
         : null;
@@ -20061,10 +20266,11 @@ class NetEpicScene extends Phaser.Scene {
         }
 
         if (target.stands.length === 0) return;
+        const curWpn = activeSalvoWpn || shooter.weapon || firer.weapon;
         let chosen = target.stands[0];
-        let bestCheck = this.checkStandLoS(shooter, chosen);
+        let bestCheck = this.checkStandLoS(shooter, chosen, false, curWpn);
         for (const ts of target.stands) {
-          const chk = this.checkStandLoS(shooter, ts);
+          const chk = this.checkStandLoS(shooter, ts, false, curWpn);
           if (chk.valid && (!bestCheck.valid || (!chk.indirect && bestCheck.indirect) || chk.distCm < bestCheck.distCm)) {
             chosen = ts;
             bestCheck = chk;
@@ -20510,14 +20716,14 @@ class NetEpicScene extends Phaser.Scene {
             btnSplit.disabled = false;
             if (isSalvoUnit) {
               const nextIdx = this.activatingDetachment.salvosFired || 0;
-              const wName = this.getSalvoWeaponName(this.activatingDetachment, nextIdx);
-              const salvoDice = Math.max(1, Math.round(this.activatingDetachment.weapon.dice / this.activatingDetachment.maxSalvos));
-              btnSplit.innerText = `🎯 Fire Salvo ${nextIdx + 1}/${this.activatingDetachment.maxSalvos}: ${wName} (${salvoDice}d)`;
+              const sWpn = this.getSalvoWeapon(this.activatingDetachment, nextIdx);
+              btnSplit.innerText = `🎯 Fire Salvo ${nextIdx + 1}/${this.activatingDetachment.maxSalvos}: ${sWpn.name} (${sWpn.dice}d, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
             } else {
               const activeShooter = sol.validPairs[0].shooter;
               const standIdx = this.activatingDetachment.stands.indexOf(activeShooter) + 1;
-              const standDice = this.activatingDetachment.weapon.dice;
-              btnSplit.innerText = `🎯 Split Fire: Stand #${standIdx} (${standDice}d)`;
+              const sWpn = activeShooter.weapon || this.activatingDetachment.weapon;
+              const sLabel = activeShooter.label || `Stand #${standIdx}`;
+              btnSplit.innerText = `🎯 Fire ${sLabel}: ${sWpn.name} (${sWpn.dice}d, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
             }
           } else if (btnSplit) {
             btnSplit.style.display = 'none';
