@@ -187,12 +187,28 @@
       background: rgba(22, 163, 74, 0.96); border: 2px solid #fde047; font-size: 0.95rem;
     }
 
-    /* Army Selection Modal */
-    #army-modal {
+    /* Army Selection & Psychic Power Modals */
+    #army-modal, #psyker-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(2, 6, 23, 0.86); z-index: 100;
       display: flex; align-items: center; justify-content: center;
       padding: 12px; pointer-events: auto;
+    }
+    .power-card {
+      background: #1e293b; border: 1.5px solid #7c3aed; border-radius: 8px;
+      padding: 9px 12px; cursor: pointer; transition: all 0.16s ease;
+    }
+    .power-card:hover {
+      background: #2e1065; border-color: #c084fc; transform: translateY(-1px);
+    }
+    .power-card-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;
+    }
+    .power-card-title {
+      font-weight: 800; font-size: 0.86rem; color: #e9d5ff;
+    }
+    .power-card-desc {
+      font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;
     }
     .modal-card {
       background: #0f172a; border: 2px solid #475569; border-radius: 10px;
@@ -307,6 +323,23 @@
       <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto;">🎲 Random Factions</button>
       <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)">📍 Proceed to Deployment Phase (Place Units in Zones)</button>
       <button class="btn-primary" onclick="window.startBattleFromBuilder(false)">⚡ Quick Start (Forward Skirmish Deployment)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Psychic Powers Selection Modal -->
+<div id="psyker-modal" style="display:none;">
+  <div class="modal-card" style="max-width: 620px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #475569; padding-bottom:8px;">
+      <div>
+        <span id="psyker-modal-title" style="font-weight:800; font-size:1.05rem; color:#c084fc;">🔮 PSYCHIC MASTERY</span>
+        <div id="psyker-modal-caster" class="sub-text" style="color:#e9d5ff;">Select a power to manifest</div>
+      </div>
+      <button class="log-ctrl-btn" onclick="window.gameScene.closePsykerModal()">✕</button>
+    </div>
+    <div id="psyker-powers-list" style="margin:12px 0; display:flex; flex-direction:column; gap:8px; max-height:60vh; overflow-y:auto;"></div>
+    <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px;">
+      <button onclick="window.gameScene.closePsykerModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -434,6 +467,8 @@
         <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
         <button id="btn-move-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
         <button id="btn-move-deepstrike" class="btn-cc" onclick="window.gameScene.triggerDeepStrikeMode()" style="display:none;">☄️ Deep Strike / Teleport Anywhere!</button>
+        <button id="btn-cast-psychic-move" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest Psychic Powers during Movement">🔮 Cast Psychic Power</button>
+        <button id="btn-call-waaagh" class="btn-warn" onclick="window.gameScene.triggerWaaagh()" style="display:none; background:#15803d; border-color:#4ade80;" title="Call the Waaagh! Once-per-battle invulnerability, -1 enemy to hit, +1D6 in CC">🗣️ CALL THE WAAAGH!</button>
         <button id="btn-auto-fallback" class="btn-warn" onclick="window.gameScene.autoRetreatDetachment()" style="display:none;">🏳️ Auto-Retreat Toward Home Edge</button>
         <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Move</button>
         <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
@@ -443,6 +478,9 @@
       <div id="combat-controls" class="btn-row" style="display:none;">
         <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget(false)" disabled>Select an Enemy Detachment to Fire</button>
         <button id="btn-split-fire" class="btn-cc" onclick="window.gameScene.fireAtSelectedTarget(true)" style="display:none;" disabled title="Fire 1 Stand (or 1 Titan Weapon System) at this target and keep remaining stands/weapons ready for other targets!">🎯 Split Fire (1 Stand / Weapon)</button>
+        <button id="btn-cast-psychic-combat" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest offensive Psychic Powers during Shooting">🔮 Cast Psychic Power</button>
+        <button id="btn-toggle-smoke" class="btn-primary" onclick="window.gameScene.fireSmokeScreen()" style="display:none; background:#475569; border-color:#94a3b8;" title="Fire a 6cm Smoke Screen template instead of damage to block Line of Sight">💨 Fire Smoke Screen</button>
+        <button id="btn-target-building" class="btn-warn" onclick="window.gameScene.toggleTargetBuildingMode()" style="display:none; background:#b45309; border-color:#f59e0b;" title="Target enemy-occupied building with heavy artillery/siege weapon to inflict Structural Integrity (SI) damage">🏚️ Target Building (Siege)</button>
         <button id="btn-combat-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
         <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;">Hold Fire (Switch to Advance)</button>
         <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Done / Skip Firing</button>
@@ -650,6 +688,90 @@ window.sfx = {
       osc.start(now + idx * 0.04);
       osc.stop(now + 0.32);
     });
+  },
+  playPsychic() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [392, 587.33, 783.99, 1174.66].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.03);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.35);
+      gain.gain.setValueAtTime(0.12, now + idx * 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.03);
+      osc.stop(now + 0.38);
+    });
+  },
+  playMeltdown() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // Reactor alarm whine
+    const alarm = ctx.createOscillator();
+    const aGain = ctx.createGain();
+    alarm.type = 'sawtooth';
+    alarm.frequency.setValueAtTime(800, now);
+    alarm.frequency.exponentialRampToValueAtTime(1600, now + 0.15);
+    alarm.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+    aGain.gain.setValueAtTime(0.2, now);
+    aGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+    alarm.connect(aGain);
+    aGain.connect(ctx.destination);
+    alarm.start(now);
+    alarm.stop(now + 0.32);
+    // Huge catastrophic blast boom
+    setTimeout(() => {
+      this.playExplosion(true);
+      setTimeout(() => this.playExplosion(true), 120);
+    }, 200);
+  },
+  playFlame() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const dur = 0.38;
+    const bufSize = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.2);
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(850, now);
+    filter.Q.setValueAtTime(1.5, now);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+  },
+  playWaaagh() {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [130.81, 196.00, 261.63, 329.63].forEach((freq) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.45);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.55);
+    });
   }
 };
 
@@ -762,13 +884,13 @@ const UNIT_CATALOG = {
     {
       key: 'sm_whirlwind', armyBook: 'IMPERIUM', name: 'Whirlwind Artillery Battery', points: 250,
       moveCm: 20, save: 4, caf: 0, morale: 2, pinningClass: 2,
-      weapon: { name: 'Whirlwind Multiple Launchers', rangeCm: 80, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      weapon: { name: 'Whirlwind Multiple Launchers', rangeCm: 80, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0x0284c7, standsCount: 3, baseW: 24, baseH: 30
     },
     {
       key: 'ig_basilisk', armyBook: 'IMPERIUM', name: 'Imperial Basilisk Battery', points: 275,
       moveCm: 15, save: 4, caf: 0, morale: 3, pinningClass: 2,
-      weapon: { name: 'Earthshaker Heavy Artillery', rangeCm: 120, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
+      weapon: { name: 'Earthshaker Heavy Artillery', rangeCm: 120, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0x0ea5e9, standsCount: 3, baseW: 26, baseH: 34
     },
     {
@@ -780,26 +902,54 @@ const UNIT_CATALOG = {
     {
       key: 'sm_landraider', armyBook: 'IMPERIUM', name: 'Land Raider Squadron', points: 350,
       moveCm: 20, save: 2, caf: 3, morale: 2, pinningClass: 3, transportCapacity: 2,
-      weapon: { name: 'Twin Lascannons & Heavy Bolters', rangeCm: 55, dice: 2, toHit: 4, tsm: -2 },
+      weapon: { name: 'Twin Lascannons & Heavy Bolters', rangeCm: 55, dice: 2, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 2, vpValue: 4, color: 0x38bdf8, standsCount: 3, baseW: 26, baseH: 34
     },
     {
       key: 'ig_baneblade', armyBook: 'IMPERIUM', name: 'Baneblade Super-Heavy Tank', points: 250,
       moveCm: 15, save: 2, caf: 6, morale: 2, pinningClass: 3, superHeavy: true,
-      weapon: { name: 'Baneblade Cannon & Lascannons', rangeCm: 75, dice: 4, toHit: 4, tsm: -2 },
+      weapon: { name: 'Baneblade Cannon & Lascannons', rangeCm: 75, dice: 4, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x0369a1, standsCount: 1, baseW: 32, baseH: 40
     },
     {
       key: 'sm_warhound', armyBook: 'IMPERIUM', name: 'Warhound Scout Titan', points: 250,
       moveCm: 25, save: 2, caf: 8, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 2,
-      weapon: { name: 'Plasma Blastgun & Mega-Bolter', rangeCm: 65, dice: 5, toHit: 3, tsm: -2 },
+      weapon: { name: 'Plasma Blastgun & Mega-Bolter', rangeCm: 65, dice: 5, toHit: 3, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x1d4ed8, standsCount: 1, baseW: 34, baseH: 38
     },
     {
       key: 'sm_reaver', armyBook: 'IMPERIUM', name: 'Reaver Battle Titan', points: 400,
       moveCm: 20, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4,
-      weapon: { name: 'Gatling Blaster & Turbo-Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      weapon: { name: 'Gatling Blaster & Turbo-Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0x1e3a8a, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_calgar', armyBook: 'IMPERIUM', name: 'Marneus Calgar (Chapter Master)', points: 150,
+      moveCm: 10, save: 2, fixedSave: 4, caf: 8, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, baseW: 24, baseH: 24,
+      weapon: { name: 'Gauntlets of Ultramar', rangeCm: 30, dice: 3, toHit: 3, tsm: -2 },
+      characterRules: { calgar: true, armyInitiativeBonus: 1, immuneToGangUp: true },
+      breakPoint: 1, vpValue: 3, color: 0x1d4ed8
+    },
+    {
+      key: 'char_tigurius', armyBook: 'IMPERIUM', name: 'Chief Librarian Tigurius', points: 125,
+      moveCm: 10, save: 3, fixedSave: 5, caf: 5, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, isPsyker: true, psychicRank: 4, baseW: 22, baseH: 22,
+      weapon: { name: 'Force Staff & Bolt Pistol', rangeCm: 25, dice: 1, toHit: 4, tsm: -1 },
+      characterRules: { psyker: true, spells: ['mind_blast', 'purge_psyker', 'transfixing_gaze'] },
+      breakPoint: 1, vpValue: 2, color: 0x3b82f6
+    },
+    {
+      key: 'char_yarrick', armyBook: 'IMPERIUM', name: 'Commissar Yarrick (Hero of Armageddon)', points: 125,
+      moveCm: 10, save: 4, fixedSave: 6, caf: 6, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, baseW: 22, baseH: 22,
+      weapon: { name: 'Bale Eye & Power Klaw', rangeCm: 25, dice: 2, toHit: 3, tsm: -2 },
+      characterRules: { yarrick: true, moraleAuraCm: 25, rerollArmorSave: true },
+      breakPoint: 1, vpValue: 2, color: 0x1e293b
+    },
+    {
+      key: 'char_bjorn', armyBook: 'IMPERIUM', name: 'Bjorn the Fell-Handed (Ancient)', points: 175,
+      moveCm: 10, save: 2, caf: 7, morale: 1, pinningClass: 2, standsCount: 1, isCharacter: true, baseW: 24, baseH: 24,
+      weapon: { name: 'Trueclaw & Heavy Flamer', rangeCm: 25, dice: 2, toHit: 3, tsm: -2, isFlame: true, template: true },
+      characterRules: { bjorn: true, rerollOneCloseCombatDie: true },
+      breakPoint: 1, vpValue: 3, color: 0x64748b
     }
   ],
   ORKS: [
@@ -848,38 +998,52 @@ const UNIT_CATALOG = {
     {
       key: 'ork_biggunz', armyBook: 'ORKS', name: 'Ork Big Gunz Battery', points: 175,
       moveCm: 10, save: 6, caf: 0, morale: 4, pinningClass: 1,
-      weapon: { name: 'Lobba & Smasha Gunz', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      weapon: { name: 'Lobba & Smasha Gunz', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 2, color: 0x65a30d, standsCount: 4, baseW: 22, baseH: 22
     },
     {
       key: 'ork_pulsa', armyBook: 'ORKS', name: 'Ork Pulsa Rokkit Battery', points: 225,
       moveCm: 10, save: 5, caf: 0, morale: 4, pinningClass: 2,
-      weapon: { name: 'Pulsa Rokkit Barrage', rangeCm: 90, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true },
+      weapon: { name: 'Pulsa Rokkit Barrage', rangeCm: 90, dice: 1, toHit: 3, tsm: -2, barrage: true, barrageBp: 3, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0x84cc16, standsCount: 3, baseW: 24, baseH: 28
     },
     {
       key: 'ork_stompas', armyBook: 'ORKS', name: 'Ork Stompa Mob', points: 350,
       moveCm: 15, save: 2, caf: 4, morale: 3, pinningClass: 3,
-      weapon: { name: 'Gatling Cannon & Belly Gun', rangeCm: 50, dice: 3, toHit: 4, tsm: -2 },
+      weapon: { name: 'Gatling Cannon & Belly Gun', rangeCm: 50, dice: 3, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 2, vpValue: 4, color: 0xa3e635, standsCount: 3, baseW: 28, baseH: 28
     },
     {
       key: 'ork_gutrippa', armyBook: 'ORKS', name: 'Gutrippa Super-Heavy Tank', points: 225,
       moveCm: 15, save: 2, caf: 7, morale: 3, pinningClass: 3, superHeavy: true,
-      weapon: { name: 'Heavy Battlekannon & Shootas', rangeCm: 70, dice: 4, toHit: 4, tsm: -2 },
+      weapon: { name: 'Heavy Battlekannon & Shootas', rangeCm: 70, dice: 4, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x4d7c0f, standsCount: 1, baseW: 32, baseH: 40
     },
     {
       key: 'ork_mekgargant', armyBook: 'ORKS', name: 'Mekboy Gargant', points: 275,
       moveCm: 15, save: 2, caf: 9, morale: 2, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'POWER', maxShields: 3,
-      weapon: { name: 'Deth Kannon & Gatling Blaster', rangeCm: 65, dice: 5, toHit: 4, tsm: -2 },
+      weapon: { name: 'Deth Kannon & Gatling Blaster', rangeCm: 65, dice: 5, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x15803d, standsCount: 1, baseW: 34, baseH: 38
     },
     {
       key: 'ork_gargant', armyBook: 'ORKS', name: 'Slasher Great Gargant', points: 400,
       moveCm: 15, save: 2, caf: 12, morale: 2, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'POWER', maxShields: 4,
-      weapon: { name: 'Soopa-Gatling & Gutbuster Kannon', rangeCm: 75, dice: 6, toHit: 4, tsm: -3 },
+      weapon: { name: 'Soopa-Gatling & Gutbuster Kannon', rangeCm: 75, dice: 6, toHit: 4, tsm: -3, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0x14532d, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_ghazghkull', armyBook: 'ORKS', name: 'Ghazghkull Mag Uruk Thraka', points: 175,
+      moveCm: 10, save: 3, fixedSave: 5, caf: 8, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, baseW: 26, baseH: 26,
+      weapon: { name: 'Kustom Mega-Shoota & Power Klaw', rangeCm: 30, dice: 3, toHit: 4, tsm: -2, damagesBuildings: true },
+      characterRules: { ghazghkull: true, moraleAuraCm: 25, waaaghAvailable: true },
+      breakPoint: 1, vpValue: 3, color: 0x14532d
+    },
+    {
+      key: 'char_weirdboy', armyBook: 'ORKS', name: 'Weirdboy Warphead', points: 100,
+      moveCm: 10, save: 5, caf: 2, morale: 3, pinningClass: 1, standsCount: 1, isCharacter: true, isPsyker: true, psychicRank: 3, baseW: 22, baseH: 22,
+      weapon: { name: 'Copper Staff & \'Eadbanger', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
+      characterRules: { psyker: true, spells: ['frazzle', 'ere_we_go', 'mind_blast'] },
+      breakPoint: 1, vpValue: 2, color: 0x84cc16
     }
   ],
   ELDAR: [
@@ -958,14 +1122,21 @@ const UNIT_CATALOG = {
     {
       key: 'eld_revenant', armyBook: 'ELDAR', name: 'Revenant Scout Titan', points: 275,
       moveCm: 30, save: 3, caf: 7, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, holoField: true, skimmer: true, jump: true,
-      weapon: { name: 'Twin Pulse Lasers & Missile Launcher', rangeCm: 75, dice: 5, toHit: 3, tsm: -2 },
+      weapon: { name: 'Twin Pulse Lasers & Missile Launcher', rangeCm: 75, dice: 5, toHit: 3, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0xf59e0b, standsCount: 1, baseW: 34, baseH: 38
     },
     {
       key: 'eld_phantom', armyBook: 'ELDAR', name: 'Phantom Battle Titan', points: 425,
       moveCm: 20, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, holoField: true,
-      weapon: { name: 'Distortion Cannon & Pulse Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      weapon: { name: 'Distortion Cannon & Pulse Laser', rangeCm: 75, dice: 6, toHit: 3, tsm: -3, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0xb45309, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_eldrad', armyBook: 'ELDAR', name: 'Farseer Eldrad Ulthran', points: 150,
+      moveCm: 12, save: 4, fixedSave: 4, caf: 5, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, isPsyker: true, psychicRank: 4, baseW: 22, baseH: 22,
+      weapon: { name: 'Staff of Ulthamar & Shuriken', rangeCm: 35, dice: 2, toHit: 3, tsm: -1 },
+      characterRules: { psyker: true, spells: ['guide', 'doom', 'mind_blast', 'purge_psyker'] },
+      breakPoint: 1, vpValue: 3, color: 0xf59e0b
     }
   ],
   CHAOS: [
@@ -1032,26 +1203,40 @@ const UNIT_CATALOG = {
     {
       key: 'chs_doomblaster', armyBook: 'CHAOS', name: 'Doom Blaster of Khorne Artillery', points: 250,
       moveCm: 15, save: 2, caf: 4, morale: 1, pinningClass: 2,
-      weapon: { name: 'Twin Doom Mortars', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 3, indirect: true },
+      weapon: { name: 'Twin Doom Mortars', rangeCm: 75, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 3, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0x991b1b, standsCount: 3, baseW: 26, baseH: 32
     },
     {
       key: 'chs_bloodthirster', armyBook: 'CHAOS', name: 'Bloodthirster (Greater Daemon)', points: 300,
       moveCm: 20, save: 2, fixedSave: 4, caf: 12, morale: 1, pinningClass: 3, superHeavy: true, skimmer: true, jump: true, daemonicTerror: true, regeneration: true,
-      weapon: { name: 'Axe of Khorne & Hellfire Whip', rangeCm: 25, dice: 3, toHit: 3, tsm: -2 },
+      weapon: { name: 'Axe of Khorne & Hellfire Whip', rangeCm: 25, dice: 3, toHit: 3, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0xef4444, standsCount: 1, baseW: 32, baseH: 32
     },
     {
       key: 'chs_subjugator', armyBook: 'CHAOS', name: 'Slaanesh Subjugator Scout Titan', points: 275,
       moveCm: 30, save: 2, caf: 7, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 2, daemonicTerror: true,
-      weapon: { name: 'Psi-Pulse & Tormentor Lascannons', rangeCm: 75, dice: 4, toHit: 3, tsm: -2 },
+      weapon: { name: 'Psi-Pulse & Tormentor Lascannons', rangeCm: 75, dice: 4, toHit: 3, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0xdb2777, standsCount: 1, baseW: 34, baseH: 38
     },
     {
       key: 'chs_banelord', armyBook: 'CHAOS', name: 'Banelord Battle Titan of Khorne', points: 425,
       moveCm: 15, save: 2, caf: 14, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4, daemonicTerror: true,
-      weapon: { name: 'Hellstrike Cannon, Havoc Rack & Doomfist', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      weapon: { name: 'Hellstrike Cannon, Havoc Rack & Doomfist', rangeCm: 75, dice: 6, toHit: 3, tsm: -3, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0x7f1d1d, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_abaddon', armyBook: 'CHAOS', name: 'Abaddon the Despoiler (Warmaster)', points: 175,
+      moveCm: 10, save: 2, fixedSave: 4, caf: 8, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, daemonicTerror: true, baseW: 24, baseH: 24,
+      weapon: { name: 'Drach\'nyen & Talon of Horus', rangeCm: 35, dice: 3, toHit: 3, tsm: -3, damagesBuildings: true },
+      characterRules: { abaddon: true, daemonicTerror: true, rerollOneCloseCombatDie: true },
+      breakPoint: 1, vpValue: 3, color: 0x7f1d1d
+    },
+    {
+      key: 'char_sorcerer', armyBook: 'CHAOS', name: 'Chaos Sorcerer Lord', points: 125,
+      moveCm: 10, save: 3, fixedSave: 5, caf: 5, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, isPsyker: true, psychicRank: 4, baseW: 22, baseH: 22,
+      weapon: { name: 'Force Axe & Doombolt', rangeCm: 30, dice: 2, toHit: 4, tsm: -1 },
+      characterRules: { psyker: true, spells: ['mind_blast', 'doom', 'transfixing_gaze'] },
+      breakPoint: 1, vpValue: 2, color: 0xdb2777
     }
   ],
   TYRANIDS: [
@@ -1082,7 +1267,7 @@ const UNIT_CATALOG = {
     {
       key: 'tyr_gargoyles', armyBook: 'TYRANIDS', name: 'Gargoyle Winged Brood', points: 175,
       moveCm: 25, save: 6, caf: 2, morale: 3, pinningClass: 1, skimmer: true, jump: true,
-      weapon: { name: 'Bio-Plasma Flamespurt', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 },
+      weapon: { name: 'Bio-Plasma Flamespurt', rangeCm: 25, dice: 1, toHit: 5, tsm: 0, isFlame: true },
       breakPoint: 3, vpValue: 2, color: 0xd8b4fe, standsCount: 5, baseW: 20, baseH: 22
     },
     {
@@ -1100,19 +1285,19 @@ const UNIT_CATALOG = {
     {
       key: 'tyr_carnifex', armyBook: 'TYRANIDS', name: 'Carnifex Screamer-Killer Brood', points: 225,
       moveCm: 12, save: 3, caf: 6, morale: 1, pinningClass: 2, regeneration: true,
-      weapon: { name: 'Bio-Plasma Scream & Talons', rangeCm: 35, dice: 2, toHit: 4, tsm: -2 },
+      weapon: { name: 'Bio-Plasma Scream & Talons', rangeCm: 35, dice: 2, toHit: 4, tsm: -2, isFlame: true },
       breakPoint: 2, vpValue: 2, color: 0x6b21a8, standsCount: 3, baseW: 24, baseH: 24
     },
     {
       key: 'tyr_biovores', armyBook: 'TYRANIDS', name: 'Biovore Spore-Mine Battery', points: 200,
       moveCm: 10, save: 4, caf: 1, morale: 2, pinningClass: 2,
-      weapon: { name: 'Acid Spore Mine Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -2, barrage: true, barrageBp: 2, indirect: true },
+      weapon: { name: 'Acid Spore Mine Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -2, barrage: true, barrageBp: 2, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 2, vpValue: 2, color: 0xa21caf, standsCount: 3, baseW: 22, baseH: 26
     },
     {
       key: 'tyr_exocrine', armyBook: 'TYRANIDS', name: 'Exocrine Bio-Cannon Brood', points: 250,
       moveCm: 10, save: 2, caf: 3, morale: 2, pinningClass: 2,
-      weapon: { name: 'High-Velocity Bio-Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3 },
+      weapon: { name: 'High-Velocity Bio-Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0xbe185d, standsCount: 3, baseW: 24, baseH: 30
     },
     {
@@ -1130,14 +1315,21 @@ const UNIT_CATALOG = {
     {
       key: 'tyr_hierodule', armyBook: 'TYRANIDS', name: 'Hierodule Bio-Titan', points: 300,
       moveCm: 25, save: 2, caf: 10, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, synapse: true, regeneration: true, daemonicTerror: true, shieldType: 'CHITIN', maxShields: 2,
-      weapon: { name: 'Pyro-Acid Spray & Razor Claws', rangeCm: 60, dice: 5, toHit: 3, tsm: -2 },
+      weapon: { name: 'Pyro-Acid Spray & Razor Claws', rangeCm: 60, dice: 5, toHit: 3, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x9333ea, standsCount: 1, baseW: 34, baseH: 38
     },
     {
       key: 'tyr_hierophant', armyBook: 'TYRANIDS', name: 'Hierophant Bio-Titan', points: 425,
       moveCm: 25, save: 2, caf: 14, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, synapse: true, regeneration: true, daemonicTerror: true, shieldType: 'CHITIN', maxShields: 4,
-      weapon: { name: 'Bile Launcher, Bio-Cannons & Tentacles', rangeCm: 75, dice: 6, toHit: 3, tsm: -3 },
+      weapon: { name: 'Bile Launcher, Bio-Cannons & Tentacles', rangeCm: 75, dice: 6, toHit: 3, tsm: -3, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0x581c87, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_swarmlord', armyBook: 'TYRANIDS', name: 'The Swarmlord (Apex Synapse)', points: 200,
+      moveCm: 15, save: 2, fixedSave: 5, caf: 10, morale: 1, pinningClass: 2, standsCount: 1, isCharacter: true, synapse: true, daemonicTerror: true, isPsyker: true, psychicRank: 4, baseW: 26, baseH: 26,
+      weapon: { name: 'Four Bone Sabres & Warp Blast', rangeCm: 35, dice: 3, toHit: 3, tsm: -3, damagesBuildings: true },
+      characterRules: { swarmlord: true, spells: ['mind_blast', 'transfixing_gaze', 'destroy_daemon'] },
+      breakPoint: 1, vpValue: 3, color: 0x4a044e
     }
   ],
   SQUATS: [
@@ -1186,45 +1378,52 @@ const UNIT_CATALOG = {
     {
       key: 'sqt_ironhammer', armyBook: 'SQUATS', name: 'Ironhammer Main Battle Tanks', points: 250,
       moveCm: 20, save: 2, caf: 2, morale: 2, pinningClass: 2,
-      weapon: { name: 'Mega-Thunderer Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3 },
+      weapon: { name: 'Mega-Thunderer Cannon', rangeCm: 75, dice: 2, toHit: 4, tsm: -3, damagesBuildings: true },
       breakPoint: 2, vpValue: 3, color: 0xca8a04, standsCount: 3, baseW: 24, baseH: 32
     },
     {
       key: 'sqt_molemortar', armyBook: 'SQUATS', name: 'Mole Mortar & Thudd Gun Battery', points: 175,
       moveCm: 10, save: 5, caf: 0, morale: 2, pinningClass: 1,
-      weapon: { name: 'Subterranean Torpedo Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true },
+      weapon: { name: 'Subterranean Torpedo Barrage', rangeCm: 90, dice: 1, toHit: 4, tsm: -1, barrage: true, barrageBp: 2, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 3, vpValue: 2, color: 0xa16207, standsCount: 4, baseW: 22, baseH: 22
     },
     {
       key: 'sqt_goliath', armyBook: 'SQUATS', name: 'Goliath Mega-Cannon Siege Battery', points: 250,
       moveCm: 5, save: 3, caf: 0, morale: 2, pinningClass: 3, superHeavy: true,
-      weapon: { name: 'Super-Heavy Siege Howitzer', rangeCm: 140, dice: 1, toHit: 3, tsm: -3, barrage: true, barrageBp: 5, indirect: true },
+      weapon: { name: 'Super-Heavy Siege Howitzer', rangeCm: 140, dice: 1, toHit: 3, tsm: -3, barrage: true, barrageBp: 5, indirect: true, canSmoke: true, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0x854d0e, standsCount: 2, baseW: 28, baseH: 34
     },
     {
       key: 'sqt_overlord', armyBook: 'SQUATS', name: 'Overlord Armored Airship', points: 250,
       moveCm: 25, save: 2, caf: 5, morale: 2, pinningClass: 3, superHeavy: true, skimmer: true, jump: true,
-      weapon: { name: 'Dirigible Battlecannons & Melta Bombs', rangeCm: 75, dice: 5, toHit: 4, tsm: -2 },
+      weapon: { name: 'Dirigible Battlecannons & Melta Bombs', rangeCm: 75, dice: 5, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 3, color: 0xfde047, standsCount: 1, baseW: 32, baseH: 40
     },
     {
       key: 'sqt_leviathan', armyBook: 'SQUATS', name: 'Leviathan Mobile Fortress Praetorian', points: 350,
       moveCm: 12, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 4, transportCapacity: 4,
-      weapon: { name: 'Doomsday Cannon & 6 Lascannons', rangeCm: 90, dice: 5, toHit: 4, tsm: -2 },
+      weapon: { name: 'Doomsday Cannon & 6 Lascannons', rangeCm: 90, dice: 5, toHit: 4, tsm: -2, damagesBuildings: true },
       breakPoint: 1, vpValue: 4, color: 0xd97706, standsCount: 1, baseW: 36, baseH: 42
     },
     {
       key: 'sqt_cyclops', armyBook: 'SQUATS', name: 'Cyclops Titan-Killer Praetorian', points: 425,
       moveCm: 12, save: 2, caf: 12, morale: 1, pinningClass: 4, isTitan: true, superHeavy: true, shieldType: 'VOID', maxShields: 5,
-      weapon: { name: 'Hellfury Titan-Killer Beam & Melta Cannon', rangeCm: 100, dice: 6, toHit: 3, tsm: -4 },
+      weapon: { name: 'Hellfury Titan-Killer Beam & Melta Cannon', rangeCm: 100, dice: 6, toHit: 3, tsm: -4, damagesBuildings: true },
       breakPoint: 1, vpValue: 5, color: 0x92400e, standsCount: 1, baseW: 38, baseH: 42
+    },
+    {
+      key: 'char_warlord', armyBook: 'SQUATS', name: 'Living Ancestor & Warlord', points: 150,
+      moveCm: 10, save: 2, fixedSave: 4, caf: 7, morale: 1, pinningClass: 1, standsCount: 1, isCharacter: true, squatMastery: true, isPsyker: true, psychicRank: 3, baseW: 22, baseH: 22,
+      weapon: { name: 'Force Hammer & Master Bolter', rangeCm: 40, dice: 2, toHit: 3, tsm: -2 },
+      characterRules: { livingAncestor: true, spells: ['guide', 'mind_blast'] },
+      breakPoint: 1, vpValue: 3, color: 0xd97706
     }
   ]
 };
 
 const DEFAULT_ROSTERS = {
-  IMPERIUM: ['sm_tac', 'sm_rhino', 'sm_terminators', 'sm_landspeeder', 'sm_pred', 'sm_whirlwind', 'sm_warhound'],
-  ORKS:     ['ork_boyz', 'ork_nobz', 'ork_wagons', 'ork_deffkoptas', 'ork_kommandos', 'ork_biggunz', 'ork_mekgargant'],
+  IMPERIUM: ['sm_tac', 'sm_rhino', 'sm_terminators', 'sm_landspeeder', 'sm_pred', 'sm_whirlwind', 'sm_warhound', 'char_calgar'],
+  ORKS:     ['ork_boyz', 'ork_nobz', 'ork_wagons', 'ork_deffkoptas', 'ork_kommandos', 'ork_biggunz', 'ork_mekgargant', 'char_ghazghkull'],
   ELDAR:    ['eld_guardians', 'eld_banshees', 'eld_hawks', 'eld_falcon', 'eld_jetbikes', 'eld_fireprism', 'eld_doomweaver', 'eld_revenant'],
   CHAOS:    ['chs_marines', 'chs_rhino', 'chs_berserkers', 'chs_plaguemarines', 'chs_terminators', 'chs_discriders', 'chs_bloodthirster'],
   TYRANIDS: ['tyr_hormagaunts', 'tyr_genestealers', 'tyr_lictors', 'tyr_warriors', 'tyr_gargoyles', 'tyr_biovores', 'tyr_carnifex', 'tyr_hierodule'],
@@ -1452,6 +1651,11 @@ window.renderArmyModal = function() {
         const terNote = u.daemonicTerror ? ' | 😱 Terror (-2 Enemy CAF)' : '';
         const masNote = u.squatMastery ? ' | ⚒️ CC Mastery (Re-roll 1s)' : '';
         const banNote = u.bansheeMask ? ' | 🔊 Banshee Mask (+1D6 CC)' : '';
+        const charNote = u.isCharacter ? ' | 👑 Hero' : '';
+        const psyNote = u.isPsyker ? ` | 🔮 Psyker (${u.psychicRank || 3})` : '';
+        const flameNote = u.weapon.isFlame ? ' | 🔥 Flame' : '';
+        const smokeNote = u.weapon.canSmoke ? ' | 💨 Smoke' : '';
+        const siegeNote = u.weapon.damagesBuildings ? ' | 🏚️ Siege' : '';
         const saveDesc = u.holoField ? `${u.save}+ (💎 Holo)` : (u.fixedSave ? `${u.save}+ (${u.fixedSave}+f)` : `${u.save}+`);
         const wpnDesc = u.weapon.barrage
           ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
@@ -1461,7 +1665,7 @@ window.renderArmyModal = function() {
         row.innerHTML = `
           <div>
             <div style="font-weight:700; color:#f8fafc;">${u.name} <span style="color:#fde047;">(${u.points} pts / ${u.vpValue} VP)</span></div>
-            <div class="sub-text">${u.standsCount} ${u.isTitan ? 'Titan' : (u.superHeavy ? 'Model' : 'stands')} | Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${transNote} | ${wpnDesc}</div>
+            <div class="sub-text">${u.standsCount} ${u.isTitan ? 'Titan' : (u.superHeavy ? 'Model' : 'stands')} | Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${charNote}${psyNote}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${flameNote}${smokeNote}${siegeNote}${transNote} | ${wpnDesc}</div>
           </div>
           <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${side}', '${u.key}')">+ Add</button>
         `;
@@ -1591,6 +1795,82 @@ window.initCombatLogResize = function() {
   window.addEventListener('pointercancel', stopResize);
 };
 
+// --- NETEPIC HEROIC SPECIAL CHARACTERS & PSYCHIC POWERS (02a_netepic_optional_rules_v5 pp. 10-15) ---
+const PSYCHIC_POWERS = {
+  mind_blast: {
+    key: 'mind_blast',
+    name: 'Mind Blast',
+    icon: '⚡',
+    difficulty: 4,
+    rangeCm: 25,
+    targetType: 'ENEMY',
+    desc: '25cm Range. Manifest 4+. Target unit suffers D3 psychic hits at 0 TSM (ignores cover). On Titans/Super-Heavies, strikes directly at Head/Bridge!'
+  },
+  purge_psyker: {
+    key: 'purge_psyker',
+    name: 'Purge Psyker',
+    icon: '🔮',
+    difficulty: 0,
+    rangeCm: 50,
+    targetType: 'ENEMY_PSYKER',
+    desc: '50cm Range. Psychic Duel: Caster rolls 2D6 vs target enemy psyker 1D6. If caster wins, enemy psyker suffers instant psychic brain meltdown!'
+  },
+  transfixing_gaze: {
+    key: 'transfixing_gaze',
+    name: 'Transfixing Gaze',
+    icon: '👁️',
+    difficulty: 4,
+    rangeCm: 40,
+    targetType: 'ENEMY',
+    desc: '40cm Range. Manifest 4+. Target enemy detachment is transfixed in dread until End Phase: cannot move, cannot shoot, and CAF reduced to 0!'
+  },
+  frazzle: {
+    key: 'frazzle',
+    name: 'Frazzle (Waaagh Lightning)',
+    icon: '⚡',
+    difficulty: 4,
+    rangeCm: 30,
+    targetType: 'ENEMY',
+    desc: '30cm Range. Manifest 4+. Arcs crackling green warp lightning dealing 2 direct hits at -1 TSM!'
+  },
+  ere_we_go: {
+    key: 'ere_we_go',
+    name: "'Ere We Go!",
+    icon: '🏃',
+    difficulty: 4,
+    rangeCm: 30,
+    targetType: 'FRIENDLY',
+    desc: '30cm Range. Manifest 4+. Target friendly mob surges forward with unstoppable momentum, immediately gaining +15cm extra movement speed!'
+  },
+  guide: {
+    key: 'guide',
+    name: 'Guide (Runes of Fate)',
+    icon: '🎯',
+    difficulty: 3,
+    rangeCm: 40,
+    targetType: 'FRIENDLY',
+    desc: '40cm Range. Manifest 3+. Farseer guides destiny: target friendly detachment re-rolls all missed shooting To-Hit rolls this battle round!'
+  },
+  doom: {
+    key: 'doom',
+    name: 'Doom (Eldar Curse)',
+    icon: '💀',
+    difficulty: 4,
+    rangeCm: 40,
+    targetType: 'ENEMY',
+    desc: '40cm Range. Manifest 4+. Target enemy detachment is cursed: suffers -1 to all Armor Saves and -1 to Morale checks this round!'
+  },
+  destroy_daemon: {
+    key: 'destroy_daemon',
+    name: 'Destroy Daemon / Warp Rupture',
+    icon: '💥',
+    difficulty: 4,
+    rangeCm: 30,
+    targetType: 'ENEMY',
+    desc: '30cm Range. Manifest 4+. Greater Daemon / Daemon Engine suffers D6 wounds with NO save allowed!'
+  }
+};
+
 class NetEpicScene extends Phaser.Scene {
   constructor() {
     super({ key: 'NetEpicScene' });
@@ -1607,6 +1887,11 @@ class NetEpicScene extends Phaser.Scene {
     this.activatingDetachment = null; // Moving or Shooting detachment
     this.targetDetachment = null;     // Enemy target in Combat Phase
     this.isDraggingStand = false;
+
+    // Special States: Waaagh, Smoke Clouds, Building Target Mode
+    this.waaaghActive = false;
+    this.targetBuildingMode = false;
+    this.smokeClouds = [];
 
     // Group Formation Move state (double-click any stand or use the HUD toggle button)
     this.groupMoveMode = true;
@@ -1635,6 +1920,7 @@ class NetEpicScene extends Phaser.Scene {
     this.boardGfx = this.add.graphics().setDepth(1);
     this.deployGfx = this.add.graphics().setDepth(2);
     this.objGfx = this.add.graphics().setDepth(3);
+    this.smokeGfx = this.add.graphics().setDepth(350);
     this.losGfx = this.add.graphics().setDepth(400);
     this.overlayGfx = this.add.graphics().setDepth(450);
 
@@ -1981,6 +2267,15 @@ class NetEpicScene extends Phaser.Scene {
         { id: 5, name: 'Obj #5 (West Flank Sector)', x: sectors[3].bx + 70, y: sectors[3].by + 50, owner: 'NEUTRAL' }
       ];
     }
+
+    // Initialize NetEpic Structural Integrity (SI) & Demolition properties (Core Rules pp. 28-30)
+    this.buildings.forEach(b => {
+      if (b.type === 'BUNKER') { b.siMax = 3; b.save = 2; }
+      else if (b.type === 'CATHEDRAL' || b.type === 'MANUFACTORUM') { b.siMax = 2; b.save = 4; }
+      else { b.siMax = 1; b.save = 6; }
+      b.siDamage = 0;
+      b.collapsed = false;
+    });
   }
 
   applyMapPreset(preset) {
@@ -2324,6 +2619,9 @@ class NetEpicScene extends Phaser.Scene {
       this.drawDetailedBuilding(b);
     });
 
+    // 10. Persistent Artillery Smoke Screens (NetEpic Optional Rules p. 3)
+    this.drawSmokeClouds();
+
     this.boardGfx.lineStyle(4, 0x94a3b8, 1);
     this.boardGfx.strokeRect(0, 0, BOARD_W, BOARD_H);
 
@@ -2340,8 +2638,56 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
+  drawSmokeClouds() {
+    this.smokeGfx.clear();
+    (this.smokeClouds || []).forEach(sc => {
+      this.smokeGfx.fillStyle(0x64748b, 0.45);
+      this.smokeGfx.fillCircle(sc.x, sc.y, sc.r + 4);
+      this.smokeGfx.fillStyle(0x94a3b8, 0.65);
+      this.smokeGfx.fillCircle(sc.x - 3, sc.y - 2, sc.r * 0.85);
+      this.smokeGfx.fillStyle(0xcbd5e1, 0.55);
+      this.smokeGfx.fillCircle(sc.x + 4, sc.y + 3, sc.r * 0.7);
+      this.smokeGfx.fillStyle(0xe2e8f0, 0.35);
+      this.smokeGfx.fillCircle(sc.x, sc.y - 4, sc.r * 0.5);
+    });
+  }
+
   // --- DETAILED 6MM SCALE ARCHITECTURAL BUILDING RENDERER ---
   drawDetailedBuilding(b) {
+    if (b.labelObj) {
+      b.labelObj.destroy();
+      const idx = this.terrainLabels.indexOf(b.labelObj);
+      if (idx !== -1) this.terrainLabels.splice(idx, 1);
+      b.labelObj = null;
+    }
+
+    if (b.collapsed) {
+      // Rubble & collapsed ruin (Core Rules pp. 28-30)
+      this.boardGfx.fillStyle(0x0f172a, 0.7);
+      this.boardGfx.fillRect(b.x + 4, b.y + 4, b.w, b.h);
+      this.boardGfx.fillStyle(0x1e293b, 0.95);
+      this.boardGfx.fillRect(b.x, b.y, b.w, b.h);
+      this.boardGfx.lineStyle(2, 0xef4444, 0.8);
+      this.boardGfx.strokeRect(b.x, b.y, b.w, b.h);
+
+      for (let i = 0; i < 18; i++) {
+        const rx = b.x + 12 + ((i * 37) % (b.w - 24));
+        const ry = b.y + 12 + ((i * 29) % (b.h - 24));
+        const rr = 6 + (i % 4) * 3;
+        this.boardGfx.fillStyle(0x475569, 0.9);
+        this.boardGfx.fillCircle(rx, ry, rr);
+        this.boardGfx.lineStyle(1.5, 0x0f172a, 0.9);
+        this.boardGfx.strokeCircle(rx, ry, rr);
+      }
+      const rlbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `💥 ${b.name.toUpperCase()}\n(COLLAPSED RUBBLE / IMPASSABLE)`, {
+        fontSize: '9.5px', color: '#fca5a5', align: 'center', fontStyle: 'bold',
+        backgroundColor: 'rgba(153, 27, 27, 0.88)', padding: { x: 4, y: 2 }
+      }).setOrigin(0.5).setDepth(4);
+      b.labelObj = rlbl;
+      this.terrainLabels.push(rlbl);
+      return;
+    }
+
     // 1. Cast shadow
     this.boardGfx.fillStyle(0x0a140d, 0.6);
     this.boardGfx.fillRect(b.x + 8, b.y + 10, b.w, b.h);
@@ -2614,12 +2960,15 @@ class NetEpicScene extends Phaser.Scene {
       });
     }
 
-    // Building Garrison Label
+    // Building Garrison & Structural Integrity Label
     const icon = b.type === 'CATHEDRAL' ? '🏰' : (b.type === 'MANUFACTORUM' ? '🏭' : (b.type === 'BUNKER' ? '🛡️' : (b.type === 'SILO' ? '🛢️' : '🏢')));
-    const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `${icon} ${b.name.toUpperCase()}\n(Garrison: -2 Hit / 4+ Sv)`, {
-      fontSize: '10px', color: '#f8fafc', align: 'center', fontStyle: 'bold',
-      backgroundColor: 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
+    const siRemaining = Math.max(0, (b.siMax || 1) - (b.siDamage || 0));
+    const siTag = b.siDamage > 0 ? `[⚠️ SI: ${siRemaining}/${b.siMax}]` : `[SI: ${b.siMax}/${b.siMax}]`;
+    const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `${icon} ${b.name.toUpperCase()}\n${siTag} (Garrison: -2 Hit / ${b.save || 4}+ Sv)`, {
+      fontSize: '9.5px', color: b.siDamage > 0 ? '#fde047' : '#f8fafc', align: 'center', fontStyle: 'bold',
+      backgroundColor: b.siDamage > 0 ? 'rgba(120, 53, 15, 0.88)' : 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
     }).setOrigin(0.5).setDepth(4);
+    b.labelObj = lbl;
     this.terrainLabels.push(lbl);
   }
 
@@ -3076,6 +3425,77 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
 
+  // Teardrop Flame Template cone (Core Rules p. 30: ignores cover)
+  spawnFlameFX(x1, y1, x2, y2) {
+    const gfx = this.add.graphics().setDepth(435);
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const dist = Phaser.Math.Distance.Between(x1, y1, x2, y2);
+    const spread = Math.PI / 6;
+    const state = { t: 0.1 };
+
+    this.tweens.add({
+      targets: state,
+      t: 1,
+      duration: 420,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const curDist = dist * state.t;
+        const alpha = 1 - state.t * 0.7;
+
+        gfx.fillStyle(0xef4444, alpha * 0.4);
+        gfx.beginPath();
+        gfx.moveTo(x1, y1);
+        gfx.lineTo(x1 + Math.cos(angle - spread) * curDist, y1 + Math.sin(angle - spread) * curDist);
+        gfx.lineTo(x1 + Math.cos(angle + spread) * curDist, y1 + Math.sin(angle + spread) * curDist);
+        gfx.closePath();
+        gfx.fillPath();
+
+        gfx.fillStyle(0xfacc15, alpha * 0.7);
+        gfx.beginPath();
+        gfx.moveTo(x1, y1);
+        gfx.lineTo(x1 + Math.cos(angle - spread * 0.5) * (curDist * 0.85), y1 + Math.sin(angle - spread * 0.5) * (curDist * 0.85));
+        gfx.lineTo(x1 + Math.cos(angle + spread * 0.5) * (curDist * 0.85), y1 + Math.sin(angle + spread * 0.5) * (curDist * 0.85));
+        gfx.closePath();
+        gfx.fillPath();
+      },
+      onComplete: () => gfx.destroy()
+    });
+  }
+
+  // Psychic Warp Rift & Lightning visual effect (Optional Rules pp. 10-15)
+  spawnPsychicFX(x1, y1, x2, y2) {
+    const gfx = this.add.graphics().setDepth(440);
+    const state = { t: 0.1 };
+
+    this.tweens.add({
+      targets: state,
+      t: 1,
+      duration: 500,
+      ease: 'Sine.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const alpha = 1 - state.t * 0.8;
+        gfx.lineStyle(3, 0xa855f7, alpha);
+        const steps = 6;
+        let cx = x1, cy = y1;
+        for (let i = 1; i <= steps; i++) {
+          const frac = i / steps;
+          const targetX = x1 + (x2 - x1) * frac + (Math.random() - 0.5) * 24;
+          const targetY = y1 + (y2 - y1) * frac + (Math.random() - 0.5) * 24;
+          gfx.lineBetween(cx, cy, targetX, targetY);
+          cx = targetX;
+          cy = targetY;
+        }
+        gfx.fillStyle(0xc084fc, alpha * 0.4);
+        gfx.fillCircle(x2, y2, 28 * state.t);
+        gfx.lineStyle(2, 0xe9d5ff, alpha);
+        gfx.strokeCircle(x2, y2, 28 * state.t);
+      },
+      onComplete: () => gfx.destroy()
+    });
+  }
+
   // NetEpic Gold Barrage Points (BP) Table (Rules p. 35)
   getBarrageStats(totalBp, baseTsm = 0) {
     let toHit = 5, bpTsm = 0;
@@ -3508,12 +3928,386 @@ class NetEpicScene extends Phaser.Scene {
     det.locationDamage[locKey] = 'CRIT';
     det.locationDamage.reactor = 'CRIT';
     record('DESTROYED', 'die-fail');
-    window.sfx.playExplosion(true);
+    window.sfx.playMeltdown();
     this.spawnExplosionFX(vx, vy, 44, true);
     this.spawnFloatingText(vx, vy - 22, `💥 CATASTROPHIC EXPLOSION!`, '#ef4444', '14px');
     this.log(`💥 <b>Super-Heavy Damage Roll (${rawRoll}): CATASTROPHIC REACTOR EXPLOSION! ${det.name}</b> is obliterated in a massive fireball (final hit: ${locName})!`);
-    this.removeCasualty(det, victim);
+
+    if (det.isTitan || rawRoll === 6) {
+      this.executeTitanMeltdown(det, vx, vy);
+    } else {
+      this.executeTitanFall(det, vx, vy);
+    }
+    this.removeCasualty(det, victim, 0, true);
     return true;
+  }
+
+  // NetEpic Gold Core Rules p. 46: Catastrophic Titan Meltdown 3D6 cm blast wave
+  executeTitanMeltdown(det, vx, vy) {
+    window.sfx.playMeltdown();
+    const d1 = Phaser.Math.Between(1, 6);
+    const d2 = Phaser.Math.Between(1, 6);
+    const d3 = Phaser.Math.Between(1, 6);
+    const blastRadiusCm = d1 + d2 + d3;
+    const blastRadiusPx = blastRadiusCm * PX_PER_CM;
+
+    this.spawnExplosionFX(vx, vy, Math.min(180, blastRadiusPx * 0.8), true);
+    this.spawnFloatingText(vx, vy - 35, `☢️ TITAN MELTDOWN! (3D6 = ${blastRadiusCm}cm BLAST)`, '#f87171', '14px');
+    this.log(`☢️ <b>TITAN CATASTROPHIC MELTDOWN! ${det.name}</b>'s plasma reactor ruptures! Blast wave expands <b>${blastRadiusCm} cm</b> (3D6 = ${d1}+${d2}+${d3})!`);
+
+    const meltdownDiceUI = [{ val: `${d1}+${d2}+${d3}`, cls: 'die-crit', tip: `3D6 Radius: ${blastRadiusCm}cm` }];
+    let unitsHit = 0;
+    let unitsKilled = 0;
+
+    // Check all units within blast radius (NetEpic p. 46: hit at 0 TSM, no bail-out if transport destroyed)
+    this.detachments.forEach(targetDet => {
+      if (targetDet === det || targetDet.stands.length === 0 || targetDet.embarkedOn || targetDet.inReserve) return;
+      const hitStands = targetDet.stands.filter(s => Phaser.Math.Distance.Between(vx, vy, s.container.x, s.container.y) <= blastRadiusPx);
+      if (hitStands.length > 0) {
+        unitsHit += hitStands.length;
+        this.log(`🔥 <b>${targetDet.name}</b> is engulfed by the nuclear shockwave (${hitStands.length} stand(s) hit at 0 TSM)!`);
+        hitStands.forEach(hs => {
+          const svRoll = Phaser.Math.Between(1, 6);
+          const passed = svRoll >= targetDet.save;
+          meltdownDiceUI.push({ val: svRoll, cls: passed ? 'die-pass' : 'die-fail', tip: `${targetDet.name}: needed ${targetDet.save}+` });
+          if (passed) {
+            this.spawnFloatingText(hs.container.x, hs.container.y - 10, `🛡️ SAVED (${svRoll})`, '#38bdf8', '11px');
+          } else if (targetDet.superHeavy) {
+            this.applySuperHeavyDamage(targetDet, hs, false);
+          } else {
+            unitsKilled++;
+            this.removeCasualty(targetDet, hs, 0, true);
+          }
+        });
+        this.checkBreakPoint(targetDet);
+      }
+    });
+
+    // Check all buildings within blast radius (Core Rules p. 28: 1 SI damage from catastrophic blast)
+    this.buildings.forEach(b => {
+      if (b.collapsed) return;
+      const bcx = b.x + b.w / 2, bcy = b.y + b.h / 2;
+      if (Phaser.Math.Distance.Between(vx, vy, bcx, bcy) <= blastRadiusPx + Math.max(b.w, b.h) / 2) {
+        b.siDamage = (b.siDamage || 0) + 1;
+        this.log(`🏚️ <b>${b.name}</b> suffers 1 Structural Integrity shockwave damage [SI: ${Math.max(0, b.siMax - b.siDamage)}/${b.siMax}]!`);
+        this.spawnFloatingText(bcx, bcy - 12, `⚠️ SI DAMAGED (-1)`, '#f59e0b', '12px');
+      }
+    });
+
+    this.showDiceRollTray(`☢️ Titan Meltdown ➔ ${blastRadiusCm}cm Radius — ${unitsKilled} killed`, [
+      { label: 'Shockwave 3D6 & Saves', dice: meltdownDiceUI }
+    ]);
+    this.drawBattlefield();
+  }
+
+  // NetEpic Gold Core Rules p. 46: Toppling Titans fall 6cm, crushing models underneath with a -3 TSM hit
+  executeTitanFall(det, vx, vy) {
+    const fallAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const fallDistPx = 6 * PX_PER_CM;
+    const fx = vx + Math.cos(fallAngle) * fallDistPx;
+    const fy = vy + Math.sin(fallAngle) * fallDistPx;
+
+    window.sfx.playExplosion(true);
+    this.spawnExplosionFX(fx, fy, 28, false);
+    this.spawnFloatingText(fx, fy - 18, `🤖 TITAN COLLAPSE & FALL!`, '#fbbf24', '13px');
+    this.log(`🤖 <b>TITAN TOPPLES! ${det.name}</b> collapses to the ground in ruins!`);
+
+    const fallLine = new Phaser.Geom.Line(vx, vy, fx, fy);
+    this.detachments.forEach(tDet => {
+      if (tDet === det || tDet.stands.length === 0 || tDet.embarkedOn || tDet.inReserve) return;
+      const crushed = tDet.stands.filter(s => {
+        const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 16);
+        return Phaser.Geom.Intersects.LineToCircle(fallLine, c);
+      });
+      if (crushed.length > 0) {
+        this.log(`⚠️ <b>${tDet.name}</b> is caught under the falling titan (${crushed.length} stand(s) crushed at -3 TSM)!`);
+        crushed.forEach(cs => {
+          const svRoll = Phaser.Math.Between(1, 6);
+          const needed = tDet.save + 3; // -3 TSM modifier
+          if (svRoll >= needed && needed <= 6) {
+            this.spawnFloatingText(cs.container.x, cs.container.y, `🛡️ SAVED (${svRoll})`, '#38bdf8', '11px');
+          } else {
+            this.removeCasualty(tDet, cs, -3, false);
+          }
+        });
+        this.checkBreakPoint(tDet);
+      }
+    });
+  }
+
+  // --- NETEPIC PSYCHIC POWER SYSTEM (Optional Rules pp. 10-15) ---
+  openPsychicPowerModal(casterDet = null) {
+    const det = casterDet || this.activatingDetachment || this.selectedDetachment;
+    if (!det || !det.isPsyker || det.stands.length === 0 || this.isFactionAI(det.faction)) return;
+    if (det.psychicPowerUsed) {
+      this.log(`🔮 <b>${det.name}</b> has already manifested a psychic power this battle round.`);
+      return;
+    }
+
+    const modal = document.getElementById('psyker-modal');
+    const titleEl = document.getElementById('psyker-modal-title');
+    const casterEl = document.getElementById('psyker-modal-caster');
+    const listEl = document.getElementById('psyker-powers-list');
+    if (!modal || !titleEl || !casterEl || !listEl) return;
+
+    titleEl.innerHTML = `🔮 PSYCHIC MASTERY: ${det.name}`;
+    casterEl.innerHTML = `Psychic Rank ${det.psychicRank || 4} Master Psyker | Choose a power to manifest:`;
+    listEl.innerHTML = '';
+
+    const spells = (det.characterRules && det.characterRules.spells) || ['mind_blast'];
+    spells.forEach(pKey => {
+      const p = PSYCHIC_POWERS[pKey];
+      if (!p) return;
+      const card = document.createElement('div');
+      card.className = 'power-card';
+      const diffTag = p.difficulty > 0 ? `Difficulty: ${p.difficulty}+` : 'Psychic Duel (2D6 vs 1D6)';
+      card.innerHTML = `
+        <div class="power-card-header">
+          <span class="power-card-title">${p.icon} ${p.name}</span>
+          <span class="vp-box" style="font-size:0.68rem; padding:1px 6px; background:#4c1d95; border-color:#a855f7;">${diffTag}</span>
+        </div>
+        <div class="power-card-desc">${p.desc}</div>
+        <div style="margin-top:6px; display:flex; justify-content:flex-end;">
+          <button class="btn-primary" style="min-width:auto; padding:4px 10px; font-size:0.75rem; background:#7e22ce;" onclick="window.gameScene.castPsychicPower('${p.key}')">⚡ Manifest Power</button>
+        </div>
+      `;
+      listEl.appendChild(card);
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  closePsykerModal() {
+    const modal = document.getElementById('psyker-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  castPsychicPower(powerKey) {
+    this.closePsykerModal();
+    const det = this.activatingDetachment || this.selectedDetachment;
+    if (!det || !det.isPsyker || det.stands.length === 0 || det.psychicPowerUsed) return;
+    const power = PSYCHIC_POWERS[powerKey];
+    if (!power) return;
+
+    const casterStand = det.stands[0];
+    const cx = casterStand.container.x, cy = casterStand.container.y;
+    const rangePx = power.rangeCm * PX_PER_CM;
+
+    // Determine target detachment based on power type
+    let target = null;
+    if (power.targetType === 'ENEMY') {
+      if (this.targetDetachment && this.targetDetachment.faction !== det.faction && this.targetDetachment.stands.length > 0) {
+        const tc = this.getDetachmentCenter(this.targetDetachment);
+        if (Phaser.Math.Distance.Between(cx, cy, tc.x, tc.y) <= rangePx) {
+          target = this.targetDetachment;
+        }
+      }
+      if (!target) {
+        let bestDist = Infinity;
+        this.detachments.forEach(ed => {
+          if (ed.faction === det.faction || ed.stands.length === 0 || ed.embarkedOn || ed.inReserve) return;
+          const ec = this.getDetachmentCenter(ed);
+          const d = Phaser.Math.Distance.Between(cx, cy, ec.x, ec.y);
+          if (d <= rangePx && d < bestDist) { bestDist = d; target = ed; }
+        });
+      }
+      if (!target) {
+        this.log(`⚠️ <b>${power.name}:</b> No enemy unit within ${power.rangeCm}cm range!`);
+        return;
+      }
+    } else if (power.targetType === 'ENEMY_PSYKER') {
+      let bestDist = Infinity;
+      this.detachments.forEach(ed => {
+        if (ed.faction === det.faction || !ed.isPsyker || ed.stands.length === 0 || ed.embarkedOn || ed.inReserve) return;
+        const ec = this.getDetachmentCenter(ed);
+        const d = Phaser.Math.Distance.Between(cx, cy, ec.x, ec.y);
+        if (d <= rangePx && d < bestDist) { bestDist = d; target = ed; }
+      });
+      if (!target) {
+        this.log(`⚠️ <b>Purge Psyker:</b> No enemy Psyker within ${power.rangeCm}cm range to duel!`);
+        return;
+      }
+    } else if (power.targetType === 'FRIENDLY') {
+      if (this.selectedDetachment && this.selectedDetachment.faction === det.faction && this.selectedDetachment.stands.length > 0) {
+        const sc = this.getDetachmentCenter(this.selectedDetachment);
+        if (Phaser.Math.Distance.Between(cx, cy, sc.x, sc.y) <= rangePx) target = this.selectedDetachment;
+      }
+      if (!target) target = det;
+    }
+
+    const tc = target ? this.getDetachmentCenter(target) : { x: cx, y: cy };
+    det.psychicPowerUsed = true;
+    window.sfx.playPsychic();
+    this.spawnPsychicFX(cx, cy, tc.x, tc.y);
+
+    // Roll manifestation test
+    if (power.difficulty > 0) {
+      const roll = Phaser.Math.Between(1, 6);
+      const passed = roll >= power.difficulty;
+      this.showDiceRollTray(`🔮 Manifest: ${power.name} (${power.difficulty}+)`, [
+        { label: det.name, dice: [{ val: roll, cls: passed ? 'die-pass' : 'die-fail', tip: `Needed ${power.difficulty}+` }] }
+      ]);
+      if (!passed) {
+        this.spawnFloatingText(cx, cy - 18, `🔮 PERILS! FAILED (${roll})`, '#f87171', '12px');
+        this.log(`🔮 <b>${det.name}</b> attempts to manifest <i>${power.name}</i> but rolls <b>${roll}</b> (needed ${power.difficulty}+) — the psychic energy dissipates!`);
+        this.updateUI();
+        return;
+      }
+    }
+
+    // Power execution
+    if (power.key === 'mind_blast') {
+      const hits = Phaser.Math.Between(1, 3);
+      this.spawnFloatingText(tc.x, tc.y - 18, `⚡ MIND BLAST! (${hits} Hits)`, '#c084fc', '13px');
+      this.log(`⚡ <b>MIND BLAST! ${det.name}</b> crushes the mind of <b>${target.name}</b> for <b>${hits} direct hit(s)</b>!`);
+      for (let h = 0; h < hits; h++) {
+        if (target.stands.length === 0) break;
+        if (target.superHeavy) {
+          if (!target.locationDamage) target.locationDamage = { head: 'ONLINE', weapons: 'ONLINE', reactor: 'ONLINE', legs: 'ONLINE' };
+          target.locationDamage.head = 'DAMAGED';
+          this.applySuperHeavyDamage(target, target.stands[0], false);
+        } else {
+          this.removeCasualty(target, null, 0, false);
+        }
+      }
+      this.checkBreakPoint(target);
+    } else if (power.key === 'purge_psyker') {
+      const c1 = Phaser.Math.Between(1, 6), c2 = Phaser.Math.Between(1, 6);
+      const t1 = Phaser.Math.Between(1, 6);
+      const casterTotal = c1 + c2;
+      const targetTotal = t1;
+      const passed = casterTotal > targetTotal;
+      this.showDiceRollTray(`🔮 Psychic Duel: Purge Psyker`, [
+        { label: `${det.name} (2D6)`, dice: [{ val: `${c1}+${c2}=${casterTotal}`, cls: passed ? 'die-pass' : 'die-fail' }] },
+        { label: `${target.name} (1D6)`, dice: [{ val: targetTotal, cls: passed ? 'die-fail' : 'die-pass' }] }
+      ]);
+      if (passed) {
+        this.spawnFloatingText(tc.x, tc.y - 18, `🧠 BRAIN MELTDOWN!`, '#ef4444', '14px');
+        this.log(`🧠 <b>PSYCHIC DUEL WON! ${det.name}</b> (${casterTotal}) overpowers <b>${target.name}</b> (${targetTotal})! Enemy psyker suffers violent cranial rupture!`);
+        this.removeCasualty(target, null, 0, false);
+        this.checkBreakPoint(target);
+      } else {
+        this.log(`🛡️ <b>${target.name}</b> successfully shields its mind against ${det.name}'s Purge Psyker!`);
+      }
+    } else if (power.key === 'transfixing_gaze') {
+      target.transfixed = true;
+      target.moved = true;
+      target.fired = true;
+      target.savedCaf = target.caf;
+      target.caf = 0;
+      this.spawnFloatingText(tc.x, tc.y - 18, `👁️ TRANSFIXED IN TERROR!`, '#c084fc', '13px');
+      this.log(`👁️ <b>TRANSFIXING GAZE! ${target.name}</b> is paralyzed in terror: cannot move, shoot or fight (CAF reduced to 0 until End Phase)!`);
+      this.updateDetachmentBadge(target);
+    } else if (power.key === 'frazzle') {
+      this.spawnFloatingText(tc.x, tc.y - 18, `⚡ FRAZZLE! (2 Hits @ -1 TSM)`, '#4ade80', '13px');
+      this.log(`⚡ <b>FRAZZLE! ${det.name}</b> zaps <b>${target.name}</b> with crackling Waaagh lightning for 2 hits at -1 TSM!`);
+      for (let h = 0; h < 2; h++) {
+        if (target.stands.length === 0) break;
+        const svRoll = Phaser.Math.Between(1, 6);
+        if (svRoll < target.save + 1) {
+          if (target.superHeavy) this.applySuperHeavyDamage(target, target.stands[0], false);
+          else this.removeCasualty(target, null, -1, false);
+        } else {
+          this.log(`🛡️ ${target.name} saved against Frazzle (${svRoll})!`);
+        }
+      }
+      this.checkBreakPoint(target);
+    } else if (power.key === 'ere_we_go') {
+      target.moveCm += 15;
+      this.spawnFloatingText(tc.x, tc.y - 18, `🏃 'ERE WE GO! (+15cm Move)`, '#22c55e', '13px');
+      this.log(`🏃 <b>'ERE WE GO! ${target.name}</b> gains <b>+15 cm</b> movement speed this battle round!`);
+      this.updateDetachmentBadge(target);
+    } else if (power.key === 'guide') {
+      target.guided = true;
+      this.spawnFloatingText(tc.x, tc.y - 18, `🎯 GUIDED DESTINY! (Re-roll Misses)`, '#fde047', '13px');
+      this.log(`🎯 <b>GUIDE! ${target.name}</b>'s aim is guided by runes: re-rolls all missed shooting To-Hit rolls this round!`);
+      this.updateDetachmentBadge(target);
+    } else if (power.key === 'doom') {
+      target.doomed = true;
+      this.spawnFloatingText(tc.x, tc.y - 18, `💀 DOOMED! (-1 Save & Morale)`, '#ef4444', '13px');
+      this.log(`💀 <b>DOOM! ${target.name}</b> is cursed by the Farseer: suffers -1 to Armor Saves and -1 to Morale checks!`);
+      this.updateDetachmentBadge(target);
+    } else if (power.key === 'destroy_daemon') {
+      const wounds = Phaser.Math.Between(1, 6);
+      this.spawnFloatingText(tc.x, tc.y - 18, `💥 WARP RUPTURE (${wounds} Wounds)!`, '#ef4444', '14px');
+      this.log(`💥 <b>WARP RUPTURE! ${det.name}</b> tears open realspace, inflicting <b>${wounds} wounds</b> directly into <b>${target.name}</b>!`);
+      for (let w = 0; w < wounds; w++) {
+        if (target.stands.length === 0) break;
+        if (target.superHeavy) this.applySuperHeavyDamage(target, target.stands[0], false);
+        else this.removeCasualty(target, null, 0, false);
+      }
+      this.checkBreakPoint(target);
+    }
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  // Ghazghkull Mag Uruk Thraka: "Call the Waaagh!" (02a_netepic_optional_rules_v5 p. 12)
+  triggerWaaagh(orkDet = null) {
+    if (this.waaaghUsed) {
+      this.log('🗣️ <b>The Waaagh has already been called in this battle!</b>');
+      return;
+    }
+    const det = orkDet || this.activatingDetachment || this.selectedDetachment;
+    this.waaaghUsed = true;
+    this.waaaghActive = true;
+
+    window.sfx.playWaaagh();
+    this.cameras.main.shake(600, 0.016);
+
+    const dc = det ? this.getDetachmentCenter(det) : { x: BOARD_W / 2, y: BOARD_H / 2 };
+    this.spawnFloatingText(dc.x, dc.y - 30, `🗣️ WAAAGH! CALL THE WAAAGH!`, '#22c55e', '18px');
+    this.log(`🗣️ <b>CALL THE WAAAGH! Ghazghkull Mag Uruk Thraka roars a deafening battlecry!</b> For the remainder of this battle round: Ghazghkull is invulnerable, enemy shooting against Orks suffers -1 To-Hit, and ALL Orks roll +1D6 in Close Combat (3D6 + CAF)!`);
+
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  // Persistent Artillery Smoke Screens (NetEpic Optional Rules p. 3)
+  fireSmokeScreen() {
+    const det = this.activatingDetachment;
+    if (!det || det.stands.length === 0 || !det.weapon || !det.weapon.canSmoke) return;
+
+    let targetX = 0, targetY = 0;
+    if (this.targetDetachment && this.targetDetachment.stands.length > 0) {
+      const tc = this.getDetachmentCenter(this.targetDetachment);
+      targetX = tc.x;
+      targetY = tc.y;
+    } else {
+      const dc = this.getDetachmentCenter(det);
+      const angle = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2;
+      targetX = dc.x + Math.cos(angle) * (det.weapon.rangeCm * PX_PER_CM * 0.5);
+      targetY = dc.y + Math.sin(angle) * (det.weapon.rangeCm * PX_PER_CM * 0.5);
+    }
+
+    this.smokeClouds.push({ x: targetX, y: targetY, r: 30 }); // 6cm diameter smoke cloud
+    det.fired = true;
+
+    window.sfx.playBarrage();
+    this.spawnExplosionFX(targetX, targetY, 30, true);
+    this.spawnFloatingText(targetX, targetY - 18, `💨 6cm SMOKE SCREEN LAID!`, '#94a3b8', '13px');
+    this.log(`💨 <b>${det.name}</b> deploys a <b>6cm Artillery Smoke Screen</b> template! Direct Line of Sight is completely blocked until End Phase.`);
+
+    this.drawBattlefield();
+    this.drawOverlays();
+    this.updateUI();
+  }
+
+  // Toggle heavy weapon building demolition mode
+  toggleTargetBuildingMode() {
+    this.targetBuildingMode = !this.targetBuildingMode;
+    const btn = document.getElementById('btn-target-building');
+    if (btn) {
+      btn.className = this.targetBuildingMode ? 'btn-fire' : 'btn-warn';
+      btn.innerText = this.targetBuildingMode ? '🎯 Target Building: ACTIVE' : '🏚️ Target Building (Siege)';
+    }
+    this.log(this.targetBuildingMode
+      ? '🏚️ <b>Building Siege Mode ACTIVE:</b> Heavy artillery and siege weapons will directly pound the building structure to inflict Structural Integrity (SI) collapse damage!'
+      : '🏚️ Building Siege Mode deactivated.'
+    );
+    this.drawOverlays();
+    this.updateUI();
   }
 
   // --- PHASE 12: FACING & 180° FRONT FIRE ARCS (Titans & Super-Heavies; Infantry & standard vehicles fire 360°) ---
@@ -4021,6 +4815,19 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
+    // 1.5 Check Persistent Artillery Smoke Screens (NetEpic Optional Rules p. 3: blocks direct LoS)
+    if (this.smokeClouds && this.smokeClouds.length > 0) {
+      for (const sc of this.smokeClouds) {
+        const c = new Phaser.Geom.Circle(sc.x, sc.y, sc.r);
+        if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
+          if (canFireIndirect) {
+            return { valid: true, indirect: true, reason: 'Indirect over Smoke Screen (-1 Hit)', distCm, coverMod: baseCoverMod };
+          }
+          return { valid: false, reason: 'Blocked by Smoke Screen', distCm, coverMod: 0, indirect: false };
+        }
+      }
+    }
+
     // 2. Check Woods (More than 2 cm = 20px of woods blocks direct LoS; edge <=2cm grants -1 cover)
     const steps = Math.max(10, Math.ceil(distPx / 4));
     let woodPixels = 0;
@@ -4061,8 +4868,10 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
-    const coverMod = targetBuilding ? -2 : ((targetInWood || woodPixels > 0) ? -1 : 0);
-    return { valid: true, indirect: false, reason: targetBuilding ? 'Garrison Cover (-2 Hit)' : 'Clear LoS', distCm, coverMod };
+    // Flame weapons (Bjorn's heavy flamer, Hellhounds, bio-plasma spray) ignore cover! (Core Rules p. 30)
+    const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -2 : ((targetInWood || woodPixels > 0) ? -1 : 0));
+    const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? 'Garrison Cover (-2 Hit)' : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS'));
+    return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
 
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
@@ -4197,23 +5006,53 @@ class NetEpicScene extends Phaser.Scene {
         const garrisoned = this.isStandGarrisoned(victimStand);
         const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
         const coverMod = garrisoned ? -2 : (inWood ? -1 : 0);
-        const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod;
+        const waaaghMod = (this.waaaghActive && vDet.armyBook === 'ORKS') ? 1 : 0;
+        const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod;
 
         totalDice++;
-        const roll = Phaser.Math.Between(1, 6);
+        let roll = Phaser.Math.Between(1, 6);
         let hitSuccess = false;
+        let extraRoll = null;
         if (roll === 1) {
           hitSuccess = false;
         } else if (neededToHit <= 6) {
           hitSuccess = roll >= neededToHit;
         } else if (roll === 6) {
-          const extraRoll = Phaser.Math.Between(1, 6);
+          extraRoll = Phaser.Math.Between(1, 6);
           hitSuccess = extraRoll >= (neededToHit - 3);
         }
-        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', tip: `${vDet.name}: needed ${neededToHit}+` });
+
+        // Guide Psychic Power: Re-roll failed To-Hit roll
+        let guidedNote = '';
+        if (!hitSuccess && firerDet.guided) {
+          const rr = Phaser.Math.Between(1, 6);
+          let rrSuccess = false, rrExtra = null;
+          if (rr === 1) rrSuccess = false;
+          else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
+          else if (rr === 6) {
+            rrExtra = Phaser.Math.Between(1, 6);
+            rrSuccess = rrExtra >= (neededToHit - 3);
+          }
+          if (rrSuccess) {
+            hitSuccess = true;
+            roll = rr;
+            extraRoll = rrExtra;
+            guidedNote = ` [✨Guide Re-roll]`;
+          }
+        }
+        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `${vDet.name}: needed ${neededToHit}+${guidedNote}` });
 
         if (hitSuccess) {
           hits++;
+          // Ghazghkull invulnerable during WAAAGH!
+          if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
+            saves++;
+            window.sfx.playSave();
+            saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
+            this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
+            return;
+          }
+
           // Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields first!
           if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
             saves++;
@@ -4222,10 +5061,23 @@ class NetEpicScene extends Phaser.Scene {
           }
           const saveRoll = Phaser.Math.Between(1, 6);
           const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
-          let neededSave = baseSave - barrageStats.tsm;
-          if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave);
-          const saved = saveRoll >= neededSave && neededSave <= 6;
-          saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+` });
+          const doomPen = vDet.doomed ? 1 : 0;
+          let neededSave = baseSave - barrageStats.tsm + doomPen;
+          if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
+          let saved = saveRoll >= neededSave && neededSave <= 6;
+
+          // Commissar Yarrick: Iron Will re-roll on failed armour save
+          if (!saved && vDet.characterRules && vDet.characterRules.rerollArmorSave) {
+            const yrRoll = Phaser.Math.Between(1, 6);
+            if (yrRoll >= neededSave && neededSave <= 6) {
+              saved = true;
+              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Yarrick Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+            }
+          }
+          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Yarrick Iron Will'))) {
+            saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+          }
+
           if (saved) {
             saves++;
             window.sfx.playSave();
@@ -4240,6 +5092,25 @@ class NetEpicScene extends Phaser.Scene {
           }
         }
       });
+
+      // Building Demolition & Structural Integrity Damage from Barrage
+      if (wpn.damagesBuildings && hits > 0) {
+        this.buildings.forEach(b => {
+          if (b.collapsed) return;
+          const inside = templateTargets.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
+          if (inside) {
+            const bldgSave = Phaser.Math.Between(1, 6);
+            const neededBSave = Math.min(6, (b.save || 4) - (barrageStats.tsm || 0));
+            if (bldgSave < neededBSave || neededBSave > 6) {
+              b.siDamage = (b.siDamage || 0) + 1;
+              window.sfx.playMeltdown();
+              this.spawnFloatingText(b.x + b.w / 2, b.y + b.h / 2, `🏚️ SI DAMAGE! (${b.siDamage}/${b.siMax})`, '#ef4444', '13px');
+              this.log(`🏚️ <b>Building Structural Damage:</b> Barrage breached <b>${b.name}</b> (Save ${bldgSave} vs ${neededBSave}+) — sustained <b>${b.siDamage}/${b.siMax} SI damage</b>!`);
+              this.drawDetailedBuilding(b);
+            }
+          }
+        });
+      }
 
       this.log(
         `🎲 Barrage Template Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
@@ -4258,15 +5129,25 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // --- B) STANDARD DIRECT RANGED ATTACK RESOLUTION ---
-    window.sfx.playLaser(wpn.tsm <= -1);
-    const beamColor = this.getSideMeta(firerDet.faction).phaserColor || 0x38bdf8;
-    sol.validPairs.forEach(pair => {
-      this.spawnLaserFX(
-        pair.shooter.container.x, pair.shooter.container.y,
-        pair.target.container.x, pair.target.container.y,
-        beamColor, false
-      );
-    });
+    if (wpn.isFlame) {
+      window.sfx.playFlame();
+      sol.validPairs.forEach(pair => {
+        this.spawnFlameFX(
+          pair.shooter.container.x, pair.shooter.container.y,
+          pair.target.container.x, pair.target.container.y
+        );
+      });
+    } else {
+      window.sfx.playLaser(wpn.tsm <= -1);
+      const beamColor = this.getSideMeta(firerDet.faction).phaserColor || 0x38bdf8;
+      sol.validPairs.forEach(pair => {
+        this.spawnLaserFX(
+          pair.shooter.container.x, pair.shooter.container.y,
+          pair.target.container.x, pair.target.container.y,
+          beamColor, false
+        );
+      });
+    }
 
     const dmgPenNote = firerDet.toHitPenalty ? ` [Damaged ${firerDet.toHitPenalty} Hit]` : '';
     const popNote = firerDet.poppedUp ? ' [🚀 POP-UP]' : '';
@@ -4275,13 +5156,14 @@ class NetEpicScene extends Phaser.Scene {
     sol.validPairs.forEach(pair => {
       if (targetDet.stands.length === 0) return;
       const coverMod = pair.res.coverMod;
+      const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
       // Modifiers penalize the shooter by increasing the needed To-Hit roll
-      const neededToHit = wpn.toHit - snapMod - coverMod;
+      const neededToHit = wpn.toHit - snapMod - coverMod + waaaghMod;
 
       for (let d = 0; d < dicePerStand; d++) {
         if (targetDet.stands.length === 0) break;
         totalDice++;
-        const roll = Phaser.Math.Between(1, 6);
+        let roll = Phaser.Math.Between(1, 6);
         let hitSuccess = false;
         let extraRoll = null;
 
@@ -4295,13 +5177,41 @@ class NetEpicScene extends Phaser.Scene {
           const extraNeeded = neededToHit - 3;
           hitSuccess = extraRoll >= extraNeeded;
         }
-        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: extraRoll !== null ? `+${extraRoll}` : '', tip: `Needed ${neededToHit}+` });
+
+        // Guide Psychic Power: Re-roll failed To-Hit roll (NetEpic p. 12)
+        let guidedNote = '';
+        if (!hitSuccess && firerDet.guided) {
+          const rr = Phaser.Math.Between(1, 6);
+          let rrSuccess = false, rrExtra = null;
+          if (rr === 1) rrSuccess = false;
+          else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
+          else if (rr === 6) {
+            rrExtra = Phaser.Math.Between(1, 6);
+            rrSuccess = rrExtra >= (neededToHit - 3);
+          }
+          if (rrSuccess) {
+            hitSuccess = true;
+            roll = rr;
+            extraRoll = rrExtra;
+            guidedNote = ` [✨Guide Re-roll]`;
+          }
+        }
+        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `Needed ${neededToHit}+${guidedNote}` });
 
         if (hitSuccess) {
           hits++;
           const victimRef = targetDet.stands[targetDet.stands.length - 1];
           const vx = victimRef ? victimRef.container.x : pair.target.container.x;
           const vy = victimRef ? victimRef.container.y : pair.target.container.y;
+
+          // Ghazghkull Mag Uruk Thraka: Invulnerable during "Call the Waaagh!"
+          if (targetDet.characterRules && targetDet.characterRules.ghazghkull && this.waaaghActive) {
+            saves++;
+            window.sfx.playSave();
+            saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
+            this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
+            continue;
+          }
 
           // 1. Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields before rolling Armor Save!
           if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
@@ -4310,16 +5220,28 @@ class NetEpicScene extends Phaser.Scene {
             continue;
           }
 
-          // 2. Armour Save modified by TSM (p. 37), Building Garrison 4+ Save (p. 26), Fixed Save, and Eldar Holo-Fields!
+          // 2. Armour Save modified by TSM (p. 37), Doom psychic power (-1 save), Building Garrison 4+ Save (p. 26), Fixed Save, and Eldar Holo-Fields!
           const saveRoll = Phaser.Math.Between(1, 6);
           const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
           const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
-          let neededSave = baseSave - wpn.tsm; // e.g. Save 3+ with TSM -1 becomes 4+
-          if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave);
+          const doomPen = targetDet.doomed ? 1 : 0;
+          let neededSave = baseSave - wpn.tsm + doomPen; // e.g. Save 3+ with TSM -1 becomes 4+
+          if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
           const holoSave = this.getHoloFieldSave(targetDet);
           if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
-          const saved = saveRoll >= neededSave && neededSave <= 6;
-          saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+` });
+          let saved = saveRoll >= neededSave && neededSave <= 6;
+
+          // Commissar Yarrick: Iron Will re-roll on failed armour save (NetEpic p. 11)
+          if (!saved && targetDet.characterRules && targetDet.characterRules.rerollArmorSave) {
+            const yrRoll = Phaser.Math.Between(1, 6);
+            if (yrRoll >= neededSave && neededSave <= 6) {
+              saved = true;
+              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Yarrick Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+            }
+          }
+          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Yarrick Iron Will'))) {
+            saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+          }
 
           if (saved) {
             saves++;
@@ -4341,6 +5263,24 @@ class NetEpicScene extends Phaser.Scene {
         }
       }
     });
+
+    // Building Demolition & Structural Integrity (SI) Damage (NetEpic Core Rules pp. 27-28 & 46)
+    if (wpn.damagesBuildings && hits > 0) {
+      const targetBuilding = this.buildings.find(b => !b.collapsed && targetDet.stands.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h));
+      if (targetBuilding) {
+        const bldgSave = Phaser.Math.Between(1, 6);
+        const neededBSave = Math.min(6, (targetBuilding.save || 4) - (wpn.tsm || 0));
+        if (bldgSave < neededBSave || neededBSave > 6) {
+          targetBuilding.siDamage = (targetBuilding.siDamage || 0) + 1;
+          window.sfx.playMeltdown();
+          this.spawnFloatingText(targetBuilding.x + targetBuilding.w / 2, targetBuilding.y + targetBuilding.h / 2, `🏚️ SI DAMAGE! (${targetBuilding.siDamage}/${targetBuilding.siMax})`, '#ef4444', '13px');
+          this.log(`🏚️ <b>Building Structural Damage:</b> Heavy ordnance breached <b>${targetBuilding.name}</b> (Save ${bldgSave} vs ${neededBSave}+) — sustained <b>${targetBuilding.siDamage}/${targetBuilding.siMax} SI damage</b>!`);
+          this.drawDetailedBuilding(targetBuilding);
+        } else {
+          this.spawnFloatingText(targetBuilding.x + targetBuilding.w / 2, targetBuilding.y + targetBuilding.h / 2, `🛡️ BUILDING DEFLECTED (${bldgSave})`, '#38bdf8', '11px');
+        }
+      }
+    }
 
     if (kills === 0 && hits === 0) {
       const tc = this.getDetachmentCenter(targetDet);
@@ -4379,7 +5319,7 @@ class NetEpicScene extends Phaser.Scene {
     this.updateDetachmentBadge(firerDet);
   }
 
-  removeCasualty(det, specificStand = null) {
+  removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false) {
     if (det.stands.length === 0) return;
     let victim = specificStand;
     if (victim) {
@@ -4399,32 +5339,54 @@ class NetEpicScene extends Phaser.Scene {
     victim.container.destroy();
     det.casualties++;
 
-    // NetEpic Transport Bail-Out Rule (p. 23): If a Transport stand carrying passengers is destroyed, check excess passenger capacity!
+    // NetEpic Transport Bail-Out Rule (Core Rules p. 38):
+    // 4+ save modified by weapon's TSM (or natural save if better). No bail-out if destroyed by Titan Meltdown!
     if (det.passengerDet && det.passengerDet.stands.length > 0) {
       const pDet = det.passengerDet;
       const remainingCap = det.stands.length * (det.transportCapacity || 2);
       const excessCount = Math.max(0, pDet.stands.length - remainingCap);
+      const bailDiceUI = [];
 
       for (let i = 0; i < excessCount; i++) {
         if (pDet.stands.length === 0) break;
-        const bailRoll = Phaser.Math.Between(1, 6);
-        if (bailRoll < pDet.save) {
+        if (isMeltdown) {
+          // Nuclear fireball leaves no escape (Core Rules p. 46)
           const pVictim = pDet.stands.pop();
           pVictim.container.destroy();
           pDet.casualties++;
-          this.log(`🔥 <b>${pDet.name} (${pVictim.label})</b> failed Bail-Out Save (${bailRoll} < ${pDet.save}+) inside destroyed <b>${det.name}</b>!`);
+          this.log(`🔥 <b>${pDet.name} (${pVictim.label})</b> vaporized inside <b>${det.name}</b> by Titan Meltdown (NO Bail-Out)!`);
+          bailDiceUI.push({ val: '☠️', cls: 'die-fail', tip: 'Titan Meltdown: No Bail-Out' });
         } else {
-          this.log(`🪂 <b>${pDet.name}</b> stand passed Bail-Out Save (${bailRoll} >= ${pDet.save}+) and escaped the wreck!`);
+          const bailRoll = Phaser.Math.Between(1, 6);
+          const tsmSave = 4 - weaponTsm;
+          const needed = Math.max(2, Math.min(6, Math.min(tsmSave, pDet.save)));
+          const passed = bailRoll >= needed;
+          bailDiceUI.push({ val: bailRoll, cls: passed ? 'die-pass' : 'die-fail', tip: `Needed ${needed}+ (4 - TSM ${weaponTsm})` });
+
+          if (!passed) {
+            const pVictim = pDet.stands.pop();
+            pVictim.container.destroy();
+            pDet.casualties++;
+            this.log(`🔥 <b>${pDet.name} (${pVictim.label})</b> failed Bail-Out (${bailRoll} < ${needed}+) in destroyed <b>${det.name}</b>!`);
+          } else {
+            this.log(`🪂 <b>${pDet.name}</b> passed Bail-Out Save (${bailRoll} >= ${needed}+) and jumped from the wreck!`);
+          }
         }
       }
       this.checkBreakPoint(pDet);
+
+      if (bailDiceUI.length > 0) {
+        this.showDiceRollTray(`🪂 Bail-Out Save: ${pDet.name} inside ${det.name}`, [
+          { label: isMeltdown ? 'Vaporized (No Save)' : `Bail-Out (4 - TSM ${weaponTsm})`, dice: bailDiceUI }
+        ]);
+      }
 
       if (pDet.stands.length === 0) {
         det.passengerDet = null;
         pDet.embarkedOn = null;
         if (pDet.badge) pDet.badge.setVisible(false);
       } else if (det.stands.length === 0 || excessCount > 0) {
-        // Surviving passengers bail out around the wreck!
+        // Surviving passengers disembark into clear terrain around the wreck
         this.disembarkDetachment(det, vx, vy);
       } else {
         this.syncEmbarkedPassengers(det);
@@ -5429,12 +6391,26 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
+    // Check for Army Initiative Bonuses (e.g. Marneus Calgar Chapter Master: +1 Army Initiative)
+    let southInitMod = 0;
+    let northInitMod = 0;
+    this.detachments.forEach(d => {
+      if (d.stands && d.stands.length > 0 && d.characterRules && d.characterRules.armyInitiativeBonus) {
+        if (d.faction === 'IMPERIUM') southInitMod = Math.max(southInitMod, d.characterRules.armyInitiativeBonus);
+        else northInitMod = Math.max(northInitMod, d.characterRules.armyInitiativeBonus);
+      }
+    });
+
     let impRoll = 0, orkRoll = 0;
-    while (impRoll === orkRoll) {
+    let impTotal = 0, orkTotal = 0;
+    do {
       impRoll = Phaser.Math.Between(1, 6);
       orkRoll = Phaser.Math.Between(1, 6);
-    }
-    this.initiativeWinner = impRoll > orkRoll ? 'IMPERIUM' : 'ORKS';
+      impTotal = impRoll + southInitMod;
+      orkTotal = orkRoll + northInitMod;
+    } while (impTotal === orkTotal);
+
+    this.initiativeWinner = impTotal > orkTotal ? 'IMPERIUM' : 'ORKS';
     this.activePlayer = this.initiativeWinner;
     this.phase = 'MOVEMENT';
     this.selectedDetachment = null;
@@ -5442,10 +6418,12 @@ class NetEpicScene extends Phaser.Scene {
     const southName = this.getSideName('IMPERIUM');
     const northName = this.getSideName('ORKS');
     const winName = this.getSideName(this.initiativeWinner);
-    this.log(`🎲 <b>Initiative Roll:</b> ${southName} ${impRoll} vs ${northName} ${orkRoll}. <b>${winName}</b> wins Initiative!`);
+    const southModStr = southInitMod > 0 ? ` (+${southInitMod} Hero)` : '';
+    const northModStr = northInitMod > 0 ? ` (+${northInitMod} Hero)` : '';
+    this.log(`🎲 <b>Initiative Roll:</b> ${southName} [${impRoll}]${southModStr} = <b>${impTotal}</b> vs ${northName} [${orkRoll}]${northModStr} = <b>${orkTotal}</b>. <b>${winName}</b> wins Initiative!`);
     this.showDiceRollTray(`🎲 Initiative — ${winName} wins`, [
-      { label: southName, dice: [{ val: impRoll, cls: impRoll > orkRoll ? 'die-pass' : 'die-fail' }] },
-      { label: northName, dice: [{ val: orkRoll, cls: orkRoll > impRoll ? 'die-pass' : 'die-fail' }] }
+      { label: southName + (southInitMod > 0 ? ` (+${southInitMod})` : ''), dice: [{ val: impRoll, cls: impTotal > orkTotal ? 'die-pass' : 'die-fail' }], summary: `= ${impTotal}` },
+      { label: northName + (northInitMod > 0 ? ` (+${northInitMod})` : ''), dice: [{ val: orkRoll, cls: orkTotal > impTotal ? 'die-pass' : 'die-fail' }], summary: `= ${orkTotal}` }
     ]);
     this.updateUI();
     this.drawOverlays();
@@ -5455,6 +6433,15 @@ class NetEpicScene extends Phaser.Scene {
   activateSelectedDetachment() {
     const det = this.selectedDetachment;
     if (!det || det.moved || det.embarkedOn || det.faction !== this.activePlayer) return;
+
+    if (det.transfixed) {
+      this.log(`👁️ <b>${det.name}</b> is <b>Transfixed</b> by psychic power and frozen in place! It cannot move this turn.`);
+      det.moved = true;
+      det.orderRevealed = true;
+      this.activatingDetachment = null;
+      this.finishMovementActivation();
+      return;
+    }
 
     det.orderRevealed = true;
     this.activatingDetachment = det;
@@ -5675,7 +6662,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- III. COMBAT PHASE (1: FIRST FIRE, 2: CLOSE COMBAT, 3: ADVANCE FIRE) ---
   isEligibleInCombatPhase(det) {
-    if (det.stands.length === 0 || det.fired || det.embarkedOn || det.inReserve) return false;
+    if (det.stands.length === 0 || det.fired || det.embarkedOn || det.inReserve || det.transfixed) return false;
     // Must have at least one stand NOT locked in Close Combat
     const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s));
     if (!hasUnengagedStand) return false;
@@ -5847,11 +6834,19 @@ class NetEpicScene extends Phaser.Scene {
     const impFought = this.defenderFoughtCounts.get(impStand) || 0;
     const orkFought = this.defenderFoughtCounts.get(orkStand) || 0;
 
-    // Multiple attackers rule (NetEpic p. 38) + Eldar Banshee Mask (+1D6 vs Infantry)
+    // Multiple attackers rule (NetEpic p. 38) + Eldar Banshee Mask (+1D6 vs Infantry) + Ghazghkull WAAAGH! (+1D6 for Orks)
+    // Marneus Calgar is immune to gang-up dice!
+    const impImmuneGang = Boolean(impDet.characterRules && impDet.characterRules.immuneToGangUp);
+    const orkImmuneGang = Boolean(orkDet.characterRules && orkDet.characterRules.immuneToGangUp);
+    const impExtraDice = (orkFought > 0 && impFought === 0 && !impImmuneGang) ? orkFought : 0;
+    const orkExtraDice = (impFought > 0 && orkFought === 0 && !orkImmuneGang) ? impFought : 0;
     const impBansheeBonus = (impDet.bansheeMask && orkDet.pinningClass === 1) ? 1 : 0;
     const orkBansheeBonus = (orkDet.bansheeMask && impDet.pinningClass === 1) ? 1 : 0;
-    const impDiceCount = ((orkFought > 0 && impFought === 0) ? 2 + orkFought : 2) + impBansheeBonus;
-    const orkDiceCount = ((impFought > 0 && orkFought === 0) ? 2 + impFought : 2) + orkBansheeBonus;
+    const impWaaaghBonus = (this.waaaghActive && impDet.armyBook === 'ORKS') ? 1 : 0;
+    const orkWaaaghBonus = (this.waaaghActive && orkDet.armyBook === 'ORKS') ? 1 : 0;
+
+    const impDiceCount = 2 + impExtraDice + impBansheeBonus + impWaaaghBonus;
+    const orkDiceCount = 2 + orkExtraDice + orkBansheeBonus + orkWaaaghBonus;
 
     this.defenderFoughtCounts.set(impStand, impFought + 1);
     this.defenderFoughtCounts.set(orkStand, orkFought + 1);
@@ -5869,6 +6864,22 @@ class NetEpicScene extends Phaser.Scene {
       impRolls.push(r);
     }
 
+    // Heroic Close Combat re-roll (Bjorn the Fell-Handed, Abaddon the Despoiler: re-roll one close combat die)
+    if (impDet.characterRules && impDet.characterRules.rerollOneCloseCombatDie && impRolls.length > 0) {
+      let minIdx = 0;
+      for (let i = 1; i < impRolls.length; i++) {
+        if (impRolls[i] < impRolls[minIdx]) minIdx = i;
+      }
+      if (impRolls[minIdx] < 6) {
+        const oldVal = impRolls[minIdx];
+        const newVal = Phaser.Math.Between(1, 6);
+        if (newVal > oldVal) {
+          impRolls[minIdx] = newVal;
+          impRerollNote += ` <span class="log-save">[⚔️ Heroic Re-roll ${oldVal}→${newVal}]</span>`;
+        }
+      }
+    }
+
     let orkRerollNote = '';
     const orkRolls = [];
     for (let i = 0; i < orkDiceCount; i++) {
@@ -5879,6 +6890,21 @@ class NetEpicScene extends Phaser.Scene {
         r = rr;
       }
       orkRolls.push(r);
+    }
+
+    if (orkDet.characterRules && orkDet.characterRules.rerollOneCloseCombatDie && orkRolls.length > 0) {
+      let minIdx = 0;
+      for (let i = 1; i < orkRolls.length; i++) {
+        if (orkRolls[i] < orkRolls[minIdx]) minIdx = i;
+      }
+      if (orkRolls[minIdx] < 6) {
+        const oldVal = orkRolls[minIdx];
+        const newVal = Phaser.Math.Between(1, 6);
+        if (newVal > oldVal) {
+          orkRolls[minIdx] = newVal;
+          orkRerollNote += ` <span class="log-save">[⚔️ Heroic Re-roll ${oldVal}→${newVal}]</span>`;
+        }
+      }
     }
 
     const impSum = impRolls.reduce((a, b) => a + b, 0);
@@ -5898,14 +6924,16 @@ class NetEpicScene extends Phaser.Scene {
     const orkTotal = orkSum + orkModCaf;
 
     const gangTagImp =
-      (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : 'Gang-Up '}${impDiceCount}D6!]</span>` : '') +
+      (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : (impWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${impDiceCount}D6!]</span>` : '') +
+      (impImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
       (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
       impRerollNote;
 
     const gangTagOrk =
-      (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : 'Gang-Up '}${orkDiceCount}D6!]</span>` : '') +
+      (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : (orkWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${orkDiceCount}D6!]</span>` : '') +
+      (orkImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
       (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
@@ -5918,8 +6946,10 @@ class NetEpicScene extends Phaser.Scene {
     let outcomeHtml = '';
     if (impTotal > orkTotal) {
       this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
-      // Avatar of Khaine 2+ Fixed Save applies even in Close Combat!
-      if (orkDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
+      if (orkDet.characterRules && orkDet.characterRules.ghazghkull && this.waaaghActive) {
+        window.sfx.playSave();
+        outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
+      } else if (orkDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
         window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🔥 ${orkDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
       } else if (orkDet.superHeavy) {
@@ -5934,7 +6964,10 @@ class NetEpicScene extends Phaser.Scene {
       this.checkBreakPoint(orkDet);
     } else if (orkTotal > impTotal) {
       this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
-      if (impDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
+      if (impDet.characterRules && impDet.characterRules.ghazghkull && this.waaaghActive) {
+        window.sfx.playSave();
+        outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
+      } else if (impDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
         window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🔥 ${impDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
       } else if (impDet.superHeavy) {
@@ -6045,7 +7078,64 @@ class NetEpicScene extends Phaser.Scene {
   resolveEndPhase() {
     if (this.phase !== 'END_PHASE') return;
 
-    // 0. Recharge downed Titan Void Shields, Ork Power Fields & Tyranid Chitin Bio-Shields (4+ per downed shield) and drop Popped-Up Skimmers!
+    // 0. End Phase Building Collapse Checks (NetEpic Core Rules pp. 27-28 & 46)
+    this.buildings.forEach(b => {
+      if (b.collapsed || !b.siDamage || b.siDamage <= 0) return;
+      const collapseRoll = Phaser.Math.Between(1, 6);
+      const collapses = (collapseRoll <= b.siDamage) || (b.siDamage >= (b.siMax || 1));
+      if (collapses) {
+        b.collapsed = true;
+        window.sfx.playMeltdown();
+        this.spawnExplosionFX(b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h) / 2, true);
+        this.spawnFloatingText(b.x + b.w / 2, b.y + b.h / 2, '💥 COLLAPSED INTO RUBBLE!', '#ef4444', '14px');
+        this.log(`💥 <b>CATASTROPHIC BUILDING COLLAPSE:</b> <b>${b.name}</b> suffered total structural collapse! (Roll ${collapseRoll} <= SI ${b.siDamage})`);
+
+        // Units garrisoned inside suffer -2 TSM crush save or die!
+        this.detachments.forEach(d => {
+          if (d.stands.length === 0) return;
+          const insideStands = d.stands.filter(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
+          insideStands.forEach(s => {
+            const saveRoll = Phaser.Math.Between(1, 6);
+            const neededSave = d.save + 2; // -2 TSM penalty for collapse crush
+            if (saveRoll >= neededSave && neededSave <= 6) {
+              this.spawnFloatingText(s.container.x, s.container.y, `🏃 SURVIVED COLLAPSE (${saveRoll})`, '#38bdf8', '11px');
+              this.log(`🛡️ <b>${d.name} (${s.label})</b> scrambled free from the collapsing ${b.name}! (Saved ${saveRoll} vs ${neededSave}+)`);
+            } else {
+              this.log(`💀 <b>${d.name} (${s.label})</b> was crushed beneath falling rubble! (Failed Save ${saveRoll} vs ${neededSave}+)`);
+              this.removeCasualty(d, s);
+            }
+          });
+          this.checkBreakPoint(d);
+        });
+
+        this.drawDetailedBuilding(b);
+      } else {
+        this.log(`🏚️ <b>${b.name}</b> holds against collapse (Roll ${collapseRoll} > SI ${b.siDamage}).`);
+      }
+    });
+
+    // Dissipate persistent smoke screens at end of turn (NetEpic p. 3)
+    if (this.smokeClouds && this.smokeClouds.length > 0) {
+      this.log(`💨 Artillery smoke screens dissipate into the atmosphere.`);
+      this.smokeClouds = [];
+      if (this.smokeGfx) this.smokeGfx.clear();
+      this.drawSmokeClouds();
+    }
+
+    // Reset Ghazghkull's WAAAGH! effect at end of round
+    if (this.waaaghActive) {
+      this.log(`🟢 The psychic momentum of the WAAAGH! subsides for this battle round.`);
+      this.waaaghActive = false;
+    }
+
+    // Clear transient psychic powers from detachments
+    this.detachments.forEach(d => {
+      d.guided = false;
+      d.doomed = false;
+      d.transfixed = false;
+    });
+
+    // 1. Recharge downed Titan Void Shields, Ork Power Fields & Tyranid Chitin Bio-Shields (4+ per downed shield) and drop Popped-Up Skimmers!
     this.detachments.forEach(d => {
       if (d.stands.length === 0) return;
       if (d.poppedUp) {
@@ -6072,19 +7162,25 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
-    // 1. Roll Rally Checks for all detachments currently on FALL_BACK orders (NetEpic p. 42)
+    // 2. Roll Rally Checks for all detachments currently on FALL_BACK orders (NetEpic p. 42)
     const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK');
     fallBackUnits.forEach(d => {
       const roll = Phaser.Math.Between(1, 6);
       const dc = this.getDetachmentCenter(d);
       const inSynapse = this.hasSynapseAura(d);
-      if (inSynapse || roll >= d.morale) {
+      // Heroic Morale Aura (e.g. Commissar Yarrick 25cm Steel Resolve aura or Ghazghkull 25cm aura)
+      const hasMoraleAura = this.detachments.some(hd =>
+        hd.faction === d.faction && hd.stands.length > 0 && hd.characterRules && hd.characterRules.moraleAuraCm &&
+        Phaser.Math.Distance.Between(dc.x, dc.y, this.getDetachmentCenter(hd).x, this.getDetachmentCenter(hd).y) <= hd.characterRules.moraleAuraCm * PX_PER_CM
+      );
+      const neededMorale = hasMoraleAura ? Math.max(1, d.morale - 1) : d.morale;
+      if (inSynapse || roll >= neededMorale) {
         d.order = null;
         d.orderRevealed = false;
         this.updateDetachmentBadge(d);
         window.sfx.playHorn();
-        this.spawnFloatingText(dc.x, dc.y - 16, inSynapse ? `🧬 SYNAPSE RALLIED!` : `🎺 RALLIED! (${roll})`, '#4ade80', '13px');
-        this.log(`🎺 <b>RALLY! ${d.name}</b> ${inSynapse ? 'automatically Rallies via <b>Hive Mind Synapse</b>' : `rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied from Fall Back`}!`);
+        this.spawnFloatingText(dc.x, dc.y - 16, inSynapse ? `🧬 SYNAPSE RALLIED!` : (hasMoraleAura ? `🦾 HERO RALLIED! (${roll})` : `🎺 RALLIED! (${roll})`), '#4ade80', '13px');
+        this.log(`🎺 <b>RALLY! ${d.name}</b> ${inSynapse ? 'automatically Rallies via <b>Hive Mind Synapse</b>' : (hasMoraleAura ? `rallied under the inspiring presence of an Allied Hero (Roll <b>${roll}</b> vs Morale <b>${neededMorale}+</b>)` : `rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied`)} from Fall Back!`);
       } else {
         // Failed Rally: remains on FALL_BACK and makes a compulsory 1x Move withdrawal toward home edge
         const retreatPx = d.moveCm * PX_PER_CM;
@@ -6677,6 +7773,19 @@ class NetEpicScene extends Phaser.Scene {
               btnMoveDs.style.display = 'none';
             }
           }
+
+          const btnPsyMove = document.getElementById('btn-cast-psychic-move');
+          if (btnPsyMove) {
+            const pDet = this.activatingDetachment || this.selectedDetachment;
+            btnPsyMove.style.display = (pDet && pDet.isPsyker && !pDet.moved && pDet.faction === this.activePlayer) ? 'block' : 'none';
+          }
+
+          const btnCallWaaagh = document.getElementById('btn-call-waaagh');
+          if (btnCallWaaagh) {
+            const wDet = this.activatingDetachment || this.selectedDetachment;
+            const hasGhaz = wDet && wDet.characterRules && wDet.characterRules.ghazghkull && wDet.characterRules.waaaghAvailable && wDet.faction === this.activePlayer;
+            btnCallWaaagh.style.display = hasGhaz ? 'block' : 'none';
+          }
         }
       }
     }
@@ -6735,6 +7844,21 @@ class NetEpicScene extends Phaser.Scene {
           } else {
             btnCombatPop.style.display = 'none';
           }
+        }
+
+        const btnPsyCombat = document.getElementById('btn-cast-psychic-combat');
+        if (btnPsyCombat) {
+          btnPsyCombat.style.display = (this.activatingDetachment && this.activatingDetachment.isPsyker && !this.activatingDetachment.fired) ? 'block' : 'none';
+        }
+
+        const btnSmoke = document.getElementById('btn-toggle-smoke');
+        if (btnSmoke) {
+          btnSmoke.style.display = (this.activatingDetachment && this.activatingDetachment.weapon && this.activatingDetachment.weapon.canSmoke && !this.activatingDetachment.fired) ? 'block' : 'none';
+        }
+
+        const btnBldg = document.getElementById('btn-target-building');
+        if (btnBldg) {
+          btnBldg.style.display = (this.activatingDetachment && this.activatingDetachment.weapon && (this.activatingDetachment.weapon.damagesBuildings || this.activatingDetachment.weapon.barrage) && !this.activatingDetachment.fired) ? 'block' : 'none';
         }
 
         if (this.activatingDetachment && this.targetDetachment) {
@@ -6817,6 +7941,17 @@ class NetEpicScene extends Phaser.Scene {
       const terrorBadge = d.daemonicTerror ? ' | 😱 Daemonic Terror (-2 Enemy CAF)' : '';
       const bansheeBadge = d.bansheeMask ? ' | 🎭 Banshee Mask (+1D6 vs Inf)' : '';
       const squatBadge = d.squatMastery ? ' | ⚒️ CC Mastery (Re-roll 1s)' : '';
+      const charBadge = d.isCharacter ? ' | 👑 Hero' : '';
+      const psyBadge = d.isPsyker ? ` | 🔮 Psyker (${d.psychicRank || 3})` : '';
+      const calgarBadge = (d.characterRules && d.characterRules.calgar) ? ' | 🦅 Chapter Master' : '';
+      const yarrickBadge = (d.characterRules && d.characterRules.yarrick) ? ' | 🦾 Commissar' : '';
+      const bjornBadge = (d.characterRules && d.characterRules.bjorn) ? ' | 🐺 Dreadnought' : '';
+      const ghazBadge = (d.characterRules && d.characterRules.ghazghkull) ? ` | 🟢 ${d.characterRules.waaaghAvailable ? 'WAAAGH! Ready' : 'WAAAGH! Used'}` : '';
+      const abaddonBadge = (d.characterRules && d.characterRules.abaddon) ? ' | ⚔️ Warmaster' : '';
+      const guideBadge = d.guided ? ' | ✨ Guided' : '';
+      const doomBadge = d.doomed ? ' | 💀 Doomed' : '';
+      const transfixedBadge = d.transfixed ? ' | 👁️ Transfixed' : '';
+      const waaaghBadge = (this.waaaghActive && d.armyBook === 'ORKS') ? ' | 🟢 WAAAGH! ACTIVE' : '';
       const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
       const grpBadge = this.groupMoveMode ? ' | 🔗 GROUP MOVE' : '';
       const aiBadge = this.isFactionAI(d.faction) ? ' | 🤖 AI' : '';
@@ -6827,7 +7962,7 @@ class NetEpicScene extends Phaser.Scene {
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit - (d.toHitPenalty || 0)}+, TSM ${d.weapon.tsm})`;
       const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
-      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      selTitle.innerText = `[${bookTag}] ${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, Break: ${d.breakPoint}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${yarrickBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
       selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? (d.inReserve ? 'Status: ☄️ Orbital Reserve' : 'Phase: Deployment')
