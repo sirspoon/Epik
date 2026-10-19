@@ -16198,10 +16198,11 @@ class NetEpicScene extends Phaser.Scene {
       deepStrikeActive: false,
       facingRad: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2, // South side faces North, North side faces South
       startMoveFacing: cfg.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2,
+      isVehicle: Boolean(cfg.pinningClass === 2 || cfg.pinningClass === 3 || cfg.superHeavy || cfg.skimmer || cfg.transportCapacity || cfg.isVehicle),
       isTitan: Boolean(cfg.isTitan),
       isPraetorian: Boolean(cfg.isPraetorian || cfg.praetorian || (cfg.superHeavy && cfg.command)),
       isAgile: Boolean(cfg.agile || (cfg.faction === 'ELDAR' && cfg.isTitan)),
-      hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy || cfg.hasFireArc || (cfg.weapon && cfg.weapon.pulsaRokkit)),
+      hasFireArc: Boolean(cfg.isTitan || cfg.superHeavy || cfg.hasFireArc || cfg.pinningClass === 2 || cfg.pinningClass === 3 || cfg.skimmer || (cfg.weapon && cfg.weapon.pulsaRokkit)),
       fireArcDeg: cfg.fireArcDeg || (cfg.weapon && cfg.weapon.pulsaRokkit ? 30 : 180),
       rokkitsRemaining: cfg.rokkitsRemaining !== undefined ? cfg.rokkitsRemaining : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
       maxRokkits: cfg.maxRokkits !== undefined ? cfg.maxRokkits : ((cfg.weapon && cfg.weapon.pulsaRokkit) ? 3 : 0),
@@ -16328,6 +16329,7 @@ class NetEpicScene extends Phaser.Scene {
         baseW,
         baseH,
         baseRadius: Math.max(baseW, baseH) * 0.5,
+        isVehicle: Boolean(cfg.pinningClass === 2 || cfg.pinningClass === 3 || cfg.superHeavy || cfg.skimmer || cfg.transportCapacity || cfg.isVehicle),
         facingRad: det.facingRad || 0,
         startMoveFacing: det.facingRad || 0,
         pip,
@@ -16892,16 +16894,17 @@ class NetEpicScene extends Phaser.Scene {
   // - Titans & Praetorians (Imperator, Warlord, Reaver, Warhound, Great Gargant, Slasha Gargant, Banelord):
   //   Ponderous war engines: maximum 90° total turn during movement!
   // - Agile Titans (Eldar Phantom / Warlock): Agile special ability grants unlimited turns (360° free).
-  // - Vehicles: At the end of movement, must face direction of travel but may make a 45° correction.
-  // - Stationary Vehicles: Free pivot.
+  // - Vehicles (Tanks, Buggies, Speedstas, Skimmers, Superheavies): NetEpic Gold p. 19:
+  //   "At the end of movement the model must face the direction of travel but may make a 45° correction."
+  //   If stationary, vehicles may make up to a 45° pivot from starting facing.
   // - Infantry: 360° all-around vision & movement; free facing.
-  getTurnLimits(det) {
+  getTurnLimits(det, targetStand = null) {
     const isDeploy = this.phase === 'DEPLOYMENT';
     if (isDeploy) {
       return { type: 'FREE', maxTurnDeg: 360, arcHalfDeg: 180, label: 'DEPLOYMENT: 360° FREE' };
     }
 
-    const isTitanOrPraetorian = Boolean(det.isTitan || det.isPraetorian);
+    const isTitanOrPraetorian = Boolean(det.isTitan || det.isPraetorian || det.pinningClass >= 4);
     const isAgile = Boolean(det.isAgile || (det.faction === 'ELDAR' && det.isTitan));
 
     if (isTitanOrPraetorian) {
@@ -16917,30 +16920,52 @@ class NetEpicScene extends Phaser.Scene {
       };
     }
 
-    const didTravel = det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 10);
-    if (det.hasFireArc && didTravel) {
-      let dx = 0, dy = 0;
-      det.stands.forEach(s => { dx += s.container.x - s.originX; dy += s.container.y - s.originY; });
-      const travelAngle = Math.atan2(dy, dx);
-      return {
-        type: 'VEHICLE_45',
-        maxTurnDeg: 90,
-        arcHalfDeg: 45, // NetEpic Gold p. 19: 45° correction at end of travel
-        baseAngle: travelAngle,
-        label: 'VEHICLE MOVE: ±45° CORRECTION'
-      };
-    }
+    // Vehicle detection: pinningClass 2 (Vehicles) or 3 (Superheavies), or explicit vehicle/skimmer flags
+    const isVehicle = Boolean(det.isVehicle || det.pinningClass === 2 || det.pinningClass === 3 || det.superHeavy || det.skimmer || det.transportCapacity);
 
-    if (det.hasFireArc) {
-      return { type: 'VEHICLE_PIVOT', maxTurnDeg: 360, arcHalfDeg: 180, label: 'STATIONARY PIVOT: 360°' };
+    if (isVehicle) {
+      const s = targetStand || (this.rotatingStand && this.rotatingStand.detachment === det ? this.rotatingStand : det.stands[0]);
+      let didTravel = false;
+      let travelAngle = s ? (s.startMoveFacing !== undefined ? s.startMoveFacing : (det.startMoveFacing || 0)) : (det.startMoveFacing || 0);
+
+      if (s && Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 8) {
+        didTravel = true;
+        travelAngle = Phaser.Math.Angle.Between(s.originX, s.originY, s.container.x, s.container.y);
+      } else {
+        // Check if group as a whole moved
+        let dx = 0, dy = 0;
+        det.stands.forEach(st => { dx += st.container.x - st.originX; dy += st.container.y - st.originY; });
+        if (Math.hypot(dx, dy) > 8) {
+          didTravel = true;
+          travelAngle = Math.atan2(dy, dx);
+        }
+      }
+
+      if (didTravel) {
+        return {
+          type: 'VEHICLE_45',
+          maxTurnDeg: 90,
+          arcHalfDeg: 45, // NetEpic Gold p. 19: max 45° from direction of travel
+          baseAngle: travelAngle,
+          label: 'VEHICLE: MAX 45° FROM DIRECTION OF TRAVEL'
+        };
+      } else {
+        return {
+          type: 'VEHICLE_STATIONARY_45',
+          maxTurnDeg: 90,
+          arcHalfDeg: 45, // NetEpic stationary vehicle pivot: max 45° from starting facing
+          baseAngle: travelAngle,
+          label: 'STATIONARY VEHICLE: ±45° PIVOT'
+        };
+      }
     }
 
     return { type: 'INFANTRY_FREE', maxTurnDeg: 360, arcHalfDeg: 180, label: 'INFANTRY: 360° FREE FACING' };
   }
 
-  clampAngleToTurnLimits(det, targetAngle) {
-    const limits = this.getTurnLimits(det);
-    if (limits.type === 'FREE' || limits.type === 'AGILE_TITAN' || limits.type === 'VEHICLE_PIVOT' || limits.type === 'INFANTRY_FREE') {
+  clampAngleToTurnLimits(det, targetAngle, targetStand = null) {
+    const limits = this.getTurnLimits(det, targetStand);
+    if (limits.type === 'FREE' || limits.type === 'AGILE_TITAN' || limits.type === 'INFANTRY_FREE') {
       return { angle: Phaser.Math.Angle.Wrap(targetAngle), clamped: false, limits };
     }
 
@@ -17034,22 +17059,32 @@ class NetEpicScene extends Phaser.Scene {
     const cy = stand.container.y;
 
     const rawAngle = Phaser.Math.Angle.Between(cx, cy, pointer.worldX, pointer.worldY);
-    const clampedResult = this.clampAngleToTurnLimits(det, rawAngle);
+    const clampedResult = this.clampAngleToTurnLimits(det, rawAngle, stand);
     const targetAngle = clampedResult.angle;
 
     const delta = Phaser.Math.Angle.Wrap(targetAngle - this.gizmoLastAngle);
     if (Math.abs(delta) < 0.003) return;
     this.gizmoLastAngle = targetAngle;
 
-    // Preserve individual unit offsets: rotate all stands in formation by delta angle
     const baseRot = det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2;
-    det.stands.forEach(s => {
-      s.facingRad = Phaser.Math.Angle.Wrap((s.facingRad !== undefined ? s.facingRad : (det.facingRad || 0)) + delta);
-      if (s.container) s.container.rotation = s.facingRad - baseRot;
-    });
-    det.facingRad = Phaser.Math.Angle.Wrap((det.facingRad || 0) + delta);
-    det.manualFacing = true;
 
+    if (!this.groupMoveMode) {
+      // Group Move is OFF: rotate ONLY this individual stand!
+      stand.facingRad = targetAngle;
+      if (stand.container) stand.container.rotation = stand.facingRad - baseRot;
+      if (det.stands.length === 1) {
+        det.facingRad = targetAngle;
+      }
+    } else {
+      // Group Move is ON: rotate ALL stands in formation by delta angle, preserving relative orientations
+      det.stands.forEach(s => {
+        s.facingRad = Phaser.Math.Angle.Wrap((s.facingRad !== undefined ? s.facingRad : (det.facingRad || 0)) + delta);
+        if (s.container) s.container.rotation = s.facingRad - baseRot;
+      });
+      det.facingRad = Phaser.Math.Angle.Wrap((det.facingRad || 0) + delta);
+    }
+
+    det.manualFacing = true;
     this.renderRotationGizmoGraphics(targetAngle, clampedResult);
     this.drawOverlays();
   }
@@ -17068,8 +17103,8 @@ class NetEpicScene extends Phaser.Scene {
     this.gizmoGfx.fillStyle(0x0f172a, 0.58);
     this.gizmoGfx.fillCircle(0, 0, R + 6);
 
-    // 2. NetEpic Gold Turning Sector Limits (Titans/Gargants 90° max; Vehicles 45° correction)
-    if (limits.type === 'TITAN_90' || limits.type === 'VEHICLE_45') {
+    // 2. NetEpic Gold Turning Sector Limits (Titans/Gargants 90° max; Vehicles 45° limit from travel vector or pivot)
+    if (limits.type === 'TITAN_90' || limits.type === 'VEHICLE_45' || limits.type === 'VEHICLE_STATIONARY_45') {
       const baseAng = limits.baseAngle !== undefined ? limits.baseAngle : (det.startMoveFacing || 0);
       const halfArc = Phaser.Math.DegToRad(limits.arcHalfDeg);
 
@@ -17135,12 +17170,27 @@ class NetEpicScene extends Phaser.Scene {
     const diffStr = (diffDeg >= 0 ? '+' : '') + diffDeg + '°';
 
     const clampWarn = isClamped ? ' ⚠️ LIMIT REACHED' : '';
+    const modeTag = det.stands.length > 1 ? (this.groupMoveMode ? '[🔗 GROUP] ' : `[🎯 STAND ${stand.label}] `) : '';
     if (this.gizmoText) {
-      this.gizmoText.setText(`${det.name}: ${deg}° (${compass}) [Turn: ${diffStr}]${clampWarn}`);
+      this.gizmoText.setText(`${modeTag}${det.name}: ${deg}° (${compass}) [Turn: ${diffStr}]${clampWarn}`);
       this.gizmoText.setColor(isClamped ? '#f87171' : '#38bdf8');
     }
     if (this.gizmoSubText) {
       this.gizmoSubText.setText(`${limits.label} • Tap ✔ to confirm`);
+    }
+    if (this.gizmoModeToggle) {
+      if (det.stands.length > 1) {
+        this.gizmoModeToggle.setVisible(true);
+        if (this.groupMoveMode) {
+          this.gizmoModeToggle.setText('🔗 GROUP MODE (Tap for Single Stand)');
+          this.gizmoModeToggle.setColor('#38bdf8');
+        } else {
+          this.gizmoModeToggle.setText(`🎯 SINGLE STAND: ${stand.label} (Tap for Group)`);
+          this.gizmoModeToggle.setColor('#facc15');
+        }
+      } else {
+        this.gizmoModeToggle.setVisible(false);
+      }
     }
   }
 
@@ -17155,8 +17205,9 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    // Open Interactive Rotation Dial centered on primary stand
-    this.openRotationGizmo(det.stands[0]);
+    // Open Interactive Rotation Dial centered on selected stand (or primary stand)
+    const targetStand = (this.selectedStand && this.selectedStand.detachment === det) ? this.selectedStand : det.stands[0];
+    this.openRotationGizmo(targetStand);
   }
 
   // --- STAND SPACING & PHYSICAL OVERLAP PREVENTION ---
@@ -18648,7 +18699,18 @@ class NetEpicScene extends Phaser.Scene {
       color: '#94a3b8', padding: { x: 5, y: 2 }
     }).setOrigin(0.5);
 
-    this.rotationGizmoContainer.add([this.gizmoGfx, this.gizmoCenterBtn, this.gizmoText, this.gizmoSubText]);
+    this.gizmoModeToggle = this.add.text(0, -90, '', {
+      fontSize: '10px', fontStyle: 'bold', backgroundColor: '#1e293b',
+      color: '#facc15', padding: { x: 6, y: 3 }
+    }).setOrigin(0.5);
+    this.gizmoModeToggle.setInteractive({ useHandCursor: true });
+    this.gizmoModeToggle.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event && event.stopPropagation) event.stopPropagation();
+      this.toggleGroupMove();
+      this.renderRotationGizmoGraphics(this.gizmoLastAngle);
+    });
+
+    this.rotationGizmoContainer.add([this.gizmoGfx, this.gizmoCenterBtn, this.gizmoText, this.gizmoSubText, this.gizmoModeToggle]);
 
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
       cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001, 0.35, 2.5));
@@ -18691,6 +18753,7 @@ class NetEpicScene extends Phaser.Scene {
       if (this.phase === 'MOVEMENT' && this.activatingDetachment && this.activatingDetachment !== clickedDet) return;
 
       this.selectedDetachment = clickedDet;
+      this.selectedStand = gameObject.standData;
 
       if (isDoubleClick && (this.phase === 'DEPLOYMENT' || this.phase === 'MOVEMENT' || this.phase === 'ORDERS')) {
         this.toggleGroupMove();
@@ -19783,10 +19846,17 @@ class NetEpicScene extends Phaser.Scene {
 
     // Check if the unit actually moved (or Deep Struck)
     const didMove = wasDeepStriking || det.stands.some(s => Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y) > 2);
-    if (det.hasFireArc && didMove && !wasDeepStriking && !det.manualFacing) {
+    if ((det.isVehicle || det.hasFireArc) && didMove && !wasDeepStriking && !det.manualFacing) {
+      det.stands.forEach(s => {
+        const dMoved = Phaser.Math.Distance.Between(s.originX, s.originY, s.container.x, s.container.y);
+        if (dMoved > 8) {
+          const travelAng = Phaser.Math.Angle.Between(s.originX, s.originY, s.container.x, s.container.y);
+          this.setStandFacing(s, travelAng);
+        }
+      });
       let dx = 0, dy = 0;
       det.stands.forEach(s => { dx += s.container.x - s.originX; dy += s.container.y - s.originY; });
-      if (Math.hypot(dx, dy) > 10) this.setDetachmentFacing(det, Math.atan2(dy, dx));
+      if (Math.hypot(dx, dy) > 10) det.facingRad = Math.atan2(dy, dx);
     }
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     this.syncEmbarkedPassengers(det);
