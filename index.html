@@ -187,8 +187,23 @@
       background: rgba(22, 163, 74, 0.96); border: 2px solid #fde047; font-size: 0.95rem;
     }
 
-    /* Army Selection & Psychic Power Modals */
-    #army-modal, #psyker-modal {
+    /* Save/Load Slot Cards */
+    .save-slot-card {
+      background: #1e293b; border: 1.5px solid #334155; border-radius: 8px;
+      padding: 10px 12px; display: flex; justify-content: space-between;
+      align-items: center; gap: 10px; transition: 0.15s ease;
+    }
+    .save-slot-card:hover { border-color: #64748b; }
+    .save-slot-card.autosave-card {
+      border-color: #0284c7; background: rgba(14, 165, 233, 0.08);
+    }
+    .save-slot-card.autosave-card:hover { border-color: #38bdf8; }
+    .save-slot-card.has-data {
+      border-left: 4px solid #10b981;
+    }
+
+    /* Army Selection, Psychic Power & Save/Load Modals */
+    #army-modal, #psyker-modal, #save-load-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(2, 6, 23, 0.86); z-index: 100;
       display: flex; align-items: center; justify-content: center;
@@ -529,6 +544,38 @@
   </div>
 </div>
 
+<!-- Save & Restore Game Modal -->
+<div id="save-load-modal" style="display:none;">
+  <div class="modal-card" style="max-width:720px; max-height:90vh;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
+      <div>
+        <div style="font-weight:800; font-size:1.05rem; color:#f8fafc;">💾 SAVE & RESTORE GAME</div>
+        <div class="sub-text" style="color:#94a3b8;">Save mid-game progress, restore turn auto-saves, or export/import save files</div>
+      </div>
+      <button class="log-ctrl-btn" onclick="window.closeSaveLoadModal()">✕</button>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin:10px 0; padding-bottom:8px; border-bottom:1px solid #334155;">
+      <button class="btn-confirm" onclick="window.quickSaveGame()" style="min-width:auto; padding:6px 12px; font-size:0.78rem;" title="Quick Save to Slot 1 (F5)">💾 Quick Save (F5)</button>
+      <button class="btn-primary" onclick="window.quickLoadGame()" style="min-width:auto; padding:6px 12px; font-size:0.78rem;" title="Quick Load from Slot 1 (F9)">⚡ Quick Load (F9)</button>
+      <button onclick="window.exportActiveGame()" style="min-width:auto; padding:6px 12px; font-size:0.78rem; background:#1e293b; border-color:#64748b;" title="Download active battle to a .json file">📥 Export Save File</button>
+      <button onclick="document.getElementById('save-file-input').click()" style="min-width:auto; padding:6px 12px; font-size:0.78rem; background:#1e293b; border-color:#64748b;" title="Load a .json save file from your device">📤 Import Save File</button>
+      <input type="file" id="save-file-input" accept=".json" style="display:none;" onchange="window.handleImportSaveFile(event)">
+    </div>
+
+    <!-- Slots List Container -->
+    <div id="save-slots-container" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;">
+      <!-- Populated dynamically by window.renderSaveLoadModal() -->
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="btn-row" style="margin-top:8px; padding-top:8px; border-top:1px solid #334155; justify-content:flex-end;">
+      <button onclick="window.closeSaveLoadModal()" style="min-width:100px;">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="hud">
   <div id="top-bar" class="panel">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -538,6 +585,7 @@
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:5px; align-items:center; flex-shrink:0;">
+      <button onclick="window.openSaveLoadModal()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto; background:#047857; border-color:#10b981;" title="Save / Restore Game Progress">💾 Save / Load</button>
       <button onclick="window.gameScene.resetCamera()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto;" title="Recenter Battlefield Camera">🎯 Recenter</button>
       <button id="btn-menu-toggle" onclick="window.toggleBattleMenu()" style="padding:4px 10px; font-size:0.75rem; min-width:auto; background:#1e293b; border-color:#64748b;" title="Battlefield Options & Settings">⚙️ Menu</button>
     </div>
@@ -545,6 +593,7 @@
 
   <!-- Collapsible In-Battle Options Drawer -->
   <div id="battle-menu-dropdown" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid #334155; flex-wrap:wrap; gap:5px; justify-content:flex-end;">
+    <button onclick="window.openSaveLoadModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#047857; border-color:#10b981;">💾 Save / Load Game</button>
     <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🔊 SFX</button>
     <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🎥 Follow Cam</button>
     <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🗺️ Map</button>
@@ -13776,6 +13825,324 @@ window.initCombatLogResize = function() {
   window.addEventListener('pointercancel', stopResize);
 };
 
+// --- SAVE & RESTORE GAME SYSTEM (MID-GAME PERSISTENCE & TURN AUTO-SAVES) ---
+window.saveManager = {
+  STORAGE_KEY: 'netepic_gold_save_slots',
+  AUTOSAVE_KEY: 'netepic_gold_autosave',
+
+  getAllSlots() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn('Could not read save slots from localStorage', e);
+    }
+    return [
+      { id: 'slot_1', name: 'Save Slot 1', data: null },
+      { id: 'slot_2', name: 'Save Slot 2', data: null },
+      { id: 'slot_3', name: 'Save Slot 3', data: null },
+      { id: 'slot_4', name: 'Save Slot 4', data: null },
+      { id: 'slot_5', name: 'Save Slot 5', data: null }
+    ];
+  },
+
+  getAutoSave() {
+    try {
+      const raw = localStorage.getItem(this.AUTOSAVE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn('Could not read autosave from localStorage', e);
+    }
+    return null;
+  },
+
+  saveAutoSave(saveData) {
+    try {
+      localStorage.setItem(this.AUTOSAVE_KEY, JSON.stringify(saveData));
+      return true;
+    } catch (e) {
+      console.warn('Could not write autosave to localStorage', e);
+      return false;
+    }
+  },
+
+  saveToSlot(slotId, customName = null) {
+    if (!window.gameScene) return false;
+    const slots = this.getAllSlots();
+    let slot = slots.find(s => s.id === slotId);
+    if (!slot) {
+      slot = { id: slotId, name: customName || `Save Slot ${slots.length + 1}`, data: null };
+      slots.push(slot);
+    }
+    const defName = `Turn ${window.gameScene.turn} (${ORDER_INFO[window.gameScene.phase] ? ORDER_INFO[window.gameScene.phase].label : window.gameScene.phase})`;
+    const name = customName || slot.name || defName;
+    const saveData = window.gameScene.serializeGameState(name);
+    slot.name = name;
+    slot.data = saveData;
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(slots));
+      return true;
+    } catch (e) {
+      alert('Failed to save to localStorage: ' + e.message);
+      return false;
+    }
+  },
+
+  loadFromSlot(slotId) {
+    if (!window.gameScene) return false;
+    const slots = this.getAllSlots();
+    const slot = slots.find(s => s.id === slotId);
+    if (!slot || !slot.data) {
+      alert('Slot is empty!');
+      return false;
+    }
+    return window.gameScene.restoreGameState(slot.data);
+  },
+
+  deleteSlot(slotId) {
+    const slots = this.getAllSlots();
+    const slot = slots.find(s => s.id === slotId);
+    if (slot) {
+      slot.data = null;
+      slot.name = `Save Slot ${slotId.replace('slot_', '')}`;
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(slots));
+    }
+  },
+
+  exportToFile(saveData = null) {
+    const data = saveData || (window.gameScene ? window.gameScene.serializeGameState() : null);
+    if (!data) return;
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const cleanDate = (data.dateStr || '').replace(/[\/:]/g, '-').replace(/\s+/g, '_');
+    a.download = `NetEpic_Save_Turn${data.turn}_${cleanDate || 'match'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+
+  importFromFile(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!parsed || !parsed.detachments) {
+          throw new Error('File does not appear to be a valid NetEpic save file.');
+        }
+        if (callback) callback(parsed);
+      } catch (err) {
+        alert('Invalid save file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+};
+
+window.openSaveLoadModal = function() {
+  window.renderSaveLoadModal();
+  const m = document.getElementById('save-load-modal');
+  if (m) m.style.display = 'flex';
+};
+
+window.closeSaveLoadModal = function() {
+  const m = document.getElementById('save-load-modal');
+  if (m) m.style.display = 'none';
+};
+
+window.renderSaveLoadModal = function() {
+  const container = document.getElementById('save-slots-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const autoSave = window.saveManager.getAutoSave();
+  if (autoSave) {
+    const autoEl = document.createElement('div');
+    autoEl.className = 'save-slot-card autosave-card has-data';
+    const sSide = autoSave.sideFaction ? (autoSave.sideFaction.IMPERIUM || 'IMP') : 'IMP';
+    const nSide = autoSave.sideFaction ? (autoSave.sideFaction.ORKS || 'ORK') : 'ORK';
+    const impVp = autoSave.vp ? autoSave.vp.IMPERIUM : 0;
+    const orkVp = autoSave.vp ? autoSave.vp.ORKS : 0;
+    autoEl.innerHTML = `
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-weight:800; font-size:0.88rem; color:#38bdf8;">🤖 ${autoSave.name || 'Auto-Save'}</span>
+          <span style="font-size:0.65rem; font-weight:800; background:#0369a1; color:#e0f2fe; padding:1px 6px; border-radius:4px;">AUTO</span>
+        </div>
+        <div class="sub-text" style="margin-top:2px; color:#cbd5e1; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+          🕒 ${autoSave.dateStr || ''} &bull; Turn ${autoSave.turn} (${autoSave.phase}) &bull; ${sSide} (${impVp} VP) vs ${nSide} (${orkVp} VP)
+        </div>
+      </div>
+      <div style="display:flex; gap:5px; flex-shrink:0;">
+        <button class="btn-confirm" onclick="window.restoreFromAutoSave()" style="min-width:auto; padding:5px 10px; font-size:0.75rem;">📂 Restore</button>
+        <button onclick="window.exportAutoSave()" style="min-width:auto; padding:5px 8px; font-size:0.75rem; background:#334155;" title="Download Auto-Save as JSON">📥</button>
+      </div>
+    `;
+    container.appendChild(autoEl);
+  } else {
+    const autoEl = document.createElement('div');
+    autoEl.className = 'save-slot-card autosave-card';
+    autoEl.style.opacity = '0.65';
+    autoEl.innerHTML = `
+      <div>
+        <div style="font-weight:700; font-size:0.82rem; color:#94a3b8;">🤖 Auto-Save (Turn Start)</div>
+        <div class="sub-text" style="color:#64748b;">Creates automatically at the start of each turn.</div>
+      </div>
+    `;
+    container.appendChild(autoEl);
+  }
+
+  const slots = window.saveManager.getAllSlots();
+  slots.forEach((slot, idx) => {
+    const slotEl = document.createElement('div');
+    if (slot.data) {
+      slotEl.className = 'save-slot-card has-data';
+      const sSide = slot.data.sideFaction ? (slot.data.sideFaction.IMPERIUM || 'IMP') : 'IMP';
+      const nSide = slot.data.sideFaction ? (slot.data.sideFaction.ORKS || 'ORK') : 'ORK';
+      const impVp = slot.data.vp ? slot.data.vp.IMPERIUM : 0;
+      const orkVp = slot.data.vp ? slot.data.vp.ORKS : 0;
+      slotEl.innerHTML = `
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-weight:800; font-size:0.88rem; color:#4ade80;">💾 ${slot.name}</span>
+            <span style="font-size:0.65rem; font-weight:800; background:#065f46; color:#a7f3d0; padding:1px 6px; border-radius:4px;">SLOT ${idx + 1}</span>
+          </div>
+          <div class="sub-text" style="margin-top:2px; color:#94a3b8; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+            🕒 ${slot.data.dateStr || ''} &bull; Turn ${slot.data.turn} (${slot.data.phase}) &bull; ${sSide} (${impVp} VP) vs ${nSide} (${orkVp} VP)
+          </div>
+        </div>
+        <div style="display:flex; gap:5px; flex-shrink:0;">
+          <button class="btn-confirm" onclick="window.loadGameSlot('${slot.id}')" style="min-width:auto; padding:5px 9px; font-size:0.75rem;">📂 Restore</button>
+          <button class="btn-warn" onclick="window.saveGameSlot('${slot.id}')" style="min-width:auto; padding:5px 9px; font-size:0.75rem;" title="Overwrite with current battle state">💾 Overwrite</button>
+          <button onclick="window.exportGameSlot('${slot.id}')" style="min-width:auto; padding:5px 8px; font-size:0.75rem; background:#334155;" title="Download as JSON">📥</button>
+          <button onclick="window.deleteGameSlot('${slot.id}')" style="min-width:auto; padding:5px 8px; font-size:0.75rem; background:#7f1d1d; border-color:#dc2626;" title="Delete Slot">🗑️</button>
+        </div>
+      `;
+    } else {
+      slotEl.className = 'save-slot-card';
+      slotEl.style.borderStyle = 'dashed';
+      slotEl.innerHTML = `
+        <div style="color:#64748b; font-size:0.8rem;">
+          <span style="font-weight:700; color:#94a3b8;">Slot ${idx + 1}:</span> [Empty Save Slot]
+        </div>
+        <div>
+          <button class="btn-primary" onclick="window.saveGameSlot('${slot.id}')" style="min-width:auto; padding:5px 12px; font-size:0.75rem;">💾 Save Here</button>
+        </div>
+      `;
+    }
+    container.appendChild(slotEl);
+  });
+};
+
+window.quickSaveGame = function() {
+  if (!window.gameScene) return;
+  const defName = `Quick Save: Turn ${window.gameScene.turn} (${ORDER_INFO[window.gameScene.phase] ? ORDER_INFO[window.gameScene.phase].label : window.gameScene.phase})`;
+  window.saveManager.saveToSlot('slot_1', defName);
+  window.sfx.playSave();
+  window.gameScene.spawnFloatingText(BOARD_W / 2, 70, `💾 QUICK-SAVED (Slot 1)`, '#4ade80', '14px');
+  window.gameScene.log(`💾 <b>Game Quick-Saved</b> to Slot 1 (Turn ${window.gameScene.turn}, ${window.gameScene.phase}).`);
+  window.renderSaveLoadModal();
+};
+
+window.quickLoadGame = function() {
+  if (!window.gameScene) return;
+  const slots = window.saveManager.getAllSlots();
+  const slot1 = slots.find(s => s.id === 'slot_1');
+  if (!slot1 || !slot1.data) {
+    alert('No Quick Save found in Slot 1!');
+    return;
+  }
+  if (confirm(`Quick Load "${slot1.name}"? Current match progress will be replaced.`)) {
+    window.gameScene.restoreGameState(slot1.data);
+    window.closeSaveLoadModal();
+  }
+};
+
+window.saveGameSlot = function(slotId) {
+  if (!window.gameScene) return;
+  const slots = window.saveManager.getAllSlots();
+  const slot = slots.find(s => s.id === slotId);
+  const defName = `Turn ${window.gameScene.turn} (${ORDER_INFO[window.gameScene.phase] ? ORDER_INFO[window.gameScene.phase].label : window.gameScene.phase})`;
+  const name = prompt('Enter a label for this save:', (slot && slot.name && !slot.name.startsWith('Save Slot')) ? slot.name : defName);
+  if (name === null) return; // User cancelled
+  window.saveManager.saveToSlot(slotId, name.trim() || defName);
+  window.sfx.playSave();
+  window.gameScene.spawnFloatingText(BOARD_W / 2, 70, `💾 SAVED: ${name.trim() || defName}`, '#4ade80', '14px');
+  window.gameScene.log(`💾 <b>Game Saved</b> to ${slotId.toUpperCase()} ("${name.trim() || defName}").`);
+  window.renderSaveLoadModal();
+};
+
+window.loadGameSlot = function(slotId) {
+  if (!window.gameScene) return;
+  const slots = window.saveManager.getAllSlots();
+  const slot = slots.find(s => s.id === slotId);
+  if (!slot || !slot.data) return;
+  if (confirm(`Restore "${slot.name}"? Current match progress will be replaced.`)) {
+    window.gameScene.restoreGameState(slot.data);
+    window.closeSaveLoadModal();
+  }
+};
+
+window.deleteGameSlot = function(slotId) {
+  if (confirm('Delete this save slot?')) {
+    window.saveManager.deleteSlot(slotId);
+    window.renderSaveLoadModal();
+  }
+};
+
+window.exportGameSlot = function(slotId) {
+  const slots = window.saveManager.getAllSlots();
+  const slot = slots.find(s => s.id === slotId);
+  if (slot && slot.data) {
+    window.saveManager.exportToFile(slot.data);
+  }
+};
+
+window.exportActiveGame = function() {
+  if (!window.gameScene) return;
+  window.saveManager.exportToFile(window.gameScene.serializeGameState());
+};
+
+window.restoreFromAutoSave = function() {
+  const autoSave = window.saveManager.getAutoSave();
+  if (!autoSave || !window.gameScene) return;
+  if (confirm(`Restore Auto-Save from Turn ${autoSave.turn} (${autoSave.dateStr})? Current progress will be replaced.`)) {
+    window.gameScene.restoreGameState(autoSave);
+    window.closeSaveLoadModal();
+  }
+};
+
+window.exportAutoSave = function() {
+  const autoSave = window.saveManager.getAutoSave();
+  if (autoSave) window.saveManager.exportToFile(autoSave);
+};
+
+window.handleImportSaveFile = function(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file || !window.gameScene) return;
+  window.saveManager.importFromFile(file, (data) => {
+    if (confirm(`Load imported save "${data.name || 'Custom Match'}" (Turn ${data.turn}, ${data.phase})?`)) {
+      window.gameScene.restoreGameState(data);
+      window.closeSaveLoadModal();
+    }
+  });
+  event.target.value = '';
+};
+
+// Keyboard Shortcuts: F5 = Quick Save, F9 = Quick Load
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F5') {
+    e.preventDefault();
+    if (window.quickSaveGame) window.quickSaveGame();
+  } else if (e.key === 'F9') {
+    e.preventDefault();
+    if (window.quickLoadGame) window.quickLoadGame();
+  }
+});
+
 // --- NETEPIC HEROIC SPECIAL CHARACTERS & PSYCHIC POWERS (02a_netepic_optional_rules_v5 pp. 10-15) ---
 const PSYCHIC_POWERS = {
   mind_blast: {
@@ -20677,6 +21044,7 @@ class NetEpicScene extends Phaser.Scene {
       this.groupMoveMode = false;
       this.assignAIOrders();
       this.log(`⚡ <b>Quick Skirmish (${southName} vs ${northName}) — Turn 1 Orders Phase!</b> Place hidden orders for your army!`);
+      this.autoSaveTurn();
     }
 
     this.drawDeploymentZones();
@@ -20702,6 +21070,7 @@ class NetEpicScene extends Phaser.Scene {
     this.log(`⚔️ <b>Deployment Locked! Turn 1 Begins (I. Orders Phase).</b> Select each of your detachments to assign hidden orders.`);
     this.drawOverlays();
     this.updateUI();
+    this.autoSaveTurn();
   }
 
   // Toggle Group Selection / Cohesive Formation Move
@@ -20776,6 +21145,7 @@ class NetEpicScene extends Phaser.Scene {
   createDetachment(cfg) {
     const det = {
       ...cfg,
+      cfg: JSON.parse(JSON.stringify(cfg)),
       initialCount: cfg.standsCount,
       casualties: 0,
       broken: false,
@@ -25371,6 +25741,7 @@ class NetEpicScene extends Phaser.Scene {
     this.assignAIOrders();
     this.drawOverlays();
     this.updateUI();
+    this.autoSaveTurn();
   }
 
   checkCoherency(det) {
@@ -26220,6 +26591,394 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this.updateTitanHUD(this.selectedDetachment);
+  }
+
+  // --- SAVE & RESTORE SERIALIZATION ENGINE ---
+  autoSaveTurn() {
+    try {
+      const saveData = this.serializeGameState(`Auto-Save: Turn ${this.turn} Orders`);
+      window.saveManager.saveAutoSave(saveData);
+      this.spawnFloatingText(BOARD_W / 2, 70, `💾 Auto-Saved (Turn ${this.turn})`, '#38bdf8', '12px');
+      this.log(`💾 <b>Game Auto-Saved</b> (Turn ${this.turn} Orders Phase).`);
+    } catch (err) {
+      console.warn('Auto-save failed:', err);
+    }
+  }
+
+  serializeGameState(saveName = null) {
+    const d = new Date();
+    const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const name = saveName || `Turn ${this.turn} (${ORDER_INFO[this.phase] ? ORDER_INFO[this.phase].label : this.phase})`;
+    const cam = this.cameras.main;
+
+    const detachmentsData = this.detachments.map(det => {
+      return {
+        id: det.id,
+        name: det.name,
+        faction: det.faction,
+        armyBook: det.armyBook,
+        key: det.key,
+        companyCardId: det.companyCardId,
+        companyCardKey: det.companyCardKey,
+        companyName: det.companyName,
+        companyBreakPoint: det.companyBreakPoint,
+        companyVpValue: det.companyVpValue,
+        companyMorale: det.companyMorale,
+        companyTotalStands: det.companyTotalStands,
+        isCompanyDetachment: det.isCompanyDetachment,
+        initialCount: det.initialCount,
+        casualties: det.casualties || 0,
+        broken: Boolean(det.broken),
+        order: det.order,
+        orderRevealed: Boolean(det.orderRevealed),
+        moved: Boolean(det.moved),
+        fired: Boolean(det.fired),
+        shields: det.shields,
+        maxShields: det.maxShields,
+        shieldType: det.shieldType,
+        damageState: det.damageState,
+        toHitPenalty: det.toHitPenalty,
+        poppedUp: Boolean(det.poppedUp),
+        inReserve: Boolean(det.inReserve),
+        deepStrikeUsed: Boolean(det.deepStrikeUsed),
+        deepStrikeActive: Boolean(det.deepStrikeActive),
+        facingRad: det.facingRad,
+        startMoveFacing: det.startMoveFacing,
+        manualFacing: Boolean(det.manualFacing),
+        rokkitsRemaining: det.rokkitsRemaining,
+        maxRokkits: det.maxRokkits,
+        rokkitFiredThisTurn: Boolean(det.rokkitFiredThisTurn),
+        salvos: det.salvos ? JSON.parse(JSON.stringify(det.salvos)) : null,
+        maxSalvos: det.maxSalvos,
+        salvosFired: det.salvosFired || 0,
+        standsFired: det.standsFired ? Array.from(det.standsFired) : [],
+        locationDamage: det.locationDamage ? { ...det.locationDamage } : null,
+        damageLog: det.damageLog ? [...det.damageLog] : [],
+        embarkedOnId: det.embarkedOn ? det.embarkedOn.id : null,
+        passengerDetId: det.passengerDet ? det.passengerDet.id : null,
+        cfg: det.cfg ? JSON.parse(JSON.stringify(det.cfg)) : null,
+        stands: det.stands.map(s => ({
+          id: s.id,
+          label: s.label,
+          x: Math.round(s.container.x),
+          y: Math.round(s.container.y),
+          originX: Math.round(s.originX),
+          originY: Math.round(s.originY),
+          facingRad: s.facingRad,
+          startMoveFacing: s.startMoveFacing,
+          pinnedAtStart: Boolean(s.pinnedAtStart),
+          visible: s.container.visible,
+          alpha: s.container.alpha,
+          topDownTextureKey: s.topDownTextureKey,
+          weapon: s.weapon
+        }))
+      };
+    });
+
+    return {
+      version: 1,
+      saveId: 'save_' + Date.now(),
+      timestamp: Date.now(),
+      dateStr: dateStr,
+      name: name,
+      turn: this.turn,
+      phase: this.phase,
+      initiativeWinner: this.initiativeWinner,
+      activePlayer: this.activePlayer,
+      vp: { ...this.vp },
+      objVp: { ...this.objVp },
+      groupMoveMode: Boolean(this.groupMoveMode),
+      mapPreset: window.mapPreset || 'INDUSTRIAL',
+      aiFaction: window.aiFaction || 'NONE',
+      aiCamFollow: Boolean(window.aiCamFollow),
+      sideFaction: { ...window.sideFaction },
+      armyRosters: {
+        IMPERIUM: window.armyRosters.IMPERIUM ? [...window.armyRosters.IMPERIUM] : [],
+        ORKS: window.armyRosters.ORKS ? [...window.armyRosters.ORKS] : []
+      },
+      camera: {
+        scrollX: Math.round(cam.scrollX),
+        scrollY: Math.round(cam.scrollY),
+        zoom: parseFloat(cam.zoom.toFixed(3))
+      },
+      combatLogHtml: document.getElementById('log-entries') ? document.getElementById('log-entries').innerHTML : '',
+      objectives: this.objectives.map(o => ({
+        id: o.id,
+        name: o.name,
+        x: o.x,
+        y: o.y,
+        owner: o.owner,
+        vp: o.vp
+      })),
+      buildings: this.buildings.map((b, idx) => ({
+        index: idx,
+        name: b.name,
+        collapsed: Boolean(b.collapsed),
+        siDamage: b.siDamage || 0
+      })),
+      smokeClouds: this.smokeClouds ? JSON.parse(JSON.stringify(this.smokeClouds)) : [],
+      pulsaFields: this.pulsaFields ? JSON.parse(JSON.stringify(this.pulsaFields)) : [],
+      detachments: detachmentsData,
+      activeContext: {
+        selectedDetachmentId: this.selectedDetachment ? this.selectedDetachment.id : null,
+        activatingDetachmentId: this.activatingDetachment ? this.activatingDetachment.id : null,
+        targetDetachmentId: this.targetDetachment ? this.targetDetachment.id : null
+      }
+    };
+  }
+
+  restoreGameState(saveData) {
+    if (!saveData || !saveData.detachments) {
+      console.error('Invalid save data');
+      return false;
+    }
+
+    try {
+      // 1. Reset pending timers, rotations, overlays
+      this.cancelHoldRotateTimer();
+      if (this.isRotatingGizmo) this.closeRotationGizmo();
+      this.overlayGfx.clear();
+      this.losGfx.clear();
+      this.aiTimerPending = false;
+
+      // 2. Clear all existing detachments & stands
+      this.clearAllDetachments();
+
+      // 3. Restore globals and map
+      if (saveData.mapPreset && saveData.mapPreset !== window.mapPreset) {
+        window.mapPreset = saveData.mapPreset;
+        this.loadMapConfig(window.mapPreset);
+        this.drawBattlefield();
+        this.spawnObjectives();
+      }
+
+      window.aiFaction = saveData.aiFaction !== undefined ? saveData.aiFaction : 'NONE';
+      window.aiCamFollow = saveData.aiCamFollow !== undefined ? saveData.aiCamFollow : true;
+      if (saveData.sideFaction) window.sideFaction = { ...saveData.sideFaction };
+      if (saveData.armyRosters) window.armyRosters = { ...saveData.armyRosters };
+
+      // Update AI button label in menu
+      const btnAi = document.getElementById('btn-ai-toggle');
+      if (btnAi) {
+        btnAi.innerText = window.aiFaction === 'NONE'
+          ? '👥 Mode: 2P Hotseat'
+          : `🤖 AI: ${this.getSideName(window.aiFaction)}`;
+      }
+
+      // 4. Restore turn, phase, scores
+      this.turn = saveData.turn || 1;
+      this.phase = saveData.phase || 'ORDERS';
+      this.initiativeWinner = saveData.initiativeWinner || 'IMPERIUM';
+      this.activePlayer = saveData.activePlayer || 'IMPERIUM';
+      this.vp = saveData.vp ? { ...saveData.vp } : { IMPERIUM: 0, ORKS: 0 };
+      this.objVp = saveData.objVp ? { ...saveData.objVp } : { IMPERIUM: 0, ORKS: 0 };
+      this.groupMoveMode = saveData.groupMoveMode !== undefined ? saveData.groupMoveMode : true;
+
+      // 5. Restore buildings
+      if (saveData.buildings && this.buildings) {
+        saveData.buildings.forEach(sb => {
+          if (this.buildings[sb.index]) {
+            this.buildings[sb.index].collapsed = Boolean(sb.collapsed);
+            this.buildings[sb.index].siDamage = sb.siDamage || 0;
+          }
+        });
+        this.drawBattlefield();
+      }
+
+      // 6. Restore objectives
+      if (saveData.objectives && this.objectives) {
+        saveData.objectives.forEach(so => {
+          const obj = this.objectives.find(o => o.id === so.id);
+          if (obj) obj.owner = so.owner;
+        });
+        this.drawObjectives();
+      }
+
+      // 7. Restore smoke clouds & pulsa fields
+      this.smokeClouds = saveData.smokeClouds ? JSON.parse(JSON.stringify(saveData.smokeClouds)) : [];
+      this.pulsaFields = saveData.pulsaFields ? JSON.parse(JSON.stringify(saveData.pulsaFields)) : [];
+      if (this.pulsaGfx) {
+        this.pulsaGfx.clear();
+        this.drawPulsaFields();
+      }
+
+      // 8. Recreate detachments
+      saveData.detachments.forEach(savedDet => {
+        let baseCfg = savedDet.cfg;
+        if (!baseCfg && savedDet.key) {
+          const tmpl = window.findCatalogUnit(savedDet.key);
+          if (tmpl) baseCfg = { ...tmpl };
+        }
+        if (!baseCfg) {
+          baseCfg = {
+            id: savedDet.id,
+            name: savedDet.name,
+            faction: savedDet.faction,
+            armyBook: savedDet.armyBook,
+            key: savedDet.key,
+            standsCount: savedDet.stands.length,
+            startX: savedDet.stands[0] ? savedDet.stands[0].x : 100,
+            startY: savedDet.stands[0] ? savedDet.stands[0].y : 100
+          };
+        }
+
+        // Call createDetachment to instantiate Phaser containers and visual structures
+        const det = this.createDetachment({
+          ...baseCfg,
+          id: savedDet.id,
+          name: savedDet.name,
+          faction: savedDet.faction,
+          armyBook: savedDet.armyBook,
+          companyCardId: savedDet.companyCardId,
+          companyCardKey: savedDet.companyCardKey,
+          companyName: savedDet.companyName,
+          companyBreakPoint: savedDet.companyBreakPoint,
+          companyVpValue: savedDet.companyVpValue,
+          companyMorale: savedDet.companyMorale,
+          companyTotalStands: savedDet.companyTotalStands,
+          isCompanyDetachment: savedDet.isCompanyDetachment,
+          standsCount: savedDet.initialCount || savedDet.stands.length,
+          startX: savedDet.stands[0] ? savedDet.stands[0].x : (baseCfg.startX || 100),
+          startY: savedDet.stands[0] ? savedDet.stands[0].y : (baseCfg.startY || 100)
+        });
+
+        // Store cfg on detachment
+        det.cfg = baseCfg;
+
+        // Restore detachment state properties
+        det.initialCount = savedDet.initialCount || det.stands.length;
+        det.casualties = savedDet.casualties || 0;
+        det.broken = Boolean(savedDet.broken);
+        det.order = savedDet.order;
+        det.orderRevealed = Boolean(savedDet.orderRevealed);
+        det.moved = Boolean(savedDet.moved);
+        det.fired = Boolean(savedDet.fired);
+        det.shields = savedDet.shields !== undefined ? savedDet.shields : det.shields;
+        det.maxShields = savedDet.maxShields !== undefined ? savedDet.maxShields : det.maxShields;
+        det.shieldType = savedDet.shieldType !== undefined ? savedDet.shieldType : det.shieldType;
+        det.damageState = savedDet.damageState || 'NONE';
+        det.toHitPenalty = savedDet.toHitPenalty || 0;
+        det.poppedUp = Boolean(savedDet.poppedUp);
+        det.inReserve = Boolean(savedDet.inReserve);
+        det.deepStrikeUsed = Boolean(savedDet.deepStrikeUsed);
+        det.deepStrikeActive = Boolean(savedDet.deepStrikeActive);
+        det.facingRad = savedDet.facingRad !== undefined ? savedDet.facingRad : det.facingRad;
+        det.startMoveFacing = savedDet.startMoveFacing !== undefined ? savedDet.startMoveFacing : det.facingRad;
+        det.manualFacing = Boolean(savedDet.manualFacing);
+        det.rokkitsRemaining = savedDet.rokkitsRemaining !== undefined ? savedDet.rokkitsRemaining : det.rokkitsRemaining;
+        det.maxRokkits = savedDet.maxRokkits !== undefined ? savedDet.maxRokkits : det.maxRokkits;
+        det.rokkitFiredThisTurn = Boolean(savedDet.rokkitFiredThisTurn);
+        if (savedDet.salvos) det.salvos = JSON.parse(JSON.stringify(savedDet.salvos));
+        det.maxSalvos = savedDet.maxSalvos || det.maxSalvos;
+        det.salvosFired = savedDet.salvosFired || 0;
+        det.standsFired = new Set(savedDet.standsFired || []);
+        if (savedDet.locationDamage) det.locationDamage = { ...savedDet.locationDamage };
+        if (savedDet.damageLog) det.damageLog = [...savedDet.damageLog];
+
+        // Now adjust stands: match with saved stands and remove destroyed casualties
+        const aliveStandMap = new Map();
+        savedDet.stands.forEach(ss => aliveStandMap.set(ss.id, ss));
+
+        const remainingStands = [];
+        det.stands.forEach((s, idx) => {
+          // If stand was saved as alive (either by id or index)
+          const savedStand = aliveStandMap.get(s.id) || savedDet.stands[idx];
+          if (savedStand && idx < savedDet.stands.length) {
+            s.container.x = savedStand.x;
+            s.container.y = savedStand.y;
+            s.originX = savedStand.originX;
+            s.originY = savedStand.originY;
+            s.facingRad = savedStand.facingRad;
+            s.startMoveFacing = savedStand.startMoveFacing;
+            s.pinnedAtStart = Boolean(savedStand.pinnedAtStart);
+            s.container.setVisible(savedStand.visible !== undefined ? savedStand.visible : true);
+            s.container.setAlpha(savedStand.alpha !== undefined ? savedStand.alpha : 1);
+            if (savedStand.label) s.label = savedStand.label;
+            remainingStands.push(s);
+          } else {
+            // Stand was destroyed in battle
+            s.container.destroy();
+          }
+        });
+        det.stands = remainingStands;
+
+        this.applyStandFacing(det);
+        this.updateTitanShieldVisuals(det);
+        this.updateDetachmentBadge(det);
+        this.updateDetachmentBadgePos(det);
+      });
+
+      // 9. Re-link Embarked transports and passengers
+      saveData.detachments.forEach(savedDet => {
+        if (savedDet.passengerDetId) {
+          const transDet = this.detachments.find(d => d.id === savedDet.id);
+          const passDet = this.detachments.find(d => d.id === savedDet.passengerDetId);
+          if (transDet && passDet) {
+            transDet.passengerDet = passDet;
+            passDet.embarkedOn = transDet;
+            passDet.stands.forEach(s => {
+              s.container.setVisible(false);
+              s.container.disableInteractive();
+            });
+            if (passDet.badge) passDet.badge.setVisible(false);
+            transDet.stands.forEach(ts => {
+              if (ts.hatchBar) ts.hatchBar.setFillStyle(0xfacc15).setStrokeStyle(1.5, 0xffffff);
+            });
+            this.syncEmbarkedPassengers(transDet);
+          }
+        }
+      });
+
+      // 10. Restore combat log
+      if (saveData.combatLogHtml && document.getElementById('log-entries')) {
+        document.getElementById('log-entries').innerHTML = saveData.combatLogHtml;
+        const logContent = document.getElementById('log-content');
+        if (logContent) logContent.scrollTop = logContent.scrollHeight;
+      }
+
+      // 11. Restore camera
+      if (saveData.camera) {
+        const cam = this.cameras.main;
+        cam.setZoom(saveData.camera.zoom || 1);
+        cam.scrollX = saveData.camera.scrollX || 0;
+        cam.scrollY = saveData.camera.scrollY || 0;
+        this.updateZoomLOD();
+      }
+
+      // 12. Restore active selection
+      if (saveData.activeContext && saveData.activeContext.selectedDetachmentId) {
+        this.selectedDetachment = this.detachments.find(d => d.id === saveData.activeContext.selectedDetachmentId) || null;
+      } else {
+        this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction) && d.stands.length > 0) || this.detachments[0] || null;
+      }
+      this.activatingDetachment = null;
+      this.targetDetachment = null;
+
+      // 13. Dismiss alert banners
+      const alerts = ['engagement-alert', 'coherency-alert', 'fallback-alert', 'terrain-alert', 'snapfire-banner'];
+      alerts.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+
+      // 14. Redraw overlays and update UI
+      this.drawDeploymentZones();
+      this.drawOverlays();
+      this.updateUI();
+
+      this.log(`📂 <b>Game Restored Successfully!</b> Loaded: <i>${saveData.name}</i> (Turn ${this.turn}, ${this.phase}).`);
+      this.spawnFloatingText(BOARD_W / 2, BOARD_H / 2, `📂 RESTORED: Turn ${this.turn}`, '#4ade80', '16px');
+      window.sfx.playSave();
+
+      // Check if AI turn should execute if active player is AI
+      this.checkAndRunAITurn();
+
+      return true;
+    } catch (err) {
+      console.error('Error during game restoration:', err);
+      alert('Failed to restore game: ' + err.message);
+      return false;
+    }
   }
 }
 
