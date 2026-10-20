@@ -15048,6 +15048,11 @@ window.addEventListener('keydown', (e) => {
       if (window.gameScene && window.gameScene.advanceCombatResolution) {
         window.gameScene.advanceCombatResolution();
       }
+    } else if (window.gameScene && window.gameScene.phase === 'COMBAT_CC') {
+      e.preventDefault();
+      if (window.gameScene.resolveNextCloseCombatBout) {
+        window.gameScene.resolveNextCloseCombatBout();
+      }
     }
   } else if (e.code === 'Escape') {
     const modal = document.getElementById('combat-card-modal');
@@ -20572,20 +20577,36 @@ class NetEpicScene extends Phaser.Scene {
       this._combatAutoTimer = null;
     }
 
-    headerEl.innerHTML = `💥 ${data.title || 'SHOOTING ENGAGEMENT'}`;
+    headerEl.innerHTML = `${data.isMelee ? '⚔️' : '💥'} ${data.title || (data.isMelee ? 'CLOSE COMBAT ENGAGEMENT' : 'SHOOTING ENGAGEMENT')}`;
 
-    metaEl.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; border:1px solid #334155;">
-        <div>
-          <span style="font-weight:700; color:#38bdf8;">🔫 Attacker:</span> <b>${data.attackerName}</b>
-          <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
+    if (data.isMelee) {
+      metaEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; border:1.5px solid #c084fc; gap:10px;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:800; color:#60a5fa; font-size:0.86rem;">🛡️ ${data.attackerName}</div>
+            <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
+          </div>
+          <div style="font-weight:900; color:#fde047; font-size:1.05rem; flex-shrink:0;">⚔️ VS ⚔️</div>
+          <div style="flex:1; min-width:0; text-align:right;">
+            <div style="font-weight:800; color:#4ade80; font-size:0.86rem;">🟢 ${data.targetName}</div>
+            <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <span style="font-weight:700; color:#f87171;">🎯 Target:</span> <b>${data.targetName}</b>
-          <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
+      `;
+    } else {
+      metaEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; border:1px solid #334155;">
+          <div>
+            <span style="font-weight:700; color:#38bdf8;">🔫 Attacker:</span> <b>${data.attackerName}</b>
+            <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-weight:700; color:#f87171;">🎯 Target:</span> <b>${data.targetName}</b>
+            <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
 
     this.renderCombatStep();
     modal.style.display = 'block';
@@ -20607,6 +20628,103 @@ class NetEpicScene extends Phaser.Scene {
     const statusEl = document.getElementById('combat-card-status');
     const btnContinue = document.getElementById('btn-combat-continue');
     const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+    if (data.isMelee) {
+      let html = '';
+
+      // STEP 1 CARD (Combatants & CAF Factors)
+      html += `
+        <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 1 ? '#fde047' : '#334155'}; border-radius:6px; padding:8px 10px; transition:border-color 0.2s;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; color:#fde047;">⚔️ Step 1: Close Combat Factors (CAF)</span>
+            <span style="font-weight:700; color:#c084fc; font-size:0.72rem;">No Armour Saves in Melee!</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px; font-size:0.78rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
+              <span style="color:#60a5fa; font-weight:700;">🛡️ ${data.attackerName}</span>
+              <span style="color:#f8fafc;"><b>${data.impDiceCount}D6</b> + <b>${data.impModCaf >= 0 ? '+' : ''}${data.impModCaf} CAF</b> ${data.gangTagImp || ''}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
+              <span style="color:#4ade80; font-weight:700;">🟢 ${data.targetName}</span>
+              <span style="color:#f8fafc;"><b>${data.orkDiceCount}D6</b> + <b>${data.orkModCaf >= 0 ? '+' : ''}${data.orkModCaf} CAF</b> ${data.gangTagOrk || ''}</span>
+            </div>
+          </div>
+          <div style="color:#94a3b8; font-size:0.72rem; margin-top:6px; text-align:center;">
+            Both stands roll 2D6+ (plus gang-up dice) + CAF. Highest total wins!
+          </div>
+        </div>
+      `;
+
+      // STEP 2 CARD (Dice Rolls & Total Scores)
+      if (this._combatStep >= 2) {
+        const impDiceHtml = (data.impRolls || []).map(v => `<span class="die-box ${data.impWin ? 'die-pass' : (data.orkWin ? 'die-fail' : 'die-crit')}">${dieFaces[v] || v}${v}</span>`).join('');
+        const orkDiceHtml = (data.orkRolls || []).map(v => `<span class="die-box ${data.orkWin ? 'die-pass' : (data.impWin ? 'die-fail' : 'die-crit')}">${dieFaces[v] || v}${v}</span>`).join('');
+
+        html += `
+          <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 2 ? '#38bdf8' : '#334155'}; border-radius:6px; padding:8px 10px; transition:border-color 0.2s; animation:fadeIn 0.2s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:700; color:#38bdf8;">🎲 Step 2: Melee Duel Rolls</span>
+              <span style="font-weight:700; color:${data.impWin ? '#60a5fa' : (data.orkWin ? '#4ade80' : '#c084fc')}; font-size:0.78rem;">
+                ${data.impWin ? `🛡️ ${data.attackerName} Leads!` : (data.orkWin ? `🟢 ${data.targetName} Leads!` : '🤝 Melee Tie!')}
+              </span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
+                <span style="color:#60a5fa; font-size:0.76rem; font-weight:700;">🛡️ ${data.attackerName}</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  ${impDiceHtml}
+                  <span style="font-weight:800; font-size:0.85rem; color:#f8fafc; margin-left:4px;">+ ${data.impModCaf} = <b style="color:#60a5fa;">${data.impTotal}</b></span>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
+                <span style="color:#4ade80; font-size:0.76rem; font-weight:700;">🟢 ${data.targetName}</span>
+                <div style="display:flex; gap:4px; align-items:center;">
+                  ${orkDiceHtml}
+                  <span style="font-weight:800; font-size:0.85rem; color:#f8fafc; margin-left:4px;">+ ${data.orkModCaf} = <b style="color:#4ade80;">${data.orkTotal}</b></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // STEP 3 CARD (Outcome & Casualties)
+      if (this._combatStep >= 3) {
+        html += `
+          <div style="background:#0f172a; border:1.5px solid ${data.kills > 0 ? '#f87171' : '#c084fc'}; border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.2s ease;">
+            <div>
+              <span style="font-weight:700; color:${data.kills > 0 ? '#f87171' : '#c084fc'};">💥 Step 3 Outcome:</span>
+              <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
+            </div>
+            <span style="font-size:0.78rem; font-weight:800; color:${data.kills > 0 ? '#ef4444' : (data.isTie ? '#c084fc' : '#22c55e')};">${data.kills > 0 ? '1 Destroyed' : (data.isTie ? 'Both Locked' : 'Survives')}</span>
+          </div>
+        `;
+      }
+
+      if (stepsEl) stepsEl.innerHTML = html;
+
+      // Update Button label and Status text for current step
+      if (this._combatStep === 1) {
+        if (statusEl) statusEl.innerText = 'Step 1 of 3: Inspect Melee Matchup (Space to Roll)';
+        if (btnContinue) {
+          btnContinue.innerText = '▶ Roll Melee Dice (Space) 🎲';
+          btnContinue.className = 'btn-primary';
+        }
+      } else if (this._combatStep === 2) {
+        if (statusEl) statusEl.innerText = 'Step 2 of 3: Inspect Melee Rolls (Space to advance)';
+        if (btnContinue) {
+          btnContinue.innerText = '▶ View Outcome & Casualties (Space) →';
+          btnContinue.className = 'btn-primary';
+        }
+      } else {
+        if (statusEl) statusEl.innerText = 'Step 3 of 3: Confirm Casualties';
+        if (btnContinue) {
+          btnContinue.innerText = data.kills > 0 ? '💥 Destroy Casualty & Continue (Space) ▶' : '✓ Continue (Space) ▶';
+          btnContinue.className = 'btn-confirm';
+        }
+      }
+      return;
+    }
 
     const hitDiceHtml = (data.hitDice || []).map(d => {
       const val = typeof d === 'object' ? d.val : d;
@@ -26908,6 +27026,49 @@ class NetEpicScene extends Phaser.Scene {
     return bouts;
   }
 
+  cleanCloseCombatBouts() {
+    if (!this.ccBouts) this.ccBouts = [];
+    while (this.ccBouts.length > 0) {
+      const top = this.ccBouts[0];
+      const impAlive = Boolean(top.impStand && top.impStand.detachment && top.impStand.detachment.stands.includes(top.impStand));
+      const orkAlive = Boolean(top.orkStand && top.orkStand.detachment && top.orkStand.detachment.stands.includes(top.orkStand));
+      if (impAlive && orkAlive) return top;
+
+      this.ccBouts.shift();
+      if (impAlive && !(this.defenderFoughtCounts && this.defenderFoughtCounts.get(top.impStand) > 0)) {
+        const alt = this.getEngagedEnemies(top.impStand)[0];
+        if (alt) {
+          const retarget = { impStand: top.impStand, orkStand: alt };
+          this.ccBouts.unshift(retarget);
+          return retarget;
+        }
+      } else if (orkAlive && !(this.defenderFoughtCounts && this.defenderFoughtCounts.get(top.orkStand) > 0)) {
+        const alt = this.getEngagedEnemies(top.orkStand)[0];
+        if (alt) {
+          const retarget = { impStand: alt, orkStand: top.orkStand };
+          this.ccBouts.unshift(retarget);
+          return retarget;
+        }
+      }
+    }
+    return null;
+  }
+
+  focusCloseCombatBout(bout, duration = 450) {
+    if (!bout || !bout.impStand || !bout.orkStand) return;
+    if (!bout.impStand.container || !bout.orkStand.container) return;
+    const p1 = bout.impStand.container;
+    const p2 = bout.orkStand.container;
+    const midX = Phaser.Math.Clamp((p1.x + p2.x) / 2, 50, BOARD_W - 50);
+    const midY = Phaser.Math.Clamp((p1.y + p2.y) / 2, 50, BOARD_H - 50);
+
+    const cam = this.cameras.main;
+    cam.pan(midX, midY, duration, 'Sine.easeInOut', true);
+    if (cam.zoom < 0.95) {
+      cam.zoomTo(1.15, duration, 'Sine.easeInOut', true);
+    }
+  }
+
   startCloseCombatSegment() {
     this.phase = 'COMBAT_CC';
     this.selectedDetachment = null;
@@ -26930,46 +27091,35 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
+    const firstBout = this.cleanCloseCombatBouts();
+    if (firstBout) {
+      this.focusCloseCombatBout(firstBout, 500);
+    }
+
     this.log(`⚔️ Entering <b>2) Close Combat Segment</b>! (${this.ccBouts.length} melee bout${this.ccBouts.length > 1 ? 's' : ''} to resolve — No Armour Saves!)`);
     this.drawOverlays();
     this.updateUI();
   }
 
-  resolveNextCloseCombatBout() {
+  resolveNextCloseCombatBout(isAuto = false) {
     if (this.phase !== 'COMBAT_CC') return;
+    if (this._ccResolving) return;
 
-    // Clean out any bouts where a stand died, or re-target if still touching another enemy
-    while (this.ccBouts.length > 0) {
-      const top = this.ccBouts[0];
-      const impAlive = top.impStand.detachment.stands.includes(top.impStand);
-      const orkAlive = top.orkStand.detachment.stands.includes(top.orkStand);
-      if (impAlive && orkAlive) break;
-
-      this.ccBouts.shift();
-      if (impAlive && !(this.defenderFoughtCounts.get(top.impStand) > 0)) {
-        const alt = this.getEngagedEnemies(top.impStand)[0];
-        if (alt) {
-          this.ccBouts.unshift({ impStand: top.impStand, orkStand: alt });
-          break;
-        }
-      } else if (orkAlive && !(this.defenderFoughtCounts.get(top.orkStand) > 0)) {
-        const alt = this.getEngagedEnemies(top.orkStand)[0];
-        if (alt) {
-          this.ccBouts.unshift({ impStand: alt, orkStand: top.orkStand });
-          break;
-        }
-      }
-    }
-
-    if (this.ccBouts.length === 0) {
+    const bout = this.cleanCloseCombatBouts();
+    if (!bout) {
+      this.log(`✅ All Close Combat bouts resolved!`);
       this.startCombatSegment('COMBAT_ADVANCE');
       return;
     }
 
-    const bout = this.ccBouts.shift();
+    // Pop the active bout
+    this.ccBouts.shift();
     const { impStand, orkStand } = bout;
     const impDet = impStand.detachment;
     const orkDet = orkStand.detachment;
+
+    // Focus camera directly onto the combatants beforehand!
+    this.focusCloseCombatBout(bout, 350);
 
     const impFought = this.defenderFoughtCounts.get(impStand) || 0;
     const orkFought = this.defenderFoughtCounts.get(orkStand) || 0;
@@ -27091,83 +27241,160 @@ class NetEpicScene extends Phaser.Scene {
       (impDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
       orkRerollNote;
 
-    window.sfx.playMelee();
     const midX = (impStand.container.x + orkStand.container.x) / 2;
     const midY = (impStand.container.y + orkStand.container.y) / 2;
 
+    const impWin = impTotal > orkTotal;
+    const orkWin = orkTotal > impTotal;
+    const isTie = (impTotal === orkTotal);
+
     let outcomeHtml = '';
-    if (impTotal > orkTotal) {
-      this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
+    let outcomeText = '';
+    let victimStand = null;
+    let victimDet = null;
+    let isSuperHeavyDamage = false;
+
+    if (impWin) {
       if (orkDet.characterRules && orkDet.characterRules.ghazghkull && this.waaaghActive) {
-        window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
+        outcomeText = `Ghazghkull is Invulnerable! Blow bounces off!`;
       } else if (orkDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
-        window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🔥 ${orkDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
+        outcomeText = `${orkDet.name} shrugs off blow with 2+ Fixed Save!`;
       } else if (orkDet.superHeavy) {
-        const destroyed = this.applySuperHeavyDamage(orkDet, orkStand, true);
-        outcomeHtml = destroyed
-          ? `<span class="log-kill">💥 ${orkDet.name} Destroyed in Melee!</span>`
-          : `<span class="log-hit">⚠️ ${orkDet.name} suffers Super-Heavy Melee Damage (${orkDet.damageState})!</span>`;
+        isSuperHeavyDamage = true;
+        victimDet = orkDet;
+        victimStand = orkStand;
       } else {
+        victimStand = orkStand;
+        victimDet = orkDet;
         outcomeHtml = `<span class="log-kill">💥 ${orkDet.name} (${orkStand.label}) Destroyed! (No Save)</span>`;
-        this.removeCasualty(orkDet, orkStand);
+        outcomeText = `${impDet.name} wins by ${impTotal - orkTotal}! ${orkStand.label} destroyed!`;
       }
-      this.checkBreakPoint(orkDet);
-    } else if (orkTotal > impTotal) {
-      this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
+    } else if (orkWin) {
       if (impDet.characterRules && impDet.characterRules.ghazghkull && this.waaaghActive) {
-        window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
+        outcomeText = `Ghazghkull is Invulnerable! Blow bounces off!`;
       } else if (impDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
-        window.sfx.playSave();
         outcomeHtml = `<span class="log-save">🔥 ${impDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
+        outcomeText = `${impDet.name} shrugs off blow with 2+ Fixed Save!`;
       } else if (impDet.superHeavy) {
-        const destroyed = this.applySuperHeavyDamage(impDet, impStand, true);
-        outcomeHtml = destroyed
-          ? `<span class="log-kill">💥 ${impDet.name} Destroyed in Melee!</span>`
-          : `<span class="log-hit">⚠️ ${impDet.name} suffers Super-Heavy Melee Damage (${impDet.damageState})!</span>`;
+        isSuperHeavyDamage = true;
+        victimDet = impDet;
+        victimStand = impStand;
       } else {
+        victimStand = impStand;
+        victimDet = impDet;
         outcomeHtml = `<span class="log-kill">💥 ${impDet.name} (${impStand.label}) Destroyed! (No Save)</span>`;
-        this.removeCasualty(impDet, impStand);
+        outcomeText = `${orkDet.name} wins by ${orkTotal - impTotal}! ${impStand.label} destroyed!`;
       }
-      this.checkBreakPoint(impDet);
     } else {
       outcomeHtml = `<span class="log-cc">🤝 Tie (${impTotal} vs ${orkTotal})! Both survive & remain locked in melee!</span>`;
-      this.spawnFloatingText(midX, midY - 14, `🤝 MELEE TIE (${impTotal})`, '#c084fc', '12px');
+      outcomeText = `Tie (${impTotal} vs ${orkTotal})! Both stands remain locked in combat!`;
     }
 
-    this.log(
-      `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impModCaf} = <b>${impTotal}</b>) vs ` +
-      `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkModCaf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
-    );
+    const finalizeBout = () => {
+      this._ccResolving = false;
+      window.sfx.playMelee();
 
-    const impWin = impTotal > orkTotal, orkWin = orkTotal > impTotal;
-    this.showDiceRollTray(`⚔️ Close Combat — ${impWin ? impDet.name : (orkWin ? orkDet.name : 'TIE')}${impWin || orkWin ? ' wins' : ''}`, [
-      { label: `${impDet.name} (+${impModCaf} CAF)`, dice: impRolls.map(v => ({ val: v, cls: impWin ? 'die-pass' : (orkWin ? 'die-fail' : 'die-crit') })), summary: `= ${impTotal}` },
-      { label: `${orkDet.name} (+${orkModCaf} CAF)`, dice: orkRolls.map(v => ({ val: v, cls: orkWin ? 'die-pass' : (impWin ? 'die-fail' : 'die-crit') })), summary: `= ${orkTotal}` }
-    ]);
+      if (impWin) {
+        this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
+        if (isSuperHeavyDamage && victimDet) {
+          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, true);
+          outcomeHtml = destroyed
+            ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
+            : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
+          if (destroyed) this.removeCasualty(victimDet, victimStand);
+          this.checkBreakPoint(victimDet);
+        } else if (victimStand && victimDet) {
+          this.removeCasualty(victimDet, victimStand);
+          this.checkBreakPoint(victimDet);
+        }
+      } else if (orkWin) {
+        this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
+        if (isSuperHeavyDamage && victimDet) {
+          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, true);
+          outcomeHtml = destroyed
+            ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
+            : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
+          if (destroyed) this.removeCasualty(victimDet, victimStand);
+          this.checkBreakPoint(victimDet);
+        } else if (victimStand && victimDet) {
+          this.removeCasualty(victimDet, victimStand);
+          this.checkBreakPoint(victimDet);
+        }
+      } else {
+        this.spawnFloatingText(midX, midY - 14, `🤝 MELEE TIE (${impTotal})`, '#c084fc', '12px');
+      }
 
-    // Filter remaining bouts to ensure both participants are still alive
-    this.ccBouts = this.ccBouts.filter(b =>
-      b.impStand.detachment.stands.includes(b.impStand) &&
-      b.orkStand.detachment.stands.includes(b.orkStand)
-    );
+      this.log(
+        `⚔️ <b>Melee:</b> <b>${impDet.name} ${impStand.label}</b>${gangTagImp} ([${impRolls.join(',')}]+${impModCaf} = <b>${impTotal}</b>) vs ` +
+        `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkModCaf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
+      );
 
-    if (this.ccBouts.length === 0) {
-      this.log(`✅ All Close Combat bouts resolved!`);
-      this.startCombatSegment('COMBAT_ADVANCE');
+      this.showDiceRollTray(`⚔️ Close Combat — ${impWin ? impDet.name : (orkWin ? orkDet.name : 'TIE')}${impWin || orkWin ? ' wins' : ''}`, [
+        { label: `${impDet.name} (+${impModCaf} CAF)`, dice: impRolls.map(v => ({ val: v, cls: impWin ? 'die-pass' : (orkWin ? 'die-fail' : 'die-crit') })), summary: `= ${impTotal}` },
+        { label: `${orkDet.name} (+${orkModCaf} CAF)`, dice: orkRolls.map(v => ({ val: v, cls: orkWin ? 'die-pass' : (impWin ? 'die-fail' : 'die-crit') })), summary: `= ${orkTotal}` }
+      ]);
+
+      // Filter remaining bouts
+      this.ccBouts = this.ccBouts.filter(b =>
+        b.impStand && b.impStand.detachment && b.impStand.detachment.stands.includes(b.impStand) &&
+        b.orkStand && b.orkStand.detachment && b.orkStand.detachment.stands.includes(b.orkStand)
+      );
+
+      const nextBout = this.cleanCloseCombatBouts();
+      if (!nextBout) {
+        this.log(`✅ All Close Combat bouts resolved!`);
+        this.startCombatSegment('COMBAT_ADVANCE');
+        return;
+      }
+
+      // Smoothly pan to the next upcoming bout on the board!
+      this.focusCloseCombatBout(nextBout);
+      this.drawOverlays();
+      this.updateUI();
+    };
+
+    if (isAuto) {
+      finalizeBout();
       return;
     }
 
-    this.drawOverlays();
-    this.updateUI();
+    // Interactive Pre-Combat Resolution Card
+    this._ccResolving = true;
+    window.sfx.playMelee();
+
+    const combatData = {
+      isMelee: true,
+      title: 'CLOSE COMBAT ENGAGEMENT',
+      attackerName: `${impDet.name} (${impStand.label})`,
+      targetName: `${orkDet.name} (${orkStand.label})`,
+      weaponDesc: `Base CAF ${impBaseCaf >= 0 ? '+' : ''}${impBaseCaf} • ${impDiceCount}D6`,
+      targetDesc: `Base CAF ${orkBaseCaf >= 0 ? '+' : ''}${orkBaseCaf} • ${orkDiceCount}D6`,
+      impDet, orkDet,
+      impStand, orkStand,
+      impDiceCount, orkDiceCount,
+      impRolls, orkRolls,
+      impSum, orkSum,
+      impModCaf, orkModCaf,
+      impTotal, orkTotal,
+      impWin, orkWin, isTie,
+      gangTagImp, gangTagOrk,
+      outcomeText,
+      outcomeHtml,
+      kills: (victimStand && !isSuperHeavyDamage) ? 1 : 0
+    };
+
+    this.showCombatModal(combatData, () => {
+      finalizeBout();
+    });
   }
 
   resolveAllCloseCombats() {
     let safety = 50;
-    while (this.phase === 'COMBAT_CC' && this.ccBouts.length > 0 && safety-- > 0) {
-      this.resolveNextCloseCombatBout();
+    while (this.phase === 'COMBAT_CC' && this.cleanCloseCombatBouts() && safety-- > 0) {
+      this.resolveNextCloseCombatBout(true);
     }
   }
 
@@ -27555,15 +27782,37 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     // 2. Highlight active Close Combat bout during COMBAT_CC
-    if (this.phase === 'COMBAT_CC' && this.ccBouts.length > 0) {
-      const currentBout = this.ccBouts[0];
-      const p1 = currentBout.impStand.container;
-      const p2 = currentBout.orkStand.container;
-      this.overlayGfx.lineStyle(4, 0xc084fc, 1);
-      this.overlayGfx.strokeCircle(p1.x, p1.y, 22);
-      this.overlayGfx.strokeCircle(p2.x, p2.y, 22);
-      this.overlayGfx.lineStyle(3, 0xfde047, 1);
-      this.overlayGfx.lineBetween(p1.x, p1.y, p2.x, p2.y);
+    if (this.phase === 'COMBAT_CC') {
+      const currentBout = this.cleanCloseCombatBouts();
+      if (currentBout && currentBout.impStand && currentBout.orkStand && currentBout.impStand.container && currentBout.orkStand.container) {
+        const p1 = currentBout.impStand.container;
+        const p2 = currentBout.orkStand.container;
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+
+        const t = (this.time && this.time.now) ? this.time.now : Date.now();
+        const pulse = 0.85 + 0.15 * Math.sin(t * 0.008);
+
+        const impColor = (this.getSideMeta('IMPERIUM') && this.getSideMeta('IMPERIUM').phaserColor) || 0x38bdf8;
+        const orkColor = (this.getSideMeta('ORKS') && this.getSideMeta('ORKS').phaserColor) || 0x22c55e;
+
+        // Glowing base rings for the two duelists
+        this.overlayGfx.lineStyle(3.5, impColor, 0.95);
+        this.overlayGfx.strokeCircle(p1.x, p1.y, 22 * pulse);
+
+        this.overlayGfx.lineStyle(3.5, orkColor, 0.95);
+        this.overlayGfx.strokeCircle(p2.x, p2.y, 22 * pulse);
+
+        // Melee clash beam connecting the two stands
+        this.overlayGfx.lineStyle(3, 0xfde047, 0.95);
+        this.overlayGfx.lineBetween(p1.x, p1.y, p2.x, p2.y);
+
+        // Animated pulsing clash crosshairs at center
+        this.overlayGfx.fillStyle(0xfde047, 0.9);
+        this.overlayGfx.fillCircle(midX, midY, 5 * pulse);
+        this.overlayGfx.lineStyle(2, 0xef4444, 1);
+        this.overlayGfx.strokeCircle(midX, midY, 13 * pulse);
+      }
     }
 
     // 3. Highlight SNAP FIRE INTERRUPT Target Reticles, Reacting Shooters & Live LoS Rays!
@@ -28082,29 +28331,40 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
     else if (this.phase === 'COMBAT_CC') {
-      phaseBadge.innerText = `III-2. Close Combat (${this.ccBouts.length} Left)`;
+      const remainingCount = this.ccBouts ? this.ccBouts.length : 0;
+      phaseBadge.innerText = `III-2. Close Combat (${remainingCount} Left)`;
       phaseBadge.style.background = '#9333ea';
+      combatControls.style.display = 'none';
       ccControls.style.display = 'flex';
 
-      if (this.ccBouts.length > 0) {
-        const b = this.ccBouts[0];
-        const impFought = this.defenderFoughtCounts.get(b.impStand) || 0;
-        const orkFought = this.defenderFoughtCounts.get(b.orkStand) || 0;
+      const b = this.cleanCloseCombatBouts();
+      if (!b) {
+        promptText.innerText = '⚔️ All Close Combat bouts resolved!';
+        const btnNext = document.getElementById('btn-cc-next');
+        if (btnNext) btnNext.innerText = '✓ Proceed to Advance Fire';
+      } else {
+        const impDet = b.impStand.detachment;
+        const orkDet = b.orkStand.detachment;
+        const impFought = this.defenderFoughtCounts ? (this.defenderFoughtCounts.get(b.impStand) || 0) : 0;
+        const orkFought = this.defenderFoughtCounts ? (this.defenderFoughtCounts.get(b.orkStand) || 0) : 0;
         let impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
         let orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
-        if (b.impStand.detachment.bansheeMask && b.orkStand.detachment.pinningClass === 1) impDice += 1;
-        if (b.orkStand.detachment.bansheeMask && b.impStand.detachment.pinningClass === 1) orkDice += 1;
-        const impBase = b.impStand.detachment.damageState === 'HEAVY' ? Math.floor(b.impStand.detachment.caf / 2) : b.impStand.detachment.caf;
-        const orkBase = b.orkStand.detachment.damageState === 'HEAVY' ? Math.floor(b.orkStand.detachment.caf / 2) : b.orkStand.detachment.caf;
-        const impSyn = (b.impStand.detachment.armyBook === 'TYRANIDS' && this.hasSynapseAura(b.impStand.detachment)) ? 1 : 0;
-        const orkSyn = (b.orkStand.detachment.armyBook === 'TYRANIDS' && this.hasSynapseAura(b.orkStand.detachment)) ? 1 : 0;
-        const impTer = (b.orkStand.detachment.daemonicTerror && !b.impStand.detachment.fearless && !b.impStand.detachment.daemonicTerror && !impSyn) ? -2 : 0;
-        const orkTer = (b.impStand.detachment.daemonicTerror && !b.orkStand.detachment.fearless && !b.orkStand.detachment.daemonicTerror && !orkSyn) ? -2 : 0;
+        if (impDet.bansheeMask && orkDet.pinningClass === 1) impDice += 1;
+        if (orkDet.bansheeMask && impDet.pinningClass === 1) orkDice += 1;
+        const impBase = impDet.damageState === 'HEAVY' ? Math.floor(impDet.caf / 2) : impDet.caf;
+        const orkBase = orkDet.damageState === 'HEAVY' ? Math.floor(orkDet.caf / 2) : orkDet.caf;
+        const impSyn = (impDet.armyBook === 'TYRANIDS' && this.hasSynapseAura(impDet)) ? 1 : 0;
+        const orkSyn = (orkDet.armyBook === 'TYRANIDS' && this.hasSynapseAura(orkDet)) ? 1 : 0;
+        const impTer = (orkDet.daemonicTerror && !impDet.fearless && !impDet.daemonicTerror && !impSyn) ? -2 : 0;
+        const orkTer = (impDet.daemonicTerror && !orkDet.fearless && !orkDet.daemonicTerror && !orkSyn) ? -2 : 0;
         const impCaf = impBase + (this.isStandGarrisoned(b.impStand) ? 2 : 0) + impSyn + impTer;
         const orkCaf = orkBase + (this.isStandGarrisoned(b.orkStand) ? 2 : 0) + orkSyn + orkTer;
 
-        promptText.innerText = `⚔️ Next Bout: ${b.impStand.detachment.name} ${b.impStand.label} (${impDice}D6+${impCaf}) vs ${b.orkStand.detachment.name} ${b.orkStand.label} (${orkDice}D6+${orkCaf})`;
-        document.getElementById('btn-cc-next').innerText = `⚔️ Fight Bout (${impDice}D6+${impCaf} vs ${orkDice}D6+${orkCaf})`;
+        promptText.innerHTML = `⚔️ <b>Next Melee:</b> 🛡️ <b style="color:#60a5fa;">${impDet.name} (${b.impStand.label})</b> [${impDice}D6+${impCaf}] vs 🟢 <b style="color:#4ade80;">${orkDet.name} (${b.orkStand.label})</b> [${orkDice}D6+${orkCaf}]`;
+        const btnNext = document.getElementById('btn-cc-next');
+        if (btnNext) {
+          btnNext.innerText = `⚔️ Fight Bout: ${b.impStand.label} vs ${b.orkStand.label} (${impDice}D6+${impCaf} vs ${orkDice}D6+${orkCaf})`;
+        }
       }
     }
     else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
