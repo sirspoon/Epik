@@ -296,9 +296,19 @@
     }
     .modal-card {
       background: #0f172a; border: 2px solid #475569; border-radius: 10px;
-      max-width: 960px; width: 100%; max-height: 92vh; display: flex;
-      flex-direction: column; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      max-width: 960px; width: 100%; height: 92vh; max-height: 92vh; display: flex;
+      flex-direction: column; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      box-sizing: border-box; overflow: hidden;
     }
+    .badge-unique { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; }
+    .quota-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 0.72rem;
+      background: #0f172a; border: 1px solid #475569; color: #cbd5e1;
+    }
+    .quota-chip.quota-ok { background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #6ee7b7; }
+    .quota-chip.quota-warn { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #fde047; }
+    .quota-chip.quota-err { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; color: #fca5a5; }
     .setup-stepper {
       display: flex; gap: 5px; overflow-x: auto; max-width: 100%; padding-bottom: 2px;
     }
@@ -353,10 +363,10 @@
     .filter-btn:hover { background: #1e293b; color: #f8fafc; }
     .filter-btn.active { background: #2563eb; color: #ffffff; border-color: #3b82f6; font-weight: 800; }
     #imp-catalog, #ork-catalog {
-      max-height: 250px; overflow-y: auto; margin-bottom: 6px; padding-right: 3px;
+      margin-bottom: 6px; padding-right: 3px;
     }
     #imp-roster, #ork-roster {
-      max-height: 175px; overflow-y: auto; padding-right: 3px;
+      padding-right: 3px;
     }
 
     /* Mobile & Small Screen Optimizations */
@@ -539,187 +549,271 @@
     </div>
 
     <!-- STEP 1: Match & Battlefield Setup -->
-    <div id="wizard-step-1" class="wizard-step" style="display:flex; flex-direction:column; gap:12px; padding:10px 0; overflow-y:auto; flex:1;">
-      <div>
-        <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🗺️ Battlefield Map Preset:</div>
-        <div class="map-preset-grid">
-          <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')">
-            <div style="font-size:1.3rem;">🏭</div>
-            <div style="font-weight:700; color:#f8fafc;">Industrial</div>
-            <div class="sub-text">Factory ruins, toxic waterways, cargo containers & rail lines.</div>
-          </div>
-          <div id="map-card-RUINED_CITY" class="preset-card" onclick="window.setMapPreset('RUINED_CITY')">
-            <div style="font-size:1.3rem;">🏛️</div>
-            <div style="font-weight:700; color:#f8fafc;">Ruined City</div>
-            <div class="sub-text">Dense urban warzone with 15 buildings, grand boulevards & rubble.</div>
-          </div>
-          <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')">
-            <div style="font-size:1.3rem;">❄️</div>
-            <div style="font-weight:700; color:#f8fafc;">Snowy Tundra</div>
-            <div class="sub-text">Sub-zero permafrost, frozen glacial chasm & snow-capped pines.</div>
-          </div>
-          <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')">
-            <div style="font-size:1.3rem;">🏜️</div>
-            <div style="font-weight:700; color:#f8fafc;">Desert Wastes</div>
-            <div class="sub-text">Arid dunes, sandstone rock spires, dry canyon wadi & refineries.</div>
-          </div>
-          <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')">
-            <div style="font-size:1.3rem;">🌊</div>
-            <div style="font-weight:700; color:#f8fafc;">River Crossing</div>
-            <div class="sub-text">Dividing river with tactical stone bridges & swamp crossings.</div>
-          </div>
-          <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')">
-            <div style="font-size:1.3rem;">🌲</div>
-            <div style="font-weight:700; color:#f8fafc;">Dense Woods</div>
-            <div class="sub-text">Woodland groves with speed-boosting paved highways.</div>
-          </div>
-          <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')">
-            <div style="font-size:1.3rem;">🎲</div>
-            <div style="font-weight:700; color:#f8fafc;">Randomized</div>
-            <div class="sub-text">Procedurally generated terrain with mixed cover.</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <div style="flex:1; min-width:240px;">
-          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🤖 Game Mode / Opponent:</div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:110px;">🤖 vs North AI</button>
-            <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="flex:1; min-width:110px;">🤖 vs South AI</button>
-            <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="flex:1; min-width:110px;">👥 2P Hotseat</button>
-          </div>
-        </div>
-        <div style="flex:1; min-width:240px;">
-          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget: <span id="budget-vp-target" style="color:#fde047; font-weight:600; font-size:0.8rem;">(Goal: 35 VP)</span></div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="flex:1; min-width:55px;">1000</button>
-            <button id="pts-2000" class="btn-primary" onclick="window.setPointsBudget(2000)" style="flex:1; min-width:55px;">2000</button>
-            <button id="pts-3000" onclick="window.setPointsBudget(3000)" style="flex:1; min-width:55px;">3000</button>
-            <button id="pts-4000" onclick="window.setPointsBudget(4000)" style="flex:1; min-width:55px;">4000</button>
-            <button id="pts-5000" onclick="window.setPointsBudget(5000)" style="flex:1; min-width:55px;">5000</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Table Size & Battlefield Dimensions -->
-      <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">📐 Table Dimensions:</div>
-          <div class="sub-text" id="table-size-desc" style="color:#a78bfa; font-weight:600;">6' × 4' Standard (185 × 125 cm)</div>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button id="table-size-STANDARD_6X4" class="btn-primary" onclick="window.setTableSize('STANDARD_6X4')" style="flex:1; min-width:115px; padding:6px 10px;">6' × 4' Standard</button>
-          <button id="table-size-GRAND_8X4" onclick="window.setTableSize('GRAND_8X4')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 4' Grand (3000+)</button>
-          <button id="table-size-APOCALYPSE_8X5" onclick="window.setTableSize('APOCALYPSE_8X5')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 5' Apocalypse (4000-5000)</button>
-        </div>
-        <div class="sub-text" style="color:#64748b;">Automatically scales with points budget, or tap to choose custom board size.</div>
-      </div>
-
-      <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+    <div id="wizard-step-1" class="wizard-step" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div class="wizard-scroll-body" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; display:flex; flex-direction:column; gap:10px;">
         <div>
-          <div style="font-weight:700; color:#e2e8f0; font-size:0.84rem;">Quick Matchup Shuffle:</div>
-          <div class="sub-text">Randomly picks two exciting factions from all 8 armies & random terrain.</div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🗺️ Battlefield Map Preset:</div>
+          <div class="map-preset-grid">
+            <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')">
+              <div style="font-size:1.3rem;">🏭</div>
+              <div style="font-weight:700; color:#f8fafc;">Industrial</div>
+              <div class="sub-text">Factory ruins, toxic waterways, cargo containers & rail lines.</div>
+            </div>
+            <div id="map-card-RUINED_CITY" class="preset-card" onclick="window.setMapPreset('RUINED_CITY')">
+              <div style="font-size:1.3rem;">🏛️</div>
+              <div style="font-weight:700; color:#f8fafc;">Ruined City</div>
+              <div class="sub-text">Dense urban warzone with 15 buildings, grand boulevards & rubble.</div>
+            </div>
+            <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')">
+              <div style="font-size:1.3rem;">❄️</div>
+              <div style="font-weight:700; color:#f8fafc;">Snowy Tundra</div>
+              <div class="sub-text">Sub-zero permafrost, frozen glacial chasm & snow-capped pines.</div>
+            </div>
+            <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')">
+              <div style="font-size:1.3rem;">🏜️</div>
+              <div style="font-weight:700; color:#f8fafc;">Desert Wastes</div>
+              <div class="sub-text">Arid dunes, sandstone rock spires, dry canyon wadi & refineries.</div>
+            </div>
+            <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')">
+              <div style="font-size:1.3rem;">🌊</div>
+              <div style="font-weight:700; color:#f8fafc;">River Crossing</div>
+              <div class="sub-text">Dividing river with tactical stone bridges & swamp crossings.</div>
+            </div>
+            <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')">
+              <div style="font-size:1.3rem;">🌲</div>
+              <div style="font-weight:700; color:#f8fafc;">Dense Woods</div>
+              <div class="sub-text">Woodland groves with speed-boosting paved highways.</div>
+            </div>
+            <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')">
+              <div style="font-size:1.3rem;">🎲</div>
+              <div style="font-weight:700; color:#f8fafc;">Randomized</div>
+              <div class="sub-text">Procedurally generated terrain with mixed cover.</div>
+            </div>
+          </div>
         </div>
-        <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto; padding:6px 12px;">🎲 Random Matchup</button>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:240px;">
+            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🤖 Game Mode / Opponent:</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:110px;">🤖 vs North AI</button>
+              <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="flex:1; min-width:110px;">🤖 vs South AI</button>
+              <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="flex:1; min-width:110px;">👥 2P Hotseat</button>
+            </div>
+          </div>
+          <div style="flex:1; min-width:240px;">
+            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget: <span id="budget-vp-target" style="color:#fde047; font-weight:600; font-size:0.8rem;">(Goal: 35 VP)</span></div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="flex:1; min-width:55px;">1000</button>
+              <button id="pts-2000" class="btn-primary" onclick="window.setPointsBudget(2000)" style="flex:1; min-width:55px;">2000</button>
+              <button id="pts-3000" onclick="window.setPointsBudget(3000)" style="flex:1; min-width:55px;">3000</button>
+              <button id="pts-4000" onclick="window.setPointsBudget(4000)" style="flex:1; min-width:55px;">4000</button>
+              <button id="pts-5000" onclick="window.setPointsBudget(5000)" style="flex:1; min-width:55px;">5000</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Size & Battlefield Dimensions -->
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">📐 Table Dimensions:</div>
+            <div class="sub-text" id="table-size-desc" style="color:#a78bfa; font-weight:600;">6' × 4' Standard (185 × 125 cm)</div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button id="table-size-STANDARD_6X4" class="btn-primary" onclick="window.setTableSize('STANDARD_6X4')" style="flex:1; min-width:115px; padding:6px 10px;">6' × 4' Standard</button>
+            <button id="table-size-GRAND_8X4" onclick="window.setTableSize('GRAND_8X4')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 4' Grand (3000+)</button>
+            <button id="table-size-APOCALYPSE_8X5" onclick="window.setTableSize('APOCALYPSE_8X5')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 5' Apocalypse (4000-5000)</button>
+          </div>
+          <div class="sub-text" style="color:#64748b;">Automatically scales with points budget, or tap to choose custom board size.</div>
+        </div>
+
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <div style="font-weight:700; color:#e2e8f0; font-size:0.84rem;">Quick Matchup Shuffle:</div>
+            <div class="sub-text">Randomly picks two exciting factions from all 8 armies & random terrain.</div>
+          </div>
+          <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto; padding:6px 12px;">🎲 Random Matchup</button>
+        </div>
       </div>
 
-      <div class="btn-row" style="margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
+      <div class="btn-row" style="flex-shrink:0; margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
         <button class="btn-primary" onclick="window.setBuilderStep(2)" style="width:100%; padding:10px 14px; font-size:0.88rem;">Next: Configure South Force (Player 1) →</button>
       </div>
     </div>
 
     <!-- STEP 2: South Force (Player 1) -->
-    <div id="wizard-step-2" class="wizard-step" style="display:none; flex-direction:column; gap:8px; padding:6px 0; overflow-y:auto; flex:1;">
-      <div id="imp-col-card" class="faction-col" style="border-top:3px solid #3b82f6; flex:1;">
-        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="imp-faction-tabs"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; flex-wrap:wrap; gap:4px;">
-          <span id="imp-col-title" style="font-weight:800; font-size:0.95rem; color:#60a5fa;">🛡️ IMPERIUM (South Force / P1)</span>
-          <span id="imp-pts-badge" class="vp-box" style="font-size:0.78rem;">1500 / 2000 pts</span>
-        </div>
-        <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd;">Faction Rules</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
-          <span class="sub-text" style="font-weight:700;">Gold Card Catalog:</span>
-          <div id="imp-card-filters" style="display:flex; gap:3px;"></div>
-        </div>
-        <div id="imp-catalog" style="max-height:280px; overflow-y:auto;"></div>
-
-        <!-- Collapsible Roster Drawer -->
-        <div style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window.toggleRosterView('imp')">
-            <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="imp-roster-header">📋 Selected South Roster [Tap to Toggle]</span>
-            <span id="imp-roster-toggle-icon" style="color:#94a3b8; font-size:0.75rem;">▼</span>
+    <div id="wizard-step-2" class="wizard-step" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div id="imp-col-card" class="faction-col" style="border-top:3px solid #3b82f6; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
+        
+        <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
+        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:6px; border-bottom:1px solid #334155;">
+          <!-- 8 Faction Selector Tabs -->
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:5px;" id="imp-faction-tabs"></div>
+          
+          <!-- Faction Title & Live Points Badge -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <span id="imp-col-title" style="font-weight:800; font-size:0.92rem; color:#60a5fa;">🛡️ IMPERIUM (South Force / P1)</span>
+            <span id="imp-pts-badge" class="vp-box" style="font-size:0.78rem; font-weight:800;">1750 / 2000 pts</span>
           </div>
-          <div id="imp-roster" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
-        </div>
-      </div>
+          
+          <!-- Points Budget Progress Bar -->
+          <div style="background:#0f172a; border-radius:4px; height:5px; overflow:hidden; width:100%; margin:4px 0;">
+            <div id="imp-pts-bar" style="height:100%; width:87%; background:#3b82f6; transition:width 0.2s, background-color 0.2s;"></div>
+          </div>
 
-      <div class="btn-row" style="padding-top:6px; border-top:1px solid #334155;">
-        <button onclick="window.setBuilderStep(1)" style="flex:1;">← Back: Match Setup</button>
-        <button class="btn-primary" onclick="window.setBuilderStep(3)" style="flex:2;">Next: Configure North Force →</button>
+          <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
+            <div id="imp-quota-row" style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+              <span id="imp-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
+              <span id="imp-chip-sup" class="quota-chip quota-ok">🛡️ 4/5 Sup</span>
+              <span id="imp-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
+              <span id="imp-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+            </div>
+            <div id="imp-rule-alert" style="font-size:0.7rem; font-weight:700;"></div>
+          </div>
+
+          <!-- Card Filters & Roster Quick Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; flex-wrap:wrap; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="sub-text" style="font-weight:700; color:#e2e8f0;">Catalog:</span>
+              <div id="imp-card-filters" style="display:flex; gap:3px;"></div>
+            </div>
+            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:2px 8px; font-size:0.72rem; background:#0f172a; border-color:#475569;" id="imp-roster-quick-btn">
+              📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SCROLLABLE MIDDLE (Catalog Cards Grid & Collapsible Roster) -->
+        <div class="builder-scroll-content" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; margin-top:2px;">
+          <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #3b82f6;">Faction Rules</div>
+          
+          <!-- Card Catalog (scrolls naturally in middle) -->
+          <div id="imp-catalog" style="margin-bottom:8px;"></div>
+
+          <!-- Collapsible Roster Drawer -->
+          <div id="imp-roster-section" style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px;" onclick="window.toggleRosterView('imp')">
+              <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="imp-roster-header">📋 Selected South Roster</span>
+              <span style="font-size:0.72rem; color:#94a3b8;">[Tap to Toggle]</span>
+            </div>
+            <div id="imp-roster"></div>
+          </div>
+        </div>
+
+        <!-- STICKY BOTTOM ACTION BAR (Always Visible at Bottom) -->
+        <div class="btn-row builder-sticky-bottom" style="flex-shrink:0; padding-top:6px; border-top:1px solid #334155; margin-top:auto; background:#1e293b; display:flex; gap:6px; align-items:center;">
+          <button onclick="window.setBuilderStep(1)" style="flex:0 0 auto; min-width:auto; padding:8px 12px;">← Back: Match</button>
+          <button onclick="window.clearRoster('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️ Clear</button>
+          <button onclick="window.resetRosterToDefault('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to authentic NetEpic core roster">↺ Reset</button>
+          <button id="imp-btn-next" class="btn-primary" onclick="window.onBuilderNext(2)" style="flex:1; padding:8px 12px; font-weight:800;">Next: Configure North Force →</button>
+        </div>
+
       </div>
     </div>
 
     <!-- STEP 3: North Force (Player 2 / AI) -->
-    <div id="wizard-step-3" class="wizard-step" style="display:none; flex-direction:column; gap:8px; padding:6px 0; overflow-y:auto; flex:1;">
-      <div id="ork-col-card" class="faction-col" style="border-top:3px solid #22c55e; flex:1;">
-        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px;" id="ork-faction-tabs"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; flex-wrap:wrap; gap:4px;">
-          <span id="ork-col-title" style="font-weight:800; font-size:0.95rem; color:#4ade80;">🟢 ORK HORDE (North Force / P2-AI)</span>
-          <span id="ork-pts-badge" class="vp-box" style="font-size:0.78rem;">1500 / 2000 pts</span>
-        </div>
-        <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac;">Faction Rules</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; flex-wrap:wrap; gap:4px;">
-          <span class="sub-text" style="font-weight:700;">Gold Card Catalog:</span>
-          <div id="ork-card-filters" style="display:flex; gap:3px;"></div>
-        </div>
-        <div id="ork-catalog" style="max-height:280px; overflow-y:auto;"></div>
-
-        <!-- Collapsible Roster Drawer -->
-        <div style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="window.toggleRosterView('ork')">
-            <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="ork-roster-header">📋 Selected North Roster [Tap to Toggle]</span>
-            <span id="ork-roster-toggle-icon" style="color:#94a3b8; font-size:0.75rem;">▼</span>
+    <div id="wizard-step-3" class="wizard-step" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div id="ork-col-card" class="faction-col" style="border-top:3px solid #22c55e; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
+        
+        <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
+        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:6px; border-bottom:1px solid #334155;">
+          <!-- 8 Faction Selector Tabs -->
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:5px;" id="ork-faction-tabs"></div>
+          
+          <!-- Faction Title & Live Points Badge -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <span id="ork-col-title" style="font-weight:800; font-size:0.92rem; color:#4ade80;">🟢 ORK HORDE (North Force / P2-AI)</span>
+            <span id="ork-pts-badge" class="vp-box" style="font-size:0.78rem; font-weight:800;">1525 / 2000 pts</span>
           </div>
-          <div id="ork-roster" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
-        </div>
-      </div>
+          
+          <!-- Points Budget Progress Bar -->
+          <div style="background:#0f172a; border-radius:4px; height:5px; overflow:hidden; width:100%; margin:4px 0;">
+            <div id="ork-pts-bar" style="height:100%; width:76%; background:#22c55e; transition:width 0.2s, background-color 0.2s;"></div>
+          </div>
 
-      <div class="btn-row" style="padding-top:6px; border-top:1px solid #334155;">
-        <button onclick="window.setBuilderStep(2)" style="flex:1;">← Back: South Force</button>
-        <button class="btn-primary" onclick="window.setBuilderStep(4)" style="flex:2;">Next: Review & Deploy →</button>
+          <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
+            <div id="ork-quota-row" style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+              <span id="ork-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
+              <span id="ork-chip-sup" class="quota-chip quota-ok">🛡️ 5/5 Sup</span>
+              <span id="ork-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
+              <span id="ork-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+            </div>
+            <div id="ork-rule-alert" style="font-size:0.7rem; font-weight:700;"></div>
+          </div>
+
+          <!-- Card Filters & Roster Quick Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; flex-wrap:wrap; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="sub-text" style="font-weight:700; color:#e2e8f0;">Catalog:</span>
+              <div id="ork-card-filters" style="display:flex; gap:3px;"></div>
+            </div>
+            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:2px 8px; font-size:0.72rem; background:#0f172a; border-color:#475569;" id="ork-roster-quick-btn">
+              📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SCROLLABLE MIDDLE (Catalog Cards Grid & Collapsible Roster) -->
+        <div class="builder-scroll-content" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; margin-top:2px;">
+          <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #22c55e;">Faction Rules</div>
+          
+          <!-- Card Catalog (scrolls naturally in middle) -->
+          <div id="ork-catalog" style="margin-bottom:8px;"></div>
+
+          <!-- Collapsible Roster Drawer -->
+          <div id="ork-roster-section" style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px;" onclick="window.toggleRosterView('ork')">
+              <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="ork-roster-header">📋 Selected North Roster</span>
+              <span style="font-size:0.72rem; color:#94a3b8;">[Tap to Toggle]</span>
+            </div>
+            <div id="ork-roster"></div>
+          </div>
+        </div>
+
+        <!-- STICKY BOTTOM ACTION BAR (Always Visible at Bottom) -->
+        <div class="btn-row builder-sticky-bottom" style="flex-shrink:0; padding-top:6px; border-top:1px solid #334155; margin-top:auto; background:#1e293b; display:flex; gap:6px; align-items:center;">
+          <button onclick="window.setBuilderStep(2)" style="flex:0 0 auto; min-width:auto; padding:8px 12px;">← Back: South</button>
+          <button onclick="window.clearRoster('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️ Clear</button>
+          <button onclick="window.resetRosterToDefault('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to authentic NetEpic core roster">↺ Reset</button>
+          <button id="ork-btn-next" class="btn-primary" onclick="window.onBuilderNext(3)" style="flex:1; padding:8px 12px; font-weight:800;">Next: Review & Deploy →</button>
+        </div>
+
       </div>
     </div>
 
     <!-- STEP 4: Battle Review & Deployment -->
-    <div id="wizard-step-4" class="wizard-step" style="display:none; flex-direction:column; gap:12px; padding:10px 0; overflow-y:auto; flex:1;">
-      <div style="font-weight:800; font-size:1rem; color:#f8fafc;">⚔️ Battle Briefing & Match Review</div>
-      
-      <div id="briefing-card" style="background:#1e293b; border:1px solid #475569; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
-        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-          <span id="briefing-map" style="font-weight:700; color:#38bdf8;">🗺️ Map: Industrial</span>
-          <span id="briefing-table" style="font-weight:700; color:#a78bfa;">📐 Table: 6' × 4' Standard</span>
-          <span id="briefing-mode" style="font-weight:700; color:#4ade80;">🤖 Mode: vs North AI</span>
-          <span id="briefing-budget" style="font-weight:700; color:#fde047;">🎯 Budget: 2000 pts</span>
+    <div id="wizard-step-4" class="wizard-step" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div class="wizard-scroll-body" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-weight:800; font-size:1rem; color:#f8fafc;">⚔️ Battle Briefing & Match Review</div>
+        
+        <div id="briefing-card" style="background:#1e293b; border:1px solid #475569; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+            <span id="briefing-map" style="font-weight:700; color:#38bdf8;">🗺️ Map: Industrial</span>
+            <span id="briefing-table" style="font-weight:700; color:#a78bfa;">📐 Table: 6' × 4' Standard</span>
+            <span id="briefing-mode" style="font-weight:700; color:#4ade80;">🤖 Mode: vs North AI</span>
+            <span id="briefing-budget" style="font-weight:700; color:#fde047;">🎯 Budget: 2000 pts</span>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;">
+            <div id="briefing-south" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #3b82f6;">
+              <div style="font-weight:700; color:#60a5fa;" id="briefing-south-name">🛡️ South Force</div>
+              <div class="sub-text" id="briefing-south-details" style="margin-top:2px;">Loading...</div>
+            </div>
+            <div id="briefing-north" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #22c55e;">
+              <div style="font-weight:700; color:#4ade80;" id="briefing-north-name">🟢 North Force</div>
+              <div class="sub-text" id="briefing-north-details" style="margin-top:2px;">Loading...</div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;">
-          <div id="briefing-south" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #3b82f6;">
-            <div style="font-weight:700; color:#60a5fa;" id="briefing-south-name">🛡️ South Force</div>
-            <div class="sub-text" id="briefing-south-details" style="margin-top:2px;">Loading...</div>
-          </div>
-          <div id="briefing-north" style="flex:1; min-width:220px; background:#0f172a; padding:8px; border-radius:6px; border-left:3px solid #22c55e;">
-            <div style="font-weight:700; color:#4ade80;" id="briefing-north-name">🟢 North Force</div>
-            <div class="sub-text" id="briefing-north-details" style="margin-top:2px;">Loading...</div>
-          </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+          <button id="btn-deploy-phase" class="btn-confirm" onclick="window.startBattleFromBuilder(true)" style="padding:12px; font-size:0.92rem;">📍 Start Deployment Phase (Place Units in Zones)</button>
+          <button id="btn-deploy-quick" class="btn-primary" onclick="window.startBattleFromBuilder(false)" style="padding:10px; font-size:0.86rem;">⚡ Quick Start (Forward Skirmish Deployment)</button>
         </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-        <button class="btn-confirm" onclick="window.startBattleFromBuilder(true)" style="padding:12px; font-size:0.92rem;">📍 Start Deployment Phase (Place Units in Zones)</button>
-        <button class="btn-primary" onclick="window.startBattleFromBuilder(false)" style="padding:10px; font-size:0.86rem;">⚡ Quick Start (Forward Skirmish Deployment)</button>
-      </div>
-
-      <div class="btn-row" style="margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
+      <div class="btn-row" style="flex-shrink:0; margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
         <button onclick="window.setBuilderStep(3)" style="flex:1;">← Back to Armies</button>
         <button onclick="window.resetDefaultArmies()" style="flex:1; background:#334155;">↺ Reset Rosters</button>
       </div>
@@ -1441,10 +1535,8 @@ window.updateBriefingCard = function() {
 
   const sMeta = window.getSideMeta ? window.getSideMeta('IMPERIUM') : FACTION_META.IMPERIUM;
   const nMeta = window.getSideMeta ? window.getSideMeta('ORKS') : FACTION_META.ORKS;
-  const sPts = window.getRosterPoints ? window.getRosterPoints('IMPERIUM') : 0;
-  const nPts = window.getRosterPoints ? window.getRosterPoints('ORKS') : 0;
-  const sCount = (window.armyRosters && window.armyRosters.IMPERIUM) ? window.armyRosters.IMPERIUM.length : 0;
-  const nCount = (window.armyRosters && window.armyRosters.ORKS) ? window.armyRosters.ORKS.length : 0;
+  const sBd = window.getRosterBreakdown ? window.getRosterBreakdown('IMPERIUM') : null;
+  const nBd = window.getRosterBreakdown ? window.getRosterBreakdown('ORKS') : null;
 
   const bSouthName = document.getElementById('briefing-south-name');
   const bSouthDetails = document.getElementById('briefing-south-details');
@@ -1452,8 +1544,9 @@ window.updateBriefingCard = function() {
     bSouthName.innerText = `${sMeta.icon} ${sMeta.fullTitle} (South)`;
     bSouthName.style.color = sMeta.colorHex;
   }
-  if (bSouthDetails) {
-    bSouthDetails.innerText = `${sPts} / ${window.pointsBudget} pts (${sCount} Cards) &bull; ${sMeta.traitDesc}`;
+  if (bSouthDetails && sBd) {
+    const sStatus = sBd.valid ? '<span style="color:#4ade80;">✅ Legal NetEpic Force</span>' : `<span style="color:#ef4444;">⚠️ ${sBd.errors[0]}</span>`;
+    bSouthDetails.innerHTML = `${sBd.totalPts} / ${window.pointsBudget} pts (${sBd.cardCount} Cards &bull; 🏢 ${sBd.companies} Co, 🛡️ ${sBd.support} Sup, ⚔️ ${sBd.special} Spc, 👑 ${sBd.uniqueCount} Unq)<br>${sStatus}`;
   }
 
   const bNorthName = document.getElementById('briefing-north-name');
@@ -1462,9 +1555,16 @@ window.updateBriefingCard = function() {
     bNorthName.innerText = `${nMeta.icon} ${nMeta.fullTitle} (North)`;
     bNorthName.style.color = nMeta.colorHex;
   }
-  if (bNorthDetails) {
-    bNorthDetails.innerText = `${nPts} / ${window.pointsBudget} pts (${nCount} Cards) &bull; ${nMeta.traitDesc}`;
+  if (bNorthDetails && nBd) {
+    const nStatus = nBd.valid ? '<span style="color:#4ade80;">✅ Legal NetEpic Force</span>' : `<span style="color:#ef4444;">⚠️ ${nBd.errors[0]}</span>`;
+    bNorthDetails.innerHTML = `${nBd.totalPts} / ${window.pointsBudget} pts (${nBd.cardCount} Cards &bull; 🏢 ${nBd.companies} Co, 🛡️ ${nBd.support} Sup, ⚔️ ${nBd.special} Spc, 👑 ${nBd.uniqueCount} Unq)<br>${nStatus}`;
   }
+
+  const btnDeployPhase = document.getElementById('btn-deploy-phase');
+  const btnDeployQuick = document.getElementById('btn-deploy-quick');
+  const bothValid = (sBd && sBd.valid) && (nBd && nBd.valid);
+  if (btnDeployPhase) btnDeployPhase.disabled = !bothValid;
+  if (btnDeployQuick) btnDeployQuick.disabled = !bothValid;
 };
 
 window.restartBattle = function() {
@@ -2988,6 +3088,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_sm_calgar",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Marneus Calgar",
       "armyBook": "IMPERIUM",
@@ -3023,6 +3124,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_sm_tigurius",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Chief Librarian Tigurius",
       "armyBook": "IMPERIUM",
@@ -3247,6 +3349,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_sm_bjorn",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Bjorn the Fell-Handed",
       "armyBook": "IMPERIUM",
@@ -5585,6 +5688,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_ork_ghazghkull",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Ghazghkull Mag Uruk Thraka",
       "armyBook": "ORKS",
@@ -7590,6 +7694,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_eld_eldrad",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Farseer Eldrad Ulthran",
       "armyBook": "ELDAR",
@@ -7630,6 +7735,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_eld_avatar",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Avatar of Khaine",
       "armyBook": "ELDAR",
@@ -10010,6 +10116,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_chs_abaddon",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Abaddon the Despoiler",
       "armyBook": "CHAOS",
@@ -10706,6 +10813,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_tyr_swarmlord",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "The Swarmlord",
       "armyBook": "TYRANIDS",
@@ -11480,6 +11588,7 @@ const UNIT_CATALOG = {
     },
     {
       "key": "card_sqt_ancestor",
+      "unique": true,
       "cardType": "SPECIAL",
       "cardName": "Living Ancestor & Warlord",
       "armyBook": "SQUATS",
@@ -12311,6 +12420,7 @@ const UNIT_CATALOG = {
   },
   {
     "key": "card_mil_commissar_general",
+      "unique": true,
     "cardType": "SPECIAL",
     "cardName": "Commissar General",
     "armyBook": "MILITARIS",
@@ -12345,6 +12455,7 @@ const UNIT_CATALOG = {
   },
   {
     "key": "card_mil_inquisitor",
+      "unique": true,
     "cardType": "SPECIAL",
     "cardName": "Inquisitor Lord",
     "armyBook": "MILITARIS",
@@ -13323,6 +13434,7 @@ const UNIT_CATALOG = {
   },
   {
     "key": "card_am_knight_baron",
+      "unique": true,
     "cardType": "SPECIAL",
     "cardName": "Knight Baron",
     "armyBook": "MECHANICUS",
@@ -13357,6 +13469,7 @@ const UNIT_CATALOG = {
   },
   {
     "key": "card_am_techpriest",
+      "unique": true,
     "cardType": "SPECIAL",
     "cardName": "Archmagos Tech-Priest",
     "armyBook": "MECHANICUS",
@@ -13566,79 +13679,72 @@ const UNIT_CATALOG = {
 
 const DEFAULT_ROSTERS = {
   "IMPERIUM": [
-      "card_sm_tac",
-      "card_sm_dev",
-      "card_sm_pred",
-      "card_sm_whirlwind",
-      "card_sm_speeders",
-      "card_sm_warhound",
-      "card_sm_calgar",
-      "card_sm_chaplain",
-      "card_sm_apothecary"
+    "card_sm_tac_co",
+    "card_sm_pred",
+    "card_sm_whirlwind",
+    "card_sm_speeders",
+    "card_sm_term",
+    "card_sm_calgar"
   ],
-    "MILITARIS": [
-      "card_mil_leman_russ",
-      "card_mil_mech_tac",
-      "card_mil_heavy_platoon",
-      "card_mil_basilisk",
-      "card_mil_sentinels",
-      "card_mil_regimental_hq",
-      "card_mil_demolisher"
+  "MILITARIS": [
+    "card_mil_tac_co",
+    "card_mil_leman_russ",
+    "card_mil_heavy_platoon",
+    "card_mil_basilisk",
+    "card_mil_sentinels",
+    "card_mil_demolisher",
+    "card_mil_commissar_general"
   ],
   "MECHANICUS": [
-      "card_am_warlord",
-      "card_am_warhound",
-      "card_am_paladins",
-      "card_am_mech_tac",
-      "card_am_knight_baron",
-      "card_am_techpriest"
+    "card_am_skitarii_co",
+    "card_am_paladins",
+    "card_am_heavy_platoon",
+    "card_am_leman_russ",
+    "card_am_basilisk",
+    "card_am_techpriest"
   ],
   "ORKS": [
-      "card_ork_boyz",
-      "card_ork_nobz",
-      "card_ork_wagons",
-      "card_ork_coptas",
-      "card_ork_kommandos",
-      "card_ork_lobbas",
-      "card_ork_gargant",
-      "card_ork_ghazghkull"
+    "card_ork_goff_co",
+    "card_ork_boyz",
+    "card_ork_nobz",
+    "card_ork_wagons",
+    "card_ork_coptas",
+    "card_ork_lobbas",
+    "card_ork_ghazghkull"
   ],
-    "ELDAR": [
+  "ELDAR": [
+    "card_eld_aspect_host",
     "card_eld_defenders",
-    "card_eld_banshees",
-    "card_eld_hawks",
     "card_eld_jetbikes",
     "card_eld_prism",
     "card_eld_wraithlords",
-    "card_eld_revenant",
+    "card_eld_hawks",
     "card_eld_eldrad"
   ],
   "CHAOS": [
+    "card_chs_black_century",
     "card_chs_marines",
     "card_chs_berzerkers",
     "card_chs_plague",
-    "card_chs_term",
     "card_chs_pred",
-    "card_chs_bloodthirster",
-    "card_chs_raptors"
+    "card_chs_raptors",
+    "card_chs_abaddon"
   ],
   "TYRANIDS": [
-    "card_tyr_warriors",
-    "card_tyr_tyrants",
+    "card_tyr_warrior_swarm",
     "card_tyr_termagants",
     "card_tyr_genestealers",
     "card_tyr_gargoyles",
     "card_tyr_biovores",
     "card_tyr_carnifex",
-    "card_tyr_hierodule"
+    "card_tyr_swarmlord"
   ],
   "SQUATS": [
-    "card_sqt_warriors",
+    "card_sqt_warrior_co",
     "card_sqt_thunderers",
     "card_sqt_termite",
     "card_sqt_bikes",
     "card_sqt_ironhammer",
-    "card_sqt_molemortar",
     "card_sqt_ancestor"
   ]
 };
@@ -13829,6 +13935,135 @@ window.setPointsBudget = function(pts) {
   window.renderArmyModal();
 };
 
+// --- NETEPIC GOLD ARMY RULES VALIDATION & BUILDER LOGIC ---
+const UNIQUE_PERSONALITY_KEYS = new Set([
+  'card_sm_calgar',
+  'card_sm_tigurius',
+  'card_sm_bjorn',
+  'card_ork_ghazghkull',
+  'card_eld_eldrad',
+  'card_eld_avatar',
+  'card_chs_abaddon',
+  'card_tyr_swarmlord',
+  'card_sqt_ancestor',
+  'card_mil_commissar_general',
+  'card_mil_inquisitor',
+  'card_am_knight_baron',
+  'card_am_techpriest'
+]);
+
+window.isUniqueUnit = function(u) {
+  if (!u) return false;
+  if (u.unique === true || u.isUnique === true || u.cardType === 'UNIQUE') return true;
+  return UNIQUE_PERSONALITY_KEYS.has(u.key);
+};
+
+window.getRosterBreakdown = function(side) {
+  const roster = window.armyRosters[side] || [];
+  let companies = 0;
+  let support = 0;
+  let special = 0;
+  let totalPts = 0;
+  const uniqueSeen = new Map();
+  let duplicateUnique = null;
+  let uniqueCount = 0;
+
+  roster.forEach(k => {
+    const u = window.findCatalogUnit(k);
+    if (!u) return;
+    totalPts += u.points;
+    const type = (u.cardType || 'SUPPORT').toUpperCase();
+    if (type === 'COMPANY') {
+      companies++;
+    } else if (type === 'SPECIAL' || type === 'UNIQUE') {
+      special++;
+    } else {
+      support++;
+    }
+
+    if (window.isUniqueUnit(u)) {
+      uniqueCount++;
+      if (uniqueSeen.has(u.key)) {
+        duplicateUnique = u.cardName || u.name;
+      } else {
+        uniqueSeen.set(u.key, u.cardName || u.name);
+      }
+    }
+  });
+
+  const maxSupport = companies * 5;
+  const maxSpecial = companies * 1;
+  // NetEpic p. 13: 1 Unique per full 3,000 pts (min 1 allowed for armies up to 2000 pts)
+  const maxUnique = Math.max(1, Math.floor(window.pointsBudget / 3000) + (window.pointsBudget >= 3000 ? 1 : 0));
+
+  const errors = [];
+  if (roster.length === 0) {
+    errors.push('Army is empty. Add at least 1 Company Card.');
+  } else if (companies === 0) {
+    errors.push('NetEpic Rule: At least 1 Company Card is required.');
+  }
+  if (companies > 0 && support > maxSupport) {
+    errors.push(`Support limit exceeded: ${support}/${maxSupport} (max 5 per Company).`);
+  }
+  if (companies > 0 && special > maxSpecial) {
+    errors.push(`Special limit exceeded: ${special}/${maxSpecial} (max 1 per Company).`);
+  }
+  if (duplicateUnique) {
+    errors.push(`Duplicate Unique Character: "${duplicateUnique}" (personalities may never be duplicated).`);
+  }
+  if (uniqueCount > maxUnique) {
+    errors.push(`Unique limit exceeded: ${uniqueCount}/${maxUnique} unique characters at ${window.pointsBudget} pts.`);
+  }
+  if (totalPts > window.pointsBudget) {
+    errors.push(`Points Budget exceeded: ${totalPts}/${window.pointsBudget} pts.`);
+  }
+
+  return {
+    totalPts,
+    cardCount: roster.length,
+    companies,
+    support,
+    special,
+    maxSupport,
+    maxSpecial,
+    uniqueCount,
+    maxUnique,
+    hasDuplicateUnique: Boolean(duplicateUnique),
+    duplicateName: duplicateUnique,
+    errors,
+    valid: errors.length === 0
+  };
+};
+
+window.onBuilderNext = function(fromStep) {
+  if (fromStep === 2) {
+    const bd = window.getRosterBreakdown('IMPERIUM');
+    if (!bd.valid) {
+      alert('South Force (Player 1) composition error:\n• ' + bd.errors.join('\n• '));
+      return;
+    }
+    window.setBuilderStep(3);
+  } else if (fromStep === 3) {
+    const bd = window.getRosterBreakdown('ORKS');
+    if (!bd.valid) {
+      alert('North Force (Player 2 / AI) composition error:\n• ' + bd.errors.join('\n• '));
+      return;
+    }
+    window.setBuilderStep(4);
+  }
+};
+
+window.clearRoster = function(side) {
+  window.armyRosters[side] = [];
+  window.renderArmyModal();
+};
+
+window.resetRosterToDefault = function(side) {
+  const activeBook = window.sideFaction[side] || side;
+  window.armyRosters[side] = [...(DEFAULT_ROSTERS[activeBook] || [])];
+  window.renderArmyModal();
+};
+
 window.resetDefaultArmies = function() {
   const fSouth = window.sideFaction.IMPERIUM || 'IMPERIUM';
   const fNorth = window.sideFaction.ORKS || 'ORKS';
@@ -13840,14 +14075,32 @@ window.resetDefaultArmies = function() {
 window.addDetachmentToRoster = function(side, key) {
   const unit = window.findCatalogUnit(key);
   if (!unit) return;
-  if (window.getRosterPoints(side) + unit.points > window.pointsBudget) return;
+  const bd = window.getRosterBreakdown(side);
+  if (bd.totalPts + unit.points > window.pointsBudget) return;
+
+  const type = (unit.cardType || 'SUPPORT').toUpperCase();
+  if (type !== 'COMPANY') {
+    if (bd.companies === 0) return; // Must have a Company Card first
+    if (type === 'SPECIAL' || type === 'UNIQUE') {
+      if (bd.special >= bd.maxSpecial) return; // Max 1 Special per Company
+    } else {
+      if (bd.support >= bd.maxSupport) return; // Max 5 Support per Company
+    }
+  }
+
+  // Unique Personality rules: Never duplicate same character, and respect army unique cap
+  if (window.isUniqueUnit(unit)) {
+    if (window.armyRosters[side].includes(unit.key)) return;
+    if (bd.uniqueCount >= bd.maxUnique) return;
+  }
+
   window.armyRosters[side].push(key);
   window.renderArmyModal();
 };
 
 window.removeDetachmentFromRoster = function(side, index) {
-  if (window.armyRosters[side].length <= 1) return; // Keep at least 1 detachment per army
-  window.armyRosters[side].splice(index, 1);
+  if (!window.armyRosters[side] || index < 0 || index >= window.armyRosters[side].length) return;
+  window.armyRosters[side].splice(index, 1); // Allow clearing all detachments down to 0
   window.renderArmyModal();
 };
 
@@ -13858,6 +14111,7 @@ window.renderArmyModal = function() {
     const sideLabel = side === 'IMPERIUM' ? 'South Force / P1' : 'North Force / P2-AI';
     const activeBook = window.sideFaction[side] || side;
     const meta = FACTION_META[activeBook];
+    const bd = window.getRosterBreakdown(side);
 
     // Update Column Border, Header & Trait Description
     const colCard = document.getElementById(`${prefix}-col-card`);
@@ -13871,6 +14125,7 @@ window.renderArmyModal = function() {
     if (colTrait) {
       colTrait.innerText = `✨ Faction Rules: ${meta.traitDesc}`;
       colTrait.style.color = meta.colorHex;
+      colTrait.style.borderLeftColor = meta.borderHex;
     }
 
     // Render 8-Faction selector tabs
@@ -13882,12 +14137,13 @@ window.renderArmyModal = function() {
         const isSel = (fKey === activeBook);
         const btn = document.createElement('button');
         btn.style.minWidth = 'auto';
-        btn.style.padding = '4px 8px';
-        btn.style.fontSize = '0.74rem';
+        btn.style.padding = '3px 7px';
+        btn.style.fontSize = '0.72rem';
         btn.style.borderColor = isSel ? fm.colorHex : '#334155';
         if (isSel) {
           btn.style.background = fm.borderHex;
           btn.style.color = '#ffffff';
+          btn.style.fontWeight = '800';
         }
         btn.innerText = `${fm.icon} ${fm.name}`;
         btn.onclick = () => window.setSideFaction(side, fKey);
@@ -13901,9 +14157,9 @@ window.renderArmyModal = function() {
       filtersEl.innerHTML = '';
       const filterOpts = [
         { id: 'ALL', label: 'All' },
+        { id: 'COMPANY', label: 'Company' },
         { id: 'SUPPORT', label: 'Support' },
-        { id: 'SPECIAL', label: 'Special' },
-        { id: 'COMPANY', label: 'Company' }
+        { id: 'SPECIAL', label: 'Special' }
       ];
       const activeFilter = (window.catalogFilter && window.catalogFilter[side]) || 'ALL';
       filterOpts.forEach(opt => {
@@ -13915,20 +14171,103 @@ window.renderArmyModal = function() {
       });
     }
 
-    const spent = window.getRosterPoints(side);
+    // Live Points Badge & Progress Bar (Always at top)
     const badge = document.getElementById(`${prefix}-pts-badge`);
     if (badge) {
-      badge.innerText = `${spent} / ${window.pointsBudget} pts (${window.armyRosters[side].length} Cards)`;
-      badge.style.borderColor = spent > window.pointsBudget ? '#ef4444' : '#475569';
+      badge.innerText = `${bd.totalPts} / ${window.pointsBudget} pts (${bd.cardCount} Cards)`;
+      badge.style.borderColor = bd.totalPts > window.pointsBudget ? '#ef4444' : (bd.totalPts >= window.pointsBudget * 0.85 ? '#10b981' : '#475569');
+      badge.style.color = bd.totalPts > window.pointsBudget ? '#ef4444' : '#f8fafc';
     }
 
+    const ptsBar = document.getElementById(`${prefix}-pts-bar`);
+    if (ptsBar) {
+      const pct = Math.min(100, Math.round((bd.totalPts / window.pointsBudget) * 100));
+      ptsBar.style.width = `${pct}%`;
+      ptsBar.style.backgroundColor = bd.totalPts > window.pointsBudget ? '#ef4444' : (bd.totalPts >= window.pointsBudget * 0.85 ? '#10b981' : meta.borderHex);
+    }
+
+    // NetEpic Quota Chips (🏢 Co, 🛡️ Sup, ⚔️ Spc, 👑 Unq)
+    const chipCo = document.getElementById(`${prefix}-chip-co`);
+    if (chipCo) {
+      chipCo.innerText = `🏢 ${bd.companies} Co`;
+      chipCo.className = 'quota-chip ' + (bd.companies >= 1 ? 'quota-ok' : 'quota-warn');
+      chipCo.title = 'Company Cards: Core of the army (NetEpic p. 13). At least 1 required.';
+    }
+
+    const chipSup = document.getElementById(`${prefix}-chip-sup`);
+    if (chipSup) {
+      chipSup.innerText = `🛡️ ${bd.support}/${bd.maxSupport} Sup`;
+      chipSup.className = 'quota-chip ' + (bd.companies === 0 ? 'quota-warn' : (bd.support <= bd.maxSupport ? 'quota-ok' : 'quota-err'));
+      chipSup.title = 'Support Cards: Max 5 per Company Card.';
+    }
+
+    const chipSpc = document.getElementById(`${prefix}-chip-spc`);
+    if (chipSpc) {
+      chipSpc.innerText = `⚔️ ${bd.special}/${bd.maxSpecial} Spc`;
+      chipSpc.className = 'quota-chip ' + (bd.companies === 0 ? 'quota-warn' : (bd.special <= bd.maxSpecial ? 'quota-ok' : 'quota-err'));
+      chipSpc.title = 'Special Cards: Max 1 per Company Card.';
+    }
+
+    const chipUnq = document.getElementById(`${prefix}-chip-unq`);
+    if (chipUnq) {
+      chipUnq.innerText = `👑 ${bd.uniqueCount}/${bd.maxUnique} Unq`;
+      chipUnq.className = 'quota-chip ' + (bd.uniqueCount <= bd.maxUnique ? 'quota-ok' : 'quota-err');
+      chipUnq.title = `Unique Personalities: Max ${bd.maxUnique} at ${window.pointsBudget} pts (NetEpic p. 13).`;
+    }
+
+    // Inline Rule Alert / Status
+    const alertEl = document.getElementById(`${prefix}-rule-alert`);
+    if (alertEl) {
+      if (bd.valid) {
+        alertEl.innerHTML = '<span style="color:#4ade80;">✅ Army Legal</span>';
+      } else {
+        alertEl.innerHTML = `<span style="color:#fca5a5;">⚠️ ${bd.errors[0]}</span>`;
+      }
+    }
+
+    // Roster count chip
+    const rosterCountEl = document.getElementById(`${prefix}-roster-count`);
+    if (rosterCountEl) {
+      rosterCountEl.innerText = bd.cardCount;
+    }
+
+    // Catalog Rendering
     const catEl = document.getElementById(`${prefix}-catalog`);
     if (catEl) {
       catEl.innerHTML = '';
       const activeFilter = (window.catalogFilter && window.catalogFilter[side]) || 'ALL';
       const availableCards = UNIT_CATALOG[activeBook].filter(u => activeFilter === 'ALL' || u.cardType === activeFilter);
+      
       availableCards.forEach(u => {
-        const canAfford = (spent + u.points) <= window.pointsBudget;
+        const type = (u.cardType || 'SUPPORT').toUpperCase();
+        const isUnq = window.isUniqueUnit(u);
+        const inArmyAlready = window.armyRosters[side].includes(u.key);
+
+        let canAdd = true;
+        let addLabel = '+ Add';
+
+        if (bd.totalPts + u.points > window.pointsBudget) {
+          canAdd = false;
+          addLabel = 'Over Budget';
+        } else if (type !== 'COMPANY' && bd.companies === 0) {
+          canAdd = false;
+          addLabel = 'Need Company';
+        } else if (type === 'SUPPORT' && bd.support >= bd.maxSupport) {
+          canAdd = false;
+          addLabel = 'Support Full (5/Co)';
+        } else if ((type === 'SPECIAL' || type === 'UNIQUE') && bd.special >= bd.maxSpecial) {
+          canAdd = false;
+          addLabel = 'Special Full (1/Co)';
+        } else if (isUnq) {
+          if (inArmyAlready) {
+            canAdd = false;
+            addLabel = 'In Army (Unique)';
+          } else if (bd.uniqueCount >= bd.maxUnique) {
+            canAdd = false;
+            addLabel = `Unique Full (${bd.maxUnique})`;
+          }
+        }
+
         const transNote = u.transportCapacity ? ` | 🚐 Carries ${u.standsCount * u.transportCapacity} Inf` : '';
         const shieldLabel = u.shieldType === 'VOID' ? 'Void Shields' : (u.shieldType === 'CHITIN' ? 'Chitin Bio-Shields' : 'Power Fields');
         const shieldNote = u.maxShields ? ` | 🛡️ ${u.maxShields} ${shieldLabel}` : (u.holoField ? ' | 💎 Holo-Field (2+ to 4+ Save)' : (u.superHeavy ? ' | 🛡️ Super-Heavy' : ''));
@@ -13939,7 +14278,7 @@ window.renderArmyModal = function() {
         const terNote = u.daemonicTerror ? ' | 😱 Terror' : '';
         const masNote = u.squatMastery ? ' | ⚒️ CC Mastery' : '';
         const banNote = u.bansheeMask ? ' | 🔊 Banshee Mask (+1D6 CC)' : '';
-        const charNote = u.isCharacter ? ' | 👑 Hero' : '';
+        const charNote = isUnq ? ' | 👑 Unique Hero' : (u.isCharacter ? ' | 👑 Hero' : '');
         const psyNote = u.isPsyker ? ` | 🔮 Psyker (${u.psychicRank || 3})` : '';
         const flameNote = (u.weapon && u.weapon.isFlame) ? ' | 🔥 Flame' : '';
         const smokeNote = (u.weapon && u.weapon.canSmoke) ? ' | 💨 Smoke' : '';
@@ -13950,13 +14289,15 @@ window.renderArmyModal = function() {
               ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
               : `${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)`)
           : 'Combat Equipment';
-        const badgeClass = `badge-${(u.cardType || 'SUPPORT').toLowerCase()}`;
+        const badgeClass = isUnq ? 'badge-unique' : `badge-${(u.cardType || 'SUPPORT').toLowerCase()}`;
+        const badgeText = isUnq ? '👑 UNIQUE' : u.cardType;
+
         const row = document.createElement('div');
         row.className = 'catalog-item';
         row.innerHTML = `
           <div style="flex:1; min-width:0; padding-right:8px;">
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <span class="card-badge ${badgeClass}">${u.cardType}</span>
+              <span class="card-badge ${badgeClass}">${badgeText}</span>
               <span style="font-weight:700; color:#f8fafc;">${u.cardName || u.name}</span>
               <span style="color:#fde047; font-weight:700;">(${u.points} pts / ${u.vpValue} VP)</span>
               <span style="color:#f59e0b; font-size:0.72rem; font-weight:600;">[Break ${u.breakPoint} | Morale ${u.morale}+]</span>
@@ -13964,31 +14305,60 @@ window.renderArmyModal = function() {
             <div class="sub-text" style="color:#e2e8f0; font-weight:600; margin-top:2px;">📦 ${u.composition || (u.standsCount + ' stands')}</div>
             <div class="sub-text" style="color:#94a3b8; margin-top:1px;">Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${charNote}${psyNote}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${flameNote}${smokeNote}${siegeNote}${transNote} | ${wpnDesc}</div>
           </div>
-          <button class="btn-confirm" ${canAfford ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${side}', '${u.key}')">+ Add</button>
+          <button class="btn-confirm" ${canAdd ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${side}', '${u.key}')">${addLabel}</button>
         `;
         catEl.appendChild(row);
       });
     }
 
+    // Selected Roster Rendering
     const rosEl = document.getElementById(`${prefix}-roster`);
     if (rosEl) {
       rosEl.innerHTML = '';
-      window.armyRosters[side].forEach((key, idx) => {
-        const u = window.findCatalogUnit(key);
-        if (!u) return;
-        const badgeClass = `badge-${(u.cardType || 'SUPPORT').toLowerCase()}`;
-        const row = document.createElement('div');
-        row.className = 'roster-item';
-        row.innerHTML = `
-          <div style="flex:1; min-width:0;">
-            <span class="card-badge ${badgeClass}" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${u.cardType}</span>
-            <b style="color:#f8fafc;">#${idx + 1} ${u.cardName || u.name}</b>
-            <div class="sub-text" style="margin-top:1px;">${u.composition || (u.standsCount + ' stands')} &bull; <span style="color:#fde047;">${u.points} pts</span> | <span style="color:#f59e0b;">Bk ${u.breakPoint}</span> | <span style="color:#38bdf8;">${u.vpValue} VP</span></div>
-          </div>
-          <button class="btn-fire" ${window.armyRosters[side].length <= 1 ? 'disabled' : ''} onclick="window.removeDetachmentFromRoster('${side}', ${idx})">✕</button>
-        `;
-        rosEl.appendChild(row);
-      });
+      if (window.armyRosters[side].length === 0) {
+        rosEl.innerHTML = '<div class="sub-text" style="color:#94a3b8; padding:8px 4px; font-style:italic;">No cards in army. Tap "+ Add" above to add a Company Card and Support detachments.</div>';
+      } else {
+        window.armyRosters[side].forEach((key, idx) => {
+          const u = window.findCatalogUnit(key);
+          if (!u) return;
+          const isUnq = window.isUniqueUnit(u);
+          const badgeClass = isUnq ? 'badge-unique' : `badge-${(u.cardType || 'SUPPORT').toLowerCase()}`;
+          const badgeText = isUnq ? '👑 UNIQUE' : u.cardType;
+          const row = document.createElement('div');
+          row.className = 'roster-item';
+          row.innerHTML = `
+            <div style="flex:1; min-width:0;">
+              <span class="card-badge ${badgeClass}" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${badgeText}</span>
+              <b style="color:#f8fafc;">#${idx + 1} ${u.cardName || u.name}</b>
+              <div class="sub-text" style="margin-top:1px;">${u.composition || (u.standsCount + ' stands')} &bull; <span style="color:#fde047;">${u.points} pts</span> | <span style="color:#f59e0b;">Bk ${u.breakPoint}</span> | <span style="color:#38bdf8;">${u.vpValue} VP</span></div>
+            </div>
+            <button class="btn-fire" onclick="window.removeDetachmentFromRoster('${side}', ${idx})" title="Remove detachment">✕</button>
+          `;
+          rosEl.appendChild(row);
+        });
+      }
+    }
+
+    // Sticky Bottom Next Button State
+    const nextBtn = document.getElementById(`${prefix}-btn-next`);
+    if (nextBtn) {
+      if (bd.valid) {
+        nextBtn.disabled = false;
+        nextBtn.className = 'btn-primary';
+        nextBtn.innerText = (side === 'IMPERIUM') ? 'Next: Configure North Force →' : 'Next: Review & Deploy →';
+      } else {
+        nextBtn.disabled = true;
+        nextBtn.className = 'btn-primary disabled';
+        let reason = 'Cannot Proceed';
+        if (bd.cardCount === 0) reason = '⚠️ Roster Empty: Add Units';
+        else if (bd.companies === 0) reason = '⚠️ Need ≥1 Company Card';
+        else if (bd.support > bd.maxSupport) reason = `⚠️ Too Many Support (${bd.support}/${bd.maxSupport})`;
+        else if (bd.special > bd.maxSpecial) reason = `⚠️ Too Many Special (${bd.special}/${bd.maxSpecial})`;
+        else if (bd.hasDuplicateUnique) reason = `⚠️ Duplicate: ${bd.duplicateName}`;
+        else if (bd.uniqueCount > bd.maxUnique) reason = `⚠️ Max ${bd.maxUnique} Unique Hero`;
+        else if (bd.totalPts > window.pointsBudget) reason = `⚠️ Over Budget (${bd.totalPts}/${window.pointsBudget})`;
+        nextBtn.innerText = reason;
+      }
     }
   });
 };
@@ -13999,6 +14369,20 @@ window.openArmyModal = function() {
 };
 
 window.startBattleFromBuilder = function(useDeploymentPhase) {
+  const sBd = window.getRosterBreakdown ? window.getRosterBreakdown('IMPERIUM') : { valid: true };
+  const nBd = window.getRosterBreakdown ? window.getRosterBreakdown('ORKS') : { valid: true };
+
+  if (!sBd.valid) {
+    alert('South Force (Player 1) composition error:\n• ' + sBd.errors.join('\n• '));
+    window.setBuilderStep(2);
+    return;
+  }
+  if (!nBd.valid) {
+    alert('North Force (Player 2 / AI) composition error:\n• ' + nBd.errors.join('\n• '));
+    window.setBuilderStep(3);
+    return;
+  }
+
   document.getElementById('army-modal').style.display = 'none';
   if (window.gameScene) {
     window.gameScene.applyTableSize();
