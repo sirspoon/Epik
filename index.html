@@ -478,6 +478,15 @@
         <button id="opt-btn-cam" onclick="window.toggleOptionCam()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
       </div>
 
+      <!-- Atmospheric Battlefield Fire Option -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">💥 Atmospheric Battlefield Fire</div>
+          <div class="sub-text" style="color:#94a3b8;">Harmless ambient skirmish fire, tracer rounds & laser streaks across the lines</div>
+        </div>
+        <button id="opt-btn-ambient-fire" onclick="window.toggleOptionAmbientFire()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
+      </div>
+
       <!-- Table Size Selection -->
       <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
         <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">📐 Tabletop Size</div>
@@ -790,6 +799,7 @@
     <button onclick="window.openSaveLoadModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#047857; border-color:#10b981;">💾 Save / Load Game</button>
     <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🔊 SFX</button>
     <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🎥 Follow Cam</button>
+    <button id="btn-ambient-toggle" class="btn-primary" onclick="window.toggleAmbientFire()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;" title="Toggle background battlefield skirmish fire">💥 Ambience: ON</button>
     <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🗺️ Map</button>
     <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🤖 AI: ORKS</button>
     <button onclick="window.openArmyModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🛠️ Army Setup</button>
@@ -1048,6 +1058,7 @@ const ORDER_INFO = {
 
 // --- SYNTHESIZED WEBAUDIO SOUND ENGINE (PHASE 7) ---
 window.sfxEnabled = true;
+window.ambientBattlefieldFire = true;
 window.sfx = {
   ctx: null,
   ensureCtx() {
@@ -1076,6 +1087,31 @@ window.sfx = {
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + (isHeavy ? 0.24 : 0.15));
+  },
+  playDistantShot(isLaser = false) {
+    const ctx = this.ensureCtx();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(isLaser ? 650 : 360, now);
+
+      osc.type = isLaser ? 'sawtooth' : 'triangle';
+      osc.frequency.setValueAtTime(isLaser ? 420 : 180, now);
+      osc.frequency.exponentialRampToValueAtTime(isLaser ? 90 : 50, now + 0.16);
+
+      gain.gain.setValueAtTime(0.022, now); // Soft, distant ambient volume
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } catch (e) {}
   },
   playBarrage() {
     const ctx = this.ensureCtx();
@@ -14145,6 +14181,12 @@ window.updateOptionsUI = function() {
     btnCam.className = window.aiCamFollow ? 'btn-confirm' : 'btn-primary';
   }
 
+  const btnAmb = document.getElementById('opt-btn-ambient-fire');
+  if (btnAmb) {
+    btnAmb.innerText = (window.ambientBattlefieldFire !== false) ? 'Enabled' : 'Disabled';
+    btnAmb.className = (window.ambientBattlefieldFire !== false) ? 'btn-confirm' : 'btn-warn';
+  }
+
   const sizeIds = {
     STANDARD_6X4: 'opt-size-std',
     SMALL_4X4: 'opt-size-sml',
@@ -14206,6 +14248,21 @@ window.toggleOptionCam = function() {
   window.updateOptionsUI();
 };
 
+window.toggleOptionAmbientFire = function() {
+  window.ambientBattlefieldFire = (window.ambientBattlefieldFire === false) ? true : false;
+  const hudBtn = document.getElementById('btn-ambient-toggle');
+  if (hudBtn) {
+    hudBtn.innerText = window.ambientBattlefieldFire ? '💥 Ambience: ON' : '💥 Ambience: OFF';
+    hudBtn.className = window.ambientBattlefieldFire ? 'btn-primary' : '';
+  }
+  window.updateOptionsUI();
+  window.saveCurrentOptions();
+};
+
+window.toggleAmbientFire = function() {
+  window.toggleOptionAmbientFire();
+};
+
 window.setOptionTableSize = function(sizeId) {
   window.setTableSize(sizeId);
   window.updateOptionsUI();
@@ -14219,6 +14276,7 @@ window.setOptionMap = function(preset) {
 window.resetDefaultOptions = function() {
   window.sfxEnabled = true;
   window.aiCamFollow = true;
+  window.ambientBattlefieldFire = true;
   window.setTableSize('STANDARD_6X4');
   window.selectMapPreset('INDUSTRIAL');
   window.saveCurrentOptions();
@@ -14231,6 +14289,7 @@ window.saveCurrentOptions = function() {
     localStorage.setItem('netepic_gold_options', JSON.stringify({
       sfxEnabled: window.sfxEnabled,
       aiCamFollow: window.aiCamFollow,
+      ambientBattlefieldFire: window.ambientBattlefieldFire,
       tableSize: window.tableSize,
       mapPreset: window.mapPreset
     }));
@@ -14246,6 +14305,7 @@ window.loadSavedOptions = function() {
       const opts = JSON.parse(raw);
       if (opts.sfxEnabled !== undefined) window.sfxEnabled = Boolean(opts.sfxEnabled);
       if (opts.aiCamFollow !== undefined) window.aiCamFollow = Boolean(opts.aiCamFollow);
+      if (opts.ambientBattlefieldFire !== undefined) window.ambientBattlefieldFire = Boolean(opts.ambientBattlefieldFire);
       if (opts.tableSize) window.tableSize = opts.tableSize;
       if (opts.mapPreset) window.mapPreset = opts.mapPreset;
     }
@@ -24497,6 +24557,270 @@ class NetEpicScene extends Phaser.Scene {
     if (this.pulsaFields && this.pulsaFields.length > 0) {
       this.drawPulsaFields(time);
     }
+    this.updateAmbientBattlefieldFire(time);
+  }
+
+  // --- ATMOSPHERIC BACKGROUND BATTLEFIELD FIRE ENGINE ---
+  // Purely cosmetic ambient skirmish fire across no-man's land (0 impact on units, rules or camera)
+  updateAmbientBattlefieldFire(time) {
+    if (window.ambientBattlefieldFire === false) return;
+    if (this.phase === 'DEPLOYMENT' || this.turn < 1) return;
+
+    // Pause ambient fire during interactive combat resolution card
+    const combatModal = document.getElementById('combat-card-modal');
+    if (combatModal && combatModal.style.display !== 'none') return;
+
+    if (!this._nextAmbientFireTime) {
+      this._nextAmbientFireTime = time + Phaser.Math.Between(2200, 4800);
+      return;
+    }
+
+    if (time >= this._nextAmbientFireTime) {
+      this._nextAmbientFireTime = time + Phaser.Math.Between(2400, 5200);
+      this.spawnAmbientShot(false);
+
+      // 32% chance for a rapid return-fire exchange from the enemy line
+      if (Math.random() < 0.32) {
+        this.time.delayedCall(Phaser.Math.Between(360, 620), () => {
+          if (this.phase !== 'DEPLOYMENT') {
+            this.spawnAmbientShot(true);
+          }
+        });
+      }
+    }
+  }
+
+  spawnAmbientShot(isReturnFire = false) {
+    const southStands = [];
+    const northStands = [];
+
+    this.detachments.forEach(d => {
+      if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+      d.stands.forEach(s => {
+        if (d.faction === 'IMPERIUM') southStands.push(s);
+        else northStands.push(s);
+      });
+    });
+
+    if (southStands.length === 0 || northStands.length === 0) return;
+
+    const firerSide = isReturnFire
+      ? (this._lastAmbientFirerSide === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM')
+      : (Math.random() < 0.5 ? 'IMPERIUM' : 'ORKS');
+
+    this._lastAmbientFirerSide = firerSide;
+
+    const firerStands = firerSide === 'IMPERIUM' ? southStands : northStands;
+    const targetPool = firerSide === 'IMPERIUM' ? northStands : southStands;
+
+    const shooter = Phaser.Utils.Array.GetRandom(firerStands);
+    if (!shooter || !shooter.container) return;
+
+    const sx = shooter.container.x;
+    const sy = shooter.container.y;
+
+    // Pick enemy stand within reasonable distance (150px to 950px)
+    const sortedTargets = targetPool
+      .filter(t => t && t.container)
+      .map(t => ({ stand: t, dist: Phaser.Math.Distance.Between(sx, sy, t.container.x, t.container.y) }))
+      .filter(item => item.dist >= 120 && item.dist <= 980)
+      .sort((a, b) => a.dist - b.dist);
+
+    let targetStand = null;
+    if (sortedTargets.length > 0) {
+      const topCount = Math.min(3, sortedTargets.length);
+      targetStand = sortedTargets[Phaser.Math.Between(0, topCount - 1)].stand;
+    } else {
+      targetStand = Phaser.Utils.Array.GetRandom(targetPool);
+    }
+
+    if (!targetStand || !targetStand.container) return;
+
+    // Scatter slightly around target for realistic suppressive / near-miss effect
+    const tx = Phaser.Math.Clamp(targetStand.container.x + Phaser.Math.Between(-34, 34), 25, BOARD_W - 25);
+    const ty = Phaser.Math.Clamp(targetStand.container.y + Phaser.Math.Between(-34, 34), 25, BOARD_H - 25);
+
+    const rollType = Math.random();
+    const firerMeta = this.getSideMeta(firerSide);
+    const beamColor = firerMeta.phaserColor || 0x38bdf8;
+
+    if (rollType < 0.45) {
+      this.spawnAmbientTracers(sx, sy, tx, ty);
+    } else if (rollType < 0.78) {
+      this.spawnAmbientLaser(sx, sy, tx, ty, beamColor);
+    } else if (rollType < 0.90) {
+      this.spawnAmbientPlasma(sx, sy, tx, ty);
+    } else {
+      this.spawnAmbientRocket(sx, sy, tx, ty);
+    }
+  }
+
+  // 1. Ambient Tracer Burst (3 rapid bullet streaks)
+  spawnAmbientTracers(x1, y1, x2, y2) {
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(false);
+    const gfx = this.add.graphics().setDepth(395);
+    const count = Phaser.Math.Between(2, 4);
+
+    for (let i = 0; i < count; i++) {
+      const delay = i * 45;
+      const anim = { p: 0 };
+      this.tweens.add({
+        targets: anim,
+        p: 1,
+        delay: delay,
+        duration: 220,
+        ease: 'Linear',
+        onUpdate: () => {
+          const p = anim.p;
+          const headP = Math.min(1, p * 1.3);
+          const tailP = Math.max(0, p * 1.3 - 0.22);
+          const hx = Phaser.Math.Linear(x1, x2, headP);
+          const hy = Phaser.Math.Linear(y1, y2, headP);
+          const tx = Phaser.Math.Linear(x1, x2, tailP);
+          const ty = Phaser.Math.Linear(y1, y2, tailP);
+
+          gfx.lineStyle(1.8, 0xfacc15, 0.85);
+          gfx.lineBetween(tx, ty, hx, hy);
+          gfx.fillStyle(0xffffff, 0.95);
+          gfx.fillCircle(hx, hy, 1.4);
+        },
+        onComplete: () => {
+          if (i === count - 1) {
+            // Impact spark on ground
+            const sparkGfx = this.add.graphics().setDepth(395);
+            sparkGfx.fillStyle(0xfde047, 0.85);
+            sparkGfx.fillCircle(x2, y2, 2.5);
+            this.tweens.add({
+              targets: sparkGfx,
+              alpha: 0,
+              duration: 140,
+              onComplete: () => {
+                sparkGfx.destroy();
+                gfx.destroy();
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  // 2. Ambient Laser Streak
+  spawnAmbientLaser(x1, y1, x2, y2, color = 0x38bdf8) {
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(true);
+    const gfx = this.add.graphics().setDepth(395);
+    const anim = { p: 0 };
+
+    this.tweens.add({
+      targets: anim,
+      p: 1,
+      duration: 190,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const p = anim.p;
+        const headP = Math.min(1, p * 1.4);
+        const tailP = Math.max(0, p * 1.4 - 0.35);
+        const hx = Phaser.Math.Linear(x1, x2, headP);
+        const hy = Phaser.Math.Linear(y1, y2, headP);
+        const tx = Phaser.Math.Linear(x1, x2, tailP);
+        const ty = Phaser.Math.Linear(y1, y2, tailP);
+
+        gfx.lineStyle(2.8, color, 0.55);
+        gfx.lineBetween(tx, ty, hx, hy);
+        gfx.lineStyle(1.2, 0xffffff, 0.95);
+        gfx.lineBetween(tx, ty, hx, hy);
+        gfx.fillStyle(0xffffff, 1);
+        gfx.fillCircle(hx, hy, 2);
+      },
+      onComplete: () => {
+        gfx.clear();
+        // Brief ground impact flash
+        gfx.fillStyle(color, 0.7);
+        gfx.fillCircle(x2, y2, 4);
+        gfx.fillStyle(0xffffff, 0.95);
+        gfx.fillCircle(x2, y2, 2);
+        this.tweens.add({
+          targets: gfx,
+          alpha: 0,
+          duration: 160,
+          onComplete: () => gfx.destroy()
+        });
+      }
+    });
+  }
+
+  // 3. Ambient Plasma Bolt
+  spawnAmbientPlasma(x1, y1, x2, y2) {
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(true);
+    const gfx = this.add.graphics().setDepth(395);
+    const anim = { p: 0 };
+
+    this.tweens.add({
+      targets: anim,
+      p: 1,
+      duration: 240,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const p = anim.p;
+        const cx = Phaser.Math.Linear(x1, x2, p);
+        const cy = Phaser.Math.Linear(y1, y2, p);
+
+        gfx.fillStyle(0x38bdf8, 0.35);
+        gfx.fillCircle(cx, cy, 5);
+        gfx.fillStyle(0xbae6fd, 0.8);
+        gfx.fillCircle(cx, cy, 2.5);
+        gfx.fillStyle(0xffffff, 1);
+        gfx.fillCircle(cx, cy, 1.2);
+      },
+      onComplete: () => {
+        gfx.clear();
+        gfx.lineStyle(1.5, 0x38bdf8, 0.6);
+        gfx.strokeCircle(x2, y2, 6);
+        this.tweens.add({
+          targets: gfx,
+          alpha: 0,
+          duration: 180,
+          onComplete: () => gfx.destroy()
+        });
+      }
+    });
+  }
+
+  // 4. Ambient Rocket / Mortar Puff
+  spawnAmbientRocket(x1, y1, x2, y2) {
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(false);
+    const gfx = this.add.graphics().setDepth(395);
+    const anim = { p: 0 };
+
+    this.tweens.add({
+      targets: anim,
+      p: 1,
+      duration: 360,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const p = anim.p;
+        const arcH = 18;
+        const cx = Phaser.Math.Linear(x1, x2, p);
+        const cy = Phaser.Math.Linear(y1, y2, p) - Math.sin(p * Math.PI) * arcH;
+        const px = Phaser.Math.Linear(x1, x2, Math.max(0, p - 0.12));
+        const py = Phaser.Math.Linear(y1, y2, Math.max(0, p - 0.12)) - Math.sin(Math.max(0, p - 0.12) * Math.PI) * arcH;
+
+        gfx.lineStyle(1.6, 0x94a3b8, 0.45);
+        gfx.lineBetween(x1, y1, cx, cy);
+        gfx.lineStyle(2, 0xf97316, 0.9);
+        gfx.lineBetween(px, py, cx, cy);
+        gfx.fillStyle(0xfef08a, 1);
+        gfx.fillCircle(cx, cy, 2);
+      },
+      onComplete: () => {
+        gfx.destroy();
+        // Tiny harmless dust/explosion puff
+        this.spawnExplosionFX(x2, y2, 8, false);
+      }
+    });
   }
 
   // --- CAMERA & INPUT ---
