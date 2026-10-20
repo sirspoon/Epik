@@ -362,6 +362,38 @@
     }
     .filter-btn:hover { background: #1e293b; color: #f8fafc; }
     .filter-btn.active { background: #2563eb; color: #ffffff; border-color: #3b82f6; font-weight: 800; }
+    .filter-pill-group {
+      display: inline-flex;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 5px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .filter-pill-btn {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      border-right: 1px solid #334155;
+      padding: 2px 7px;
+      font-size: 0.71rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+    .filter-pill-btn:last-child {
+      border-right: none;
+    }
+    .filter-pill-btn:hover {
+      background: #1e293b;
+      color: #f8fafc;
+    }
+    .filter-pill-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 800;
+    }
     #imp-catalog, #ork-catalog {
       margin-bottom: 6px; padding-right: 3px;
     }
@@ -646,40 +678,37 @@
       <div id="imp-col-card" class="faction-col" style="border-top:3px solid #3b82f6; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
-        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:6px; border-bottom:1px solid #334155;">
-          <!-- 8 Faction Selector Tabs -->
-          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:5px;" id="imp-faction-tabs"></div>
-          
-          <!-- Faction Title & Live Points Badge -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-            <span id="imp-col-title" style="font-weight:800; font-size:0.92rem; color:#60a5fa;">🛡️ IMPERIUM (South Force / P1)</span>
-            <span id="imp-pts-badge" class="vp-box" style="font-size:0.78rem; font-weight:800;">1750 / 2000 pts</span>
+        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
+          <!-- Faction Dropdown Selector & Points Badge (Single Space-Saving Row) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
+            <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0;">
+              <span id="imp-col-title" style="font-weight:800; font-size:0.8rem; color:#60a5fa; white-space:nowrap; flex-shrink:0;">🛡️ South:</span>
+              <select id="imp-faction-select" onchange="window.setSideFaction('IMPERIUM', this.value)" style="flex:1; min-width:0; max-width:240px; background:#0f172a; color:#f8fafc; border:1.5px solid #3b82f6; border-radius:5px; padding:3px 6px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for South Force"></select>
+            </div>
+            <span id="imp-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0;">1750 / 2000 pts</span>
           </div>
           
           <!-- Points Budget Progress Bar -->
-          <div style="background:#0f172a; border-radius:4px; height:5px; overflow:hidden; width:100%; margin:4px 0;">
+          <div style="background:#0f172a; border-radius:3px; height:4px; overflow:hidden; width:100%; margin:3px 0;">
             <div id="imp-pts-bar" style="height:100%; width:87%; background:#3b82f6; transition:width 0.2s, background-color 0.2s;"></div>
           </div>
 
           <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
-            <div id="imp-quota-row" style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+            <div id="imp-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
               <span id="imp-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
               <span id="imp-chip-sup" class="quota-chip quota-ok">🛡️ 4/5 Sup</span>
               <span id="imp-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
               <span id="imp-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
             </div>
-            <div id="imp-rule-alert" style="font-size:0.7rem; font-weight:700;"></div>
+            <div id="imp-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
           </div>
 
-          <!-- Card Filters & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; flex-wrap:wrap; gap:4px;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span class="sub-text" style="font-weight:700; color:#e2e8f0;">Catalog:</span>
-              <div id="imp-card-filters" style="display:flex; gap:3px;"></div>
-            </div>
-            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:2px 8px; font-size:0.72rem; background:#0f172a; border-color:#475569;" id="imp-roster-quick-btn">
-              📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
+          <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:nowrap;">
+            <div id="imp-card-filters" class="filter-pill-group"></div>
+            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:2px 7px; font-size:0.7rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="imp-roster-quick-btn">
+              📋 Roster: <span id="imp-roster-count">6</span> <span id="imp-roster-toggle-icon">▼</span>
             </button>
           </div>
         </div>
@@ -717,40 +746,37 @@
       <div id="ork-col-card" class="faction-col" style="border-top:3px solid #22c55e; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
-        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:6px; border-bottom:1px solid #334155;">
-          <!-- 8 Faction Selector Tabs -->
-          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:5px;" id="ork-faction-tabs"></div>
-          
-          <!-- Faction Title & Live Points Badge -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-            <span id="ork-col-title" style="font-weight:800; font-size:0.92rem; color:#4ade80;">🟢 ORK HORDE (North Force / P2-AI)</span>
-            <span id="ork-pts-badge" class="vp-box" style="font-size:0.78rem; font-weight:800;">1525 / 2000 pts</span>
+        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
+          <!-- Faction Dropdown Selector & Points Badge (Single Space-Saving Row) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
+            <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0;">
+              <span id="ork-col-title" style="font-weight:800; font-size:0.8rem; color:#4ade80; white-space:nowrap; flex-shrink:0;">🟢 North:</span>
+              <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" style="flex:1; min-width:0; max-width:240px; background:#0f172a; color:#f8fafc; border:1.5px solid #22c55e; border-radius:5px; padding:3px 6px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for North Force"></select>
+            </div>
+            <span id="ork-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0;">1525 / 2000 pts</span>
           </div>
           
           <!-- Points Budget Progress Bar -->
-          <div style="background:#0f172a; border-radius:4px; height:5px; overflow:hidden; width:100%; margin:4px 0;">
+          <div style="background:#0f172a; border-radius:3px; height:4px; overflow:hidden; width:100%; margin:3px 0;">
             <div id="ork-pts-bar" style="height:100%; width:76%; background:#22c55e; transition:width 0.2s, background-color 0.2s;"></div>
           </div>
 
           <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
-            <div id="ork-quota-row" style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+            <div id="ork-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
               <span id="ork-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
               <span id="ork-chip-sup" class="quota-chip quota-ok">🛡️ 5/5 Sup</span>
               <span id="ork-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
               <span id="ork-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
             </div>
-            <div id="ork-rule-alert" style="font-size:0.7rem; font-weight:700;"></div>
+            <div id="ork-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
           </div>
 
-          <!-- Card Filters & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; flex-wrap:wrap; gap:4px;">
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span class="sub-text" style="font-weight:700; color:#e2e8f0;">Catalog:</span>
-              <div id="ork-card-filters" style="display:flex; gap:3px;"></div>
-            </div>
-            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:2px 8px; font-size:0.72rem; background:#0f172a; border-color:#475569;" id="ork-roster-quick-btn">
-              📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
+          <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:nowrap;">
+            <div id="ork-card-filters" class="filter-pill-group"></div>
+            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:2px 7px; font-size:0.7rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="ork-roster-quick-btn">
+              📋 Roster: <span id="ork-roster-count">7</span> <span id="ork-roster-toggle-icon">▼</span>
             </button>
           </div>
         </div>
@@ -956,18 +982,18 @@
         💥 SHOOTING ENGAGEMENT
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
-        <label style="font-size:0.74rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:4px; user-select:none;">
-          <input type="checkbox" id="combat-auto-advance" checked style="cursor:pointer;"> Auto-Advance (2s)
+        <label style="font-size:0.74rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:4px; user-select:none;" title="If checked, steps through rolls automatically. If unchecked, tap Space or click to inspect at your own pace.">
+          <input type="checkbox" id="combat-auto-advance" style="cursor:pointer;"> Auto-Advance
         </label>
-        <button onclick="window.gameScene.advanceCombatResolution()" class="log-ctrl-btn" style="padding:2px 8px; font-size:0.8rem;" title="Close & Resolve Immediately">✕</button>
+        <button onclick="window.gameScene.advanceCombatResolution(true)" class="log-ctrl-btn" style="padding:2px 8px; font-size:0.74rem; background:#334155;" title="Skip directly to damage & casualties (Esc)">⚡ Skip</button>
       </div>
     </div>
     <div id="combat-card-meta" style="margin-bottom:10px; font-size:0.82rem; line-height:1.4;"></div>
     <div id="combat-card-steps" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #334155; padding-top:10px;">
-      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">Click Continue or press Space</span>
+      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">Step 1 of 3: Inspect Hit Rolls</span>
       <button id="btn-combat-continue" onclick="window.gameScene.advanceCombatResolution()" class="btn-confirm" style="padding:6px 16px; font-size:0.85rem; font-weight:700; box-shadow:0 0 10px rgba(34, 197, 94, 0.45); cursor:pointer;">
-        ▶ Continue to Damage & Destruction (Space)
+        ▶ Reveal Saves & Shields (Space) →
       </button>
     </div>
   </div>
@@ -14128,44 +14154,40 @@ window.renderArmyModal = function() {
       colTrait.style.borderLeftColor = meta.borderHex;
     }
 
-    // Render 8-Faction selector tabs
-    const tabsEl = document.getElementById(`${prefix}-faction-tabs`);
-    if (tabsEl) {
-      tabsEl.innerHTML = '';
-      FACTION_KEYS.forEach(fKey => {
-        const fm = FACTION_META[fKey];
-        const isSel = (fKey === activeBook);
-        const btn = document.createElement('button');
-        btn.style.minWidth = 'auto';
-        btn.style.padding = '3px 7px';
-        btn.style.fontSize = '0.72rem';
-        btn.style.borderColor = isSel ? fm.colorHex : '#334155';
-        if (isSel) {
-          btn.style.background = fm.borderHex;
-          btn.style.color = '#ffffff';
-          btn.style.fontWeight = '800';
-        }
-        btn.innerText = `${fm.icon} ${fm.name}`;
-        btn.onclick = () => window.setSideFaction(side, fKey);
-        tabsEl.appendChild(btn);
-      });
+    // Render Faction Dropdown Selector
+    const selectEl = document.getElementById(`${prefix}-faction-select`);
+    if (selectEl) {
+      const opts = selectEl.options || selectEl.children || [];
+      if (opts.length === 0) {
+        selectEl.innerHTML = '';
+        FACTION_KEYS.forEach(fKey => {
+          const fm = FACTION_META[fKey];
+          const opt = document.createElement('option');
+          opt.value = fKey;
+          opt.innerText = `${fm.icon} ${fm.name} (${fm.short})`;
+          selectEl.appendChild(opt);
+        });
+      }
+      selectEl.value = activeBook;
+      selectEl.style.borderColor = meta.borderHex;
     }
 
-    // Render Card Filter Tabs (All, Support, Special, Company)
+    // Render Compact Card Filter Pills (All, 🏢 Co, 🛡️ Sup, ⚔️ Spc)
     const filtersEl = document.getElementById(`${prefix}-card-filters`);
     if (filtersEl) {
       filtersEl.innerHTML = '';
       const filterOpts = [
-        { id: 'ALL', label: 'All' },
-        { id: 'COMPANY', label: 'Company' },
-        { id: 'SUPPORT', label: 'Support' },
-        { id: 'SPECIAL', label: 'Special' }
+        { id: 'ALL', label: 'All', title: 'Show All Detachments' },
+        { id: 'COMPANY', label: '🏢 Co', title: 'Company Cards (Core Formation)' },
+        { id: 'SUPPORT', label: '🛡️ Sup', title: 'Support Cards (Max 5 per Company)' },
+        { id: 'SPECIAL', label: '⚔️ Spc', title: 'Special Cards (Max 1 per Company)' }
       ];
       const activeFilter = (window.catalogFilter && window.catalogFilter[side]) || 'ALL';
       filterOpts.forEach(opt => {
         const fBtn = document.createElement('button');
-        fBtn.className = 'filter-btn' + (opt.id === activeFilter ? ' active' : '');
+        fBtn.className = 'filter-pill-btn' + (opt.id === activeFilter ? ' active' : '');
         fBtn.innerText = opt.label;
+        fBtn.title = opt.title;
         fBtn.onclick = () => window.setCatalogFilter(side, opt.id);
         filtersEl.appendChild(fBtn);
       });
@@ -15025,6 +15047,14 @@ window.addEventListener('keydown', (e) => {
       e.preventDefault();
       if (window.gameScene && window.gameScene.advanceCombatResolution) {
         window.gameScene.advanceCombatResolution();
+      }
+    }
+  } else if (e.code === 'Escape') {
+    const modal = document.getElementById('combat-card-modal');
+    if (modal && modal.style.display !== 'none') {
+      e.preventDefault();
+      if (window.gameScene && window.gameScene.advanceCombatResolution) {
+        window.gameScene.advanceCombatResolution(true);
       }
     }
   }
@@ -20521,7 +20551,7 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
 
-  // Interactive Combat Resolution Card Modal
+  // Interactive Stepped Combat Resolution Card Modal (Tap-Through with No Auto-Advance by Default)
   showCombatModal(data, onContinue) {
     const modal = document.getElementById('combat-card-modal');
     const headerEl = document.getElementById('combat-card-header');
@@ -20534,6 +20564,14 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this._activeCombatContinue = onContinue;
+    this._combatCardData = data;
+    this._combatStep = 1; // 1: Hit Rolls, 2: Saves & Shields, 3: Outcome & Damage
+
+    if (this._combatAutoTimer) {
+      clearTimeout(this._combatAutoTimer);
+      this._combatAutoTimer = null;
+    }
+
     headerEl.innerHTML = `💥 ${data.title || 'SHOOTING ENGAGEMENT'}`;
 
     metaEl.innerHTML = `
@@ -20549,8 +20587,26 @@ class NetEpicScene extends Phaser.Scene {
       </div>
     `;
 
+    this.renderCombatStep();
+    modal.style.display = 'block';
+
+    // Auto-advance is OFF by default so user can inspect rolls; only runs if explicitly checked
+    const autoAdvance = autoAdvCheck ? autoAdvCheck.checked : false;
+    if (autoAdvance) {
+      this._combatAutoTimer = setTimeout(() => {
+        this.advanceCombatResolution();
+      }, 2500);
+    }
+  }
+
+  renderCombatStep() {
+    const data = this._combatCardData;
+    if (!data) return;
+
+    const stepsEl = document.getElementById('combat-card-steps');
+    const statusEl = document.getElementById('combat-card-status');
+    const btnContinue = document.getElementById('btn-combat-continue');
     const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    let stepsHtml = '';
 
     const hitDiceHtml = (data.hitDice || []).map(d => {
       const val = typeof d === 'object' ? d.val : d;
@@ -20560,65 +20616,112 @@ class NetEpicScene extends Phaser.Scene {
       return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
     }).join('');
 
-    stepsHtml += `
-      <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px;">
+    const hasSaves = (data.saveDice && data.saveDice.length > 0);
+    const saveDiceHtml = hasSaves ? data.saveDice.map(d => {
+      const val = typeof d === 'object' ? d.val : d;
+      const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
+      const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
+      const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
+      return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
+    }).join('') : '';
+
+    let html = '';
+
+    // STEP 1 CARD (To-Hit Rolls)
+    html += `
+      <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 1 ? '#fde047' : '#334155'}; border-radius:6px; padding:6px 10px; transition:border-color 0.2s;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <span style="font-weight:700; color:#fde047;">🎯 Step 1: To-Hit Rolls (${data.neededToHit}+ needed)</span>
           <span style="font-weight:700; color:${data.hits > 0 ? '#4ade80' : '#f87171'};">${data.hits} Hit(s) scored</span>
         </div>
-        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${hitDiceHtml || '<span style="color:#94a3b8;">No shots</span>'}</div>
+        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${hitDiceHtml || '<span style="color:#94a3b8;">No shots fired</span>'}</div>
       </div>
     `;
 
-    if (data.saveDice && data.saveDice.length > 0) {
-      const saveDiceHtml = data.saveDice.map(d => {
-        const val = typeof d === 'object' ? d.val : d;
-        const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
-        const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
-        const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
-        return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
-      }).join('');
-
-      stepsHtml += `
-        <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <span style="font-weight:700; color:#38bdf8;">🛡️ Step 2: Shields & Armour Saves</span>
-            <span style="font-weight:700; color:#94a3b8;">${data.saves} Saved / Shielded</span>
+    // STEP 2 CARD (Shields & Armour Saves)
+    if (this._combatStep >= 2) {
+      if (hasSaves) {
+        html += `
+          <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 2 ? '#38bdf8' : '#334155'}; border-radius:6px; padding:6px 10px; transition:border-color 0.2s; animation:fadeIn 0.2s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-weight:700; color:#38bdf8;">🛡️ Step 2: Shields & Armour Saves</span>
+              <span style="font-weight:700; color:#94a3b8;">${data.saves} Saved / Shielded</span>
+            </div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${saveDiceHtml}</div>
           </div>
-          <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${saveDiceHtml}</div>
+        `;
+      } else {
+        html += `
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px; color:#94a3b8; font-size:0.75rem;">
+            🛡️ Step 2: No saves needed (all attacks missed).
+          </div>
+        `;
+      }
+    }
+
+    // STEP 3 CARD (Final Outcome & Destruction)
+    if (this._combatStep >= 3) {
+      html += `
+        <div style="background:#0f172a; border:1.5px solid #f87171; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.2s ease;">
+          <div>
+            <span style="font-weight:700; color:#f87171;">💥 Step 3 Outcome:</span>
+            <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
+          </div>
+          <span style="font-size:0.78rem; font-weight:700; color:${data.kills > 0 ? '#ef4444' : '#22c55e'};">${data.kills > 0 ? `${data.kills} Destroyed` : 'No Casualties'}</span>
         </div>
       `;
     }
 
-    stepsHtml += `
-      <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span style="font-weight:700; color:#f87171;">💥 Outcome:</span>
-          <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
-        </div>
-        <span style="font-size:0.78rem; font-weight:700; color:${data.kills > 0 ? '#ef4444' : '#22c55e'};">${data.kills > 0 ? `${data.kills} Destroyed` : 'No Casualties'}</span>
-      </div>
-    `;
+    if (stepsEl) stepsEl.innerHTML = html;
 
-    stepsEl.innerHTML = stepsHtml;
-    modal.style.display = 'block';
-
-    if (this._combatAutoTimer) clearTimeout(this._combatAutoTimer);
-    const autoAdvance = autoAdvCheck ? autoAdvCheck.checked : true;
-    if (autoAdvance) {
-      this._combatAutoTimer = setTimeout(() => {
-        this.advanceCombatResolution();
-      }, 2100);
+    // Update Button label and Status text for current step
+    if (this._combatStep === 1) {
+      if (statusEl) statusEl.innerText = 'Step 1 of 3: Inspect Hit Rolls (Space to advance)';
+      if (btnContinue) {
+        btnContinue.innerText = (data.hits > 0 && hasSaves) ? '▶ Reveal Saves & Shields (Space) →' : '▶ View Outcome (Space) →';
+        btnContinue.className = 'btn-primary';
+      }
+    } else if (this._combatStep === 2) {
+      if (statusEl) statusEl.innerText = 'Step 2 of 3: Inspect Saves & Defense (Space to advance)';
+      if (btnContinue) {
+        btnContinue.innerText = '▶ View Outcome & Casualties (Space) →';
+        btnContinue.className = 'btn-primary';
+      }
+    } else {
+      if (statusEl) statusEl.innerText = 'Step 3 of 3: Confirm Casualties';
+      if (btnContinue) {
+        btnContinue.innerText = data.kills > 0 ? '💥 Destroy Casualties & Continue (Space) ▶' : '✓ Continue (Space) ▶';
+        btnContinue.className = 'btn-confirm';
+      }
     }
   }
 
-  advanceCombatResolution() {
+  advanceCombatResolution(skipToEnd = false) {
     if (this._combatAutoTimer) {
       clearTimeout(this._combatAutoTimer);
       this._combatAutoTimer = null;
     }
+
+    if (!skipToEnd && this._combatStep < 3) {
+      this._combatStep++;
+      this.renderCombatStep();
+
+      // If user enabled auto-advance, queue next step
+      const autoAdvCheck = document.getElementById('combat-auto-advance');
+      if (autoAdvCheck && autoAdvCheck.checked) {
+        this._combatAutoTimer = setTimeout(() => {
+          this.advanceCombatResolution();
+        }, 2500);
+      }
+      return;
+    }
+
+    // Step 3 finished (or skipped): close modal and proceed with casualty destruction
     const modal = document.getElementById('combat-card-modal');
     if (modal) modal.style.display = 'none';
+
+    this._combatCardData = null;
+    this._combatStep = 1;
 
     if (this._activeCombatContinue) {
       const cb = this._activeCombatContinue;
