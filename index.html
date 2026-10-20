@@ -202,8 +202,77 @@
       border-left: 4px solid #10b981;
     }
 
-    /* Army Selection, Psychic Power & Save/Load Modals */
-    #army-modal, #psyker-modal, #save-load-modal {
+    /* Title Screen Styling */
+    #title-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.98) 100%);
+      z-index: 150; display: flex; align-items: center; justify-content: center;
+      padding: 16px; pointer-events: auto; backdrop-filter: blur(5px);
+    }
+    .title-card {
+      max-width: 540px; width: 100%; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #334155;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+    .title-heading {
+      margin: 0; font-size: 2.2rem; font-weight: 900; letter-spacing: 2.5px;
+      color: #f8fafc; text-shadow: 0 0 25px rgba(253, 224, 71, 0.4);
+      font-family: inherit; line-height: 1.1;
+    }
+    .title-subheading {
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 2px;
+      color: #94a3b8; margin-top: 6px; text-transform: uppercase;
+    }
+    .title-badge-row {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+      margin: 14px 0 22px 0;
+    }
+    .title-pill {
+      font-size: 0.68rem; font-weight: 700; color: #cbd5e1;
+      background: #1e293b; border: 1px solid #475569;
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .title-menu-box {
+      display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 380px;
+    }
+    .title-btn {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 18px; border-radius: 8px;
+      background: #1e293b; border: 1.5px solid #475569;
+      color: #f8fafc; cursor: pointer; transition: all 0.18s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35); text-align: left;
+    }
+    .title-btn:hover {
+      background: #334155; border-color: #94a3b8; transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+    .title-btn-primary {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-color: #60a5fa;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.45);
+    }
+    .title-btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+    }
+    .title-btn-resume {
+      background: linear-gradient(135deg, #065f46, #059669);
+      border-color: #34d399;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    }
+    .title-btn-resume:hover {
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-color: #6ee7b7;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Army Selection, Psychic Power, Save/Load & Options Modals */
+    #army-modal, #psyker-modal, #save-load-modal, #options-modal {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(2, 6, 23, 0.86); z-index: 100;
       display: flex; align-items: center; justify-content: center;
@@ -321,14 +390,136 @@
 
 <div id="game-container"></div>
 
+<!-- Main Title Screen -->
+<div id="title-screen">
+  <div class="title-card">
+    <div style="font-size:3rem; line-height:1; filter:drop-shadow(0 0 16px rgba(253, 224, 71, 0.45)); margin-bottom:6px;">
+      ⚔️
+    </div>
+
+    <h1 class="title-heading">NETEPIC GOLD</h1>
+    <div class="title-subheading">EPIC 40,000 TABLETOP SIMULATOR</div>
+    <div class="title-badge-row">
+      <span class="title-pill">6mm Miniature Warfare</span>
+      <span class="title-pill">NetEpic Gold Rules</span>
+      <span class="title-pill">Solo AI & 2P Hotseat</span>
+    </div>
+
+    <!-- Main Navigation Menu -->
+    <div class="title-menu-box">
+      <button class="title-btn title-btn-primary" onclick="window.startSinglePlayer()">
+        <span style="font-size:1.35rem;">⚔️</span>
+        <div style="text-align:left;">
+          <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">SINGLE PLAYER</div>
+          <div style="font-size:0.72rem; color:#bae6fd; font-weight:500;">Select Factions, Deploy Armies & Battle Autonomous AI</div>
+        </div>
+      </button>
+
+      <button id="title-btn-resume" class="title-btn title-btn-resume" onclick="window.openSaveLoadModal()" style="display:none;">
+        <span style="font-size:1.35rem;">📂</span>
+        <div style="text-align:left;">
+          <div id="title-resume-text" style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">RESUME / LOAD GAME</div>
+          <div id="title-resume-sub" style="font-size:0.72rem; color:#a7f3d0; font-weight:500;">Load Turn Auto-Save or Saved Match</div>
+        </div>
+      </button>
+
+      <button class="title-btn" onclick="window.openOptionsModal()">
+        <span style="font-size:1.35rem;">⚙️</span>
+        <div style="text-align:left;">
+          <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">OPTIONS</div>
+          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Audio, Follow Camera, Table Size & Map Defaults</div>
+        </div>
+      </button>
+
+      <button class="title-btn" onclick="window.startHotseat()" style="background:#1e293b; border-color:#475569;">
+        <span style="font-size:1.35rem;">👥</span>
+        <div style="text-align:left;">
+          <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">2-PLAYER HOTSEAT</div>
+          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Local Pass-and-Play Between Two Commanders</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Footer Credits -->
+    <div style="margin-top:22px; font-size:0.72rem; color:#64748b; text-align:center; display:flex; flex-direction:column; gap:2px;">
+      <div>8 Authentic Factions &bull; Core Gold Cards & Weapon Systems &bull; Procedural Battlefields</div>
+      <div>Compatible with Desktop & Mobile Touch Displays</div>
+    </div>
+  </div>
+</div>
+
+<!-- Game Options / Settings Modal -->
+<div id="options-modal" style="display:none;">
+  <div class="modal-card" style="max-width:560px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
+      <div>
+        <div style="font-weight:800; font-size:1.05rem; color:#f8fafc;">⚙️ GAME OPTIONS & SETTINGS</div>
+        <div class="sub-text" style="color:#94a3b8;">Audio, camera follow, table dimensions & battlefield defaults</div>
+      </div>
+      <button class="log-ctrl-btn" onclick="window.closeOptionsModal()">✕</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin:14px 0; overflow-y:auto; flex:1;">
+      <!-- SFX Option -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🔊 Sound Effects (SFX)</div>
+          <div class="sub-text" style="color:#94a3b8;">Weapons fire, void shields, explosions, teleports & morale horns</div>
+        </div>
+        <button id="opt-btn-sfx" onclick="window.toggleOptionSFX()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
+      </div>
+
+      <!-- Follow Camera Option -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🎥 AI Follow Camera</div>
+          <div class="sub-text" style="color:#94a3b8;">Automatically track and smooth-pan to AI units during movement & firing</div>
+        </div>
+        <button id="opt-btn-cam" onclick="window.toggleOptionCam()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
+      </div>
+
+      <!-- Table Size Selection -->
+      <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">📐 Tabletop Size</div>
+        <div class="sub-text" style="color:#94a3b8; margin-bottom:8px;">Standard battlefield dimensions for NetEpic miniature combat</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button id="opt-size-std" onclick="window.setOptionTableSize('STANDARD_6X4')" class="btn-primary" style="flex:1; padding:6px 8px; font-size:0.75rem;">6' × 4' Standard</button>
+          <button id="opt-size-sml" onclick="window.setOptionTableSize('SMALL_4X4')" style="flex:1; padding:6px 8px; font-size:0.75rem; background:#0f172a;">4' × 4' Small</button>
+          <button id="opt-size-lrg" onclick="window.setOptionTableSize('LARGE_8X4')" style="flex:1; padding:6px 8px; font-size:0.75rem; background:#0f172a;">8' × 4' Extended</button>
+        </div>
+      </div>
+
+      <!-- Default Map Selection -->
+      <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">🗺️ Battlefield Map Theme</div>
+        <div class="sub-text" style="color:#94a3b8; margin-bottom:8px;">Terrain layout, roads, water hazards, bridges & fortified buildings</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+          <button id="opt-map-industrial" onclick="window.setOptionMap('INDUSTRIAL')" class="btn-primary" style="padding:6px 8px; font-size:0.75rem;">🏭 Industrial Highway</button>
+          <button id="opt-map-ruined_city" onclick="window.setOptionMap('RUINED_CITY')" style="padding:6px 8px; font-size:0.75rem; background:#0f172a;">🏛️ Ruined City</button>
+          <button id="opt-map-snow" onclick="window.setOptionMap('SNOW')" style="padding:6px 8px; font-size:0.75rem; background:#0f172a;">❄️ Snowy Wasteland</button>
+          <button id="opt-map-desert" onclick="window.setOptionMap('DESERT')" style="padding:6px 8px; font-size:0.75rem; background:#0f172a;">🏜️ Desert Outpost</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px; justify-content:space-between;">
+      <button onclick="window.resetDefaultOptions()" style="background:#334155; font-size:0.78rem; min-width:auto; padding:6px 12px;">↺ Reset Defaults</button>
+      <button class="btn-confirm" onclick="window.closeOptionsModal()" style="font-size:0.78rem; min-width:100px; padding:6px 16px;">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- Army Selection, Deployment & Solo vs AI Modal -->
-<div id="army-modal">
+<div id="army-modal" style="display:none;">
   <div class="modal-card">
     <!-- Stepper Navigation Header -->
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
-      <div>
-        <div style="font-size:1.02rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — SETUP & ARMIES</div>
-        <div class="sub-text" style="color:#94a3b8;">8 Authentic Factions &bull; Core Gold Cards &bull; Solo vs AI or 2P Hotseat</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button onclick="window.returnToTitleScreen()" style="min-width:auto; padding:4px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;" title="Return to Title Screen">← Title Screen</button>
+        <div>
+          <div style="font-size:1.02rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — SETUP & ARMIES</div>
+          <div class="sub-text" style="color:#94a3b8;">8 Authentic Factions &bull; Core Gold Cards &bull; Solo vs AI or 2P Hotseat</div>
+        </div>
       </div>
       <div class="setup-stepper" id="builder-stepper">
         <button id="step-chip-1" class="step-chip active" onclick="window.setBuilderStep(1)">1. Map & Match</button>
@@ -593,6 +784,8 @@
 
   <!-- Collapsible In-Battle Options Drawer -->
   <div id="battle-menu-dropdown" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid #334155; flex-wrap:wrap; gap:5px; justify-content:flex-end;">
+    <button onclick="window.confirmReturnToTitle()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;">🏠 Title Screen</button>
+    <button onclick="window.openOptionsModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;">⚙️ Options</button>
     <button onclick="window.openSaveLoadModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#047857; border-color:#10b981;">💾 Save / Load Game</button>
     <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🔊 SFX</button>
     <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🎥 Follow Cam</button>
@@ -13825,6 +14018,200 @@ window.initCombatLogResize = function() {
   window.addEventListener('pointercancel', stopResize);
 };
 
+// --- TITLE SCREEN & GAME OPTIONS NAVIGATION ---
+window.startSinglePlayer = function() {
+  if (window.aiFaction === 'NONE') {
+    window.aiFaction = 'ORKS';
+  }
+  const t = document.getElementById('title-screen');
+  if (t) t.style.display = 'none';
+  window.openArmyModal();
+  if (window.sfx && window.sfx.playSave) window.sfx.playSave();
+};
+
+window.startHotseat = function() {
+  window.aiFaction = 'NONE';
+  const t = document.getElementById('title-screen');
+  if (t) t.style.display = 'none';
+  window.openArmyModal();
+  if (window.sfx && window.sfx.playSave) window.sfx.playSave();
+};
+
+window.returnToTitleScreen = function() {
+  const am = document.getElementById('army-modal');
+  if (am) am.style.display = 'none';
+  const sm = document.getElementById('save-load-modal');
+  if (sm) sm.style.display = 'none';
+  const om = document.getElementById('options-modal');
+  if (om) om.style.display = 'none';
+  const pm = document.getElementById('psyker-modal');
+  if (pm) pm.style.display = 'none';
+
+  // Check for existing save to populate Resume button
+  const resumeBtn = document.getElementById('title-btn-resume');
+  const resumeText = document.getElementById('title-resume-text');
+  const resumeSub = document.getElementById('title-resume-sub');
+  if (resumeBtn && window.saveManager) {
+    const autoSave = window.saveManager.getAutoSave();
+    const slots = window.saveManager.getAllSlots();
+    const latestManual = slots.filter(s => s.data).sort((a, b) => (b.data.timestamp || 0) - (a.data.timestamp || 0))[0];
+    const candidate = autoSave || (latestManual ? latestManual.data : null);
+
+    if (candidate) {
+      resumeBtn.style.display = 'flex';
+      if (resumeText) resumeText.innerText = `RESUME (Turn ${candidate.turn})`;
+      if (resumeSub) resumeSub.innerText = `${candidate.name || 'Saved Game'} &bull; ${candidate.dateStr || ''}`;
+    } else {
+      resumeBtn.style.display = 'none';
+    }
+  }
+
+  const t = document.getElementById('title-screen');
+  if (t) t.style.display = 'flex';
+};
+
+window.confirmReturnToTitle = function() {
+  const d = document.getElementById('battle-menu-dropdown');
+  if (d) d.style.display = 'none';
+  if (confirm('Return to Title Screen? (Any in-progress turn is preserved in your auto-save or save slots).')) {
+    window.returnToTitleScreen();
+  }
+};
+
+window.openOptionsModal = function() {
+  window.updateOptionsUI();
+  const om = document.getElementById('options-modal');
+  if (om) om.style.display = 'flex';
+};
+
+window.closeOptionsModal = function() {
+  const om = document.getElementById('options-modal');
+  if (om) om.style.display = 'none';
+  window.saveCurrentOptions();
+};
+
+window.updateOptionsUI = function() {
+  const btnSfx = document.getElementById('opt-btn-sfx');
+  if (btnSfx) {
+    btnSfx.innerText = window.sfxEnabled ? 'Enabled' : 'Muted';
+    btnSfx.className = window.sfxEnabled ? 'btn-confirm' : 'btn-warn';
+  }
+
+  const btnCam = document.getElementById('opt-btn-cam');
+  if (btnCam) {
+    btnCam.innerText = window.aiCamFollow ? 'Enabled' : 'Free Cam';
+    btnCam.className = window.aiCamFollow ? 'btn-confirm' : 'btn-primary';
+  }
+
+  const sizeIds = {
+    STANDARD_6X4: 'opt-size-std',
+    SMALL_4X4: 'opt-size-sml',
+    LARGE_8X4: 'opt-size-lrg'
+  };
+  Object.keys(sizeIds).forEach(sz => {
+    const el = document.getElementById(sizeIds[sz]);
+    if (el) {
+      if (window.tableSize === sz) {
+        el.className = 'btn-primary';
+        el.style.background = '#2563eb';
+      } else {
+        el.className = '';
+        el.style.background = '#0f172a';
+      }
+    }
+  });
+
+  const mapIds = {
+    INDUSTRIAL: 'opt-map-industrial',
+    RUINED_CITY: 'opt-map-ruined_city',
+    SNOW: 'opt-map-snow',
+    DESERT: 'opt-map-desert'
+  };
+  Object.keys(mapIds).forEach(mKey => {
+    const el = document.getElementById(mapIds[mKey]);
+    if (el) {
+      if ((window.mapPreset || 'INDUSTRIAL') === mKey) {
+        el.className = 'btn-primary';
+        el.style.background = '#2563eb';
+      } else {
+        el.className = '';
+        el.style.background = '#0f172a';
+      }
+    }
+  });
+};
+
+window.toggleOptionSFX = function() {
+  window.sfxEnabled = !window.sfxEnabled;
+  if (window.sfxEnabled && window.sfx && window.sfx.playSave) {
+    window.sfx.playSave();
+  }
+  const hudBtn = document.getElementById('btn-sfx-toggle');
+  if (hudBtn) {
+    hudBtn.innerText = window.sfxEnabled ? '🔊 SFX' : '🔇 Mute';
+    hudBtn.className = window.sfxEnabled ? 'btn-primary' : '';
+  }
+  window.updateOptionsUI();
+};
+
+window.toggleOptionCam = function() {
+  window.aiCamFollow = !window.aiCamFollow;
+  const hudBtn = document.getElementById('btn-cam-toggle');
+  if (hudBtn) {
+    hudBtn.innerText = window.aiCamFollow ? '🎥 Follow Cam' : '🎥 Free Cam';
+    hudBtn.className = window.aiCamFollow ? 'btn-primary' : '';
+  }
+  window.updateOptionsUI();
+};
+
+window.setOptionTableSize = function(sizeId) {
+  window.setTableSize(sizeId);
+  window.updateOptionsUI();
+};
+
+window.setOptionMap = function(preset) {
+  window.selectMapPreset(preset);
+  window.updateOptionsUI();
+};
+
+window.resetDefaultOptions = function() {
+  window.sfxEnabled = true;
+  window.aiCamFollow = true;
+  window.setTableSize('STANDARD_6X4');
+  window.selectMapPreset('INDUSTRIAL');
+  window.saveCurrentOptions();
+  window.updateOptionsUI();
+  if (window.sfx && window.sfx.playSave) window.sfx.playSave();
+};
+
+window.saveCurrentOptions = function() {
+  try {
+    localStorage.setItem('netepic_gold_options', JSON.stringify({
+      sfxEnabled: window.sfxEnabled,
+      aiCamFollow: window.aiCamFollow,
+      tableSize: window.tableSize,
+      mapPreset: window.mapPreset
+    }));
+  } catch (e) {
+    console.warn('Could not save options to localStorage', e);
+  }
+};
+
+window.loadSavedOptions = function() {
+  try {
+    const raw = localStorage.getItem('netepic_gold_options');
+    if (raw) {
+      const opts = JSON.parse(raw);
+      if (opts.sfxEnabled !== undefined) window.sfxEnabled = Boolean(opts.sfxEnabled);
+      if (opts.aiCamFollow !== undefined) window.aiCamFollow = Boolean(opts.aiCamFollow);
+      if (opts.tableSize) window.tableSize = opts.tableSize;
+      if (opts.mapPreset) window.mapPreset = opts.mapPreset;
+    }
+  } catch (e) {
+    console.warn('Could not load options from localStorage', e);
+  }
+};
+
 // --- SAVE & RESTORE GAME SYSTEM (MID-GAME PERSISTENCE & TURN AUTO-SAVES) ---
 window.saveManager = {
   STORAGE_KEY: 'netepic_gold_save_slots',
@@ -14283,7 +14670,9 @@ class NetEpicScene extends Phaser.Scene {
     this.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, true);
     this.setupCameraAndInput();
     this.resetCamera();
+    window.loadSavedOptions();
     window.renderArmyModal();
+    window.returnToTitleScreen();
     this.updateUI();
     this.updateZoomLOD();
   }
