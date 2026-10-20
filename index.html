@@ -582,7 +582,7 @@
           </div>
         </div>
         <div style="flex:1; min-width:240px;">
-          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget:</div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget: <span id="budget-vp-target" style="color:#fde047; font-weight:600; font-size:0.8rem;">(Goal: 35 VP)</span></div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="flex:1; min-width:55px;">1000</button>
             <button id="pts-2000" class="btn-primary" onclick="window.setPointsBudget(2000)" style="flex:1; min-width:55px;">2000</button>
@@ -772,7 +772,7 @@
     <div style="display:flex; align-items:center; gap:8px;">
       <span id="phase-badge" class="phase-badge">0. Deployment Phase</span>
       <span id="turn-text" class="status-text">Setup</span>
-      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Target: 20 VP)</span>
+      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Goal: 35 VP)</span>
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:5px; align-items:center; flex-shrink:0;">
@@ -990,7 +990,20 @@ const ROAD_BONUS_CM = 5;                // +5 cm NetEpic Road Movement Bonus
 const ENGAGE_PX = 32;                   // Base-to-base contact threshold (~3.2 cm center-to-center)
 const MIN_ENEMY_GAP_PX = 34;            // Minimum distance for non-charging units
 const OBJ_RADIUS_PX = 15 * PX_PER_CM;   // 15 cm Objective capture radius
-const VICTORY_VP_TARGET = 20;           // Victory Point threshold checked in End Phase
+// NetEpic Gold Core Rules p. 12: Winning VP total scales with game points budget
+// 1000 pts -> 30 VP, 2000 pts -> 35 VP, 3000 pts -> 40 VP, 4000 pts -> 45 VP, 5000 pts -> 50 VP
+window.getVictoryVpTarget = function(pts = null) {
+  const budget = pts || window.pointsBudget || 2000;
+  if (budget <= 1000) return 30;
+  if (budget <= 1500) return 33;
+  if (budget <= 2000) return 35;
+  if (budget <= 2500) return 38;
+  if (budget <= 3000) return 40;
+  if (budget <= 4000) return 45;
+  if (budget <= 5000) return 50;
+  return 25 + Math.round(budget / 200);
+};
+const VICTORY_VP_TARGET = 35;           // Default fallback threshold
 
 const PIN_CLASS_NAMES = {
   1: 'Infantry (Class 1)',
@@ -1356,7 +1369,7 @@ window.updateBriefingCard = function() {
     const modeLabel = window.aiFaction === 'ORKS' ? 'vs North AI' : (window.aiFaction === 'IMPERIUM' ? 'vs South AI' : '2-Player Hotseat');
     bMode.innerText = `🤖 Mode: ${modeLabel}`;
   }
-  if (bBudget) bBudget.innerText = `🎯 Budget: ${window.pointsBudget} pts`;
+  if (bBudget) bBudget.innerText = `🎯 Budget: ${window.pointsBudget} pts (Goal: ${window.getVictoryVpTarget(window.pointsBudget)} VP)`;
   const bTable = document.getElementById('briefing-table');
   if (bTable) {
     const tCfg = TABLE_SIZES[window.tableSize] || TABLE_SIZES.STANDARD_6X4;
@@ -13738,6 +13751,8 @@ window.setPointsBudget = function(pts) {
     const btn = document.getElementById(`pts-${p}`);
     if (btn) btn.className = (p === pts) ? 'btn-primary' : '';
   });
+  const bVp = document.getElementById('budget-vp-target');
+  if (bVp) bVp.innerText = `(Goal: ${window.getVictoryVpTarget(pts)} VP)`;
 
   // Automatically enlarge battlefield for larger armies (NetEpic standard: 6x4 for 1000-2000, 8x4 for 3000, 8x5 for 4000-5000)
   if (pts <= 2000) {
@@ -19986,6 +20001,11 @@ class NetEpicScene extends Phaser.Scene {
     return m.short;
   }
 
+  // NetEpic Gold Core Rules p. 12: Scales dynamically with points budget
+  getVictoryVpTarget() {
+    return window.getVictoryVpTarget ? window.getVictoryVpTarget(window.pointsBudget) : 35;
+  }
+
   // Eldar Holo-Fields (07_eldar_army_book_v5 p. 4): Save improves with movement speed!
   getHoloFieldSave(det) {
     if (!det || !det.holoField) return null;
@@ -26080,7 +26100,8 @@ class NetEpicScene extends Phaser.Scene {
     // Re-evaluate objectives in case a unit rallied on an objective
     this.evaluateObjectives(true);
 
-    // 2. Check Victory Conditions (20+ VP at end of turn or total annihilation)
+    // 2. Check Victory Conditions (NetEpic Gold Core Rules p. 12: Scales with Points Budget, or total annihilation)
+    const vpTarget = this.getVictoryVpTarget();
     const impAlive = this.detachments.some(d => d.faction === 'IMPERIUM' && d.stands.length > 0);
     const orkAlive = this.detachments.some(d => d.faction === 'ORKS' && d.stands.length > 0);
     const impTot = this.getTotalVP('IMPERIUM');
@@ -26091,8 +26112,8 @@ class NetEpicScene extends Phaser.Scene {
     let winner = null;
     if (!orkAlive && impAlive) winner = `${southName} (Total Annihilation)`;
     else if (!impAlive && orkAlive) winner = `${northName} (Total Annihilation)`;
-    else if ((impTot >= VICTORY_VP_TARGET || orkTot >= VICTORY_VP_TARGET) && impTot !== orkTot) {
-      winner = impTot > orkTot ? `${southName} (${impTot} vs ${orkTot} VP)` : `${northName} (${orkTot} vs ${impTot} VP)`;
+    else if ((impTot >= vpTarget || orkTot >= vpTarget) && impTot !== orkTot) {
+      winner = impTot > orkTot ? `${southName} (${impTot} vs ${orkTot} VP, Goal: ${vpTarget})` : `${northName} (${orkTot} vs ${impTot} VP, Goal: ${vpTarget})`;
     }
 
     const vicBanner = document.getElementById('victory-alert');
@@ -26567,7 +26588,7 @@ class NetEpicScene extends Phaser.Scene {
     const orkTot = this.getTotalVP('ORKS');
     const sShort = this.getSideShort('IMPERIUM');
     const nShort = this.getSideShort('ORKS');
-    vpScore.innerText = `${sShort}: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ${nShort}: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${VICTORY_VP_TARGET}]`;
+    vpScore.innerText = `${sShort}: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ${nShort}: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${this.getVictoryVpTarget()} VP]`;
 
     deployControls.style.display = 'none';
     ordersControls.style.display = 'none';
@@ -27076,6 +27097,8 @@ class NetEpicScene extends Phaser.Scene {
       activePlayer: this.activePlayer,
       vp: { ...this.vp },
       objVp: { ...this.objVp },
+      victoryVpTarget: this.getVictoryVpTarget(),
+      pointsBudget: window.pointsBudget || 2000,
       groupMoveMode: Boolean(this.groupMoveMode),
       mapPreset: window.mapPreset || 'INDUSTRIAL',
       aiFaction: window.aiFaction || 'NONE',
@@ -27143,6 +27166,10 @@ class NetEpicScene extends Phaser.Scene {
 
       window.aiFaction = saveData.aiFaction !== undefined ? saveData.aiFaction : 'NONE';
       window.aiCamFollow = saveData.aiCamFollow !== undefined ? saveData.aiCamFollow : true;
+      if (saveData.pointsBudget) {
+        window.pointsBudget = saveData.pointsBudget;
+        if (window.setPointsBudget) window.setPointsBudget(saveData.pointsBudget);
+      }
       if (saveData.sideFaction) window.sideFaction = { ...saveData.sideFaction };
       if (saveData.armyRosters) window.armyRosters = { ...saveData.armyRosters };
 
