@@ -773,6 +773,7 @@
       <span id="phase-badge" class="phase-badge">0. Deployment Phase</span>
       <span id="turn-text" class="status-text">Setup</span>
       <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Goal: 35 VP)</span>
+      <button id="btn-next-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto; background:#4338ca; border-color:#6366f1; display:flex; align-items:center; gap:4px;" title="Cycle to next unit needing orders or action in this phase (Hotkey: Tab or N)">⏭️ Next Unit <span id="idle-units-badge" style="background:#ef4444; color:#fff; border-radius:10px; padding:1px 5px; font-size:0.65rem; font-weight:800; display:none;">0</span></button>
     </div>
     <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
     <div style="display:flex; gap:5px; align-items:center; flex-shrink:0;">
@@ -844,6 +845,29 @@
     </div>
   </div>
 
+  <!-- Interactive Combat Resolution Modal (Stepped Dice & Damage) -->
+  <div id="combat-card-modal" style="display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:1200; width:92%; max-width:540px; background:rgba(15, 23, 42, 0.96); border:2px solid #38bdf8; border-radius:12px; box-shadow:0 12px 35px rgba(0,0,0,0.85), 0 0 20px rgba(56, 189, 248, 0.35); padding:14px; backdrop-filter:blur(6px); color:#f8fafc; pointer-events:auto; font-family:system-ui, -apple-system, sans-serif;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:10px;">
+      <div id="combat-card-header" style="font-weight:800; font-size:1rem; color:#fde047; display:flex; align-items:center; gap:6px;">
+        💥 SHOOTING ENGAGEMENT
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label style="font-size:0.74rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:4px; user-select:none;">
+          <input type="checkbox" id="combat-auto-advance" checked style="cursor:pointer;"> Auto-Advance (2s)
+        </label>
+        <button onclick="window.gameScene.advanceCombatResolution()" class="log-ctrl-btn" style="padding:2px 8px; font-size:0.8rem;" title="Close & Resolve Immediately">✕</button>
+      </div>
+    </div>
+    <div id="combat-card-meta" style="margin-bottom:10px; font-size:0.82rem; line-height:1.4;"></div>
+    <div id="combat-card-steps" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #334155; padding-top:10px;">
+      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">Click Continue or press Space</span>
+      <button id="btn-combat-continue" onclick="window.gameScene.advanceCombatResolution()" class="btn-confirm" style="padding:6px 16px; font-size:0.85rem; font-weight:700; box-shadow:0 0 10px rgba(34, 197, 94, 0.45); cursor:pointer;">
+        ▶ Continue to Damage & Destruction (Space)
+      </button>
+    </div>
+  </div>
+
   <div id="bottom-bar">
     <div id="victory-alert" class="alert-banner victory-banner"></div>
 
@@ -890,6 +914,7 @@
 
       <!-- I. Orders Phase Controls -->
       <div id="orders-controls" class="btn-row" style="display:none;">
+        <button id="btn-next-order-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:130px;" title="Find next detachment needing orders (Tab / N)">⏭️ Next Unit (Tab)</button>
         <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0x Move, Shoot Early/Snap)</button>
         <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x Move, Shoot Late)</button>
         <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x Move, Enter Close Combat)</button>
@@ -900,6 +925,7 @@
 
       <!-- II. Movement Phase Controls -->
       <div id="movement-controls" class="btn-row" style="display:none;">
+        <button id="btn-next-move-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:140px;" title="Find next detachment that hasn't moved yet (Tab / N)">⏭️ Next Unmoved (Tab)</button>
         <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
         <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔗 Group Move: OFF (Double-Click)</button>
         <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight Formation</button>
@@ -917,6 +943,7 @@
 
       <!-- III. Ranged Combat Controls (First Fire & Advance Fire) -->
       <div id="combat-controls" class="btn-row" style="display:none;">
+        <button id="btn-next-fire-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:130px;" title="Find next detachment ready to fire (Tab / N)">⏭️ Next Shooter (Tab)</button>
         <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget(false)" disabled>Select an Enemy Detachment to Fire</button>
         <button id="btn-split-fire" class="btn-cc" onclick="window.gameScene.fireAtSelectedTarget(true)" style="display:none;" disabled title="Fire 1 Stand (or 1 Titan Weapon System) at this target and keep remaining stands/weapons ready for other targets!">🎯 Split Fire (1 Stand / Weapon)</button>
         <button id="btn-cast-psychic-combat" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest offensive Psychic Powers during Shooting">🔮 Cast Psychic Power</button>
@@ -14534,14 +14561,28 @@ window.handleImportSaveFile = function(event) {
   event.target.value = '';
 };
 
-// Keyboard Shortcuts: F5 = Quick Save, F9 = Quick Load
+// Keyboard Shortcuts: F5 = Quick Save, F9 = Quick Load, Tab/N = Next Unit, Space = Combat Advance
 window.addEventListener('keydown', (e) => {
+  if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
   if (e.key === 'F5') {
     e.preventDefault();
     if (window.quickSaveGame) window.quickSaveGame();
   } else if (e.key === 'F9') {
     e.preventDefault();
     if (window.quickLoadGame) window.quickLoadGame();
+  } else if (e.key === 'Tab' || e.code === 'KeyN') {
+    e.preventDefault();
+    if (window.gameScene && window.gameScene.selectNextIdleUnit) {
+      window.gameScene.selectNextIdleUnit();
+    }
+  } else if (e.code === 'Space') {
+    const modal = document.getElementById('combat-card-modal');
+    if (modal && modal.style.display !== 'none') {
+      e.preventDefault();
+      if (window.gameScene && window.gameScene.advanceCombatResolution) {
+        window.gameScene.advanceCombatResolution();
+      }
+    }
   }
 });
 
@@ -19859,6 +19900,352 @@ class NetEpicScene extends Phaser.Scene {
     this.terrainLabels.push(lbl);
   }
 
+  // --- VISUAL COMBAT FRAMING & PROJECTILE ANIMATION ENGINE ---
+  frameShootingAction(firerDet, targetDet, aimPoint = null) {
+    if (!firerDet) return;
+    const cam = this.cameras.main;
+    const points = [];
+    if (firerDet.stands) {
+      firerDet.stands.forEach(s => points.push({ x: s.container.x, y: s.container.y }));
+    }
+    if (aimPoint) {
+      points.push({ x: aimPoint.x, y: aimPoint.y });
+    } else if (targetDet && targetDet.stands) {
+      targetDet.stands.forEach(s => points.push({ x: s.container.x, y: s.container.y }));
+    }
+    if (points.length === 0) return;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    points.forEach(p => {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    });
+
+    const midX = Phaser.Math.Clamp((minX + maxX) / 2, 50, BOARD_W - 50);
+    const midY = Phaser.Math.Clamp((minY + maxY) / 2, 50, BOARD_H - 50);
+
+    const spanW = (maxX - minX) + 260;
+    const spanH = (maxY - minY) + 240;
+    const fitZoom = Math.min(cam.width / spanW, cam.height / spanH);
+    const targetZoom = Phaser.Math.Clamp(fitZoom, 0.45, 1.05);
+
+    // Smoothly pan and zoom camera to comfortably frame both attacker and target
+    cam.pan(midX, midY, 450, 'Sine.easeInOut', true);
+    cam.zoomTo(targetZoom, 450, 'Sine.easeInOut', true);
+  }
+
+  spawnShootingProjectiles(firerDet, targetDet, sol, activeWpn, onImpact) {
+    const wName = (activeWpn.name || '').toLowerCase();
+    const isBarrage = Boolean(sol.isBarrage || activeWpn.barrage);
+    const isMissile = Boolean(activeWpn.pulsaRokkit || wName.includes('missile') || wName.includes('rokkit') || wName.includes('rocket') || wName.includes('cyclone') || wName.includes('havoc') || wName.includes('manticore') || wName.includes('whirlwind') || wName.includes('torpedo') || wName.includes('deathstrike'));
+    const isFlame = Boolean(activeWpn.isFlame || wName.includes('flame') || wName.includes('inferno') || wName.includes('burna'));
+    const isPlasma = Boolean(wName.includes('plasma') || wName.includes('melta') || wName.includes('fusion') || wName.includes('thermal'));
+    const isLaser = Boolean(!isMissile && !isFlame && !isPlasma && !isBarrage && (wName.includes('laser') || wName.includes('lascannon') || wName.includes('pulsar') || wName.includes('lance') || wName.includes('volcano') || wName.includes('blaster') || wName.includes('prism') || activeWpn.tsm <= -2));
+
+    const beamColor = this.getSideMeta(firerDet.faction).phaserColor || 0x38bdf8;
+    const pairs = sol.validPairs && sol.validPairs.length > 0 ? sol.validPairs : [];
+    const aimPoint = sol.aimPoint || (pairs[0] && pairs[0].target ? { x: pairs[0].target.container.x, y: pairs[0].target.container.y } : (targetDet.stands[0] ? { x: targetDet.stands[0].container.x, y: targetDet.stands[0].container.y } : null));
+
+    if (pairs.length === 0 && !aimPoint) {
+      if (onImpact) onImpact();
+      return;
+    }
+
+    if (isFlame) {
+      window.sfx.playFlame();
+    } else if (isBarrage) {
+      window.sfx.playBarrage();
+    } else if (isMissile) {
+      window.sfx.playExplosion(false);
+    } else if (isLaser || isPlasma) {
+      window.sfx.playLaser(activeWpn.tsm <= -1);
+    } else {
+      window.sfx.playLaser(false);
+    }
+
+    const gfx = this.add.graphics().setDepth(450);
+    const shots = pairs.map(p => ({
+      x1: p.shooter.container.x,
+      y1: p.shooter.container.y,
+      x2: p.target ? p.target.container.x : aimPoint.x,
+      y2: p.target ? p.target.container.y : aimPoint.y
+    }));
+
+    if (shots.length === 0 && aimPoint && firerDet.stands[0]) {
+      shots.push({
+        x1: firerDet.stands[0].container.x,
+        y1: firerDet.stands[0].container.y,
+        x2: aimPoint.x,
+        y2: aimPoint.y
+      });
+    }
+
+    const duration = isBarrage ? 580 : (isMissile ? 520 : 380);
+    const anim = { p: 0 };
+
+    this.tweens.add({
+      targets: anim,
+      p: 1,
+      duration: duration,
+      ease: isBarrage ? 'Sine.easeInOut' : 'Quad.easeOut',
+      onUpdate: () => {
+        gfx.clear();
+        const p = anim.p;
+
+        shots.forEach(s => {
+          if (isBarrage) {
+            const arcHeight = 70;
+            const curX = Phaser.Math.Linear(s.x1, s.x2, p);
+            const curY = Phaser.Math.Linear(s.y1, s.y2, p) - Math.sin(p * Math.PI) * arcHeight;
+            const prevX = Phaser.Math.Linear(s.x1, s.x2, Math.max(0, p - 0.12));
+            const prevY = Phaser.Math.Linear(s.y1, s.y2, Math.max(0, p - 0.12)) - Math.sin(Math.max(0, p - 0.12) * Math.PI) * arcHeight;
+
+            gfx.lineStyle(2.5, 0x94a3b8, (1 - p * 0.4) * 0.7);
+            gfx.lineBetween(s.x1, s.y1, curX, curY);
+            gfx.lineStyle(3, 0xf97316, 0.9);
+            gfx.lineBetween(prevX, prevY, curX, curY);
+            gfx.fillStyle(0xfef08a, 1);
+            gfx.fillCircle(curX, curY, 3.5);
+          } else if (isMissile) {
+            const arcH = 22;
+            const curX = Phaser.Math.Linear(s.x1, s.x2, p);
+            const curY = Phaser.Math.Linear(s.y1, s.y2, p) - Math.sin(p * Math.PI) * arcH;
+            const prevX = Phaser.Math.Linear(s.x1, s.x2, Math.max(0, p - 0.14));
+            const prevY = Phaser.Math.Linear(s.y1, s.y2, Math.max(0, p - 0.14)) - Math.sin(Math.max(0, p - 0.14) * Math.PI) * arcH;
+
+            gfx.lineStyle(2, 0xe2e8f0, 0.55);
+            gfx.lineBetween(s.x1, s.y1, curX, curY);
+            gfx.lineStyle(3, 0xf97316, 0.95);
+            gfx.lineBetween(prevX, prevY, curX, curY);
+            gfx.fillStyle(0xfef08a, 1);
+            gfx.fillCircle(curX, curY, 3);
+          } else if (isLaser) {
+            const headP = Math.min(1, p * 1.35);
+            const tailP = Math.max(0, p * 1.35 - 0.4);
+            const hx = Phaser.Math.Linear(s.x1, s.x2, headP);
+            const hy = Phaser.Math.Linear(s.y1, s.y2, headP);
+            const tx = Phaser.Math.Linear(s.x1, s.x2, tailP);
+            const ty = Phaser.Math.Linear(s.y1, s.y2, tailP);
+
+            gfx.lineStyle(4, beamColor, 0.5);
+            gfx.lineBetween(tx, ty, hx, hy);
+            gfx.lineStyle(1.8, 0xffffff, 0.95);
+            gfx.lineBetween(tx, ty, hx, hy);
+            gfx.fillStyle(0xffffff, 1);
+            gfx.fillCircle(hx, hy, 2.5);
+          } else if (isPlasma) {
+            const curX = Phaser.Math.Linear(s.x1, s.x2, p);
+            const curY = Phaser.Math.Linear(s.y1, s.y2, p);
+            gfx.fillStyle(0x38bdf8, 0.35);
+            gfx.fillCircle(curX, curY, 7);
+            gfx.fillStyle(0xbae6fd, 0.85);
+            gfx.fillCircle(curX, curY, 4);
+            gfx.fillStyle(0xffffff, 1);
+            gfx.fillCircle(curX, curY, 2);
+          } else if (isFlame) {
+            const curX = Phaser.Math.Linear(s.x1, s.x2, p);
+            const curY = Phaser.Math.Linear(s.y1, s.y2, p);
+            const r = 4 + p * 12;
+            gfx.fillStyle(0xf97316, 0.45 * (1 - p * 0.4));
+            gfx.fillCircle(curX, curY, r);
+            gfx.fillStyle(0xfef08a, 0.85);
+            gfx.fillCircle(curX, curY, r * 0.5);
+          } else {
+            const headP = Math.min(1, p * 1.25);
+            const tailP = Math.max(0, p * 1.25 - 0.25);
+            const hx = Phaser.Math.Linear(s.x1, s.x2, headP);
+            const hy = Phaser.Math.Linear(s.y1, s.y2, headP);
+            const tx = Phaser.Math.Linear(s.x1, s.x2, tailP);
+            const ty = Phaser.Math.Linear(s.y1, s.y2, tailP);
+
+            gfx.lineStyle(2.5, 0xfacc15, 0.85);
+            gfx.lineBetween(tx, ty, hx, hy);
+            gfx.fillStyle(0xffffff, 1);
+            gfx.fillCircle(hx, hy, 2);
+          }
+        });
+      },
+      onComplete: () => {
+        gfx.destroy();
+        shots.forEach(s => {
+          this.spawnExplosionFX(s.x2, s.y2, isBarrage ? BARRAGE_RADIUS_PX : (isMissile ? 22 : 12), isBarrage);
+        });
+        if (onImpact) onImpact();
+      }
+    });
+  }
+
+  // Interactive Combat Resolution Card Modal
+  showCombatModal(data, onContinue) {
+    const modal = document.getElementById('combat-card-modal');
+    const headerEl = document.getElementById('combat-card-header');
+    const metaEl = document.getElementById('combat-card-meta');
+    const stepsEl = document.getElementById('combat-card-steps');
+    const autoAdvCheck = document.getElementById('combat-auto-advance');
+    if (!modal || !headerEl || !metaEl || !stepsEl) {
+      if (onContinue) onContinue();
+      return;
+    }
+
+    this._activeCombatContinue = onContinue;
+    headerEl.innerHTML = `💥 ${data.title || 'SHOOTING ENGAGEMENT'}`;
+
+    metaEl.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; border:1px solid #334155;">
+        <div>
+          <span style="font-weight:700; color:#38bdf8;">🔫 Attacker:</span> <b>${data.attackerName}</b>
+          <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-weight:700; color:#f87171;">🎯 Target:</span> <b>${data.targetName}</b>
+          <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
+        </div>
+      </div>
+    `;
+
+    const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    let stepsHtml = '';
+
+    const hitDiceHtml = (data.hitDice || []).map(d => {
+      const val = typeof d === 'object' ? d.val : d;
+      const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
+      const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
+      const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
+      return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
+    }).join('');
+
+    stepsHtml += `
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-weight:700; color:#fde047;">🎯 Step 1: To-Hit Rolls (${data.neededToHit}+ needed)</span>
+          <span style="font-weight:700; color:${data.hits > 0 ? '#4ade80' : '#f87171'};">${data.hits} Hit(s) scored</span>
+        </div>
+        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${hitDiceHtml || '<span style="color:#94a3b8;">No shots</span>'}</div>
+      </div>
+    `;
+
+    if (data.saveDice && data.saveDice.length > 0) {
+      const saveDiceHtml = data.saveDice.map(d => {
+        const val = typeof d === 'object' ? d.val : d;
+        const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
+        const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
+        const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
+        return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
+      }).join('');
+
+      stepsHtml += `
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-weight:700; color:#38bdf8;">🛡️ Step 2: Shields & Armour Saves</span>
+            <span style="font-weight:700; color:#94a3b8;">${data.saves} Saved / Shielded</span>
+          </div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${saveDiceHtml}</div>
+        </div>
+      `;
+    }
+
+    stepsHtml += `
+      <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-weight:700; color:#f87171;">💥 Outcome:</span>
+          <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
+        </div>
+        <span style="font-size:0.78rem; font-weight:700; color:${data.kills > 0 ? '#ef4444' : '#22c55e'};">${data.kills > 0 ? `${data.kills} Destroyed` : 'No Casualties'}</span>
+      </div>
+    `;
+
+    stepsEl.innerHTML = stepsHtml;
+    modal.style.display = 'block';
+
+    if (this._combatAutoTimer) clearTimeout(this._combatAutoTimer);
+    const autoAdvance = autoAdvCheck ? autoAdvCheck.checked : true;
+    if (autoAdvance) {
+      this._combatAutoTimer = setTimeout(() => {
+        this.advanceCombatResolution();
+      }, 2100);
+    }
+  }
+
+  advanceCombatResolution() {
+    if (this._combatAutoTimer) {
+      clearTimeout(this._combatAutoTimer);
+      this._combatAutoTimer = null;
+    }
+    const modal = document.getElementById('combat-card-modal');
+    if (modal) modal.style.display = 'none';
+
+    if (this._activeCombatContinue) {
+      const cb = this._activeCombatContinue;
+      this._activeCombatContinue = null;
+      cb();
+    }
+  }
+
+  // Animated Casualty Destruction Sequence (Shakes, Explodes, Dissolves)
+  executeCasualtyDestruction(casualties, targetDet, onFinished) {
+    if (!casualties || casualties.length === 0) {
+      if (onFinished) onFinished();
+      return;
+    }
+
+    const tc = this.getDetachmentCenter(targetDet);
+    this.panCameraTo(tc.x, tc.y, 400);
+
+    let completed = 0;
+    casualties.forEach((victimStand, i) => {
+      if (!victimStand || !victimStand.container) {
+        completed++;
+        if (completed >= casualties.length && onFinished) onFinished();
+        return;
+      }
+
+      const vx = victimStand.container.x;
+      const vy = victimStand.container.y;
+
+      this.time.delayedCall(i * 180, () => {
+        const origX = victimStand.container.x;
+        window.sfx.playExplosion(false);
+        this.spawnExplosionFX(vx, vy, 24, false);
+        this.spawnFloatingText(vx, vy, `💥 ${victimStand.label || 'Stand'} DESTROYED!`, '#f87171', '12px');
+
+        this.tweens.add({
+          targets: victimStand.container,
+          x: origX + 4,
+          yoyo: true,
+          repeat: 3,
+          duration: 40,
+          onComplete: () => {
+            this.tweens.add({
+              targets: victimStand.container,
+              scaleX: 0.1,
+              scaleY: 0.1,
+              alpha: 0,
+              duration: 320,
+              ease: 'Power2',
+              onComplete: () => {
+                const idx = targetDet.stands.indexOf(victimStand);
+                if (idx !== -1) targetDet.stands.splice(idx, 1);
+                targetDet.casualties = (targetDet.casualties || 0) + 1;
+                victimStand.container.destroy();
+
+                completed++;
+                if (completed >= casualties.length) {
+                  if (targetDet.stands.length === 0) {
+                    this.spawnFloatingText(tc.x, tc.y - 20, `💀 ${targetDet.name} WIPED OUT!`, '#ef4444', '14px');
+                  }
+                  this.checkBreakPoint(targetDet);
+                  if (onFinished) onFinished();
+                }
+              }
+            });
+          }
+        });
+      });
+    });
+  }
+
   // --- PHASE 12: VISUAL 3D/2D DICE ROLL TRAY & TITAN / SUPER-HEAVY STATUS DATA SHEET ---
   showDiceRollTray(title, rows = []) {
     const tray = document.getElementById('dice-tray');
@@ -19975,6 +20362,92 @@ class NetEpicScene extends Phaser.Scene {
       `<div>🧭 <b>Facing:</b> ${compass} (180° Front Arc) | 🎯 <b>Weapon Salvos Ready:</b> ${salvosLeft}/${maxS} | ⚔️ <b>CAF:</b> ${focusTitan.damageState === 'HEAVY' ? Math.floor(focusTitan.caf / 2) : focusTitan.caf}</div>` +
       salvoPipsHtml +
       dmgHistory;
+  }
+
+  // --- NEXT IDLE UNIT SELECTOR & PHASE ACTION HELPER ---
+  getIdleUnits() {
+    const currentSide = this.activePlayer || 'IMPERIUM';
+    const humanSide = window.aiFaction === 'ORKS' ? 'IMPERIUM' : (window.aiFaction === 'IMPERIUM' ? 'ORKS' : currentSide);
+    const targetSide = (window.aiFaction === 'NONE') ? currentSide : humanSide;
+
+    if (this.phase === 'ORDERS') {
+      return this.detachments.filter(d =>
+        d.faction === targetSide &&
+        d.stands.length > 0 &&
+        !d.embarkedOn &&
+        !d.order
+      );
+    } else if (this.phase === 'MOVEMENT') {
+      return this.detachments.filter(d =>
+        d.faction === this.activePlayer &&
+        d.stands.length > 0 &&
+        !d.moved &&
+        !d.embarkedOn
+      );
+    } else if (this.phase === 'COMBAT_FIRST') {
+      return this.detachments.filter(d =>
+        d.faction === this.activePlayer &&
+        d.stands.length > 0 &&
+        !d.fired &&
+        !d.embarkedOn &&
+        d.order === 'FIRST_FIRE' &&
+        this.isEligibleInCombatPhase(d)
+      );
+    } else if (this.phase === 'COMBAT_ADVANCE') {
+      return this.detachments.filter(d =>
+        d.faction === this.activePlayer &&
+        d.stands.length > 0 &&
+        !d.fired &&
+        !d.embarkedOn &&
+        this.isEligibleInCombatPhase(d)
+      );
+    }
+    return [];
+  }
+
+  selectNextIdleUnit() {
+    let idle = this.getIdleUnits();
+    if (idle.length === 0) {
+      if (this.phase === 'ORDERS') {
+        const humanSide = window.aiFaction === 'ORKS' ? 'IMPERIUM' : (window.aiFaction === 'IMPERIUM' ? 'ORKS' : (this.activePlayer || 'IMPERIUM'));
+        const targetSide = (window.aiFaction === 'NONE') ? (this.activePlayer || 'IMPERIUM') : humanSide;
+        idle = this.detachments.filter(d => d.faction === targetSide && d.stands.length > 0 && !d.embarkedOn);
+      }
+    }
+
+    if (idle.length === 0) {
+      this.spawnFloatingText(BOARD_W / 2, 70, '✅ All Units Have Acted in this Phase!', '#22c55e', '13px');
+      return;
+    }
+
+    const cur = this.activatingDetachment || this.selectedDetachment;
+    let nextIdx = 0;
+    if (cur) {
+      const idx = idle.indexOf(cur);
+      if (idx !== -1) {
+        nextIdx = (idx + 1) % idle.length;
+      }
+    }
+
+    const targetDet = idle[nextIdx];
+    this.selectedDetachment = targetDet;
+
+    if (this.phase === 'MOVEMENT') {
+      this.activateSelectedDetachment();
+    } else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
+      this.activatingDetachment = targetDet;
+      this.targetDetachment = null;
+    }
+
+    const center = this.getDetachmentCenter(targetDet);
+    this.panCameraTo(center.x, center.y, 400);
+    window.sfx.playPip();
+
+    const tag = `(${nextIdx + 1}/${idle.length})`;
+    this.spawnFloatingText(center.x, center.y - 24, `👉 ${targetDet.name} ${tag}`, '#38bdf8', '12px');
+
+    this.drawOverlays();
+    this.updateUI();
   }
 
   getSideMeta(side) {
@@ -23444,6 +23917,7 @@ class NetEpicScene extends Phaser.Scene {
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
       this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`);
+      if (opts.onComplete) opts.onComplete();
       return;
     }
 
@@ -23479,371 +23953,358 @@ class NetEpicScene extends Phaser.Scene {
       shotDesc = `Full Volley (${sol.validPairs.length} stands, ${totalDiceEst} total attacks)`;
     }
 
-    // Dice Tray collectors
-    const hitDiceUI = [];
-    const saveDiceUI = [];
-    this._dmgRollBuffer = [];
+    // 1. Frame both Attacker & Target: Zoom out & pan camera so both units are clearly visible
+    this.frameShootingAction(firerDet, targetDet, sol.isBarrage ? sol.aimPoint : null);
 
-    const wpn = firerDet.weapon;
-    const snapMod = (isSnapFire ? -1 : 0) + (firerDet.toHitPenalty || 0);
-    let totalDice = 0, hits = 0, saves = 0, kills = 0;
+    // 2. Animate projectiles flying from shooter stands across the battlefield to target stands
+    this.spawnShootingProjectiles(firerDet, targetDet, sol, activeWpn, () => {
+      // 3. Projectiles strike! Calculate To-Hit, Saves, Shields & identify casualties
+      const hitDiceUI = [];
+      const saveDiceUI = [];
+      this._dmgRollBuffer = [];
+      const casualtiesToDestroy = [];
 
-    // --- A) 6 CM ARTILLERY BARRAGE TEMPLATE RESOLUTION (NetEpic Rules p. 34-36) ---
-    if (sol.isBarrage) {
-      const { aimPoint, templateTargets, totalBp, isIndirect, barrageStats } = sol;
-      const indirectMod = isIndirect ? -1 : 0;
-      const modeLabel = isIndirect ? '📡 INDIRECT BARRAGE (-1 Hit)' : (isSnapFire ? '⚡ SNAP BARRAGE (-1 Hit)' : '💥 DIRECT BARRAGE');
+      const wpn = firerDet.weapon;
+      const snapMod = (isSnapFire ? -1 : 0) + (firerDet.toHitPenalty || 0);
+      let totalDice = 0, hits = 0, saves = 0, kills = 0;
+      let buildingSiHits = 0;
+      let targetBuilding = null;
+      let baseNeededToHit = activeWpn.toHit - snapMod;
 
-      window.sfx.playBarrage();
-      sol.validPairs.forEach(p => {
-        this.spawnLaserFX(p.shooter.container.x, p.shooter.container.y, aimPoint.x, aimPoint.y, 0xf97316, true);
-      });
-      this.spawnExplosionFX(aimPoint.x, aimPoint.y, BARRAGE_RADIUS_PX, true);
-      this.spawnFloatingText(aimPoint.x, aimPoint.y - 22, `💥 ${totalBp} BP BARRAGE!`, '#fb923c', '13px');
+      if (sol.isBarrage) {
+        const { aimPoint, templateTargets, totalBp, isIndirect, barrageStats } = sol;
+        const indirectMod = isIndirect ? -1 : 0;
+        const modeLabel = isIndirect ? '📡 INDIRECT BARRAGE (-1 Hit)' : (isSnapFire ? '⚡ SNAP BARRAGE (-1 Hit)' : '💥 DIRECT BARRAGE');
+        baseNeededToHit = barrageStats.toHit - snapMod - indirectMod;
 
-      this.log(
-        `💥 <b>${firerDet.name}</b> unleashes <i>${wpn.name}</i> [${modeLabel}, <b>${totalBp} BP</b> → Hit ${barrageStats.toHit}+, TSM ${barrageStats.tsm}] ` +
-        `covering <b>${templateTargets.length} stand(s)</b> under the 6cm template!`
-      );
+        this.spawnFloatingText(aimPoint.x, aimPoint.y - 22, `💥 ${totalBp} BP BARRAGE!`, '#fb923c', '13px');
+        this.log(
+          `💥 <b>${firerDet.name}</b> unleashes <i>${wpn.name}</i> [${modeLabel}, <b>${totalBp} BP</b> → Hit ${barrageStats.toHit}+, TSM ${barrageStats.tsm}] ` +
+          `covering <b>${templateTargets.length} stand(s)</b> under the 6cm template!`
+        );
 
-      const affectedDets = new Set([targetDet]);
-      templateTargets.forEach(victimStand => {
-        const vDet = victimStand.detachment;
-        if (!vDet || !vDet.stands.includes(victimStand)) return;
-        affectedDets.add(vDet);
+        const affectedDets = new Set([targetDet]);
+        templateTargets.forEach(victimStand => {
+          const vDet = victimStand.detachment;
+          if (!vDet || !vDet.stands.includes(victimStand)) return;
+          affectedDets.add(vDet);
 
-        const vx = victimStand.container.x;
-        const vy = victimStand.container.y;
-        const garrisoned = this.isStandGarrisoned(victimStand);
-        const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
-        const coverMod = garrisoned ? -2 : (inWood ? -1 : 0);
-        const waaaghMod = (this.waaaghActive && vDet.armyBook === 'ORKS') ? 1 : 0;
-        const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod;
+          const vx = victimStand.container.x;
+          const vy = victimStand.container.y;
+          const garrisoned = this.isStandGarrisoned(victimStand);
+          const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
+          const coverMod = garrisoned ? -2 : (inWood ? -1 : 0);
+          const waaaghMod = (this.waaaghActive && vDet.armyBook === 'ORKS') ? 1 : 0;
+          const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod;
 
-        totalDice++;
-        let roll = Phaser.Math.Between(1, 6);
-        let hitSuccess = false;
-        let extraRoll = null;
-        if (roll === 1) {
-          hitSuccess = false;
-        } else if (neededToHit <= 6) {
-          hitSuccess = roll >= neededToHit;
-        } else if (roll === 6) {
-          extraRoll = Phaser.Math.Between(1, 6);
-          hitSuccess = extraRoll >= (neededToHit - 3);
-        }
-
-        // Guide Psychic Power: Re-roll failed To-Hit roll
-        let guidedNote = '';
-        if (!hitSuccess && firerDet.guided) {
-          const rr = Phaser.Math.Between(1, 6);
-          let rrSuccess = false, rrExtra = null;
-          if (rr === 1) rrSuccess = false;
-          else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
-          else if (rr === 6) {
-            rrExtra = Phaser.Math.Between(1, 6);
-            rrSuccess = rrExtra >= (neededToHit - 3);
-          }
-          if (rrSuccess) {
-            hitSuccess = true;
-            roll = rr;
-            extraRoll = rrExtra;
-            guidedNote = ` [✨Guide Re-roll]`;
-          }
-        }
-        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `${vDet.name}: needed ${neededToHit}+${guidedNote}` });
-
-        if (hitSuccess) {
-          hits++;
-          // Ghazghkull invulnerable during WAAAGH!
-          if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
-            saves++;
-            window.sfx.playSave();
-            saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
-            this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
-            return;
+          totalDice++;
+          let roll = Phaser.Math.Between(1, 6);
+          let hitSuccess = false;
+          let extraRoll = null;
+          if (roll === 1) {
+            hitSuccess = false;
+          } else if (neededToHit <= 6) {
+            hitSuccess = roll >= neededToHit;
+          } else if (roll === 6) {
+            extraRoll = Phaser.Math.Between(1, 6);
+            hitSuccess = extraRoll >= (neededToHit - 3);
           }
 
-          // Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields first!
-          if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
-            saves++;
-            saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
-            return;
+          let guidedNote = '';
+          if (!hitSuccess && firerDet.guided) {
+            const rr = Phaser.Math.Between(1, 6);
+            let rrSuccess = false, rrExtra = null;
+            if (rr === 1) rrSuccess = false;
+            else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
+            else if (rr === 6) {
+              rrExtra = Phaser.Math.Between(1, 6);
+              rrSuccess = rrExtra >= (neededToHit - 3);
+            }
+            if (rrSuccess) {
+              hitSuccess = true;
+              roll = rr;
+              extraRoll = rrExtra;
+              guidedNote = ` [✨Guide Re-roll]`;
+            }
           }
-          const saveRoll = Phaser.Math.Between(1, 6);
-          const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
-          const doomPen = vDet.doomed ? 1 : 0;
-          let neededSave = baseSave - barrageStats.tsm + doomPen;
-          if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
-          let saved = saveRoll >= neededSave && neededSave <= 6;
+          hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `${vDet.name}: needed ${neededToHit}+${guidedNote}` });
 
-          // Medic Treatment (Apothecary / Painboy within 10cm): allied infantry/cavalry stand re-rolls failed save
-          if (!saved && (vDet.pinningClass === 1 || vDet.pinningClass === 2)) {
-            const hasMedic = this.detachments.some(md =>
-              md.faction === vDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
-              Phaser.Math.Distance.Between(victimStand.container.x, victimStand.container.y, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
-            );
-            if (hasMedic) {
-              const medRoll = Phaser.Math.Between(1, 6);
-              if (medRoll >= neededSave && neededSave <= 6) {
-                saved = true;
-                saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
+          if (hitSuccess) {
+            hits++;
+            if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
+              saves++;
+              saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
+              this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
+              return;
+            }
+
+            if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+              saves++;
+              saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
+              return;
+            }
+            const saveRoll = Phaser.Math.Between(1, 6);
+            const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
+            const doomPen = vDet.doomed ? 1 : 0;
+            let neededSave = baseSave - barrageStats.tsm + doomPen;
+            if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
+            let saved = saveRoll >= neededSave && neededSave <= 6;
+
+            if (!saved && (vDet.pinningClass === 1 || vDet.pinningClass === 2)) {
+              const hasMedic = this.detachments.some(md =>
+                md.faction === vDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
+                Phaser.Math.Distance.Between(victimStand.container.x, victimStand.container.y, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
+              );
+              if (hasMedic) {
+                const medRoll = Phaser.Math.Between(1, 6);
+                if (medRoll >= neededSave && neededSave <= 6) {
+                  saved = true;
+                  saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
+                }
               }
             }
-          }
 
-          // Commissar Yarrick / Commissar General: Iron Will re-roll on failed armour save
-          if (!saved && vDet.characterRules && vDet.characterRules.rerollArmorSave) {
-            const yrRoll = Phaser.Math.Between(1, 6);
-            if (yrRoll >= neededSave && neededSave <= 6) {
-              saved = true;
-              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+            if (!saved && vDet.characterRules && vDet.characterRules.rerollArmorSave) {
+              const yrRoll = Phaser.Math.Between(1, 6);
+              if (yrRoll >= neededSave && neededSave <= 6) {
+                saved = true;
+                saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+              }
             }
-          }
-          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
-            saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
-          }
+            if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
+              saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+            }
 
-          if (saved) {
-            saves++;
-            window.sfx.playSave();
-            this.spawnFloatingText(vx, vy, `🛡️ ${garrisoned ? 'FORTIFIED ' : (vDet.fixedSave && saveRoll === vDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`, '#38bdf8', '11px');
-          } else if (this.rollRegenerationSave(vDet, vx, vy)) {
-            saves++;
-          } else if (vDet.superHeavy) {
-            if (this.applySuperHeavyDamage(vDet, victimStand, false)) kills++;
-          } else {
-            kills++;
-            this.removeCasualty(vDet, victimStand);
-          }
-        }
-      });
-
-      // Building Demolition & Structural Integrity Damage from Barrage
-      if (wpn.damagesBuildings && hits > 0) {
-        this.buildings.forEach(b => {
-          if (b.collapsed) return;
-          const inside = templateTargets.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
-          if (inside) {
-            const bldgSave = Phaser.Math.Between(1, 6);
-            const neededBSave = Math.min(6, (b.save || 4) - (barrageStats.tsm || 0));
-            if (bldgSave < neededBSave || neededBSave > 6) {
-              b.siDamage = (b.siDamage || 0) + 1;
-              window.sfx.playMeltdown();
-              this.spawnFloatingText(b.x + b.w / 2, b.y + b.h / 2, `🏚️ SI DAMAGE! (${b.siDamage}/${b.siMax})`, '#ef4444', '13px');
-              this.log(`🏚️ <b>Building Structural Damage:</b> Barrage breached <b>${b.name}</b> (Save ${bldgSave} vs ${neededBSave}+) — sustained <b>${b.siDamage}/${b.siMax} SI damage</b>!`);
-              this.drawDetailedBuilding(b);
+            if (saved) {
+              saves++;
+              this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+            } else if (this.rollRegenerationSave(vDet, vx, vy)) {
+              saves++;
+            } else if (vDet.superHeavy) {
+              if (this.applySuperHeavyDamage(vDet, victimStand, false)) kills++;
+            } else {
+              kills++;
+              casualtiesToDestroy.push(victimStand);
             }
           }
         });
-      }
 
-      this.log(
-        `🎲 Barrage Template Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
-        `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
-      );
-
-      const bRows = [{ label: `Barrage To-Hit (${barrageStats.toHit}+, ${totalBp} BP)`, dice: hitDiceUI, summary: `${hits} hit` }];
-      if (saveDiceUI.length) bRows.push({ label: 'Saves', dice: saveDiceUI, summary: `${saves} saved` });
-      if (this._dmgRollBuffer.length) bRows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer });
-      this.showDiceRollTray(`💥 ${firerDet.name} Barrage ➔ ${targetDet.name}${salvoTag} — <span style="color:#f87171;">${kills} killed</span>`, bRows);
-      this._dmgRollBuffer = null;
-
-      this.markFirerAfterShot(firerDet, sol.validPairs, split, salvosUsed);
-      affectedDets.forEach(d => this.checkBreakPoint(d));
-      return;
-    }
-
-    // --- B) STANDARD DIRECT RANGED ATTACK RESOLUTION ---
-    if (wpn.isFlame) {
-      window.sfx.playFlame();
-      sol.validPairs.forEach(pair => {
-        this.spawnFlameFX(
-          pair.shooter.container.x, pair.shooter.container.y,
-          pair.target.container.x, pair.target.container.y
-        );
-      });
-    } else {
-      window.sfx.playLaser(wpn.tsm <= -1);
-      const beamColor = this.getSideMeta(firerDet.faction).phaserColor || 0x38bdf8;
-      sol.validPairs.forEach(pair => {
-        this.spawnLaserFX(
-          pair.shooter.container.x, pair.shooter.container.y,
-          pair.target.container.x, pair.target.container.y,
-          beamColor, false
-        );
-      });
-    }
-
-    const dmgPenNote = firerDet.toHitPenalty ? ` [Damaged ${firerDet.toHitPenalty} Hit]` : '';
-    const popNote = firerDet.poppedUp ? ' [🚀 POP-UP]' : '';
-    this.log(`🔥 <b>${firerDet.name}</b>${popNote} unleashes ${shotDesc} (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
-
-    sol.validPairs.forEach(pair => {
-      if (targetDet.stands.length === 0) return;
-      const curWpn = activeSalvoWpn || pair.shooter.weapon || firerDet.weapon;
-      const curDice = curWpn.dice || 1;
-      const coverMod = pair.res.coverMod;
-      const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
-      const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod;
-
-      for (let d = 0; d < curDice; d++) {
-        if (targetDet.stands.length === 0) break;
-        totalDice++;
-        let roll = Phaser.Math.Between(1, 6);
-        let hitSuccess = false;
-        let extraRoll = null;
-
-        if (roll === 1) {
-          hitSuccess = false; // Natural 1 always misses (p. 33)
-        } else if (neededToHit <= 6) {
-          hitSuccess = roll >= neededToHit;
-        } else if (roll === 6) {
-          // To-Hit Roll Greater Than 6 (p. 34): 7 needs 6 then 4+, 8 needs 6 then 5+, 9 needs 6 then 6
-          extraRoll = Phaser.Math.Between(1, 6);
-          const extraNeeded = neededToHit - 3;
-          hitSuccess = extraRoll >= extraNeeded;
+        if (wpn.damagesBuildings && hits > 0) {
+          this.buildings.forEach(b => {
+            if (b.collapsed) return;
+            const inside = templateTargets.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
+            if (inside) {
+              const bldgSave = Phaser.Math.Between(1, 6);
+              const neededBSave = Math.min(6, (b.save || 4) - (barrageStats.tsm || 0));
+              if (bldgSave < neededBSave || neededBSave > 6) {
+                buildingSiHits++;
+                targetBuilding = b;
+              }
+            }
+          });
         }
+      } else {
+        // Direct Fire
+        const dmgPenNote = firerDet.toHitPenalty ? ` [Damaged ${firerDet.toHitPenalty} Hit]` : '';
+        const popNote = firerDet.poppedUp ? ' [🚀 POP-UP]' : '';
+        this.log(`🔥 <b>${firerDet.name}</b>${popNote} unleashes ${shotDesc} (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
 
-        // Guide Psychic Power: Re-roll failed To-Hit roll (NetEpic p. 12)
-        let guidedNote = '';
-        if (!hitSuccess && firerDet.guided) {
-          const rr = Phaser.Math.Between(1, 6);
-          let rrSuccess = false, rrExtra = null;
-          if (rr === 1) rrSuccess = false;
-          else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
-          else if (rr === 6) {
-            rrExtra = Phaser.Math.Between(1, 6);
-            rrSuccess = rrExtra >= (neededToHit - 3);
-          }
-          if (rrSuccess) {
-            hitSuccess = true;
-            roll = rr;
-            extraRoll = rrExtra;
-            guidedNote = ` [✨Guide Re-roll]`;
-          }
-        }
-        hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `Needed ${neededToHit}+${guidedNote}` });
+        sol.validPairs.forEach(pair => {
+          if (targetDet.stands.length === 0) return;
+          const curWpn = activeSalvoWpn || pair.shooter.weapon || firerDet.weapon;
+          const curDice = curWpn.dice || 1;
+          const coverMod = pair.res.coverMod;
+          const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
+          const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod;
 
-        if (hitSuccess) {
-          hits++;
-          const victimRef = targetDet.stands[targetDet.stands.length - 1];
-          const vx = victimRef ? victimRef.container.x : pair.target.container.x;
-          const vy = victimRef ? victimRef.container.y : pair.target.container.y;
+          for (let d = 0; d < curDice; d++) {
+            totalDice++;
+            let roll = Phaser.Math.Between(1, 6);
+            let hitSuccess = false;
+            let extraRoll = null;
 
-          // Ghazghkull Mag Uruk Thraka: Invulnerable during "Call the Waaagh!"
-          if (targetDet.characterRules && targetDet.characterRules.ghazghkull && this.waaaghActive) {
-            saves++;
-            window.sfx.playSave();
-            saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
-            this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
-            continue;
-          }
+            if (roll === 1) {
+              hitSuccess = false;
+            } else if (neededToHit <= 6) {
+              hitSuccess = roll >= neededToHit;
+            } else if (roll === 6) {
+              extraRoll = Phaser.Math.Between(1, 6);
+              const extraNeeded = neededToHit - 3;
+              hitSuccess = extraRoll >= extraNeeded;
+            }
 
-          // 1. Check Titan Void Shields / Ork Power Fields / Chitin Bio-Shields before rolling Armor Save!
-          if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
-            saves++;
-            saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
-            continue;
-          }
+            let guidedNote = '';
+            if (!hitSuccess && firerDet.guided) {
+              const rr = Phaser.Math.Between(1, 6);
+              let rrSuccess = false, rrExtra = null;
+              if (rr === 1) rrSuccess = false;
+              else if (neededToHit <= 6) rrSuccess = rr >= neededToHit;
+              else if (rr === 6) {
+                rrExtra = Phaser.Math.Between(1, 6);
+                rrSuccess = rrExtra >= (neededToHit - 3);
+              }
+              if (rrSuccess) {
+                hitSuccess = true;
+                roll = rr;
+                extraRoll = rrExtra;
+                guidedNote = ` [✨Guide Re-roll]`;
+              }
+            }
+            hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `Needed ${neededToHit}+${guidedNote}` });
 
-          // 2. Armour Save modified by TSM (p. 37), Doom psychic power (-1 save), Building Garrison 4+ Save (p. 26), Fixed Save, and Eldar Holo-Fields!
-          const saveRoll = Phaser.Math.Between(1, 6);
-          const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
-          const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
-          const doomPen = targetDet.doomed ? 1 : 0;
-          let neededSave = baseSave - curWpn.tsm + doomPen; // e.g. Save 3+ with TSM -1 becomes 4+
-          if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
-          const holoSave = this.getHoloFieldSave(targetDet);
-          if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
-          let saved = saveRoll >= neededSave && neededSave <= 6;
+            if (hitSuccess) {
+              hits++;
+              const availableStands = targetDet.stands.filter(s => !casualtiesToDestroy.includes(s));
+              const victimRef = availableStands[availableStands.length - 1];
+              const vx = victimRef ? victimRef.container.x : pair.target.container.x;
+              const vy = victimRef ? victimRef.container.y : pair.target.container.y;
 
-          // Medic Treatment (Apothecary / Painboy within 10cm): allied infantry/cavalry stand re-rolls failed save
-          if (!saved && (targetDet.pinningClass === 1 || targetDet.pinningClass === 2)) {
-            const hasMedic = this.detachments.some(md =>
-              md.faction === targetDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
-              Phaser.Math.Distance.Between(vx, vy, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
-            );
-            if (hasMedic) {
-              const medRoll = Phaser.Math.Between(1, 6);
-              if (medRoll >= neededSave && neededSave <= 6) {
-                saved = true;
-                saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
+              if (targetDet.characterRules && targetDet.characterRules.ghazghkull && this.waaaghActive) {
+                saves++;
+                saveDiceUI.push({ val: '🟢', cls: 'die-pass', tip: 'Ghazghkull invulnerable during WAAAGH!' });
+                this.spawnFloatingText(vx, vy, '🟢 WAAAGH INVULNERABLE!', '#22c55e', '12px');
+                continue;
+              }
+
+              if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
+                saves++;
+                saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
+                continue;
+              }
+
+              const saveRoll = Phaser.Math.Between(1, 6);
+              const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
+              const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
+              const doomPen = targetDet.doomed ? 1 : 0;
+              let neededSave = baseSave - curWpn.tsm + doomPen;
+              if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
+              const holoSave = this.getHoloFieldSave(targetDet);
+              if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
+              let saved = saveRoll >= neededSave && neededSave <= 6;
+
+              if (!saved && (targetDet.pinningClass === 1 || targetDet.pinningClass === 2)) {
+                const hasMedic = this.detachments.some(md =>
+                  md.faction === targetDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
+                  Phaser.Math.Distance.Between(vx, vy, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
+                );
+                if (hasMedic) {
+                  const medRoll = Phaser.Math.Between(1, 6);
+                  if (medRoll >= neededSave && neededSave <= 6) {
+                    saved = true;
+                    saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
+                  }
+                }
+              }
+
+              if (!saved && targetDet.characterRules && targetDet.characterRules.rerollArmorSave) {
+                const yrRoll = Phaser.Math.Between(1, 6);
+                if (yrRoll >= neededSave && neededSave <= 6) {
+                  saved = true;
+                  saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+                }
+              }
+              if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
+                saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+              }
+
+              if (saved) {
+                saves++;
+                const isHolo = (holoSave !== null && neededSave === holoSave);
+                this.spawnFloatingText(
+                  vx, vy,
+                  isHolo ? `💎 HOLO-FIELD (${saveRoll} vs ${holoSave}+)` : `🛡️ ${garrisoned ? 'FORTIFIED ' : (targetDet.fixedSave && saveRoll === targetDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`,
+                  isHolo ? '#fbbf24' : '#38bdf8', '11px'
+                );
+              } else if (this.rollRegenerationSave(targetDet, vx, vy)) {
+                saves++;
+              } else if (targetDet.superHeavy) {
+                if (this.applySuperHeavyDamage(targetDet, victimRef, false)) kills++;
+              } else if (victimRef) {
+                kills++;
+                casualtiesToDestroy.push(victimRef);
               }
             }
           }
+        });
 
-          // Commissar Yarrick: Iron Will re-roll on failed armour save (NetEpic p. 11)
-          if (!saved && targetDet.characterRules && targetDet.characterRules.rerollArmorSave) {
-            const yrRoll = Phaser.Math.Between(1, 6);
-            if (yrRoll >= neededSave && neededSave <= 6) {
-              saved = true;
-              saveDiceUI.push({ val: yrRoll, cls: 'die-pass', tip: `🦾 Iron Will Re-roll (${saveRoll}→${yrRoll})` });
+        if (wpn.damagesBuildings && hits > 0) {
+          targetBuilding = this.buildings.find(b => !b.collapsed && targetDet.stands.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h));
+          if (targetBuilding) {
+            const bldgSave = Phaser.Math.Between(1, 6);
+            const neededBSave = Math.min(6, (targetBuilding.save || 4) - (wpn.tsm || 0));
+            if (bldgSave < neededBSave || neededBSave > 6) {
+              buildingSiHits++;
             }
           }
-          if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
-            saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
-          }
-
-          if (saved) {
-            saves++;
-            window.sfx.playSave();
-            const isHolo = (holoSave !== null && neededSave === holoSave);
-            this.spawnFloatingText(
-              vx, vy,
-              isHolo ? `💎 HOLO-FIELD (${saveRoll} vs ${holoSave}+)` : `🛡️ ${garrisoned ? 'FORTIFIED ' : (targetDet.fixedSave && saveRoll === targetDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`,
-              isHolo ? '#fbbf24' : '#38bdf8', '11px'
-            );
-          } else if (this.rollRegenerationSave(targetDet, vx, vy)) {
-            saves++;
-          } else if (targetDet.superHeavy) {
-            if (this.applySuperHeavyDamage(targetDet, victimRef, false)) kills++;
-          } else {
-            kills++;
-            this.removeCasualty(targetDet);
-          }
         }
       }
+
+      if (kills === 0 && hits === 0) {
+        const tc = this.getDetachmentCenter(targetDet);
+        this.spawnFloatingText(tc.x, tc.y, '💨 MISSED', '#94a3b8', '11px');
+      }
+
+      this.log(
+        `🎲 Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
+        `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
+      );
+
+      const rows = [
+        { label: `To-Hit (${baseNeededToHit}+ base)`, dice: hitDiceUI, summary: `${hits} hit` }
+      ];
+      if (saveDiceUI.length) rows.push({ label: `Saves (${targetDet.name})`, dice: saveDiceUI, summary: `${saves} saved` });
+      if (this._dmgRollBuffer && this._dmgRollBuffer.length) rows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer, summary: targetDet.damageState });
+      this.showDiceRollTray(`🎲 ${firerDet.name} ➔ ${targetDet.name}${salvoTag}${isSnapFire ? ' ⚡SNAP' : ''} — <span style="color:#f87171;">${kills} killed</span>`, rows);
+      this._dmgRollBuffer = null;
+
+      // 4. Show Interactive Combat Resolution Card (Modal with Tap-Through)
+      const outcomeText = kills > 0
+        ? `${kills} Stand(s) destroyed!`
+        : (hits > 0 ? (saves > 0 ? 'All hits absorbed/deflected!' : 'No critical damage sustained') : 'All attacks missed');
+
+      const combatCardData = {
+        title: sol.isBarrage ? `💥 ARTILLERY BARRAGE (${sol.totalBp} BP)` : `🔥 SHOOTING ENGAGEMENT${isSnapFire ? ' ⚡SNAP' : ''}`,
+        attackerName: firerDet.name + salvoTag,
+        weaponDesc: activeWpn.name + ` (${activeWpn.rangeCm}cm, ${activeWpn.dice}d, Hit ${activeWpn.toHit}+, TSM ${activeWpn.tsm})`,
+        targetName: targetDet.name,
+        targetDesc: `${targetDet.stands.length} Stand(s) remaining (Save ${targetDet.save}+)`,
+        neededToHit: baseNeededToHit,
+        hitDice: hitDiceUI,
+        hits: hits,
+        saveDice: saveDiceUI,
+        saves: saves,
+        kills: kills,
+        outcomeText: outcomeText
+      };
+
+      this.showCombatModal(combatCardData, () => {
+        // 5. Finally, animate and execute casualties being destroyed
+        this.executeCasualtyDestruction(casualtiesToDestroy, targetDet, () => {
+          if (targetBuilding && buildingSiHits > 0) {
+            targetBuilding.siDamage = (targetBuilding.siDamage || 0) + buildingSiHits;
+            window.sfx.playMeltdown();
+            this.spawnFloatingText(targetBuilding.x + targetBuilding.w / 2, targetBuilding.y + targetBuilding.h / 2, `🏚️ SI DAMAGE! (${targetBuilding.siDamage}/${targetBuilding.siMax})`, '#ef4444', '13px');
+            this.log(`🏚️ <b>Building Structural Damage:</b> Heavy ordnance breached <b>${targetBuilding.name}</b> — sustained <b>${targetBuilding.siDamage}/${targetBuilding.siMax} SI damage</b>!`);
+            this.drawDetailedBuilding(targetBuilding);
+          }
+
+          this.markFirerAfterShot(firerDet, sol.validPairs, split, salvosUsed);
+          this.checkBreakPoint(targetDet);
+
+          if (opts.onComplete) {
+            opts.onComplete();
+          } else if (!isSnapFire) {
+            if (firerDet.fired || firerDet.stands.length === 0) {
+              this.finishCombatActivation();
+            } else {
+              this.targetDetachment = null;
+              this.drawOverlays();
+              this.updateUI();
+            }
+          }
+        });
+      });
     });
-
-    // Building Demolition & Structural Integrity (SI) Damage (NetEpic Core Rules pp. 27-28 & 46)
-    if (wpn.damagesBuildings && hits > 0) {
-      const targetBuilding = this.buildings.find(b => !b.collapsed && targetDet.stands.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h));
-      if (targetBuilding) {
-        const bldgSave = Phaser.Math.Between(1, 6);
-        const neededBSave = Math.min(6, (targetBuilding.save || 4) - (wpn.tsm || 0));
-        if (bldgSave < neededBSave || neededBSave > 6) {
-          targetBuilding.siDamage = (targetBuilding.siDamage || 0) + 1;
-          window.sfx.playMeltdown();
-          this.spawnFloatingText(targetBuilding.x + targetBuilding.w / 2, targetBuilding.y + targetBuilding.h / 2, `🏚️ SI DAMAGE! (${targetBuilding.siDamage}/${targetBuilding.siMax})`, '#ef4444', '13px');
-          this.log(`🏚️ <b>Building Structural Damage:</b> Heavy ordnance breached <b>${targetBuilding.name}</b> (Save ${bldgSave} vs ${neededBSave}+) — sustained <b>${targetBuilding.siDamage}/${targetBuilding.siMax} SI damage</b>!`);
-          this.drawDetailedBuilding(targetBuilding);
-        } else {
-          this.spawnFloatingText(targetBuilding.x + targetBuilding.w / 2, targetBuilding.y + targetBuilding.h / 2, `🛡️ BUILDING DEFLECTED (${bldgSave})`, '#38bdf8', '11px');
-        }
-      }
-    }
-
-    if (kills === 0 && hits === 0) {
-      const tc = this.getDetachmentCenter(targetDet);
-      this.spawnFloatingText(tc.x, tc.y, '💨 MISSED', '#94a3b8', '11px');
-    }
-
-    this.log(
-      `🎲 Rolled <b>${totalDice}D6</b>${salvoTag}: <span class="log-hit">${hits} Hit(s)</span> | ` +
-      `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
-    );
-
-    const rows = [
-      { label: `To-Hit (${wpn.toHit - snapMod}+ base)`, dice: hitDiceUI, summary: `${hits} hit` }
-    ];
-    if (saveDiceUI.length) rows.push({ label: `Saves (${targetDet.name})`, dice: saveDiceUI, summary: `${saves} saved` });
-    if (this._dmgRollBuffer.length) rows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer, summary: targetDet.damageState });
-    this.showDiceRollTray(`🎲 ${firerDet.name} ➔ ${targetDet.name}${salvoTag}${isSnapFire ? ' ⚡SNAP' : ''} — <span style="color:#f87171;">${kills} killed</span>`, rows);
-    this._dmgRollBuffer = null;
-
-    this.markFirerAfterShot(firerDet, sol.validPairs, split, salvosUsed);
-    this.checkBreakPoint(targetDet);
   }
 
   // After a shot: track which stands / Titan weapon salvos have fired. Detachment is "fired" once everything has been used.
@@ -25440,35 +25901,47 @@ class NetEpicScene extends Phaser.Scene {
       const firer = this.detachments.find(d => d.id === firerId);
       if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
         firer.orderRevealed = true;
-        try {
-          this.executeRangedAttack(firer, this.snapTarget, true);
-        } catch (err) {
-          console.error("Error executing Snap Fire attack:", err);
-        }
-      }
-      // Re-check if more First Fire detachments can still Snap Fire at the surviving stands
-      if (this.snapTarget && this.snapTarget.stands.length > 0) {
-        const enemySide = this.snapTarget.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-        this.snapCandidates = this.detachments.filter(d =>
-          d.faction === enemySide &&
-          d.stands.length > 0 &&
-          !d.embarkedOn &&
-          !d.inReserve &&
-          this.snapTarget &&
-          this.snapTarget.stands.length > 0 &&
-          d.order === 'FIRST_FIRE' &&
-          !d.fired &&
-          this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
-        );
-        if (this.snapCandidates.length > 0) {
-          this.previewSnapFirer = this.snapCandidates[0];
-          this.updateDetachmentBadge(this.snapTarget);
-          prevCandidates.forEach(c => this.updateDetachmentBadge(c));
-          this.updateUI();
-          this.drawOverlays();
-          this.checkAndRunAITurn();
-          return;
-        }
+        this.executeRangedAttack(firer, this.snapTarget, true, {
+          onComplete: () => {
+            // Re-check if more First Fire detachments can still Snap Fire at the surviving stands
+            if (this.snapTarget && this.snapTarget.stands.length > 0) {
+              const enemySide = this.snapTarget.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+              this.snapCandidates = this.detachments.filter(d =>
+                d.faction === enemySide &&
+                d.stands.length > 0 &&
+                !d.embarkedOn &&
+                !d.inReserve &&
+                this.snapTarget &&
+                this.snapTarget.stands.length > 0 &&
+                d.order === 'FIRST_FIRE' &&
+                !d.fired &&
+                this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
+              );
+              if (this.snapCandidates.length > 0) {
+                this.previewSnapFirer = this.snapCandidates[0];
+                this.updateDetachmentBadge(this.snapTarget);
+                prevCandidates.forEach(c => this.updateDetachmentBadge(c));
+                this.updateUI();
+                this.drawOverlays();
+                this.checkAndRunAITurn();
+                return;
+              }
+            }
+            const snapBannerEl = document.getElementById('snapfire-banner');
+            if (snapBannerEl) snapBannerEl.style.display = 'none';
+
+            this.phase = 'MOVEMENT';
+            this.snapTarget = null;
+            this.snapCandidates = [];
+            this.previewSnapFirer = null;
+            this.overlayGfx.clear();
+            this.losGfx.clear();
+            if (prevTarget && prevTarget.stands.length > 0) this.updateDetachmentBadge(prevTarget);
+            prevCandidates.forEach(c => { if (c.stands.length > 0) this.updateDetachmentBadge(c); });
+            this.finishMovementActivation();
+          }
+        });
+        return;
       }
     }
 
@@ -25890,24 +26363,28 @@ class NetEpicScene extends Phaser.Scene {
   fireAtSelectedTarget(split = false) {
     const firer = this.activatingDetachment;
     if (!firer || !this.targetDetachment) return;
-    this.executeRangedAttack(firer, this.targetDetachment, false, { split: Boolean(split) });
-    if (firer.fired || firer.stands.length === 0) {
-      this.finishCombatActivation();
-    } else {
-      // Remaining stands / weapon salvos can now pick another target
-      this.targetDetachment = null;
-      if (firer.maxSalvos > 1) {
-        const nextSalvoIdx = firer.salvosFired || 0;
-        const nextWpn = this.getSalvoWeaponName(firer, nextSalvoIdx);
-        const remSalvos = firer.maxSalvos - nextSalvoIdx;
-        this.log(`🎯 <b>${firer.name}</b> still has <b>${remSalvos} weapon salvo(s)</b> ready! Next up: <b>${nextWpn}</b> — tap another enemy target (or click Done/Skip).`);
-      } else {
-        const remStands = firer.stands.filter(s => !(firer.standsFired && firer.standsFired.has(s.id))).length;
-        this.log(`🎯 <b>${firer.name}</b> still has <b>${remStands} stand(s)</b> ready to fire — tap another enemy target (or click Done/Skip).`);
+    this.executeRangedAttack(firer, this.targetDetachment, false, {
+      split: Boolean(split),
+      onComplete: () => {
+        if (firer.fired || firer.stands.length === 0) {
+          this.finishCombatActivation();
+        } else {
+          // Remaining stands / weapon salvos can now pick another target
+          this.targetDetachment = null;
+          if (firer.maxSalvos > 1) {
+            const nextSalvoIdx = firer.salvosFired || 0;
+            const nextWpn = this.getSalvoWeaponName(firer, nextSalvoIdx);
+            const remSalvos = firer.maxSalvos - nextSalvoIdx;
+            this.log(`🎯 <b>${firer.name}</b> still has <b>${remSalvos} weapon salvo(s)</b> ready! Next up: <b>${nextWpn}</b> — tap another enemy target (or click Done/Skip).`);
+          } else {
+            const remStands = firer.stands.filter(s => !(firer.standsFired && firer.standsFired.has(s.id))).length;
+            this.log(`🎯 <b>${firer.name}</b> still has <b>${remStands} stand(s)</b> ready to fire — tap another enemy target (or click Done/Skip).`);
+          }
+          this.drawOverlays();
+          this.updateUI();
+        }
       }
-      this.drawOverlays();
-      this.updateUI();
-    }
+    });
   }
 
   holdFireDetachment() {
@@ -26589,6 +27066,23 @@ class NetEpicScene extends Phaser.Scene {
     const sShort = this.getSideShort('IMPERIUM');
     const nShort = this.getSideShort('ORKS');
     vpScore.innerText = `${sShort}: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ${nShort}: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${this.getVictoryVpTarget()} VP]`;
+
+    // Live Next Unit tracker badge update
+    const idleUnits = this.getIdleUnits();
+    const btnNext = document.getElementById('btn-next-unit');
+    const badgeNext = document.getElementById('idle-units-badge');
+    if (btnNext && badgeNext) {
+      if (idleUnits.length > 0) {
+        badgeNext.innerText = idleUnits.length;
+        badgeNext.style.display = 'inline-block';
+        btnNext.title = `Cycle to next unit needing orders or action (${idleUnits.length} remaining) [Tab / N]`;
+        btnNext.style.opacity = '1';
+      } else {
+        badgeNext.style.display = 'none';
+        btnNext.title = 'All units on your side have acted in this phase [Tab / N]';
+        btnNext.style.opacity = '0.65';
+      }
+    }
 
     deployControls.style.display = 'none';
     ordersControls.style.display = 'none';
