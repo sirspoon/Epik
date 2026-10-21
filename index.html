@@ -273,10 +273,16 @@
 
     /* Army Selection, Psychic Power, Save/Load & Options Modals */
     #army-modal, #psyker-modal, #save-load-modal, #options-modal {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(2, 6, 23, 0.86); z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; width: 100vw; height: 100%; height: 100dvh; max-height: 100dvh;
+      background: rgba(2, 6, 23, 0.88); z-index: 100;
       display: flex; align-items: center; justify-content: center;
-      padding: 12px; pointer-events: auto;
+      padding: 8px;
+      padding-top: max(4px, env(safe-area-inset-top));
+      padding-bottom: max(4px, env(safe-area-inset-bottom));
+      padding-left: max(4px, env(safe-area-inset-left));
+      padding-right: max(4px, env(safe-area-inset-right));
+      pointer-events: auto; box-sizing: border-box; overflow: hidden;
     }
     .power-card {
       background: #1e293b; border: 1.5px solid #7c3aed; border-radius: 8px;
@@ -296,9 +302,54 @@
     }
     .modal-card {
       background: #0f172a; border: 2px solid #475569; border-radius: 10px;
-      max-width: 960px; width: 100%; height: 92vh; max-height: 92vh; display: flex;
-      flex-direction: column; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+      max-width: 960px; width: 100%; height: 100%; max-height: 100%; max-height: 100dvh; display: flex;
+      flex-direction: column; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.85);
       box-sizing: border-box; overflow: hidden;
+    }
+    .builder-scroll-content {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .builder-sticky-top {
+      flex-shrink: 0; background: #1e293b; padding-bottom: 5px; border-bottom: 1px solid #334155;
+    }
+    .builder-top-row1 {
+      display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;
+    }
+    .builder-side-title {
+      font-weight: 800; font-size: 0.84rem; color: #60a5fa; white-space: nowrap;
+    }
+    .builder-select-wrap {
+      flex: 1 1 100%; margin: 2px 0;
+    }
+    .builder-faction-select {
+      width: 100%; box-sizing: border-box; background: #0f172a; color: #f8fafc;
+      border: 1.5px solid #3b82f6; border-radius: 6px; padding: 5px 8px;
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    }
+    .builder-pts-badge {
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0; padding: 2px 8px;
+    }
+    .builder-progress-wrap {
+      background: #0f172a; border-radius: 3px; height: 4px; overflow: hidden; width: 100%; margin: 3px 0;
+    }
+    .builder-top-row2 {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 3px;
+    }
+    .builder-quotas-wrap {
+      display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+    }
+    .builder-filters-wrap {
+      display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    }
+    .builder-roster-btn {
+      min-width: auto; padding: 3px 8px; font-size: 0.72rem; background: #0f172a;
+      border: 1px solid #475569; border-radius: 5px; white-space: nowrap; flex-shrink: 0;
+    }
+    .builder-sticky-bottom {
+      flex-shrink: 0; padding-top: 6px; padding-bottom: max(4px, env(safe-area-inset-bottom));
+      border-top: 1px solid #334155; margin-top: auto; background: #1e293b;
+      display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
     }
     .badge-unique { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; }
     .quota-chip {
@@ -422,18 +473,151 @@
       button {
         padding: 6px 8px; font-size: 0.74rem; min-width: 80px;
       }
-      .modal-card { padding: 8px; max-height: 96vh; }
+      .modal-card { padding: 8px; height: 100% !important; max-height: 100% !important; }
       .modal-cols { flex-direction: column; overflow-y: auto; gap: 8px; }
-      .faction-col { overflow-y: visible; }
+      .faction-col { overflow: hidden !important; }
     }
     @media (max-width: 600px) {
       .builder-sub-header { display: none !important; }
-      #army-modal { padding: 3px !important; }
-      .modal-card { padding: 6px 6px !important; height: 98vh !important; max-height: 98vh !important; border-radius: 8px !important; }
-      .faction-col { padding: 6px 6px 4px 6px !important; }
+      #army-modal { padding: 4px !important; }
+      .modal-card { padding: 6px 6px !important; height: 100% !important; max-height: 100% !important; border-radius: 8px !important; }
+      .faction-col { padding: 6px 6px 4px 6px !important; overflow: hidden !important; }
       .catalog-item, .roster-item { padding: 5px 6px !important; }
       .setup-stepper { width: 100% !important; justify-content: space-between !important; gap: 3px !important; }
       .step-chip { padding: 3px 5px !important; font-size: 0.7rem !important; }
+      .builder-sticky-bottom { padding-bottom: max(6px, env(safe-area-inset-bottom)) !important; }
+    }
+    /* Dedicated Phone Landscape Optimizations (Short Height, Wide Screen) */
+    @media (orientation: landscape) and (max-height: 550px) {
+      #army-modal {
+        padding: 2px 4px !important;
+        padding-left: max(4px, env(safe-area-inset-left)) !important;
+        padding-right: max(4px, env(safe-area-inset-right)) !important;
+        padding-bottom: max(2px, env(safe-area-inset-bottom)) !important;
+      }
+      .modal-card {
+        padding: 4px 8px !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 6px !important;
+      }
+      .builder-sub-header {
+        display: none !important;
+      }
+      .setup-stepper {
+        gap: 3px !important;
+      }
+      .step-chip {
+        padding: 2px 7px !important;
+        font-size: 0.7rem !important;
+      }
+      .faction-col {
+        padding: 4px 6px 2px 6px !important;
+        overflow: hidden !important;
+      }
+      .builder-sticky-top {
+        padding-bottom: 2px !important;
+      }
+      .builder-top-row1 {
+        flex-wrap: nowrap !important;
+        margin-bottom: 1px !important;
+        gap: 8px !important;
+      }
+      .builder-side-title {
+        flex: 0 0 auto !important;
+        font-size: 0.78rem !important;
+      }
+      .builder-select-wrap {
+        flex: 1 1 auto !important;
+        max-width: 280px !important;
+        margin: 0 !important;
+      }
+      .builder-faction-select {
+        padding: 2px 6px !important;
+        font-size: 0.76rem !important;
+      }
+      .builder-pts-badge {
+        flex: 0 0 auto !important;
+        font-size: 0.72rem !important;
+        padding: 1px 6px !important;
+      }
+      .builder-progress-wrap {
+        height: 2px !important;
+        margin: 1px 0 !important;
+      }
+      .builder-top-row2 {
+        flex-wrap: nowrap !important;
+        margin-top: 1px !important;
+        gap: 6px !important;
+      }
+      .builder-quotas-wrap {
+        flex: 0 0 auto !important;
+      }
+      .quota-chip {
+        padding: 1px 4px !important;
+        font-size: 0.65rem !important;
+      }
+      .builder-filters-wrap {
+        flex: 0 0 auto !important;
+      }
+      .filter-pill-btn {
+        padding: 2px 5px !important;
+        font-size: 0.68rem !important;
+      }
+      .builder-roster-btn {
+        padding: 2px 6px !important;
+        font-size: 0.68rem !important;
+      }
+      .builder-sticky-bottom {
+        flex-wrap: nowrap !important;
+        padding-top: 3px !important;
+        padding-bottom: max(2px, env(safe-area-inset-bottom)) !important;
+        gap: 4px !important;
+      }
+      .builder-sticky-bottom button {
+        padding: 5px 8px !important;
+        font-size: 0.72rem !important;
+      }
+      #imp-btn-next, #ork-btn-next {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        font-weight: 800 !important;
+      }
+      #imp-catalog, #ork-catalog {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 4px !important;
+      }
+      #imp-roster, #ork-roster {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 4px !important;
+      }
+      .catalog-item, .roster-item {
+        padding: 3px 6px !important;
+        margin-bottom: 0 !important;
+        font-size: 0.72rem !important;
+      }
+      #imp-col-trait, #ork-col-trait {
+        padding: 2px 6px !important;
+        margin-bottom: 3px !important;
+        font-size: 0.68rem !important;
+      }
+      #briefing-card {
+        padding: 6px !important;
+        gap: 4px !important;
+      }
+      #btn-deploy-phase, #btn-deploy-quick {
+        padding: 6px !important;
+        font-size: 0.78rem !important;
+      }
+      .map-preset-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+      }
+      .preset-card {
+        padding: 5px !important;
+      }
     }
   </style>
 </head>
@@ -687,40 +871,39 @@
       <div id="imp-col-card" class="faction-col" style="border-top:3px solid #3b82f6; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
-        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
-          <!-- Row 1: Side Title & Live Points Badge -->
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
-            <span id="imp-col-title" style="font-weight:800; font-size:0.84rem; color:#60a5fa; white-space:nowrap;">🛡️ South Force (P1)</span>
-            <span id="imp-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0; padding:2px 8px;">1750 / 2000 pts</span>
+        <div class="builder-sticky-top">
+          <!-- Row 1: Side Title, Faction Select, and Points Badge -->
+          <div class="builder-top-row1">
+            <span id="imp-col-title" class="builder-side-title">🛡️ South Force (P1)</span>
+            <div class="builder-select-wrap">
+              <select id="imp-faction-select" onchange="window.setSideFaction('IMPERIUM', this.value)" class="builder-faction-select" title="Choose Faction Army Book for South Force"></select>
+            </div>
+            <span id="imp-pts-badge" class="vp-box builder-pts-badge">1750 / 2000 pts</span>
           </div>
 
-          <!-- Row 2: Full-Width Army Book Faction Selector Dropdown -->
-          <div style="margin-bottom:4px;">
-            <select id="imp-faction-select" onchange="window.setSideFaction('IMPERIUM', this.value)" style="width:100%; box-sizing:border-box; background:#0f172a; color:#f8fafc; border:1.5px solid #3b82f6; border-radius:6px; padding:5px 8px; font-size:0.82rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for South Force"></select>
-          </div>
-          
           <!-- Points Budget Progress Bar -->
-          <div style="background:#0f172a; border-radius:3px; height:4px; overflow:hidden; width:100%; margin:3px 0;">
+          <div class="builder-progress-wrap">
             <div id="imp-pts-bar" style="height:100%; width:87%; background:#3b82f6; transition:width 0.2s, background-color 0.2s;"></div>
           </div>
 
-          <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:3px; margin-top:2px;">
-            <div id="imp-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
-              <span id="imp-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
-              <span id="imp-chip-sup" class="quota-chip quota-ok">🛡️ 4/5 Sup</span>
-              <span id="imp-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
-              <span id="imp-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+          <!-- Row 2: Quota Chips, Rule Alert, Filter Pills & Roster Toggle -->
+          <div class="builder-top-row2">
+            <div class="builder-quotas-wrap">
+              <div id="imp-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
+                <span id="imp-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
+                <span id="imp-chip-sup" class="quota-chip quota-ok">🛡️ 4/5 Sup</span>
+                <span id="imp-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
+                <span id="imp-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+              </div>
+              <div id="imp-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
             </div>
-            <div id="imp-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
-          </div>
 
-          <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px;">
-            <div id="imp-card-filters" class="filter-pill-group"></div>
-            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:3px 8px; font-size:0.72rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="imp-roster-quick-btn">
-              📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
-            </button>
+            <div class="builder-filters-wrap">
+              <div id="imp-card-filters" class="filter-pill-group"></div>
+              <button onclick="window.toggleRosterView('imp')" class="builder-roster-btn" id="imp-roster-quick-btn">
+                📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -757,40 +940,39 @@
       <div id="ork-col-card" class="faction-col" style="border-top:3px solid #22c55e; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; padding:8px 10px 4px 10px;">
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
-        <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
-          <!-- Row 1: Side Title & Live Points Badge -->
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
-            <span id="ork-col-title" style="font-weight:800; font-size:0.84rem; color:#4ade80; white-space:nowrap;">🟢 North Force (P2 / AI)</span>
-            <span id="ork-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0; padding:2px 8px;">1525 / 2000 pts</span>
+        <div class="builder-sticky-top">
+          <!-- Row 1: Side Title, Faction Select, and Points Badge -->
+          <div class="builder-top-row1">
+            <span id="ork-col-title" class="builder-side-title" style="color:#4ade80;">🟢 North Force (P2 / AI)</span>
+            <div class="builder-select-wrap">
+              <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" class="builder-faction-select" style="border-color:#22c55e;" title="Choose Faction Army Book for North Force"></select>
+            </div>
+            <span id="ork-pts-badge" class="vp-box builder-pts-badge">1525 / 2000 pts</span>
           </div>
 
-          <!-- Row 2: Full-Width Army Book Faction Selector Dropdown -->
-          <div style="margin-bottom:4px;">
-            <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" style="width:100%; box-sizing:border-box; background:#0f172a; color:#f8fafc; border:1.5px solid #22c55e; border-radius:6px; padding:5px 8px; font-size:0.82rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for North Force"></select>
-          </div>
-          
           <!-- Points Budget Progress Bar -->
-          <div style="background:#0f172a; border-radius:3px; height:4px; overflow:hidden; width:100%; margin:3px 0;">
+          <div class="builder-progress-wrap">
             <div id="ork-pts-bar" style="height:100%; width:76%; background:#22c55e; transition:width 0.2s, background-color 0.2s;"></div>
           </div>
 
-          <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:3px; margin-top:2px;">
-            <div id="ork-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
-              <span id="ork-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
-              <span id="ork-chip-sup" class="quota-chip quota-ok">🛡️ 5/5 Sup</span>
-              <span id="ork-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
-              <span id="ork-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+          <!-- Row 2: Quota Chips, Rule Alert, Filter Pills & Roster Toggle -->
+          <div class="builder-top-row2">
+            <div class="builder-quotas-wrap">
+              <div id="ork-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
+                <span id="ork-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
+                <span id="ork-chip-sup" class="quota-chip quota-ok">🛡️ 5/5 Sup</span>
+                <span id="ork-chip-spc" class="quota-chip quota-ok">⚔️ 1/1 Spc</span>
+                <span id="ork-chip-unq" class="quota-chip quota-ok">👑 1/1 Unq</span>
+              </div>
+              <div id="ork-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
             </div>
-            <div id="ork-rule-alert" style="font-size:0.68rem; font-weight:700;"></div>
-          </div>
 
-          <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px;">
-            <div id="ork-card-filters" class="filter-pill-group"></div>
-            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:3px 8px; font-size:0.72rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="ork-roster-quick-btn">
-              📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
-            </button>
+            <div class="builder-filters-wrap">
+              <div id="ork-card-filters" class="filter-pill-group"></div>
+              <button onclick="window.toggleRosterView('ork')" class="builder-roster-btn" id="ork-roster-quick-btn">
+                📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
+              </button>
+            </div>
           </div>
         </div>
 
