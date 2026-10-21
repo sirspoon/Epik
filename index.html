@@ -21586,6 +21586,7 @@ class NetEpicScene extends Phaser.Scene {
         // Broken units on FALL_BACK, units Embarked in a Transport, or units still in Orbital Reserve cannot capture objectives
         if (d.stands.length === 0 || d.order === 'FALL_BACK' || d.embarkedOn || d.inReserve) return;
         d.stands.forEach(s => {
+          if (this.isStandEngaged(s)) return; // Core Rules p. 13: units in close combat don't hold objectives
           const dist = Phaser.Math.Distance.Between(obj.x, obj.y, s.container.x, s.container.y);
           if (dist <= OBJ_RADIUS_PX) {
             if (d.faction === 'IMPERIUM' && dist < closestImp) closestImp = dist;
@@ -23031,8 +23032,14 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   createDetachment(cfg) {
+    // Special abilities from the card; a company's HQ / command stand is also a Command + HQ unit
+    const abilities = Array.isArray(cfg.specialAbilities) ? [...cfg.specialAbilities] : [];
+    if (cfg.subName && /(\bC?HQ\b|Command (Mob|Squadron)|Leaders)/i.test(cfg.subName)) {
+      ['Command', 'HQ'].forEach(a => { if (!abilities.includes(a)) abilities.push(a); });
+    }
     const det = {
       ...cfg,
+      specialAbilities: abilities,
       cfg: JSON.parse(JSON.stringify(cfg)),
       initialCount: cfg.standsCount,
       casualties: 0,
@@ -24631,11 +24638,12 @@ class NetEpicScene extends Phaser.Scene {
     // Stands locked in Close Combat cannot fire ranged weapons, except a Snap Fire at the unit charging them (p. 19)
     const snapAtCharger = isSnapFire && this.isStandEngaged(shooterStand) &&
       this.getEngagedEnemies(shooterStand).every(e => e.detachment === targetStand.detachment);
-    if (this.isStandEngaged(shooterStand) && !snapAtCharger) {
+    // p. 33: a model may fire out of close combat if it is 2+ pinning classes larger than everything touching it
+    if (this.isStandEngaged(shooterStand) && !snapAtCharger && !this.canFireOutOfCombat(shooterStand)) {
       return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
-    // Stands locked in Close Combat cannot be targeted by normal ranged fire (Snap Fire happens right before contact)
-    if (!isSnapFire && this.isStandEngaged(targetStand)) {
+    // Stands locked in close combat can't be targeted, unless 2+ pinning classes larger than what they fight
+    if (!isSnapFire && this.isStandEngaged(targetStand) && !this.canFireOutOfCombat(targetStand)) {
       return { valid: false, reason: 'Target in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
 
@@ -24668,6 +24676,13 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const baseCoverMod = targetBuilding ? -2 : (targetInWood ? -1 : 0);
+
+    // p. 34: Stealth units in cover can't be seen from more than 25 cm away (until they shoot or fight)
+    const tDet = targetStand.detachment;
+    if (this.hasAbility(tDet, 'Stealth') && !tDet.stealthBroken && !this.isStandEngaged(targetStand) &&
+        (targetBuilding || targetInWood) && distCm > 25) {
+      return { valid: false, reason: 'Stealthed in cover (over 25 cm)', distCm, coverMod: 0, indirect: false };
+    }
     if (isPopUpLoS) {
       return { valid: true, indirect: false, reason: '🚀 Pop-Up Elevation LoS', distCm, coverMod: baseCoverMod };
     }
@@ -24844,6 +24859,7 @@ class NetEpicScene extends Phaser.Scene {
       const standWpn = activeSalvoWpn || shooter.weapon || firerDet.weapon;
       let bestTarget = null;
       for (const target of targetDet.stands) {
+        if (!this.canTargetHQ(shooter, target, isSnapFire)) continue;
         const res = this.checkStandLoS(shooter, target, isSnapFire, standWpn);
         if (res.valid) {
           // Prefer direct LoS over indirect fire when choosing aim stand
@@ -24994,7 +25010,8 @@ class NetEpicScene extends Phaser.Scene {
       const casualtiesToDestroy = [];
 
       const wpn = firerDet.weapon;
-      const snapMod = (isSnapFire && !opts.noSnapPenalty ? -1 : 0) + (firerDet.toHitPenalty || 0);
+      const noSnapPen = opts.noSnapPenalty || this.hasAbility(firerDet, 'Quickdraw') || firerDet.isAA || (activeWpn && activeWpn.isAA);
+      const snapMod = (isSnapFire && !noSnapPen ? -1 : 0) + (firerDet.toHitPenalty || 0);
       let totalDice = 0, hits = 0, saves = 0, kills = 0;
       let buildingSiHits = 0;
       let targetBuilding = null;
@@ -25144,7 +25161,8 @@ class NetEpicScene extends Phaser.Scene {
           const curDice = curWpn.dice || 1;
           const coverMod = pair.res.coverMod;
           const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
-          const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod;
+          const hardMod = (this.hasAbility(targetDet, 'HardToHit') || (this.hasAbility(targetDet, 'HardToHitOnCharge') && targetDet.order === 'CHARGE')) ? 1 : 0;
+          const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod + hardMod;
 
           for (let d = 0; d < curDice; d++) {
             totalDice++;
@@ -25338,6 +25356,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // After a shot: track which stands / Titan weapon salvos have fired. Detachment is "fired" once everything has been used.
   markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
+    firerDet.stealthBroken = true; // p. 34: Stealth is lost until the End Phase after a ranged attack
     if (!firerDet.standsFired) firerDet.standsFired = new Set();
     if ((firerDet.maxSalvos || 1) > 1) {
       firerDet.salvosFired = (firerDet.salvosFired || 0) + (salvosUsed || 1);
@@ -25434,88 +25453,45 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
+  // Core Rules p. 41: Break Points are counted in the End Phase. Calls during the turn are ignored;
+  // startEndPhase() checks every detachment.
   checkBreakPoint(det) {
-    // NetEpic Core Rules p. 41: Company Cards pool casualties across all constituent detachments
+    if (this.phase !== 'END_PHASE' || !det) return;
+    const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const scoringName = this.getSideName(scoringSide);
+
+    // Company Cards pool casualties across all their detachments, and every detachment tests morale
     if (det.companyCardId) {
       const coDets = this.detachments.filter(d => d.companyCardId === det.companyCardId);
       const coCasualties = this.getCompanyCasualties(det);
       const coBreakPoint = det.companyBreakPoint || det.breakPoint;
       const coVpValue = det.companyVpValue || det.vpValue;
-      const coMorale = det.companyMorale || det.morale;
-      const alreadyBroken = coDets.some(d => d.companyBroken);
+      if (coDets.some(d => d.companyBroken) || coCasualties < coBreakPoint) return;
 
-      if (!alreadyBroken && coCasualties >= coBreakPoint) {
-        coDets.forEach(d => { d.companyBroken = true; d.broken = true; });
-        const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-        const scoringName = this.getSideName(scoringSide);
-        this.vp[scoringSide] += coVpValue;
-        window.sfx.playHorn();
-
-        const dc = this.getDetachmentCenter(det);
-        this.spawnFloatingText(dc.x, dc.y - 24, `🏢 ${det.companyName || 'COMPANY'} BROKEN! (+${coVpValue} VP)`, '#f59e0b', '14px');
-        this.log(`🏢 <b>${det.companyName || det.name}</b> reached Company Break Point (${coCasualties}/${coBreakPoint} lost)! <b>+${coVpValue} VP</b> to ${scoringName}. All constituent detachments must test Morale!`);
-
-        // Each surviving detachment makes an individual Morale check (NetEpic Core Rules p. 41)
-        coDets.forEach(coDet => {
-          if (coDet.stands.length === 0) return;
-          if (this.hasSynapseAura(coDet)) {
-            this.log(`🧬 <b>${coDet.name}</b>: Fearless under Hive Mind Synapse!`);
-            return;
-          }
-          const moraleRoll = Phaser.Math.Between(1, 6);
-          const cDetCenter = this.getDetachmentCenter(coDet);
-          if (moraleRoll < coMorale) {
-            coDet.order = 'FALL_BACK';
-            coDet.orderRevealed = true;
-            const engagedVictims = coDet.stands.filter(s => this.isStandEngaged(s));
-            engagedVictims.forEach(v => this.removeCasualty(coDet, v));
-            const routNote = engagedVictims.length > 0 ? ` (${engagedVictims.length} stand(s) in melee overrun & destroyed!)` : '';
-            this.updateDetachmentBadge(coDet);
-            this.spawnFloatingText(cDetCenter.x, cDetCenter.y - 20, `🏳️ FAILED MORALE → FALL BACK!`, '#f59e0b', '12px');
-            this.log(`🏳️ <b>${coDet.name}</b> failed Morale (${moraleRoll} < ${coMorale}+) → <b>FALL BACK!</b>${routNote}`);
-          } else {
-            this.spawnFloatingText(cDetCenter.x, cDetCenter.y - 20, `⚔️ MORALE HELD (${moraleRoll})`, '#fde047', '12px');
-            this.log(`⚔️ <b>${coDet.name}</b> passed Morale (${moraleRoll} >= ${coMorale}+)!`);
-          }
-        });
-      }
+      coDets.forEach(d => { d.companyBroken = true; d.broken = true; });
+      this.vp[scoringSide] += coVpValue;
+      window.sfx.playHorn();
+      const dc = this.getDetachmentCenter(det);
+      this.spawnFloatingText(dc.x, dc.y - 24, `🏢 ${det.companyName || 'COMPANY'} BROKEN! (+${coVpValue} VP)`, '#f59e0b', '14px');
+      this.log(`🏢 <b>${det.companyName || det.name}</b> is broken (${coCasualties}/${coBreakPoint} lost): <b>+${coVpValue} VP</b> to ${scoringName}. Every detachment tests morale.`);
+      coDets.forEach(coDet => {
+        if (coDet.stands.length === 0) return;
+        const m = coDet.morale;
+        coDet.morale = det.companyMorale || coDet.morale;
+        if (!this.testMorale(coDet, 'company broken')) this.failMorale(coDet);
+        coDet.morale = m;
+      });
       return;
     }
 
-    if (!det.broken && det.casualties >= det.breakPoint) {
-      det.broken = true;
-      const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
-      const scoringName = this.getSideName(scoringSide);
-      this.vp[scoringSide] += det.vpValue;
-      const dc = this.getDetachmentCenter(det);
-      window.sfx.playHorn();
-
-      // Tyranid Hive Mind Synapse (06_tyranid_army_book_v5 p. 4-5): Units within Synapse Aura automatically pass Morale!
-      if (this.hasSynapseAura(det)) {
-        this.spawnFloatingText(dc.x, dc.y - 22, `🧬 BROKEN (+${det.vpValue} VP) — SYNAPSE FEARLESS!`, '#c084fc', '13px');
-        this.log(`🧬 <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringName}), but <b>Hive Mind Synapse</b> keeps the brood Fearless!`);
-        return;
-      }
-
-      // Morale Check (p. 41-42)
-      const moraleRoll = Phaser.Math.Between(1, 6);
-      if (moraleRoll < det.morale && det.stands.length > 0) {
-        det.order = 'FALL_BACK';
-        det.orderRevealed = true;
-
-        // NetEpic p. 42: Any stands locked in Close Combat when the unit fails Morale and Falls Back are destroyed!
-        const engagedVictims = det.stands.filter(s => this.isStandEngaged(s));
-        engagedVictims.forEach(v => this.removeCasualty(det, v));
-        const routNote = engagedVictims.length > 0 ? ` (${engagedVictims.length} stand(s) in melee overrun & destroyed!)` : '';
-
-        this.updateDetachmentBadge(det);
-        this.spawnFloatingText(dc.x, dc.y - 22, `🏳️ BROKEN! FALL BACK (+${det.vpValue} VP)`, '#f59e0b', '13px');
-        this.log(`🏳️ <b>${det.name}</b> reached Break Point (${det.casualties} lost)! Failed Morale (${moraleRoll} < ${det.morale}+) → <b>FALL BACK!</b>${routNote} (+${det.vpValue} VP to ${scoringName})`);
-      } else {
-        this.spawnFloatingText(dc.x, dc.y - 22, `⚔️ BROKEN (+${det.vpValue} VP) — MORALE HELD!`, '#fde047', '13px');
-        this.log(`⚔️ <b>${det.name}</b> reached Break Point (+${det.vpValue} VP to ${scoringName}), but passed Morale (${moraleRoll} >= ${det.morale}+)!`);
-      }
-    }
+    if (det.broken || det.casualties < det.breakPoint) return;
+    det.broken = true;
+    this.vp[scoringSide] += det.vpValue;
+    window.sfx.playHorn();
+    const dc = this.getDetachmentCenter(det);
+    this.spawnFloatingText(dc.x, dc.y - 22, `🏳️ BROKEN (+${det.vpValue} VP)`, '#f59e0b', '13px');
+    this.log(`🏳️ <b>${det.name}</b> is broken (${det.casualties}/${det.breakPoint} lost): <b>+${det.vpValue} VP</b> to ${scoringName}.`);
+    if (det.stands.length > 0 && !this.testMorale(det, 'broken')) this.failMorale(det);
   }
 
   update(time, delta) {
@@ -26328,6 +26304,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // AI secretly assigns Orders during I. Orders Phase
   assignAIOrders() {
+    this.applyCommandOrders();
     if (window.aiFaction === 'NONE') return;
     let assignedCount = 0;
 
@@ -26345,7 +26322,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(det => {
       if (det.faction !== window.aiFaction || det.stands.length === 0) return;
-      if (det.order === 'FALL_BACK') return;
+      if (det.order === 'FALL_BACK' || this.isCommandUnit(det)) return;
       if (det.embarkedOn) {
         det.order = 'ADVANCE';
         det.orderRevealed = false;
@@ -26956,6 +26933,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!this.selectedDetachment || this.phase !== 'ORDERS') return;
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
     if (this.selectedDetachment.order === 'FALL_BACK') return;
+    if (this.isCommandUnit(this.selectedDetachment)) return; // Command units take no orders
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     // If this is a Transport carrying embarked passengers, automatically set the passenger's order to ADVANCE
@@ -27209,7 +27187,7 @@ class NetEpicScene extends Phaser.Scene {
         d.stands.length > 0 &&
         !d.embarkedOn &&
         !d.inReserve &&
-        d.order === 'FIRST_FIRE' &&
+        (d.order === 'FIRST_FIRE' || (this.isCommandUnit(d) && !d.moved && d.order !== 'FALL_BACK')) &&
         !d.fired &&
         this.evaluateFireSolution(d, det, true).validPairs.length > 0
       );
@@ -27255,6 +27233,7 @@ class NetEpicScene extends Phaser.Scene {
       const firer = this.detachments.find(d => d.id === firerId);
       if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
         firer.orderRevealed = true;
+        if (this.isCommandUnit(firer)) firer.moved = true; // p. 17: a Command unit that snap fires may not move later
         const target = this.snapTarget;
         // Core Rules p. 19: no -1 when Snap Firing at a unit that is charging you
         const chargingFirer = target.order === 'CHARGE' &&
@@ -27272,7 +27251,7 @@ class NetEpicScene extends Phaser.Scene {
                 !d.inReserve &&
                 this.snapTarget &&
                 this.snapTarget.stands.length > 0 &&
-                d.order === 'FIRST_FIRE' &&
+                (d.order === 'FIRST_FIRE' || (this.isCommandUnit(d) && !d.moved && d.order !== 'FALL_BACK')) &&
                 !d.fired &&
                 this.evaluateFireSolution(d, this.snapTarget, true).validPairs.length > 0
               );
@@ -27348,14 +27327,15 @@ class NetEpicScene extends Phaser.Scene {
   isEligibleInCombatPhase(det) {
     if (det.stands.length === 0 || det.fired || det.embarkedOn || det.inReserve || det.transfixed) return false;
     // Must have at least one stand NOT locked in Close Combat
-    const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s));
+    const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s) || this.canFireOutOfCombat(s));
     if (!hasUnengagedStand) return false;
     if (det.weapon && det.weapon.pulsaRokkit) {
       if ((det.rokkitsRemaining || 0) <= 0 || det.rokkitFiredThisTurn) return false;
       if (this.phase !== 'COMBAT_FIRST') return false;
     }
-    if (this.phase === 'COMBAT_FIRST') return det.order === 'FIRST_FIRE';
-    if (this.phase === 'COMBAT_ADVANCE') return det.order === 'ADVANCE';
+    // Command units fire in the First Fire segment whatever they did in the Movement Phase (p. 17)
+    if (this.phase === 'COMBAT_FIRST') return det.order === 'FIRST_FIRE' || (this.isCommandUnit(det) && det.order !== 'FALL_BACK');
+    if (this.phase === 'COMBAT_ADVANCE') return det.order === 'ADVANCE' && !this.isCommandUnit(det);
     return false;
   }
 
@@ -27514,6 +27494,15 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
+    // Core Rules p. 17: a unit on Fall Back orders that is caught in close combat tests morale or routs
+    this.titanApDone = new Set();
+    this.detachments.forEach(d => {
+      if (d.order !== 'FALL_BACK' || d.stands.length === 0 || d.ccFallBackTestTurn === this.turn) return;
+      if (!d.stands.some(s => this.isStandEngaged(s))) return;
+      d.ccFallBackTestTurn = this.turn;
+      if (!this.testMorale(d, 'caught while falling back')) this.routDetachment(d);
+    });
+
     this.ccBouts = this.buildCloseCombatBouts();
     if (this.ccBouts.length === 0) {
       this.log(`⚔️ <b>2) Close Combat Segment:</b> No units engaged in Close Combat.`);
@@ -27548,6 +27537,36 @@ class NetEpicScene extends Phaser.Scene {
     const impDet = impStand.detachment;
     const orkDet = orkStand.detachment;
 
+    // Core Rules p. 47: a titan's anti-personnel defences hit each smaller attacker on 3+ (4+ if Elite) before the fight
+    const apTitan = (impDet.isTitan && !orkDet.isTitan && !orkDet.superHeavy) ? impDet : ((orkDet.isTitan && !impDet.isTitan && !impDet.superHeavy) ? orkDet : null);
+    if (apTitan) {
+      const attacker = apTitan === impDet ? orkStand : impStand;
+      const aDet = attacker.detachment;
+      if (!this.titanApDone) this.titanApDone = new Set();
+      if (!this.titanApDone.has(attacker)) {
+        this.titanApDone.add(attacker);
+        const need = this.hasAbility(aDet, 'Elite') ? 4 : 3;
+        const apRoll = Phaser.Math.Between(1, 6);
+        let killed = false, saveTxt = '';
+        if (apRoll >= need) {
+          const sv = Math.min(aDet.save || 7, aDet.fixedSave || 7);
+          const svRoll = Phaser.Math.Between(1, 6);
+          killed = !(sv <= 6 && svRoll >= sv);
+          saveTxt = sv <= 6 ? `, save ${svRoll} vs ${sv}+` : ', no save';
+        }
+        this.log(`🛡️ <b>${apTitan.name}</b>'s anti-personnel defences fire at <b>${aDet.name} ${attacker.label}</b>: rolled ${apRoll} (needs ${need}+)${saveTxt} → ${killed ? '<span class="log-kill">destroyed before it can strike</span>' : 'it gets through'}.`);
+        if (killed) {
+          this.removeCasualty(aDet, attacker);
+          this.focusCloseCombatBout(bout, 350);
+          this.drawOverlays();
+          this.updateUI();
+          const nextB = this.cleanCloseCombatBouts();
+          if (!nextB) { this.log(`✅ All Close Combat bouts resolved!`); this.startCombatSegment('COMBAT_ADVANCE'); }
+          return;
+        }
+      }
+    }
+
     // Focus camera directly onto the combatants beforehand!
     this.focusCloseCombatBout(bout, 350);
 
@@ -27556,10 +27575,13 @@ class NetEpicScene extends Phaser.Scene {
 
     // Multiple attackers rule (NetEpic p. 38) + Eldar Banshee Mask (+1D6 vs Infantry) + Ghazghkull WAAAGH! (+1D6 for Orks)
     // Marneus Calgar is immune to gang-up dice!
-    const impImmuneGang = Boolean(impDet.characterRules && impDet.characterRules.immuneToGangUp);
-    const orkImmuneGang = Boolean(orkDet.characterRules && orkDet.characterRules.immuneToGangUp);
-    const impExtraDice = (orkFought > 0 && impFought === 0 && !impImmuneGang) ? orkFought : 0;
-    const orkExtraDice = (impFought > 0 && orkFought === 0 && !orkImmuneGang) ? impFought : 0;
+    // Titans can't be outnumbered by anything smaller than a Knight (p. 47)
+    const isBig = d => Boolean(d.isTitan || d.superHeavy || d.pinningClass >= 3);
+    const impImmuneGang = Boolean(impDet.characterRules && impDet.characterRules.immuneToGangUp) || (impDet.isTitan && !isBig(orkDet));
+    const orkImmuneGang = Boolean(orkDet.characterRules && orkDet.characterRules.immuneToGangUp) || (orkDet.isTitan && !isBig(impDet));
+    // Extra dice go to the second, third... attacker of a stand; none against a stand immune to ganging up
+    const impExtraDice = (orkFought > 0 && impFought === 0 && !orkImmuneGang) ? orkFought : 0;
+    const orkExtraDice = (impFought > 0 && orkFought === 0 && !impImmuneGang) ? impFought : 0;
     const impBansheeBonus = (impDet.bansheeMask && orkDet.pinningClass === 1) ? 1 : 0;
     const orkBansheeBonus = (orkDet.bansheeMask && impDet.pinningClass === 1) ? 1 : 0;
     const impWaaaghBonus = (this.waaaghActive && impDet.armyBook === 'ORKS') ? 1 : 0;
@@ -27638,16 +27660,21 @@ class NetEpicScene extends Phaser.Scene {
     const isImpDaemon = (impDet.cardName && (impDet.cardName.includes('Daemon') || impDet.cardName.includes('Bloodthirster')));
     const impDaemonHunterPen = (impDet.daemonHunter && isOrkDaemon) ? -2 : 0;
     const orkDaemonHunterPen = (orkDet.daemonHunter && isImpDaemon) ? -2 : 0;
-    const impTerrorPen = (!impDet.daemonHunter && orkDet.daemonicTerror && impDet.morale > 1 && !impSynapseBonus) ? -2 : 0;
-    const orkTerrorPen = (!orkDet.daemonHunter && impDet.daemonicTerror && orkDet.morale > 1 && !orkSynapseBonus) ? -2 : 0;
+    const impTerrorPen = this.fearPenalty(impDet, orkDet);
+    const orkTerrorPen = this.fearPenalty(orkDet, impDet);
+    // Fall Back orders: -2 CAF (p. 17); Combat Leader: +1 CAF within 10 cm (p. 39)
+    const impFbPen = impDet.order === 'FALL_BACK' ? -2 : 0;
+    const orkFbPen = orkDet.order === 'FALL_BACK' ? -2 : 0;
+    const impLeader = this.hasFriendlyAbilityWithin(impDet, 'CombatLeader', 10) ? 1 : 0;
+    const orkLeader = this.hasFriendlyAbilityWithin(orkDet, 'CombatLeader', 10) ? 1 : 0;
     // Deathrolla rule: +2 CAF vs infantry/cavalry
     const impDeathrolla = (impDet.deathrolla && (orkDet.pinningClass === 1 || orkDet.pinningClass === 2)) ? 2 : 0;
     const orkDeathrolla = (orkDet.deathrolla && (impDet.pinningClass === 1 || impDet.pinningClass === 2)) ? 2 : 0;
 
     const impBaseCaf = impDet.damageState === 'HEAVY' ? Math.floor(impDet.caf / 2) : impDet.caf;
     const orkBaseCaf = orkDet.damageState === 'HEAVY' ? Math.floor(orkDet.caf / 2) : orkDet.caf;
-    const impModCaf = impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen;
-    const orkModCaf = orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen;
+    const impModCaf = impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
+    const orkModCaf = orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
     const impTotal = impSum + impModCaf;
     const orkTotal = orkSum + orkModCaf;
 
@@ -27656,7 +27683,9 @@ class NetEpicScene extends Phaser.Scene {
       (impImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
       (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
-      (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
+      (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
+      (impFbPen < 0 ? ` <span class="log-kill">[🏳️ -2 Falling back]</span>` : '') +
+      (impLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (impDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (orkDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
       impRerollNote;
@@ -27666,7 +27695,9 @@ class NetEpicScene extends Phaser.Scene {
       (orkImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
       (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
-      (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Terror]</span>` : '') +
+      (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
+      (orkFbPen < 0 ? ` <span class="log-kill">[🏳️ -2 Falling back]</span>` : '') +
+      (orkLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (orkDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (impDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
       orkRerollNote;
@@ -27688,10 +27719,7 @@ class NetEpicScene extends Phaser.Scene {
       if (orkDet.characterRules && orkDet.characterRules.ghazghkull && this.waaaghActive) {
         outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
         outcomeText = `Ghazghkull is Invulnerable! Blow bounces off!`;
-      } else if (orkDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
-        outcomeHtml = `<span class="log-save">🔥 ${orkDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
-        outcomeText = `${orkDet.name} shrugs off blow with 2+ Fixed Save!`;
-      } else if (orkDet.superHeavy) {
+      } else if (orkDet.isTitan || orkDet.isPraetorian) {
         isSuperHeavyDamage = true;
         victimDet = orkDet;
         victimStand = orkStand;
@@ -27705,10 +27733,7 @@ class NetEpicScene extends Phaser.Scene {
       if (impDet.characterRules && impDet.characterRules.ghazghkull && this.waaaghActive) {
         outcomeHtml = `<span class="log-save">🟢 Ghazghkull is INVULNERABLE during Call the Waaagh! The blow bounces off!</span>`;
         outcomeText = `Ghazghkull is Invulnerable! Blow bounces off!`;
-      } else if (impDet.fixedSave === 2 && Phaser.Math.Between(1, 6) >= 2) {
-        outcomeHtml = `<span class="log-save">🔥 ${impDet.name} shrugs off the blow with its 2+ Molten Fixed Save!</span>`;
-        outcomeText = `${impDet.name} shrugs off blow with 2+ Fixed Save!`;
-      } else if (impDet.superHeavy) {
+      } else if (impDet.isTitan || impDet.isPraetorian) {
         isSuperHeavyDamage = true;
         victimDet = impDet;
         victimStand = impStand;
@@ -27730,7 +27755,7 @@ class NetEpicScene extends Phaser.Scene {
       if (impWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
         if (isSuperHeavyDamage && victimDet) {
-          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, true);
+          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, false);
           outcomeHtml = destroyed
             ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
             : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
@@ -27743,7 +27768,7 @@ class NetEpicScene extends Phaser.Scene {
       } else if (orkWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
         if (isSuperHeavyDamage && victimDet) {
-          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, true);
+          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, false);
           outcomeHtml = destroyed
             ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
             : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
@@ -27857,6 +27882,8 @@ class NetEpicScene extends Phaser.Scene {
 
   holdFireDetachment() {
     if (!this.activatingDetachment || this.phase !== 'COMBAT_FIRST') return;
+    // Command units always fire in First Fire, so holding simply means passing
+    if (this.isCommandUnit(this.activatingDetachment)) { this.skipFireDetachment(); return; }
     this.activatingDetachment.order = 'ADVANCE';
     this.updateDetachmentBadge(this.activatingDetachment);
     this.log(`⏳ <b>${this.activatingDetachment.name}</b> Holds Fire until the Advance Fire Segment.`);
@@ -27885,6 +27912,9 @@ class NetEpicScene extends Phaser.Scene {
     this.selectedDetachment = null;
     this.activatingDetachment = null;
     this.targetDetachment = null;
+
+    // Core Rules p. 41: count losses against every Break Point now
+    [...this.detachments].forEach(d => this.checkBreakPoint(d));
 
     this.evaluateObjectives(true);
 
@@ -28011,6 +28041,11 @@ class NetEpicScene extends Phaser.Scene {
     // 2. Roll Rally Checks for all detachments currently on FALL_BACK orders (NetEpic p. 42)
     const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK');
     fallBackUnits.forEach(d => {
+      // Core Rules p. 41: a unit must spend a whole turn falling back before it may try to rally
+      if (d.fallBackTurn === this.turn) {
+        this.log(`🏃 <b>${d.name}</b> only fell back this turn, so it can't rally yet.`);
+        return;
+      }
       const roll = Phaser.Math.Between(1, 6);
       const dc = this.getDetachmentCenter(d);
       const inSynapse = this.hasSynapseAura(d);
@@ -28086,6 +28121,7 @@ class NetEpicScene extends Phaser.Scene {
       d.fired = false;
       d.deepStrikeActive = false;
       d.salvosFired = 0;
+      d.stealthBroken = false;
       d.standsFired = new Set();
       d.rokkitFiredThisTurn = false;
       d.suppressedByPulsa = false;
@@ -28634,7 +28670,7 @@ class NetEpicScene extends Phaser.Scene {
       promptText.innerText = remaining > 0
         ? `Give each unit an order (${remaining} left)`
         : 'All orders given. Roll initiative to start moving.';
-      ordersControls.style.display = (this.selectedDetachment && !this.selectedDetachment.embarkedOn && this.selectedDetachment.order !== 'FALL_BACK' && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
+      ordersControls.style.display = (this.selectedDetachment && !this.selectedDetachment.embarkedOn && this.selectedDetachment.order !== 'FALL_BACK' && !this.isCommandUnit(this.selectedDetachment) && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
     } 
     else if (this.phase === 'SNAP_INTERRUPT') {
@@ -28819,7 +28855,7 @@ class NetEpicScene extends Phaser.Scene {
         const btnSplit = document.getElementById('btn-split-fire');
         const btnHold = document.getElementById('btn-hold-fire');
         const btnCombatPop = document.getElementById('btn-combat-popup');
-        btnHold.style.display = this.phase === 'COMBAT_FIRST' ? 'block' : 'none';
+        btnHold.style.display = (this.phase === 'COMBAT_FIRST' && !this.isCommandUnit(this.activatingDetachment)) ? 'block' : 'none';
 
         if (btnCombatPop) {
           if (this.phase === 'COMBAT_FIRST' && this.activatingDetachment && this.activatingDetachment.skimmer) {
@@ -29000,6 +29036,7 @@ class NetEpicScene extends Phaser.Scene {
       if (selDetails) selDetails.innerText = `${detailText}\n${statsText}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
         ? (d.inReserve ? '☄️ Reserve' : '')
+        : (this.isCommandUnit(d) && d.order !== 'FALL_BACK') ? '⭐ Command'
         : (d.order
             ? (d.orderRevealed
                 ? ORDER_INFO[d.order].label
@@ -29014,6 +29051,123 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     this.updateTitanHUD(this.selectedDetachment);
+  }
+
+  // ---------- Special abilities & morale helpers (Core Rules pp. 16-17, 34, 39-43, 50) ----------
+  hasAbility(det, name) {
+    return Boolean(det && Array.isArray(det.specialAbilities) && det.specialAbilities.includes(name));
+  }
+
+  isCommandUnit(det) {
+    return this.hasAbility(det, 'Command');
+  }
+
+  isFearlessUnit(det) {
+    return this.hasAbility(det, 'Fearless') || this.hasAbility(det, 'Robot') || this.hasSynapseAura(det);
+  }
+
+  // Any friendly unit with the given ability that has a model within cm of this detachment
+  hasFriendlyAbilityWithin(det, ability, cm) {
+    const rangePx = cm * PX_PER_CM;
+    return this.detachments.some(o =>
+      o.faction === det.faction && o.stands.length > 0 && !o.embarkedOn && !o.inReserve && this.hasAbility(o, ability) &&
+      (o === det || o.stands.some(os => det.stands.some(ds =>
+        Phaser.Math.Distance.Between(os.container.x, os.container.y, ds.container.x, ds.container.y) <= rangePx)))
+    );
+  }
+
+  // Roll a morale test: D6 >= Morale (+1 within 10 cm of an Inspirational unit). Fearless units always pass.
+  testMorale(det, reason = '') {
+    if (!det || det.stands.length === 0) return true;
+    if (this.isFearlessUnit(det)) {
+      this.log(`🧠 <b>${det.name}</b> is fearless and ignores the morale test${reason ? ` (${reason})` : ''}.`);
+      return true;
+    }
+    const insp = this.hasFriendlyAbilityWithin(det, 'Inspirational', 10) ? 1 : 0;
+    const roll = Phaser.Math.Between(1, 6);
+    const passed = roll + insp >= det.morale;
+    this.log(`${passed ? '⚔️' : '🏳️'} <b>${det.name}</b> morale test${reason ? ` (${reason})` : ''}: rolled <b>${roll}</b>${insp ? ' +1 Inspirational' : ''} vs ${det.morale}+ → <b>${passed ? 'passed' : 'failed'}</b>.`);
+    const dc = this.getDetachmentCenter(det);
+    this.spawnFloatingText(dc.x, dc.y - 20, passed ? `⚔️ MORALE HELD (${roll}${insp ? '+1' : ''})` : `🏳️ MORALE FAILED (${roll}${insp ? '+1' : ''})`, passed ? '#fde047' : '#f59e0b', '12px');
+    return passed;
+  }
+
+  // A failed morale test puts a unit on Fall Back; a unit already falling back (or an Independent one) routs.
+  failMorale(det) {
+    if (!det || det.stands.length === 0) return;
+    if (det.order === 'FALL_BACK' || this.hasAbility(det, 'Independent') || det.independent) {
+      this.routDetachment(det);
+      return;
+    }
+    det.order = 'FALL_BACK';
+    det.orderRevealed = true;
+    det.fallBackTurn = this.turn;
+    this.updateDetachmentBadge(det);
+  }
+
+  // Core Rules p. 42: a routed unit is removed with no save; the losses count toward its Break Point
+  routDetachment(det) {
+    if (!det || det.stands.length === 0) return;
+    const dc = this.getDetachmentCenter(det);
+    this.log(`💀 <b>${det.name}</b> <b>routs</b> and flees the battlefield (${det.stands.length} stand${det.stands.length > 1 ? 's' : ''} removed)!`);
+    this.spawnFloatingText(dc.x, dc.y - 24, '💀 ROUTED!', '#ef4444', '14px');
+    while (det.stands.length > 0) this.removeCasualty(det, det.stands[det.stands.length - 1]);
+  }
+
+  // Core Rules p. 42: Fear/Terror makes the opponent test morale on the first turn of combat; a failure costs -2 CAF.
+  // Only works if the frightening unit can pin its opponent; Fearless and Daemon Hunter units are immune.
+  fearPenalty(victimDet, scaryDet) {
+    const scary = scaryDet.daemonicTerror || this.hasAbility(scaryDet, 'Fear') || this.hasAbility(scaryDet, 'Terror');
+    if (!scary || victimDet.daemonHunter || this.hasAbility(victimDet, 'Daemonhunter') || this.isFearlessUnit(victimDet)) return 0;
+    if ((scaryDet.pinningClass || 1) < (victimDet.pinningClass || 1)) return 0;
+    if (!this.fearTests) this.fearTests = {};
+    const key = `${victimDet.id}|${scaryDet.id}`;
+    let rec = this.fearTests[key];
+    if (!rec) {
+      rec = { turn: this.turn, failed: !this.testMorale(victimDet, `fear of ${scaryDet.name}`) };
+      this.fearTests[key] = rec;
+    }
+    return (rec.turn === this.turn && rec.failed) ? -2 : 0;
+  }
+
+  // p. 33: true if a stand is 2+ pinning classes larger than every enemy touching it
+  canFireOutOfCombat(stand) {
+    const enemies = this.getEngagedEnemies(stand);
+    if (enemies.length === 0) return true;
+    const myClass = stand.detachment.pinningClass || 1;
+    return enemies.every(e => myClass >= (e.detachment.pinningClass || 1) + 2);
+  }
+
+  // p. 34: an HQ unit can only be shot if it is the closest valid target of its pinning class,
+  // or more than 10 cm from other friendly models of its class. Snipers may pick it out (treated as always succeeding).
+  canTargetHQ(shooter, target, isSnapFire) {
+    const tDet = target.detachment;
+    if (!this.hasAbility(tDet, 'HQ') || this.hasAbility(shooter.detachment, 'Sniper')) return true;
+    const cls = tDet.pinningClass || 1;
+    const tx = target.container.x, ty = target.container.y;
+    const friendsOfClass = [];
+    this.detachments.forEach(d => {
+      if (d === tDet || d.faction !== tDet.faction || d.embarkedOn || d.inReserve || (d.pinningClass || 1) !== cls || this.hasAbility(d, 'HQ')) return;
+      d.stands.forEach(s => friendsOfClass.push(s));
+    });
+    const screened = friendsOfClass.some(s => Phaser.Math.Distance.Between(tx, ty, s.container.x, s.container.y) <= 10 * PX_PER_CM);
+    if (!screened) return true;
+    const sx = shooter.container.x, sy = shooter.container.y;
+    const hqDist = Phaser.Math.Distance.Between(sx, sy, tx, ty);
+    return !friendsOfClass.some(s =>
+      Phaser.Math.Distance.Between(sx, sy, s.container.x, s.container.y) < hqDist &&
+      this.checkStandLoS(shooter, s, isSnapFire).valid
+    );
+  }
+
+  // Command units take no orders: they always move as on Charge and fire in the First Fire segment
+  applyCommandOrders() {
+    this.detachments.forEach(d => {
+      if (d.stands.length === 0 || d.embarkedOn || d.order === 'FALL_BACK' || !this.isCommandUnit(d)) return;
+      d.order = 'CHARGE';
+      d.orderRevealed = true;
+      this.updateDetachmentBadge(d);
+    });
   }
 
   // Short unit name for buttons and the unit panel
