@@ -426,6 +426,15 @@
       .modal-cols { flex-direction: column; overflow-y: auto; gap: 8px; }
       .faction-col { overflow-y: visible; }
     }
+    @media (max-width: 600px) {
+      .builder-sub-header { display: none !important; }
+      #army-modal { padding: 3px !important; }
+      .modal-card { padding: 6px 6px !important; height: 98vh !important; max-height: 98vh !important; border-radius: 8px !important; }
+      .faction-col { padding: 6px 6px 4px 6px !important; }
+      .catalog-item, .roster-item { padding: 5px 6px !important; }
+      .setup-stepper { width: 100% !important; justify-content: space-between !important; gap: 3px !important; }
+      .step-chip { padding: 3px 5px !important; font-size: 0.7rem !important; }
+    }
   </style>
 </head>
 <body>
@@ -564,18 +573,18 @@
 <div id="army-modal" style="display:none;">
   <div class="modal-card">
     <!-- Stepper Navigation Header -->
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #334155; padding-bottom:8px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; border-bottom:1px solid #334155; padding-bottom:6px;">
       <div style="display:flex; align-items:center; gap:8px;">
-        <button onclick="window.returnToTitleScreen()" style="min-width:auto; padding:4px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;" title="Return to Title Screen">← Title Screen</button>
+        <button onclick="window.returnToTitleScreen()" style="min-width:auto; padding:4px 8px; font-size:0.72rem; background:#1e293b; border-color:#64748b;" title="Return to Title Screen">← Title</button>
         <div>
-          <div style="font-size:1.02rem; font-weight:800; color:#f8fafc;">⚔️ NETEPIC GOLD — SETUP & ARMIES</div>
-          <div class="sub-text" style="color:#94a3b8;">8 Authentic Factions &bull; Core Gold Cards &bull; Solo vs AI or 2P Hotseat</div>
+          <div style="font-size:0.95rem; font-weight:800; color:#f8fafc; letter-spacing:0.3px;">⚔️ NETEPIC GOLD — SETUP</div>
+          <div class="sub-text builder-sub-header" style="color:#94a3b8; font-size:0.72rem;">8 Authentic Factions &bull; Core Gold Cards &bull; Solo vs AI or 2P Hotseat</div>
         </div>
       </div>
-      <div class="setup-stepper" id="builder-stepper">
-        <button id="step-chip-1" class="step-chip active" onclick="window.setBuilderStep(1)">1. Map & Match</button>
-        <button id="step-chip-2" class="step-chip" onclick="window.setBuilderStep(2)">2. South Force</button>
-        <button id="step-chip-3" class="step-chip" onclick="window.setBuilderStep(3)">3. North Force</button>
+      <div class="setup-stepper" id="builder-stepper" style="flex:1; min-width:240px; justify-content:flex-end;">
+        <button id="step-chip-1" class="step-chip active" onclick="window.setBuilderStep(1)">1. Match</button>
+        <button id="step-chip-2" class="step-chip" onclick="window.setBuilderStep(2)">2. South</button>
+        <button id="step-chip-3" class="step-chip" onclick="window.setBuilderStep(3)">3. North</button>
         <button id="step-chip-4" class="step-chip" onclick="window.setBuilderStep(4)">4. Deploy</button>
       </div>
     </div>
@@ -679,13 +688,15 @@
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
         <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
-          <!-- Faction Dropdown Selector & Points Badge (Single Space-Saving Row) -->
+          <!-- Row 1: Side Title & Live Points Badge -->
           <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
-            <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0;">
-              <span id="imp-col-title" style="font-weight:800; font-size:0.8rem; color:#60a5fa; white-space:nowrap; flex-shrink:0;">🛡️ South:</span>
-              <select id="imp-faction-select" onchange="window.setSideFaction('IMPERIUM', this.value)" style="flex:1; min-width:0; max-width:240px; background:#0f172a; color:#f8fafc; border:1.5px solid #3b82f6; border-radius:5px; padding:3px 6px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for South Force"></select>
-            </div>
-            <span id="imp-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0;">1750 / 2000 pts</span>
+            <span id="imp-col-title" style="font-weight:800; font-size:0.84rem; color:#60a5fa; white-space:nowrap;">🛡️ South Force (P1)</span>
+            <span id="imp-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0; padding:2px 8px;">1750 / 2000 pts</span>
+          </div>
+
+          <!-- Row 2: Full-Width Army Book Faction Selector Dropdown -->
+          <div style="margin-bottom:4px;">
+            <select id="imp-faction-select" onchange="window.setSideFaction('IMPERIUM', this.value)" style="width:100%; box-sizing:border-box; background:#0f172a; color:#f8fafc; border:1.5px solid #3b82f6; border-radius:6px; padding:5px 8px; font-size:0.82rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for South Force"></select>
           </div>
           
           <!-- Points Budget Progress Bar -->
@@ -694,7 +705,7 @@
           </div>
 
           <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:3px; margin-top:2px;">
             <div id="imp-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
               <span id="imp-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
               <span id="imp-chip-sup" class="quota-chip quota-ok">🛡️ 4/5 Sup</span>
@@ -705,10 +716,10 @@
           </div>
 
           <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:nowrap;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px;">
             <div id="imp-card-filters" class="filter-pill-group"></div>
-            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:2px 7px; font-size:0.7rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="imp-roster-quick-btn">
-              📋 Roster: <span id="imp-roster-count">6</span> <span id="imp-roster-toggle-icon">▼</span>
+            <button onclick="window.toggleRosterView('imp')" style="min-width:auto; padding:3px 8px; font-size:0.72rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="imp-roster-quick-btn">
+              📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
             </button>
           </div>
         </div>
@@ -747,13 +758,15 @@
         
         <!-- STICKY TOP HEADER (Always Visible at Top on all screen sizes) -->
         <div class="builder-sticky-top" style="flex-shrink:0; background:#1e293b; padding-bottom:5px; border-bottom:1px solid #334155;">
-          <!-- Faction Dropdown Selector & Points Badge (Single Space-Saving Row) -->
+          <!-- Row 1: Side Title & Live Points Badge -->
           <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
-            <div style="display:flex; align-items:center; gap:5px; flex:1; min-width:0;">
-              <span id="ork-col-title" style="font-weight:800; font-size:0.8rem; color:#4ade80; white-space:nowrap; flex-shrink:0;">🟢 North:</span>
-              <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" style="flex:1; min-width:0; max-width:240px; background:#0f172a; color:#f8fafc; border:1.5px solid #22c55e; border-radius:5px; padding:3px 6px; font-size:0.78rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for North Force"></select>
-            </div>
-            <span id="ork-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0;">1525 / 2000 pts</span>
+            <span id="ork-col-title" style="font-weight:800; font-size:0.84rem; color:#4ade80; white-space:nowrap;">🟢 North Force (P2 / AI)</span>
+            <span id="ork-pts-badge" class="vp-box" style="font-size:0.75rem; font-weight:800; flex-shrink:0; padding:2px 8px;">1525 / 2000 pts</span>
+          </div>
+
+          <!-- Row 2: Full-Width Army Book Faction Selector Dropdown -->
+          <div style="margin-bottom:4px;">
+            <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" style="width:100%; box-sizing:border-box; background:#0f172a; color:#f8fafc; border:1.5px solid #22c55e; border-radius:6px; padding:5px 8px; font-size:0.82rem; font-weight:700; cursor:pointer;" title="Choose Faction Army Book for North Force"></select>
           </div>
           
           <!-- Points Budget Progress Bar -->
@@ -762,7 +775,7 @@
           </div>
 
           <!-- NetEpic Gold Army Composition Quota Chips & Validation Indicator -->
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-top:2px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:3px; margin-top:2px;">
             <div id="ork-quota-row" style="display:flex; gap:3px; flex-wrap:wrap; align-items:center;">
               <span id="ork-chip-co" class="quota-chip quota-ok">🏢 1 Co</span>
               <span id="ork-chip-sup" class="quota-chip quota-ok">🛡️ 5/5 Sup</span>
@@ -773,10 +786,10 @@
           </div>
 
           <!-- Compact Segmented Card Filter Pills & Roster Quick Toggle -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px; flex-wrap:nowrap;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; gap:4px;">
             <div id="ork-card-filters" class="filter-pill-group"></div>
-            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:2px 7px; font-size:0.7rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="ork-roster-quick-btn">
-              📋 Roster: <span id="ork-roster-count">7</span> <span id="ork-roster-toggle-icon">▼</span>
+            <button onclick="window.toggleRosterView('ork')" style="min-width:auto; padding:3px 8px; font-size:0.72rem; background:#0f172a; border:1px solid #475569; border-radius:5px; white-space:nowrap; flex-shrink:0;" id="ork-roster-quick-btn">
+              📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
             </button>
           </div>
         </div>
@@ -14144,7 +14157,10 @@ window.renderArmyModal = function() {
     if (colCard) colCard.style.borderTop = `3px solid ${meta.borderHex}`;
     const colTitle = document.getElementById(`${prefix}-col-title`);
     if (colTitle) {
-      colTitle.innerText = `${meta.fullTitle} (${sideLabel})`;
+      const isAI = window.aiFaction === side;
+      colTitle.innerText = side === 'IMPERIUM'
+        ? `🛡️ South Force ${isAI ? '(AI)' : '(Player 1)'}`
+        : `🟢 North Force ${isAI ? '(AI)' : '(Player 2)'}`;
       colTitle.style.color = meta.colorHex;
     }
     const colTrait = document.getElementById(`${prefix}-col-trait`);
@@ -14164,7 +14180,7 @@ window.renderArmyModal = function() {
           const fm = FACTION_META[fKey];
           const opt = document.createElement('option');
           opt.value = fKey;
-          opt.innerText = `${fm.icon} ${fm.name} (${fm.short})`;
+          opt.innerText = `${fm.icon} ${fm.name}`;
           selectEl.appendChild(opt);
         });
       }
@@ -14241,7 +14257,7 @@ window.renderArmyModal = function() {
     const alertEl = document.getElementById(`${prefix}-rule-alert`);
     if (alertEl) {
       if (bd.valid) {
-        alertEl.innerHTML = '<span style="color:#4ade80;">✅ Army Legal</span>';
+        alertEl.innerHTML = '<span style="color:#4ade80;">✅ Legal</span>';
       } else {
         alertEl.innerHTML = `<span style="color:#fca5a5;">⚠️ ${bd.errors[0]}</span>`;
       }
