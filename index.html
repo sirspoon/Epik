@@ -22120,7 +22120,7 @@ class NetEpicScene extends Phaser.Scene {
         // Titan void shields / Ghazghkull
         if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
           saved = true;
-        } else if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+        } else if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -6)) {
           saved = true;
         }
 
@@ -22137,7 +22137,7 @@ class NetEpicScene extends Phaser.Scene {
         const hitsCount = (pulsaRoll === 6 ? 6 : (pulsaRoll === 1 ? 1 : pulsaRoll));
         for (let h = 0; h < hitsCount; h++) {
           if (!vDet.stands.includes(victimStand)) break;
-          if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+          if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -2)) {
             saves++;
             continue;
           }
@@ -22322,14 +22322,38 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // NetEpic Gold Barrage Points (BP) Table (Rules p. 35)
+  // Core Rules p. 35: combined barrage points set the To-Hit roll; the TSM is the weapon's own.
   getBarrageStats(totalBp, baseTsm = 0) {
-    let toHit = 5, bpTsm = 0;
-    if (totalBp >= 9)      { toHit = 3; bpTsm = -2; }
-    else if (totalBp >= 7) { toHit = 3; bpTsm = -1; }
-    else if (totalBp >= 5) { toHit = 4; bpTsm = -1; }
-    else if (totalBp >= 3) { toHit = 4; bpTsm = 0; }
-    else                   { toHit = 5; bpTsm = 0; }
-    return { toHit, tsm: Math.min(bpTsm, baseTsm || 0) };
+    let toHit;
+    if (totalBp >= 9)      toHit = 2;
+    else if (totalBp >= 7) toHit = 3;
+    else if (totalBp >= 5) toHit = 4;
+    else if (totalBp >= 3) toHit = 5;
+    else                   toHit = 6;
+    return { toHit, tsm: baseTsm || 0 };
+  }
+
+  // Enemy stands caught under a 6 cm barrage template centred on point
+  getTemplateTargets(point, firerFaction, isSnapFire = false) {
+    const caught = [];
+    this.detachments.forEach(d => {
+      if (d.faction === firerFaction || d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+      d.stands.forEach(s => {
+        if (!isSnapFire && this.isStandEngaged(s)) return;
+        if (Phaser.Math.Distance.Between(point.x, point.y, s.container.x, s.container.y) <= BARRAGE_RADIUS_PX + 8) caught.push(s);
+      });
+    });
+    return caught;
+  }
+
+  // Core Rules p. 35: indirect barrages scatter 2D6 cm unless the scatter die shows a Hit (2 faces in 6)
+  rollIndirectScatter(point) {
+    if (Phaser.Math.Between(1, 6) <= 2) return { point: { ...point }, note: 'Scatter die: HIT (on target)' };
+    const distCm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6);
+    const ang = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const x = Phaser.Math.Clamp(point.x + Math.cos(ang) * distCm * PX_PER_CM, 10, BOARD_W - 10);
+    const y = Phaser.Math.Clamp(point.y + Math.sin(ang) * distCm * PX_PER_CM, 10, BOARD_H - 10);
+    return { point: { x, y }, note: `Scattered ${distCm} cm (${this.getCompassHeading(ang)})` };
   }
 
   clearAllDetachments() {
@@ -23090,19 +23114,27 @@ class NetEpicScene extends Phaser.Scene {
     this.updateDetachmentBadge(det);
   }
 
-  absorbTitanShield(det, hitX, hitY) {
+  // Core Rules p. 45: shields absorb every hit, but only weapons with TSM -1 or better knock one down.
+  // Ork Power Fields flicker: on a 6 the shot gets through to the Gargant itself.
+  // Returns true if the shield stopped the hit.
+  absorbTitanShield(det, hitX, hitY, tsm = -1) {
     if (!det || det.shields <= 0) return false;
     window.sfx.playShieldHit();
 
-    // Ork Power Fields flicker-save on a 4+ before burning out!
     if (det.shieldType === 'POWER') {
       const flickerRoll = Phaser.Math.Between(1, 6);
-      if (flickerRoll >= 4) {
-        this.spawnExplosionFX(hitX, hitY, 14, false);
-        this.spawnFloatingText(hitX, hitY - 12, `⚡ POWER FIELD FLICKER SAVED! (${flickerRoll})`, '#4ade80', '12px');
-        this.log(`⚡ <b>${det.name}</b>'s <b>Ork Power Field</b> flickers and deflects the shot without collapsing (rolled <b>${flickerRoll}</b> on 4+)! (<b>${det.shields}/${det.maxShields}</b> active)`);
-        return true;
+      if (flickerRoll === 6) {
+        this.spawnFloatingText(hitX, hitY - 12, `⚡ POWER FIELD FLICKERS! Shot gets through (6)`, '#f87171', '12px');
+        this.log(`⚡ <b>${det.name}</b>'s <b>Ork Power Field</b> flickers out (rolled a <b>6</b>) — the shot hits the Gargant!`);
+        return false;
       }
+    }
+
+    const shieldName0 = det.shieldType === 'VOID' ? 'Void Shield' : (det.shieldType === 'CHITIN' ? 'Chitin Bio-Shield' : 'Power Field');
+    if ((tsm || 0) > -1) {
+      this.spawnFloatingText(hitX, hitY - 12, `🛡️ DEFLECTED (TSM 0 can't drop shields)`, '#94a3b8', '11px');
+      this.log(`🛡️ <b>${det.name}</b>'s <b>${shieldName0}</b> shrugs off a TSM 0 hit (needs TSM -1 or better to knock a shield down).`);
+      return true;
     }
 
     det.shields--;
@@ -24477,8 +24509,10 @@ class NetEpicScene extends Phaser.Scene {
         shooterStand.detachment.inReserve || targetStand.detachment.inReserve) {
       return { valid: false, reason: 'In Reserve / Embarked', distCm: 0, coverMod: 0, indirect: false };
     }
-    // Stands locked in Close Combat cannot fire ranged weapons
-    if (this.isStandEngaged(shooterStand)) {
+    // Stands locked in Close Combat cannot fire ranged weapons, except a Snap Fire at the unit charging them (p. 19)
+    const snapAtCharger = isSnapFire && this.isStandEngaged(shooterStand) &&
+      this.getEngagedEnemies(shooterStand).every(e => e.detachment === targetStand.detachment);
+    if (this.isStandEngaged(shooterStand) && !snapAtCharger) {
       return { valid: false, reason: 'Shooter in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
     // Stands locked in Close Combat cannot be targeted by normal ranged fire (Snap Fire happens right before contact)
@@ -24527,7 +24561,7 @@ class NetEpicScene extends Phaser.Scene {
       const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
       if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
         if (canFireIndirect) {
-          return { valid: true, indirect: true, reason: `Indirect over ${b.name} (-1 Hit)`, distCm, coverMod: baseCoverMod };
+          return { valid: true, indirect: true, reason: `Indirect over ${b.name}`, distCm, coverMod: baseCoverMod };
         }
         return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0, indirect: false };
       }
@@ -24539,7 +24573,7 @@ class NetEpicScene extends Phaser.Scene {
         const c = new Phaser.Geom.Circle(sc.x, sc.y, sc.r);
         if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
           if (canFireIndirect) {
-            return { valid: true, indirect: true, reason: 'Indirect over Smoke Screen (-1 Hit)', distCm, coverMod: baseCoverMod };
+            return { valid: true, indirect: true, reason: 'Indirect over Smoke Screen', distCm, coverMod: baseCoverMod };
           }
           return { valid: false, reason: 'Blocked by Smoke Screen', distCm, coverMod: 0, indirect: false };
         }
@@ -24557,7 +24591,7 @@ class NetEpicScene extends Phaser.Scene {
           const c = new Phaser.Geom.Circle(pf.x, pf.y, pf.r);
           if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
             if (canFireIndirect) {
-              return { valid: true, indirect: true, reason: 'Indirect over Pulsa Seismic Field (-1 Hit)', distCm, coverMod: baseCoverMod };
+              return { valid: true, indirect: true, reason: 'Indirect over Pulsa Seismic Field', distCm, coverMod: baseCoverMod };
             }
             return { valid: false, reason: 'Blocked by Pulsa Seismic Distortion', distCm, coverMod: 0, indirect: false };
           }
@@ -24583,7 +24617,7 @@ class NetEpicScene extends Phaser.Scene {
 
     if (woodPixels > 20) {
       if (canFireIndirect) {
-        return { valid: true, indirect: true, reason: 'Indirect over Woods (-1 Hit)', distCm, coverMod: baseCoverMod };
+        return { valid: true, indirect: true, reason: 'Indirect over Woods', distCm, coverMod: baseCoverMod };
       }
       return { valid: false, reason: 'Blocked (>2 cm Woods)', distCm, coverMod: 0, indirect: false };
     }
@@ -24597,7 +24631,7 @@ class NetEpicScene extends Phaser.Scene {
           const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
           if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
             if (canFireIndirect) {
-              return { valid: true, indirect: true, reason: `Indirect over ${det.name} (-1 Hit)`, distCm, coverMod: baseCoverMod };
+              return { valid: true, indirect: true, reason: `Indirect over ${det.name}`, distCm, coverMod: baseCoverMod };
             }
             return { valid: false, reason: `Blocked by ${det.name}`, distCm, coverMod: 0, indirect: false };
           }
@@ -24678,6 +24712,14 @@ class NetEpicScene extends Phaser.Scene {
     const activeSalvoIdx = isSalvoUnit ? (firerDet.salvosFired || 0) : 0;
     const activeSalvoWpn = isSalvoUnit ? this.getSalvoWeapon(firerDet, activeSalvoIdx) : null;
 
+    // Core Rules p. 19: artillery and template weapons may not Snap Fire
+    if (isSnapFire) {
+      const w = activeSalvoWpn || firerDet.weapon || {};
+      if (w.barrage || w.indirect || w.template || w.isFlame || w.pulsaRokkit) {
+        return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
+      }
+    }
+
     for (const shooter of firerDet.stands) {
       if (firerDet.standsFired && firerDet.standsFired.has(shooter.id)) continue;
       const standWpn = activeSalvoWpn || shooter.weapon || firerDet.weapon;
@@ -24733,17 +24775,7 @@ class NetEpicScene extends Phaser.Scene {
         const reachable = firerDet.stands.some(sh => this.checkStandLoS(sh, candStand, isSnapFire).valid);
         if (!reachable) return;
 
-        const caught = [];
-        this.detachments.forEach(d => {
-          if (d.faction === firerDet.faction || d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
-          d.stands.forEach(s => {
-            if (!isSnapFire && this.isStandEngaged(s)) return;
-            const dist = Phaser.Math.Distance.Between(candStand.container.x, candStand.container.y, s.container.x, s.container.y);
-            if (dist <= BARRAGE_RADIUS_PX + 8) {
-              caught.push(s);
-            }
-          });
-        });
+        const caught = this.getTemplateTargets(candStand.container, firerDet.faction, isSnapFire);
 
         if (caught.length > bestCaught.length) {
           bestCaught = caught;
@@ -24796,8 +24828,23 @@ class NetEpicScene extends Phaser.Scene {
 
     if (activeWpn.barrage) {
       sol.isBarrage = true;
-      sol.totalBp = activeWpn.barrageBp || activeWpn.dice || 2;
+      // Core Rules p. 35: a battery combines the barrage points of every stand that can fire.
+      // A titan weapon salvo or a single split-fire stand only adds its own.
+      const bpEach = activeWpn.barrageBp || activeWpn.dice || 2;
+      sol.totalBp = (isSalvoUnit || split) ? bpEach : sol.validPairs.length * bpEach;
       sol.barrageStats = this.getBarrageStats(sol.totalBp, activeWpn.tsm);
+      if (!sol.aimPoint) {
+        const aimStand = sol.validPairs[0].target;
+        sol.aimPoint = { x: aimStand.container.x, y: aimStand.container.y };
+        sol.templateTargets = this.getTemplateTargets(sol.aimPoint, firerDet.faction, isSnapFire);
+        sol.isIndirect = sol.validPairs.some(p => p.res.indirect);
+      }
+    }
+    if (sol.isBarrage && sol.isIndirect && sol.aimPoint) {
+      const sc = this.rollIndirectScatter(sol.aimPoint);
+      sol.aimPoint = sc.point;
+      sol.scatterNote = sc.note;
+      sol.templateTargets = this.getTemplateTargets(sc.point, firerDet.faction, isSnapFire);
     }
 
     let salvoTag = '';
@@ -24828,7 +24875,7 @@ class NetEpicScene extends Phaser.Scene {
       const casualtiesToDestroy = [];
 
       const wpn = firerDet.weapon;
-      const snapMod = (isSnapFire ? -1 : 0) + (firerDet.toHitPenalty || 0);
+      const snapMod = (isSnapFire && !opts.noSnapPenalty ? -1 : 0) + (firerDet.toHitPenalty || 0);
       let totalDice = 0, hits = 0, saves = 0, kills = 0;
       let buildingSiHits = 0;
       let targetBuilding = null;
@@ -24836,8 +24883,8 @@ class NetEpicScene extends Phaser.Scene {
 
       if (sol.isBarrage) {
         const { aimPoint, templateTargets, totalBp, isIndirect, barrageStats } = sol;
-        const indirectMod = isIndirect ? -1 : 0;
-        const modeLabel = isIndirect ? '📡 INDIRECT BARRAGE (-1 Hit)' : (isSnapFire ? '⚡ SNAP BARRAGE (-1 Hit)' : '💥 DIRECT BARRAGE');
+        const indirectMod = 0;
+        const modeLabel = isIndirect ? `📡 INDIRECT BARRAGE (${sol.scatterNote || 'scatter'})` : '💥 DIRECT BARRAGE';
         baseNeededToHit = barrageStats.toHit - snapMod - indirectMod;
 
         this.spawnFloatingText(aimPoint.x, aimPoint.y - 22, `💥 ${totalBp} BP BARRAGE!`, '#fb923c', '13px');
@@ -24901,7 +24948,7 @@ class NetEpicScene extends Phaser.Scene {
               return;
             }
 
-            if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy)) {
+            if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, barrageStats.tsm)) {
               saves++;
               saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
               return;
@@ -24970,7 +25017,7 @@ class NetEpicScene extends Phaser.Scene {
         // Direct Fire
         const dmgPenNote = firerDet.toHitPenalty ? ` [Damaged ${firerDet.toHitPenalty} Hit]` : '';
         const popNote = firerDet.poppedUp ? ' [🚀 POP-UP]' : '';
-        this.log(`🔥 <b>${firerDet.name}</b>${popNote} unleashes ${shotDesc} (${isSnapFire ? 'SNAP FIRE -1' : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
+        this.log(`🔥 <b>${firerDet.name}</b>${popNote} unleashes ${shotDesc} (${isSnapFire ? (opts.noSnapPenalty ? 'SNAP FIRE at charger, no penalty' : 'SNAP FIRE -1') : 'Normal'}${dmgPenNote}) at <b>${targetDet.name}</b>!`);
 
         sol.validPairs.forEach(pair => {
           if (targetDet.stands.length === 0) return;
@@ -25029,7 +25076,7 @@ class NetEpicScene extends Phaser.Scene {
                 continue;
               }
 
-              if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy)) {
+              if (targetDet.shields > 0 && this.absorbTitanShield(targetDet, vx, vy, curWpn.tsm)) {
                 saves++;
                 saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
                 continue;
@@ -27028,7 +27075,12 @@ class NetEpicScene extends Phaser.Scene {
       const firer = this.detachments.find(d => d.id === firerId);
       if (firer && this.snapTarget && this.snapTarget.stands.length > 0) {
         firer.orderRevealed = true;
+        const target = this.snapTarget;
+        // Core Rules p. 19: no -1 when Snap Firing at a unit that is charging you
+        const chargingFirer = target.order === 'CHARGE' &&
+          firer.stands.some(s => this.getEngagedEnemies(s).some(e => e.detachment === target));
         this.executeRangedAttack(firer, this.snapTarget, true, {
+          noSnapPenalty: chargingFirer,
           onComplete: () => {
             // Re-check if more First Fire detachments can still Snap Fire at the surviving stands
             if (this.snapTarget && this.snapTarget.stands.length > 0) {
@@ -27753,7 +27805,8 @@ class NetEpicScene extends Phaser.Scene {
           if (s.skimRing) s.skimRing.setFillStyle(0x22d3ee, 0.12).setStrokeStyle(1.5, 0x22d3ee, 0.75);
         });
       }
-      if (d.maxShields && d.shields < d.maxShields) {
+      // Core Rules p. 45: Ork Power Fields may not be repaired during battle
+      if (d.maxShields && d.shields < d.maxShields && d.shieldType !== 'POWER') {
         const downed = d.maxShields - d.shields;
         const hasTechpriest = this.detachments.some(td =>
           td.faction === d.faction && td.stands.length > 0 && td.characterRules && td.characterRules.techpriest
