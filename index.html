@@ -284,6 +284,8 @@
       padding-right: max(4px, env(safe-area-inset-right));
       pointer-events: auto; box-sizing: border-box; overflow: hidden;
     }
+    /* Options and Save/Load can open from the title screen, so they must sit above it */
+    #options-modal, #save-load-modal { z-index: 300; }
     .power-card {
       background: #1e293b; border: 1.5px solid #7c3aed; border-radius: 8px;
       padding: 9px 12px; cursor: pointer; transition: all 0.16s ease;
@@ -619,6 +621,108 @@
         padding: 5px !important;
       }
     }
+
+
+    /* ===== Compact setup screens ===== */
+    .setup-label { font-weight: 700; color: #f8fafc; font-size: 0.84rem; margin-bottom: 5px; }
+    .map-preset-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+    .preset-card { padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 0.78rem; }
+    .preset-card > div:first-child { font-size: 1.1rem !important; }
+    .trait-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .trait-line.expanded { white-space: normal; }
+    .cat-compact { gap: 6px; padding: 5px 6px !important; margin-bottom: 4px; }
+    .cat-main { flex: 1 1 auto; min-width: 0; cursor: pointer; }
+    .cat-line1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .cat-line1 .card-badge { flex: 0 0 auto; font-size: 0.58rem; padding: 1px 4px; }
+    .cat-name { flex: 1 1 auto; min-width: 0; font-weight: 700; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cat-pts { flex: 0 0 auto; color: #fde047; font-weight: 800; }
+    .cat-line2 { font-size: 0.68rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+    .cat-more { display: none; font-size: 0.68rem; color: #cbd5e1; margin-top: 3px; line-height: 1.35; }
+    .open > .cat-main .cat-more { display: block; }
+    .catalog-item button.cat-add, .roster-item button.cat-add { flex: 0 0 auto; min-width: 40px; padding: 6px 6px; font-size: 0.78rem; font-weight: 800; }
+    .catalog-item button.cat-add:disabled { font-size: 0.62rem; font-weight: 700; }
+    .builder-filters-wrap { flex-wrap: wrap; gap: 4px; }
+    .view-tabs .filter-pill-btn { padding: 2px 9px; }
+    .filter-pill-btn { flex: 0 0 auto !important; min-width: 0 !important; }
+    .roster-item { gap: 8px; padding: 5px 6px !important; margin-bottom: 4px; }
+    #options-modal .modal-card { height: auto !important; max-height: 100% !important; }
+    #options-modal .sub-text { display: none; }
+    #options-modal .modal-card > div:nth-child(2) { gap: 6px !important; margin: 8px 0 !important; }
+    #options-modal .modal-card > div:nth-child(2) > div { padding: 7px 10px !important; }
+    #imp-pts-badge, #ork-pts-badge { white-space: nowrap; }
+    .title-card { padding: 20px 18px; }
+    .title-badge-row { margin: 10px 0 14px 0; }
+    .title-btn { padding: 10px 14px; gap: 12px; }
+    @media (max-width: 600px) {
+      .builder-top-row1 { flex-wrap: nowrap; }
+      .builder-select-wrap { flex: 1 1 auto; min-width: 0; margin: 0; }
+      .builder-side-title { font-size: 0.78rem; }
+      .title-heading { font-size: 1.8rem; }
+    }
+
+    /* ===== Compact HUD ===== */
+    #top-bar { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 3px; }
+    .tb-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .tb-spacer { flex: 1 1 auto; }
+    .tb-btn { flex: 0 0 auto; min-width: 34px; padding: 4px 9px; font-size: 0.85rem; line-height: 1.15; display: inline-flex; align-items: center; gap: 3px; }
+    .tb-count { background: #ef4444; color: #fff; border-radius: 9px; padding: 0 5px; font-size: 0.66rem; font-weight: 800; }
+    #vp-score { white-space: nowrap; }
+    #turn-text { white-space: nowrap; }
+    .phase-badge { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
+    .prompt-line { font-size: 0.74rem; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; min-height: 1em; }
+    .prompt-line.expanded { white-space: normal; }
+    .prompt-line:empty { display: none; }
+    #battle-menu-dropdown {
+      position: absolute; top: 58px; right: 8px; z-index: 60; pointer-events: auto;
+      background: rgba(15, 23, 42, 0.97); border: 1px solid #475569; border-radius: 8px; padding: 6px;
+      grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; width: min(360px, calc(100vw - 16px));
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+    }
+    #battle-menu-dropdown button { min-width: 0; padding: 7px 4px; font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sel-head { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 5px; }
+    .sel-head-text { flex: 1 1 auto; min-width: 0; }
+    #sel-title, #sel-stats { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #sel-order-badge { flex: 0 0 auto; font-weight: 700; white-space: nowrap; color: #cbd5e1; }
+    #sel-details { display: none; max-height: 32vh; overflow-y: auto; margin: -2px 0 5px 0; line-height: 1.35; }
+    #selection-panel.expanded #sel-details { display: block; }
+    .btn-row button { flex: 1 1 auto; min-width: 0; white-space: nowrap; }
+    #snapfire-buttons button { white-space: normal; }
+    #dice-tray { cursor: pointer; }
+
+    @media (max-width: 900px), (max-height: 560px) {
+      #hud { padding: 4px; padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: max(4px, env(safe-area-inset-bottom)); }
+      #top-bar { padding: 4px 6px; }
+      .tb-row { gap: 4px; }
+      .tb-btn { min-width: 32px; padding: 4px 7px; font-size: 0.8rem; }
+      .phase-badge { font-size: 0.66rem; padding: 3px 6px; letter-spacing: 0.2px; }
+      #turn-text { font-size: 0.72rem; }
+      #vp-score { font-size: 0.68rem; padding: 2px 5px; }
+      .prompt-line { font-size: 0.68rem; }
+      #mid-area { position: relative; }
+      #combat-log.collapsed { display: none !important; }
+      #combat-log:not(.collapsed) { position: absolute; top: 0; left: 0; right: 0; height: 45vh !important; max-height: 45vh; z-index: 40; background: rgba(15, 23, 42, 0.95); }
+      #dice-tray { font-size: 0.68rem; padding: 4px 7px; }
+      .die-box { min-width: 22px; height: 22px; font-size: 0.72rem; }
+      #selection-panel { padding: 5px 6px; }
+      #sel-title { font-size: 0.78rem; }
+      #sel-stats { font-size: 0.68rem; }
+      #sel-order-badge { font-size: 0.66rem; }
+      .btn-row { gap: 4px; }
+      .btn-row button { padding: 7px 6px; font-size: 0.74rem; }
+      .alert-banner { font-size: 0.72rem; padding: 4px 8px; }
+      #combat-card-modal { top: 48px !important; padding: 10px !important; max-height: calc(100dvh - 70px); overflow-y: auto; }
+    }
+    @media (orientation: landscape) and (max-height: 560px) {
+      #top-bar { flex-direction: row; align-items: center; gap: 6px; }
+      .tb-row { display: contents; }
+      .tb-spacer { display: none; }
+      #top-bar .phase-badge, #turn-text, #vp-score { order: 0; flex: 0 0 auto; }
+      .prompt-line { order: 1; flex: 1 1 auto; min-width: 0; }
+      .prompt-line.expanded { white-space: nowrap; }
+      #top-bar .tb-btn { order: 2; }
+      #battle-menu-dropdown { top: 44px; }
+    }
+    #options-modal button[id^="opt-btn"] { flex: 0 0 auto !important; }
   </style>
 </head>
 <body>
@@ -634,11 +738,7 @@
 
     <h1 class="title-heading">NETEPIC GOLD</h1>
     <div class="title-subheading">EPIC 40,000 TABLETOP SIMULATOR</div>
-    <div class="title-badge-row">
-      <span class="title-pill">6mm Miniature Warfare</span>
-      <span class="title-pill">NetEpic Gold Rules</span>
-      <span class="title-pill">Solo AI & 2P Hotseat</span>
-    </div>
+    <div class="title-badge-row"></div>
 
     <!-- Main Navigation Menu -->
     <div class="title-menu-box">
@@ -646,7 +746,7 @@
         <span style="font-size:1.35rem;">⚔️</span>
         <div style="text-align:left;">
           <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">SINGLE PLAYER</div>
-          <div style="font-size:0.72rem; color:#bae6fd; font-weight:500;">Select Factions, Deploy Armies & Battle Autonomous AI</div>
+          <div style="font-size:0.72rem; color:#bae6fd; font-weight:500;">Play against the computer</div>
         </div>
       </button>
 
@@ -654,7 +754,7 @@
         <span style="font-size:1.35rem;">📂</span>
         <div style="text-align:left;">
           <div id="title-resume-text" style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">RESUME / LOAD GAME</div>
-          <div id="title-resume-sub" style="font-size:0.72rem; color:#a7f3d0; font-weight:500;">Load Turn Auto-Save or Saved Match</div>
+          <div id="title-resume-sub" style="font-size:0.72rem; color:#a7f3d0; font-weight:500;">Carry on a saved game</div>
         </div>
       </button>
 
@@ -662,7 +762,7 @@
         <span style="font-size:1.35rem;">⚙️</span>
         <div style="text-align:left;">
           <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">OPTIONS</div>
-          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Audio, Follow Camera, Table Size & Map Defaults</div>
+          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Sound, camera, table and map</div>
         </div>
       </button>
 
@@ -670,16 +770,11 @@
         <span style="font-size:1.35rem;">👥</span>
         <div style="text-align:left;">
           <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">2-PLAYER HOTSEAT</div>
-          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Local Pass-and-Play Between Two Commanders</div>
+          <div style="font-size:0.72rem; color:#cbd5e1; font-weight:500;">Two players on one device</div>
         </div>
       </button>
     </div>
 
-    <!-- Footer Credits -->
-    <div style="margin-top:22px; font-size:0.72rem; color:#64748b; text-align:center; display:flex; flex-direction:column; gap:2px;">
-      <div>8 Authentic Factions &bull; Core Gold Cards & Weapon Systems &bull; Procedural Battlefields</div>
-      <div>Compatible with Desktop & Mobile Touch Displays</div>
-    </div>
   </div>
 </div>
 
@@ -688,7 +783,7 @@
   <div class="modal-card" style="max-width:560px;">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px;">
       <div>
-        <div style="font-weight:800; font-size:1.05rem; color:#f8fafc;">⚙️ GAME OPTIONS & SETTINGS</div>
+        <div style="font-weight:800; font-size:1.05rem; color:#f8fafc;">⚙️ Options</div>
         <div class="sub-text" style="color:#94a3b8;">Audio, camera follow, table dimensions & battlefield defaults</div>
       </div>
       <button class="log-ctrl-btn" onclick="window.closeOptionsModal()">✕</button>
@@ -698,7 +793,7 @@
       <!-- SFX Option -->
       <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
         <div>
-          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🔊 Sound Effects (SFX)</div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🔊 Sound</div>
           <div class="sub-text" style="color:#94a3b8;">Weapons fire, void shields, explosions, teleports & morale horns</div>
         </div>
         <button id="opt-btn-sfx" onclick="window.toggleOptionSFX()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
@@ -707,7 +802,7 @@
       <!-- Follow Camera Option -->
       <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
         <div>
-          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🎥 AI Follow Camera</div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">🎥 Follow the AI</div>
           <div class="sub-text" style="color:#94a3b8;">Automatically track and smooth-pan to AI units during movement & firing</div>
         </div>
         <button id="opt-btn-cam" onclick="window.toggleOptionCam()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
@@ -716,7 +811,7 @@
       <!-- Atmospheric Battlefield Fire Option -->
       <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
         <div>
-          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">💥 Atmospheric Battlefield Fire</div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">💥 Background gunfire</div>
           <div class="sub-text" style="color:#94a3b8;">Harmless ambient skirmish fire, tracer rounds & laser streaks across the lines</div>
         </div>
         <button id="opt-btn-ambient-fire" onclick="window.toggleOptionAmbientFire()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
@@ -724,7 +819,7 @@
 
       <!-- Table Size Selection -->
       <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
-        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">📐 Tabletop Size</div>
+        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">📐 Table</div>
         <div class="sub-text" style="color:#94a3b8; margin-bottom:8px;">Standard battlefield dimensions for NetEpic miniature combat</div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button id="opt-size-std" onclick="window.setOptionTableSize('STANDARD_6X4')" class="btn-primary" style="flex:1; padding:6px 8px; font-size:0.75rem;">6' × 4' Standard</button>
@@ -735,7 +830,7 @@
 
       <!-- Default Map Selection -->
       <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
-        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">🗺️ Battlefield Map Theme</div>
+        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">🗺️ Map</div>
         <div class="sub-text" style="color:#94a3b8; margin-bottom:8px;">Terrain layout, roads, water hazards, bridges & fortified buildings</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
           <button id="opt-map-industrial" onclick="window.setOptionMap('INDUSTRIAL')" class="btn-primary" style="padding:6px 8px; font-size:0.75rem;">🏭 Industrial Highway</button>
@@ -777,49 +872,42 @@
     <div id="wizard-step-1" class="wizard-step" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
       <div class="wizard-scroll-body" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; display:flex; flex-direction:column; gap:10px;">
         <div>
-          <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🗺️ Battlefield Map Preset:</div>
+          <div class="setup-label">🗺️ Map</div>
           <div class="map-preset-grid">
-            <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')">
+            <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')" title="Factory ruins, toxic waterways, cargo containers & rail lines.">
               <div style="font-size:1.3rem;">🏭</div>
               <div style="font-weight:700; color:#f8fafc;">Industrial</div>
-              <div class="sub-text">Factory ruins, toxic waterways, cargo containers & rail lines.</div>
             </div>
-            <div id="map-card-RUINED_CITY" class="preset-card" onclick="window.setMapPreset('RUINED_CITY')">
+            <div id="map-card-RUINED_CITY" class="preset-card" onclick="window.setMapPreset('RUINED_CITY')" title="Dense urban warzone with 15 buildings, grand boulevards & rubble.">
               <div style="font-size:1.3rem;">🏛️</div>
               <div style="font-weight:700; color:#f8fafc;">Ruined City</div>
-              <div class="sub-text">Dense urban warzone with 15 buildings, grand boulevards & rubble.</div>
             </div>
-            <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')">
+            <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')" title="Sub-zero permafrost, frozen glacial chasm & snow-capped pines.">
               <div style="font-size:1.3rem;">❄️</div>
               <div style="font-weight:700; color:#f8fafc;">Snowy Tundra</div>
-              <div class="sub-text">Sub-zero permafrost, frozen glacial chasm & snow-capped pines.</div>
             </div>
-            <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')">
+            <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')" title="Arid dunes, sandstone rock spires, dry canyon wadi & refineries.">
               <div style="font-size:1.3rem;">🏜️</div>
               <div style="font-weight:700; color:#f8fafc;">Desert Wastes</div>
-              <div class="sub-text">Arid dunes, sandstone rock spires, dry canyon wadi & refineries.</div>
             </div>
-            <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')">
+            <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')" title="Dividing river with tactical stone bridges & swamp crossings.">
               <div style="font-size:1.3rem;">🌊</div>
               <div style="font-weight:700; color:#f8fafc;">River Crossing</div>
-              <div class="sub-text">Dividing river with tactical stone bridges & swamp crossings.</div>
             </div>
-            <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')">
+            <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')" title="Woodland groves with speed-boosting paved highways.">
               <div style="font-size:1.3rem;">🌲</div>
               <div style="font-weight:700; color:#f8fafc;">Dense Woods</div>
-              <div class="sub-text">Woodland groves with speed-boosting paved highways.</div>
             </div>
-            <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')">
+            <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')" title="Procedurally generated terrain with mixed cover.">
               <div style="font-size:1.3rem;">🎲</div>
               <div style="font-weight:700; color:#f8fafc;">Randomized</div>
-              <div class="sub-text">Procedurally generated terrain with mixed cover.</div>
             </div>
           </div>
         </div>
 
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
           <div style="flex:1; min-width:240px;">
-            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🤖 Game Mode / Opponent:</div>
+            <div class="setup-label">🤖 Opponent</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:110px;">🤖 vs North AI</button>
               <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="flex:1; min-width:110px;">🤖 vs South AI</button>
@@ -827,7 +915,7 @@
             </div>
           </div>
           <div style="flex:1; min-width:240px;">
-            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem; margin-bottom:6px;">🎯 Points Budget: <span id="budget-vp-target" style="color:#fde047; font-weight:600; font-size:0.8rem;">(Goal: 35 VP)</span></div>
+            <div class="setup-label">🎯 Points <span id="budget-vp-target" style="color:#fde047; font-weight:600; font-size:0.8rem;">(Goal: 35 VP)</span></div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button id="pts-1000" onclick="window.setPointsBudget(1000)" style="flex:1; min-width:55px;">1000</button>
               <button id="pts-2000" class="btn-primary" onclick="window.setPointsBudget(2000)" style="flex:1; min-width:55px;">2000</button>
@@ -841,28 +929,24 @@
         <!-- Table Size & Battlefield Dimensions -->
         <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-            <div style="font-weight:700; color:#f8fafc; font-size:0.9rem;">📐 Table Dimensions:</div>
+            <div class="setup-label" style="margin:0;">📐 Table</div>
             <div class="sub-text" id="table-size-desc" style="color:#a78bfa; font-weight:600;">6' × 4' Standard (185 × 125 cm)</div>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button id="table-size-STANDARD_6X4" class="btn-primary" onclick="window.setTableSize('STANDARD_6X4')" style="flex:1; min-width:115px; padding:6px 10px;">6' × 4' Standard</button>
-            <button id="table-size-GRAND_8X4" onclick="window.setTableSize('GRAND_8X4')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 4' Grand (3000+)</button>
-            <button id="table-size-APOCALYPSE_8X5" onclick="window.setTableSize('APOCALYPSE_8X5')" style="flex:1; min-width:115px; padding:6px 10px;">8' × 5' Apocalypse (4000-5000)</button>
+            <button id="table-size-STANDARD_6X4" class="btn-primary" onclick="window.setTableSize('STANDARD_6X4')" style="flex:1; min-width:70px; padding:6px 10px;" title="6' × 4' standard">6' × 4'</button>
+            <button id="table-size-GRAND_8X4" onclick="window.setTableSize('GRAND_8X4')" style="flex:1; min-width:70px; padding:6px 10px;" title="8' × 4' grand (3000+ pts)">8' × 4'</button>
+            <button id="table-size-APOCALYPSE_8X5" onclick="window.setTableSize('APOCALYPSE_8X5')" style="flex:1; min-width:70px; padding:6px 10px;" title="8' × 5' apocalypse (4000-5000 pts)">8' × 5'</button>
           </div>
-          <div class="sub-text" style="color:#64748b;">Automatically scales with points budget, or tap to choose custom board size.</div>
         </div>
 
         <div style="background:#1e293b; border:1px solid #334155; border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <div>
-            <div style="font-weight:700; color:#e2e8f0; font-size:0.84rem;">Quick Matchup Shuffle:</div>
-            <div class="sub-text">Randomly picks two exciting factions from all 8 armies & random terrain.</div>
-          </div>
-          <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto; padding:6px 12px;">🎲 Random Matchup</button>
+          <div class="setup-label" style="margin:0;">🎲 Surprise me</div>
+          <button onclick="window.randomizeMatchup()" class="btn-cc" style="flex:0 0 auto; padding:6px 12px;" title="Random factions and terrain">Random matchup</button>
         </div>
       </div>
 
       <div class="btn-row" style="flex-shrink:0; margin-top:auto; padding-top:8px; border-top:1px solid #334155;">
-        <button class="btn-primary" onclick="window.setBuilderStep(2)" style="width:100%; padding:10px 14px; font-size:0.88rem;">Next: Configure South Force (Player 1) →</button>
+        <button class="btn-primary" onclick="window.setBuilderStep(2)" style="width:100%; padding:10px 14px; font-size:0.88rem;">Next: South army →</button>
       </div>
     </div>
 
@@ -900,36 +984,34 @@
 
             <div class="builder-filters-wrap">
               <div id="imp-card-filters" class="filter-pill-group"></div>
-              <button onclick="window.toggleRosterView('imp')" class="builder-roster-btn" id="imp-roster-quick-btn">
-                📋 Roster (<span id="imp-roster-count">6</span>) <span id="imp-roster-toggle-icon">▼</span>
-              </button>
+              <div class="filter-pill-group view-tabs">
+                <button id="imp-tab-cat" class="filter-pill-btn active" onclick="window.setBuilderView('IMPERIUM', 'CAT')">Units</button>
+                <button id="imp-tab-army" class="filter-pill-btn" onclick="window.setBuilderView('IMPERIUM', 'ARMY')">Army <span id="imp-roster-count">0</span></button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- SCROLLABLE MIDDLE (Catalog Cards Grid & Collapsible Roster) -->
         <div class="builder-scroll-content" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; margin-top:2px;">
-          <div id="imp-col-trait" class="sub-text" style="margin-bottom:6px; color:#93c5fd; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #3b82f6;">Faction Rules</div>
+          <div id="imp-col-trait" class="sub-text trait-line" onclick="this.classList.toggle('expanded')" style="margin-bottom:6px; color:#93c5fd; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #3b82f6;">Faction Rules</div>
           
           <!-- Card Catalog (scrolls naturally in middle) -->
           <div id="imp-catalog" style="margin-bottom:8px;"></div>
 
           <!-- Collapsible Roster Drawer -->
-          <div id="imp-roster-section" style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px;" onclick="window.toggleRosterView('imp')">
-              <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="imp-roster-header">📋 Selected South Roster</span>
-              <span style="font-size:0.72rem; color:#94a3b8;">[Tap to Toggle]</span>
-            </div>
+          <div id="imp-roster-section" style="display:none;">
+
             <div id="imp-roster"></div>
           </div>
         </div>
 
         <!-- STICKY BOTTOM ACTION BAR (Always Visible at Bottom) -->
         <div class="btn-row builder-sticky-bottom" style="flex-shrink:0; padding-top:6px; border-top:1px solid #334155; margin-top:auto; background:#1e293b; display:flex; gap:6px; align-items:center;">
-          <button onclick="window.setBuilderStep(1)" style="flex:0 0 auto; min-width:auto; padding:8px 12px;">← Back: Match</button>
-          <button onclick="window.clearRoster('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️ Clear</button>
-          <button onclick="window.resetRosterToDefault('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to authentic NetEpic core roster">↺ Reset</button>
-          <button id="imp-btn-next" class="btn-primary" onclick="window.onBuilderNext(2)" style="flex:1; padding:8px 12px; font-weight:800;">Next: Configure North Force →</button>
+          <button onclick="window.setBuilderStep(1)" style="flex:0 0 auto; min-width:auto; padding:8px 12px;" title="Back to match settings">←</button>
+          <button onclick="window.clearRoster('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️</button>
+          <button onclick="window.resetRosterToDefault('IMPERIUM')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to the standard army">↺</button>
+          <button id="imp-btn-next" class="btn-primary" onclick="window.onBuilderNext(2)" style="flex:1; padding:8px 12px; font-weight:800;">Next →</button>
         </div>
 
       </div>
@@ -969,26 +1051,24 @@
 
             <div class="builder-filters-wrap">
               <div id="ork-card-filters" class="filter-pill-group"></div>
-              <button onclick="window.toggleRosterView('ork')" class="builder-roster-btn" id="ork-roster-quick-btn">
-                📋 Roster (<span id="ork-roster-count">7</span>) <span id="ork-roster-toggle-icon">▼</span>
-              </button>
+              <div class="filter-pill-group view-tabs">
+                <button id="ork-tab-cat" class="filter-pill-btn active" onclick="window.setBuilderView('ORKS', 'CAT')">Units</button>
+                <button id="ork-tab-army" class="filter-pill-btn" onclick="window.setBuilderView('ORKS', 'ARMY')">Army <span id="ork-roster-count">0</span></button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- SCROLLABLE MIDDLE (Catalog Cards Grid & Collapsible Roster) -->
         <div class="builder-scroll-content" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; margin-top:2px;">
-          <div id="ork-col-trait" class="sub-text" style="margin-bottom:6px; color:#86efac; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #22c55e;">Faction Rules</div>
+          <div id="ork-col-trait" class="sub-text trait-line" onclick="this.classList.toggle('expanded')" style="margin-bottom:6px; color:#86efac; background:#0f172a; padding:4px 8px; border-radius:4px; border-left:3px solid #22c55e;">Faction Rules</div>
           
           <!-- Card Catalog (scrolls naturally in middle) -->
           <div id="ork-catalog" style="margin-bottom:8px;"></div>
 
           <!-- Collapsible Roster Drawer -->
-          <div id="ork-roster-section" style="border-top:1px solid #334155; margin-top:8px; padding-top:6px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; margin-bottom:4px;" onclick="window.toggleRosterView('ork')">
-              <span class="sub-text" style="font-weight:700; color:#f8fafc;" id="ork-roster-header">📋 Selected North Roster</span>
-              <span style="font-size:0.72rem; color:#94a3b8;">[Tap to Toggle]</span>
-            </div>
+          <div id="ork-roster-section" style="display:none;">
+
             <div id="ork-roster"></div>
           </div>
         </div>
@@ -996,8 +1076,8 @@
         <!-- STICKY BOTTOM ACTION BAR (Always Visible at Bottom) -->
         <div class="btn-row builder-sticky-bottom" style="flex-shrink:0; padding-top:6px; border-top:1px solid #334155; margin-top:auto; background:#1e293b; display:flex; gap:6px; align-items:center;">
           <button onclick="window.setBuilderStep(2)" style="flex:0 0 auto; min-width:auto; padding:8px 12px;">← Back: South</button>
-          <button onclick="window.clearRoster('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️ Clear</button>
-          <button onclick="window.resetRosterToDefault('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to authentic NetEpic core roster">↺ Reset</button>
+          <button onclick="window.clearRoster('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#450a0a; border-color:#dc2626; color:#fca5a5;" title="Remove all units from this army">🗑️</button>
+          <button onclick="window.resetRosterToDefault('ORKS')" style="flex:0 0 auto; min-width:auto; padding:8px 10px; background:#1e293b; border-color:#475569;" title="Reset to the standard army">↺</button>
           <button id="ork-btn-next" class="btn-primary" onclick="window.onBuilderNext(3)" style="flex:1; padding:8px 12px; font-weight:800;">Next: Review & Deploy →</button>
         </div>
 
@@ -1029,8 +1109,8 @@
         </div>
 
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-          <button id="btn-deploy-phase" class="btn-confirm" onclick="window.startBattleFromBuilder(true)" style="padding:12px; font-size:0.92rem;">📍 Start Deployment Phase (Place Units in Zones)</button>
-          <button id="btn-deploy-quick" class="btn-primary" onclick="window.startBattleFromBuilder(false)" style="padding:10px; font-size:0.86rem;">⚡ Quick Start (Forward Skirmish Deployment)</button>
+          <button id="btn-deploy-phase" class="btn-confirm" onclick="window.startBattleFromBuilder(true)" style="padding:12px; font-size:0.92rem;" title="Place your units yourself before the battle">📍 Deploy my units</button>
+          <button id="btn-deploy-quick" class="btn-primary" onclick="window.startBattleFromBuilder(false)" style="padding:10px; font-size:0.86rem;" title="Units start already deployed">⚡ Quick start</button>
         </div>
       </div>
 
@@ -1093,33 +1173,32 @@
 
 <div id="hud">
   <div id="top-bar" class="panel">
-    <div style="display:flex; align-items:center; gap:8px;">
-      <span id="phase-badge" class="phase-badge">0. Deployment Phase</span>
+    <div class="tb-row">
+      <span id="phase-badge" class="phase-badge">Deploy</span>
       <span id="turn-text" class="status-text">Setup</span>
-      <span id="vp-score" class="vp-box">IMP: 0 VP | ORK: 0 VP (Goal: 35 VP)</span>
-      <button id="btn-next-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto; background:#4338ca; border-color:#6366f1; display:flex; align-items:center; gap:4px;" title="Cycle to next unit needing orders or action in this phase (Hotkey: Tab or N)">⏭️ Next Unit <span id="idle-units-badge" style="background:#ef4444; color:#fff; border-radius:10px; padding:1px 5px; font-size:0.65rem; font-weight:800; display:none;">0</span></button>
+      <span id="vp-score" class="vp-box" title="Victory points">0 – 0</span>
+      <span class="tb-spacer"></span>
+      <button id="btn-next-unit" onclick="window.gameScene.selectNextIdleUnit()" class="tb-btn btn-primary" style="background:#4338ca; border-color:#6366f1;" title="Next unit that still needs to act (Tab / N)">⏭<span id="idle-units-badge" class="tb-count" style="display:none;">0</span></button>
+      <button onclick="window.gameScene.resetCamera()" class="tb-btn" title="Recenter the battlefield">🎯</button>
+      <button onclick="window.toggleLogCollapse()" class="tb-btn" title="Battle log">📜</button>
+      <button id="btn-menu-toggle" onclick="window.toggleBattleMenu()" class="tb-btn" title="Menu">☰</button>
     </div>
-    <div id="prompt-text" class="status-text">Double-click a detachment to Group-Move all stands together!</div>
-    <div style="display:flex; gap:5px; align-items:center; flex-shrink:0;">
-      <button onclick="window.openSaveLoadModal()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto; background:#047857; border-color:#10b981;" title="Save / Restore Game Progress">💾 Save / Load</button>
-      <button onclick="window.gameScene.resetCamera()" class="btn-primary" style="padding:4px 9px; font-size:0.75rem; min-width:auto;" title="Recenter Battlefield Camera">🎯 Recenter</button>
-      <button id="btn-menu-toggle" onclick="window.toggleBattleMenu()" style="padding:4px 10px; font-size:0.75rem; min-width:auto; background:#1e293b; border-color:#64748b;" title="Battlefield Options & Settings">⚙️ Menu</button>
-    </div>
+    <div id="prompt-text" class="prompt-line" onclick="this.classList.toggle('expanded')" title="Tap to show the full hint"></div>
   </div>
 
-  <!-- Collapsible In-Battle Options Drawer -->
-  <div id="battle-menu-dropdown" style="display:none; margin-top:6px; padding-top:6px; border-top:1px solid #334155; flex-wrap:wrap; gap:5px; justify-content:flex-end;">
-    <button onclick="window.confirmReturnToTitle()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;">🏠 Title Screen</button>
-    <button onclick="window.openOptionsModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#1e293b; border-color:#64748b;">⚙️ Options</button>
-    <button onclick="window.openSaveLoadModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#047857; border-color:#10b981;">💾 Save / Load Game</button>
-    <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🔊 SFX</button>
-    <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🎥 Follow Cam</button>
-    <button id="btn-ambient-toggle" class="btn-primary" onclick="window.toggleAmbientFire()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;" title="Toggle background battlefield skirmish fire">💥 Ambience: ON</button>
-    <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🗺️ Map</button>
-    <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🤖 AI: ORKS</button>
-    <button onclick="window.openArmyModal()" style="min-width:auto; padding:5px 9px; font-size:0.74rem;">🛠️ Army Setup</button>
-    <button onclick="window.restartBattle()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#7f1d1d; border-color:#dc2626;">🔄 Restart Match</button>
-    <button onclick="window.toggleBattleMenu()" style="min-width:auto; padding:5px 9px; font-size:0.74rem; background:#334155;">✕ Close</button>
+  <!-- In-battle menu (overlay) -->
+  <div id="battle-menu-dropdown" style="display:none;">
+    <button onclick="window.toggleBattleMenu(); window.openSaveLoadModal()" style="background:#047857; border-color:#10b981;">💾 Save / Load</button>
+    <button onclick="window.toggleBattleMenu(); window.openOptionsModal()">⚙️ Options</button>
+    <button onclick="window.toggleBattleMenu(); window.openArmyModal()">🛠️ Armies</button>
+    <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()">🔊 Sound</button>
+    <button id="btn-cam-toggle" class="btn-primary" onclick="window.toggleAICam()">🎥 Follow</button>
+    <button id="btn-ambient-toggle" class="btn-primary" onclick="window.toggleAmbientFire()" title="Background battlefield skirmish fire">💥 Ambience</button>
+    <button id="btn-map-toggle" class="btn-primary" onclick="window.cycleMapPreset()">🗺️ Map</button>
+    <button id="btn-ai-toggle" class="btn-confirm" onclick="window.cycleAIMode()">🤖 AI</button>
+    <button onclick="window.toggleBattleMenu(); window.restartBattle()" style="background:#7f1d1d; border-color:#dc2626;">🔄 Restart</button>
+    <button onclick="window.toggleBattleMenu(); window.confirmReturnToTitle()">🏠 Title</button>
+    <button onclick="window.toggleBattleMenu()" style="background:#334155;">✕ Close</button>
   </div>
 
   <div id="mid-area">
@@ -1178,7 +1257,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         <label style="font-size:0.74rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:4px; user-select:none;" title="If checked, steps through rolls automatically. If unchecked, tap Space or click to inspect at your own pace.">
-          <input type="checkbox" id="combat-auto-advance" style="cursor:pointer;"> Auto-Advance
+          <input type="checkbox" id="combat-auto-advance" style="cursor:pointer;"> Auto
         </label>
         <button onclick="window.gameScene.advanceCombatResolution(true)" class="log-ctrl-btn" style="padding:2px 8px; font-size:0.74rem; background:#334155;" title="Skip directly to damage & casualties (Esc)">⚡ Skip</button>
       </div>
@@ -1186,9 +1265,9 @@
     <div id="combat-card-meta" style="margin-bottom:10px; font-size:0.82rem; line-height:1.4;"></div>
     <div id="combat-card-steps" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
     <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #334155; padding-top:10px;">
-      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">Step 1 of 3: Inspect Hit Rolls</span>
+      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">1/3 · Hits</span>
       <button id="btn-combat-continue" onclick="window.gameScene.advanceCombatResolution()" class="btn-confirm" style="padding:6px 16px; font-size:0.85rem; font-weight:700; box-shadow:0 0 10px rgba(34, 197, 94, 0.45); cursor:pointer;">
-        ▶ Reveal Saves & Shields (Space) →
+        ▶ Saves
       </button>
     </div>
   </div>
@@ -1197,19 +1276,19 @@
     <div id="victory-alert" class="alert-banner victory-banner"></div>
 
     <div id="coherency-alert" class="alert-banner">
-      ⚠️ OUT OF COHERENCY! All stands must form an unbroken chain within 6 cm.
+      ⚠️ Out of coherency: every stand must be within 6 cm of the next
     </div>
 
     <div id="engagement-alert" class="alert-banner">
-      ⚠️ TOO CLOSE TO ENEMY! Only units on CHARGE orders may move into Close Combat.
+      ⚠️ Too close to the enemy: only Charge orders can make contact
     </div>
 
     <div id="fallback-alert" class="alert-banner">
-      ⚠️ FALL BACK RULE! Retreating stands must move toward their own table edge (IMP → South, ORK → North).
+      ⚠️ Falling back: stands must move towards their own table edge
     </div>
 
     <div id="terrain-alert" class="alert-banner">
-      ⚠️ IMPASSABLE TERRAIN! Only Infantry (Class 1) may garrison Buildings, and Ground units must cross Rivers via Bridges/Fords!
+      ⚠️ Impassable: only infantry enter buildings; cross rivers at bridges or fords
     </div>
 
     <div id="snapfire-banner" class="alert-banner snap-banner">
@@ -1218,77 +1297,78 @@
     </div>
 
     <div id="selection-panel" class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <div>
-          <div id="sel-title" class="status-text">No Detachment Selected</div>
-          <div id="sel-stats" class="sub-text">Tap a stand to select, or Double-Click to highlight & move the whole detachment together!</div>
+      <div class="sel-head" onclick="window.toggleSelDetails()" title="Tap for full unit details">
+        <div class="sel-head-text">
+          <div id="sel-title" class="status-text">No unit selected</div>
+          <div id="sel-stats" class="sub-text">Tap a unit on the map</div>
         </div>
-        <div id="sel-order-badge" class="sub-text" style="font-weight:bold;"></div>
+        <div id="sel-order-badge" class="sub-text"></div>
       </div>
+      <div id="sel-details" class="sub-text"></div>
 
       <!-- 0. Deployment Phase Controls -->
       <div id="deployment-controls" class="btn-row" style="display:none;">
-        <button id="btn-deploy-group" onclick="window.gameScene.toggleGroupMove()">🔗 Group Move: ON (Double-Click)</button>
-        <button onclick="window.gameScene.compactSelectedDetachment()">📐 Tight Formation</button>
-        <button onclick="window.gameScene.rotateSelectedFacing()" title="Rotate unit (Hold unit on battlefield or click here to open Interactive Rotation Dial)">🔄 Rotate Facing (Dial)</button>
-        <button id="btn-deploy-separate" onclick="window.gameScene.resolveDetachmentSpacing()" title="Auto-space stands to prevent physical base overlap">🛡️ Auto-Space Bases</button>
-        <button id="btn-deploy-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
-        <button id="btn-deploy-reserve" class="btn-cc" onclick="window.gameScene.toggleReserveStatus()" style="display:none;">☄️ Hold in Orbital Reserve (Deep Strike)</button>
-        <button class="btn-confirm" onclick="window.gameScene.finishDeploymentPhase()">⚔️ Lock Deployment & Start Turn 1 (Orders Phase)</button>
+        <button id="btn-deploy-group" onclick="window.gameScene.toggleGroupMove()">🔗 Group</button>
+        <button onclick="window.gameScene.compactSelectedDetachment()">📐 Tight</button>
+        <button onclick="window.gameScene.rotateSelectedFacing()" title="Rotate unit (Hold unit on battlefield or click here to open Interactive Rotation Dial)">🔄 Rotate</button>
+        <button id="btn-deploy-separate" onclick="window.gameScene.resolveDetachmentSpacing()" title="Auto-space stands to prevent physical base overlap">🛡️ Space</button>
+        <button id="btn-deploy-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Load</button>
+        <button id="btn-deploy-reserve" class="btn-cc" onclick="window.gameScene.toggleReserveStatus()" style="display:none;">☄️ Reserve</button>
+        <button class="btn-confirm" onclick="window.gameScene.finishDeploymentPhase()">✅ Start Turn 1</button>
       </div>
 
       <!-- I. Orders Phase Controls -->
       <div id="orders-controls" class="btn-row" style="display:none;">
-        <button id="btn-next-order-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:130px;" title="Find next detachment needing orders (Tab / N)">⏭️ Next Unit (Tab)</button>
-        <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')">First Fire (0x Move, Shoot Early/Snap)</button>
-        <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')">Advance (1x Move, Shoot Late)</button>
-        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')">Charge (2x Move, Enter Close Combat)</button>
+        <button id="btn-next-order-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1;" title="Find next detachment needing orders (Tab / N)">⏭ Next</button>
+        <button class="btn-ff" onclick="window.gameScene.assignOrder('FIRST_FIRE')" title="No move. Shoots first, can Snap Fire at moving enemies">First Fire</button>
+        <button class="btn-adv" onclick="window.gameScene.assignOrder('ADVANCE')" title="Normal move. Shoots in the Advance Fire segment">Advance</button>
+        <button class="btn-chg" onclick="window.gameScene.assignOrder('CHARGE')" title="Double move, no shooting. Can enter close combat">Charge</button>
       </div>
       <div id="lock-orders-row" class="btn-row" style="margin-top:6px; display:none;">
-        <button class="btn-primary" onclick="window.gameScene.finishOrdersPhase()">All Orders Placed — Roll Initiative (D6)!</button>
+        <button class="btn-primary" onclick="window.gameScene.finishOrdersPhase()">🎲 Roll Initiative</button>
       </div>
 
       <!-- II. Movement Phase Controls -->
       <div id="movement-controls" class="btn-row" style="display:none;">
-        <button id="btn-next-move-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:140px;" title="Find next detachment that hasn't moved yet (Tab / N)">⏭️ Next Unmoved (Tab)</button>
-        <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">Reveal Order & Activate</button>
-        <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔗 Group Move: OFF (Double-Click)</button>
-        <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight Formation</button>
-        <button id="btn-move-rotate" onclick="window.gameScene.rotateSelectedFacing()" style="display:none;" title="Hold unit on battlefield or click here to open the Interactive Rotation Dial">🔄 Rotate Facing (Dial)</button>
-        <button id="btn-move-separate" onclick="window.gameScene.resolveDetachmentSpacing()" style="display:none;" title="Auto-space stands to prevent physical base overlap">🛡️ Auto-Space Bases</button>
-        <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Embark / Disembark</button>
-        <button id="btn-move-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
-        <button id="btn-move-deepstrike" class="btn-cc" onclick="window.gameScene.triggerDeepStrikeMode()" style="display:none;">☄️ Deep Strike / Teleport Anywhere!</button>
-        <button id="btn-cast-psychic-move" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest Psychic Powers during Movement">🔮 Cast Psychic Power</button>
-        <button id="btn-call-waaagh" class="btn-warn" onclick="window.gameScene.triggerWaaagh()" style="display:none; background:#15803d; border-color:#4ade80;" title="Call the Waaagh! Once-per-battle invulnerability, -1 enemy to hit, +1D6 in CC">🗣️ CALL THE WAAAGH!</button>
-        <button id="btn-auto-fallback" class="btn-warn" onclick="window.gameScene.autoRetreatDetachment()" style="display:none;">🏳️ Auto-Retreat Toward Home Edge</button>
-        <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">Reset Move</button>
-        <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">Confirm Move</button>
+        <button id="btn-next-move-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1;" title="Find next detachment that hasn't moved yet (Tab / N)">⏭ Next</button>
+        <button id="btn-activate" class="btn-primary" onclick="window.gameScene.activateSelectedDetachment()">▶ Activate</button>
+        <button id="btn-move-group" onclick="window.gameScene.toggleGroupMove()" style="display:none;">🔓 Single</button>
+        <button id="btn-move-compact" onclick="window.gameScene.compactSelectedDetachment()" style="display:none;">📐 Tight</button>
+        <button id="btn-move-rotate" onclick="window.gameScene.rotateSelectedFacing()" style="display:none;" title="Hold unit on battlefield or click here to open the Interactive Rotation Dial">🔄 Rotate</button>
+        <button id="btn-move-separate" onclick="window.gameScene.resolveDetachmentSpacing()" style="display:none;" title="Auto-space stands to prevent physical base overlap">🛡️ Space</button>
+        <button id="btn-move-transport" class="btn-primary" onclick="window.gameScene.handleTransportAction()" style="display:none;">🚐 Load</button>
+        <button id="btn-move-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up</button>
+        <button id="btn-move-deepstrike" class="btn-cc" onclick="window.gameScene.triggerDeepStrikeMode()" style="display:none;">☄️ Deep Strike</button>
+        <button id="btn-cast-psychic-move" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest Psychic Powers during Movement">🔮 Psychic</button>
+        <button id="btn-call-waaagh" class="btn-warn" onclick="window.gameScene.triggerWaaagh()" style="display:none; background:#15803d; border-color:#4ade80;" title="Call the Waaagh! Once-per-battle invulnerability, -1 enemy to hit, +1D6 in CC">🗣️ WAAAGH!</button>
+        <button id="btn-auto-fallback" class="btn-warn" onclick="window.gameScene.autoRetreatDetachment()" style="display:none;">🏳️ Retreat</button>
+        <button id="btn-undo-move" onclick="window.gameScene.undoDetachmentMove()" style="display:none;">↩ Undo</button>
+        <button id="btn-confirm-move" class="btn-confirm" onclick="window.gameScene.confirmDetachmentMove()" style="display:none;">✅ Confirm</button>
       </div>
 
       <!-- III. Ranged Combat Controls (First Fire & Advance Fire) -->
       <div id="combat-controls" class="btn-row" style="display:none;">
-        <button id="btn-next-fire-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1; min-width:130px;" title="Find next detachment ready to fire (Tab / N)">⏭️ Next Shooter (Tab)</button>
-        <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget(false)" disabled>Select an Enemy Detachment to Fire</button>
-        <button id="btn-split-fire" class="btn-cc" onclick="window.gameScene.fireAtSelectedTarget(true)" style="display:none;" disabled title="Fire 1 Stand (or 1 Titan Weapon System) at this target and keep remaining stands/weapons ready for other targets!">🎯 Split Fire (1 Stand / Weapon)</button>
-        <button id="btn-cast-psychic-combat" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest offensive Psychic Powers during Shooting">🔮 Cast Psychic Power</button>
-        <button id="btn-toggle-smoke" class="btn-primary" onclick="window.gameScene.fireSmokeScreen()" style="display:none; background:#475569; border-color:#94a3b8;" title="Fire a 6cm Smoke Screen template instead of damage to block Line of Sight">💨 Fire Smoke Screen</button>
-        <button id="btn-target-building" class="btn-warn" onclick="window.gameScene.toggleTargetBuildingMode()" style="display:none; background:#b45309; border-color:#f59e0b;" title="Target enemy-occupied building with heavy artillery/siege weapon to inflict Structural Integrity (SI) damage">🏚️ Target Building (Siege)</button>
-        <button id="btn-combat-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up Attack (Rise Over Cover)</button>
-        <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;">Hold Fire (Switch to Advance)</button>
-        <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">Done / Skip Firing</button>
+        <button id="btn-next-fire-unit" onclick="window.gameScene.selectNextIdleUnit()" class="btn-primary" style="background:#4338ca; border-color:#6366f1;" title="Find next detachment ready to fire (Tab / N)">⏭ Next</button>
+        <button id="btn-fire-target" class="btn-fire" onclick="window.gameScene.fireAtSelectedTarget(false)" disabled>Tap an enemy</button>
+        <button id="btn-split-fire" class="btn-cc" onclick="window.gameScene.fireAtSelectedTarget(true)" style="display:none;" disabled title="Fire 1 Stand (or 1 Titan Weapon System) at this target and keep remaining stands/weapons ready for other targets!">🎯 One stand</button>
+        <button id="btn-cast-psychic-combat" class="btn-primary" onclick="window.gameScene.openPsychicPowerModal()" style="display:none; background:#7e22ce; border-color:#a855f7;" title="Manifest offensive Psychic Powers during Shooting">🔮 Psychic</button>
+        <button id="btn-toggle-smoke" class="btn-primary" onclick="window.gameScene.fireSmokeScreen()" style="display:none; background:#475569; border-color:#94a3b8;" title="Fire a 6cm Smoke Screen template instead of damage to block Line of Sight">💨 Smoke</button>
+        <button id="btn-target-building" class="btn-warn" onclick="window.gameScene.toggleTargetBuildingMode()" style="display:none; background:#b45309; border-color:#f59e0b;" title="Target enemy-occupied building with heavy artillery/siege weapon to inflict Structural Integrity (SI) damage">🏚️ Building</button>
+        <button id="btn-combat-popup" class="btn-warn" onclick="window.gameScene.toggleSkimmerPopUp()" style="display:none;">🚀 Pop-Up</button>
+        <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;" title="Wait and fire in the Advance Fire segment instead">⏳ Hold</button>
+        <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">⏭ Done</button>
       </div>
 
       <!-- III-2. Close Combat Segment Controls -->
       <div id="cc-controls" class="btn-row" style="display:none;">
-        <button id="btn-cc-next" class="btn-cc" onclick="window.gameScene.resolveNextCloseCombatBout()">⚔️ Fight Next Bout (2D6 + CAF)</button>
-        <button id="btn-cc-all" class="btn-fire" onclick="window.gameScene.resolveAllCloseCombats()">⚡ Auto-Resolve All Bouts</button>
+        <button id="btn-cc-next" class="btn-cc" onclick="window.gameScene.resolveNextCloseCombatBout()">⚔️ Fight</button>
+        <button id="btn-cc-all" class="btn-fire" onclick="window.gameScene.resolveAllCloseCombats()">⚡ Fight all</button>
       </div>
 
       <!-- IV. End Phase Controls -->
       <div id="end-controls" class="btn-row" style="display:none;">
-        <button id="btn-rally-end" class="btn-confirm" onclick="window.gameScene.resolveEndPhase()">🎲 Roll Rally Checks & Start Next Turn</button>
-        <button id="btn-restart-game" class="btn-primary" onclick="window.openArmyModal()" style="display:none;">🔄 New Battle / Army Setup</button>
+        <button id="btn-rally-end" class="btn-confirm" onclick="window.gameScene.resolveEndPhase()">🎲 Next turn</button>
+        <button id="btn-restart-game" class="btn-primary" onclick="window.openArmyModal()" style="display:none;">🔄 New battle</button>
       </div>
     </div>
   </div>
@@ -1676,7 +1756,7 @@ window.toggleSFX = function() {
   window.sfxEnabled = !window.sfxEnabled;
   const btn = document.getElementById('btn-sfx-toggle');
   if (btn) {
-    btn.innerText = window.sfxEnabled ? '🔊 SFX' : '🔇 Mute';
+    btn.innerText = window.sfxEnabled ? '🔊 Sound' : '🔇 Muted';
     btn.className = window.sfxEnabled ? 'btn-primary' : '';
   }
   if (window.sfxEnabled) window.sfx.playSave();
@@ -1687,7 +1767,7 @@ window.toggleAICam = function() {
   window.aiCamFollow = !window.aiCamFollow;
   const btn = document.getElementById('btn-cam-toggle');
   if (btn) {
-    btn.innerText = window.aiCamFollow ? '🎥 Follow Cam' : '🎥 Free Cam';
+    btn.innerText = window.aiCamFollow ? '🎥 Follow' : '🎥 Free cam';
     btn.className = window.aiCamFollow ? 'btn-primary' : '';
   }
 };
@@ -1713,11 +1793,15 @@ window.setBuilderStep = function(stepNum) {
   }
 };
 
+window.toggleSelDetails = function() {
+  const p = document.getElementById('selection-panel');
+  if (p) p.classList.toggle('expanded');
+};
 window.toggleBattleMenu = function() {
   const d = document.getElementById('battle-menu-dropdown');
   if (!d) return;
   const isHidden = (d.style.display === 'none' || !d.style.display);
-  d.style.display = isHidden ? 'flex' : 'none';
+  d.style.display = isHidden ? 'grid' : 'none';
 };
 
 window.toggleTitanHud = function() {
@@ -1729,13 +1813,15 @@ window.toggleTitanHud = function() {
   if (btn) btn.innerText = isHidden ? '—' : '＋';
 };
 
+// Army builder: switch between the unit catalogue and the chosen army
+window.builderView = { IMPERIUM: 'CAT', ORKS: 'CAT' };
+window.setBuilderView = function(side, view) {
+  window.builderView[side] = view;
+  window.renderArmyModal();
+};
 window.toggleRosterView = function(sidePrefix) {
-  const r = document.getElementById(`${sidePrefix}-roster`);
-  const icon = document.getElementById(`${sidePrefix}-roster-toggle-icon`);
-  if (!r) return;
-  const isHidden = (r.style.display === 'none');
-  r.style.display = isHidden ? 'block' : 'none';
-  if (icon) icon.innerText = isHidden ? '▼' : '►';
+  const side = sidePrefix === 'imp' ? 'IMPERIUM' : 'ORKS';
+  window.setBuilderView(side, window.builderView[side] === 'ARMY' ? 'CAT' : 'ARMY');
 };
 
 window.updateBriefingCard = function() {
@@ -14030,7 +14116,7 @@ window.setMapPreset = function(preset) {
   });
   const topMapBtn = document.getElementById('btn-map-toggle');
   if (topMapBtn) {
-    topMapBtn.innerText = `🗺️ Map: ${MAP_LABELS[preset] || preset}`;
+    topMapBtn.innerText = `🗺️ ${MAP_LABELS[preset] || preset}`;
   }
   if (window.gameScene) {
     window.gameScene.applyMapPreset(preset);
@@ -14055,10 +14141,10 @@ window.updateAIModeLabels = function() {
   const topBtn = document.getElementById('btn-ai-toggle');
   if (topBtn) {
     if (window.aiFaction === 'ORKS') {
-      topBtn.innerText = `🤖 AI: ${northMeta.name.toUpperCase()}`;
+      topBtn.innerText = `🤖 AI: ${northMeta.short}`;
       topBtn.className = 'btn-confirm';
     } else if (window.aiFaction === 'IMPERIUM') {
-      topBtn.innerText = `🤖 AI: ${southMeta.name.toUpperCase()}`;
+      topBtn.innerText = `🤖 AI: ${southMeta.short}`;
       topBtn.className = 'btn-primary';
     } else {
       topBtn.innerText = '👥 2P Hotseat';
@@ -14341,13 +14427,14 @@ window.renderArmyModal = function() {
     if (colTitle) {
       const isAI = window.aiFaction === side;
       colTitle.innerText = side === 'IMPERIUM'
-        ? `🛡️ South Force ${isAI ? '(AI)' : '(Player 1)'}`
-        : `🟢 North Force ${isAI ? '(AI)' : '(Player 2)'}`;
+        ? `🛡️ South ${isAI ? '(AI)' : '(P1)'}`
+        : `🟢 North ${isAI ? '(AI)' : '(P2)'}`;
       colTitle.style.color = meta.colorHex;
     }
     const colTrait = document.getElementById(`${prefix}-col-trait`);
     if (colTrait) {
-      colTrait.innerText = `✨ Faction Rules: ${meta.traitDesc}`;
+      colTrait.innerText = `✨ ${meta.traitDesc}`;
+      colTrait.title = 'Tap to show all faction rules';
       colTrait.style.color = meta.colorHex;
       colTrait.style.borderLeftColor = meta.borderHex;
     }
@@ -14375,10 +14462,10 @@ window.renderArmyModal = function() {
     if (filtersEl) {
       filtersEl.innerHTML = '';
       const filterOpts = [
-        { id: 'ALL', label: 'All', title: 'Show All Detachments' },
-        { id: 'COMPANY', label: '🏢 Co', title: 'Company Cards (Core Formation)' },
-        { id: 'SUPPORT', label: '🛡️ Sup', title: 'Support Cards (Max 5 per Company)' },
-        { id: 'SPECIAL', label: '⚔️ Spc', title: 'Special Cards (Max 1 per Company)' }
+        { id: 'ALL', label: 'All', title: 'Show all cards' },
+        { id: 'COMPANY', label: 'Co', title: 'Company cards (the core of the army)' },
+        { id: 'SUPPORT', label: 'Sup', title: 'Support cards (max 5 per company)' },
+        { id: 'SPECIAL', label: 'Spc', title: 'Special cards (max 1 per company)' }
       ];
       const activeFilter = (window.catalogFilter && window.catalogFilter[side]) || 'ALL';
       filterOpts.forEach(opt => {
@@ -14394,7 +14481,8 @@ window.renderArmyModal = function() {
     // Live Points Badge & Progress Bar (Always at top)
     const badge = document.getElementById(`${prefix}-pts-badge`);
     if (badge) {
-      badge.innerText = `${bd.totalPts} / ${window.pointsBudget} pts (${bd.cardCount} Cards)`;
+      badge.innerText = `${bd.totalPts}/${window.pointsBudget}`;
+      badge.title = `${bd.totalPts} of ${window.pointsBudget} points, ${bd.cardCount} cards`;
       badge.style.borderColor = bd.totalPts > window.pointsBudget ? '#ef4444' : (bd.totalPts >= window.pointsBudget * 0.85 ? '#10b981' : '#475569');
       badge.style.color = bd.totalPts > window.pointsBudget ? '#ef4444' : '#f8fafc';
     }
@@ -14409,28 +14497,28 @@ window.renderArmyModal = function() {
     // NetEpic Quota Chips (🏢 Co, 🛡️ Sup, ⚔️ Spc, 👑 Unq)
     const chipCo = document.getElementById(`${prefix}-chip-co`);
     if (chipCo) {
-      chipCo.innerText = `🏢 ${bd.companies} Co`;
+      chipCo.innerText = `Co ${bd.companies}`;
       chipCo.className = 'quota-chip ' + (bd.companies >= 1 ? 'quota-ok' : 'quota-warn');
       chipCo.title = 'Company Cards: Core of the army (NetEpic p. 13). At least 1 required.';
     }
 
     const chipSup = document.getElementById(`${prefix}-chip-sup`);
     if (chipSup) {
-      chipSup.innerText = `🛡️ ${bd.support}/${bd.maxSupport} Sup`;
+      chipSup.innerText = `Sup ${bd.support}/${bd.maxSupport}`;
       chipSup.className = 'quota-chip ' + (bd.companies === 0 ? 'quota-warn' : (bd.support <= bd.maxSupport ? 'quota-ok' : 'quota-err'));
       chipSup.title = 'Support Cards: Max 5 per Company Card.';
     }
 
     const chipSpc = document.getElementById(`${prefix}-chip-spc`);
     if (chipSpc) {
-      chipSpc.innerText = `⚔️ ${bd.special}/${bd.maxSpecial} Spc`;
+      chipSpc.innerText = `Spc ${bd.special}/${bd.maxSpecial}`;
       chipSpc.className = 'quota-chip ' + (bd.companies === 0 ? 'quota-warn' : (bd.special <= bd.maxSpecial ? 'quota-ok' : 'quota-err'));
       chipSpc.title = 'Special Cards: Max 1 per Company Card.';
     }
 
     const chipUnq = document.getElementById(`${prefix}-chip-unq`);
     if (chipUnq) {
-      chipUnq.innerText = `👑 ${bd.uniqueCount}/${bd.maxUnique} Unq`;
+      chipUnq.innerText = `👑 ${bd.uniqueCount}/${bd.maxUnique}`;
       chipUnq.className = 'quota-chip ' + (bd.uniqueCount <= bd.maxUnique ? 'quota-ok' : 'quota-err');
       chipUnq.title = `Unique Personalities: Max ${bd.maxUnique} at ${window.pointsBudget} pts (NetEpic p. 13).`;
     }
@@ -14439,7 +14527,7 @@ window.renderArmyModal = function() {
     const alertEl = document.getElementById(`${prefix}-rule-alert`);
     if (alertEl) {
       if (bd.valid) {
-        alertEl.innerHTML = '<span style="color:#4ade80;">✅ Legal</span>';
+        alertEl.innerHTML = '<span style="color:#4ade80;">✅</span>';
       } else {
         alertEl.innerHTML = `<span style="color:#fca5a5;">⚠️ ${bd.errors[0]}</span>`;
       }
@@ -14450,6 +14538,17 @@ window.renderArmyModal = function() {
     if (rosterCountEl) {
       rosterCountEl.innerText = bd.cardCount;
     }
+    const view = (window.builderView && window.builderView[side]) || 'CAT';
+    const showCat = view === 'CAT';
+    const setDisp = (id, on, disp = 'block') => { const el = document.getElementById(id); if (el) el.style.display = on ? disp : 'none'; };
+    setDisp(`${prefix}-catalog`, showCat);
+    setDisp(`${prefix}-col-trait`, showCat);
+    setDisp(`${prefix}-card-filters`, showCat, 'inline-flex');
+    setDisp(`${prefix}-roster-section`, !showCat);
+    const tabCat = document.getElementById(`${prefix}-tab-cat`);
+    const tabArmy = document.getElementById(`${prefix}-tab-army`);
+    if (tabCat) tabCat.className = 'filter-pill-btn' + (showCat ? ' active' : '');
+    if (tabArmy) tabArmy.className = 'filter-pill-btn' + (showCat ? '' : ' active');
 
     // Catalog Rendering
     const catEl = document.getElementById(`${prefix}-catalog`);
@@ -14464,27 +14563,27 @@ window.renderArmyModal = function() {
         const inArmyAlready = window.armyRosters[side].includes(u.key);
 
         let canAdd = true;
-        let addLabel = '+ Add';
+        let addLabel = '+';
 
         if (bd.totalPts + u.points > window.pointsBudget) {
           canAdd = false;
-          addLabel = 'Over Budget';
+          addLabel = 'pts';
         } else if (type !== 'COMPANY' && bd.companies === 0) {
           canAdd = false;
-          addLabel = 'Need Company';
+          addLabel = 'no Co';
         } else if (type === 'SUPPORT' && bd.support >= bd.maxSupport) {
           canAdd = false;
-          addLabel = 'Support Full (5/Co)';
+          addLabel = 'full';
         } else if ((type === 'SPECIAL' || type === 'UNIQUE') && bd.special >= bd.maxSpecial) {
           canAdd = false;
-          addLabel = 'Special Full (1/Co)';
+          addLabel = 'full';
         } else if (isUnq) {
           if (inArmyAlready) {
             canAdd = false;
-            addLabel = 'In Army (Unique)';
+            addLabel = '✓';
           } else if (bd.uniqueCount >= bd.maxUnique) {
             canAdd = false;
-            addLabel = `Unique Full (${bd.maxUnique})`;
+            addLabel = 'max';
           }
         }
 
@@ -14512,20 +14611,24 @@ window.renderArmyModal = function() {
         const badgeClass = isUnq ? 'badge-unique' : `badge-${(u.cardType || 'SUPPORT').toLowerCase()}`;
         const badgeText = isUnq ? '👑 UNIQUE' : u.cardType;
 
+        const badgeShort = isUnq ? '👑' : ({ COMPANY: 'CO', SUPPORT: 'SUP', SPECIAL: 'SPC' }[type] || type);
+        const wpnShort = u.weapon
+          ? (u.weapon.barrage ? `${u.weapon.rangeCm}cm ${u.weapon.barrageBp}BP` : `${u.weapon.rangeCm}cm ${u.weapon.dice}D6 ${u.weapon.toHit}+`)
+          : '';
+        const whyNot = { 'pts': 'Not enough points left', 'no Co': 'Add a company card first', 'full': 'No slots left for this card type', '✓': 'Already in your army (unique)', 'max': 'Unique limit reached' }[addLabel] || 'Add to army';
         const row = document.createElement('div');
-        row.className = 'catalog-item';
+        row.className = 'catalog-item cat-compact';
         row.innerHTML = `
-          <div style="flex:1; min-width:0; padding-right:8px;">
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <span class="card-badge ${badgeClass}">${badgeText}</span>
-              <span style="font-weight:700; color:#f8fafc;">${u.cardName || u.name}</span>
-              <span style="color:#fde047; font-weight:700;">(${u.points} pts / ${u.vpValue} VP)</span>
-              <span style="color:#f59e0b; font-size:0.72rem; font-weight:600;">[Break ${u.breakPoint} | Morale ${u.morale}+]</span>
+          <div class="cat-main" onclick="this.parentElement.classList.toggle('open')" title="Tap for details">
+            <div class="cat-line1">
+              <span class="card-badge ${badgeClass}">${badgeShort}</span>
+              <span class="cat-name">${u.cardName || u.name}</span>
+              <span class="cat-pts">${u.points}</span>
             </div>
-            <div class="sub-text" style="color:#e2e8f0; font-weight:600; margin-top:2px;">📦 ${u.composition || (u.standsCount + ' stands')}</div>
-            <div class="sub-text" style="color:#94a3b8; margin-top:1px;">Move ${u.moveCm}cm | Sv ${saveDesc} | CAF +${u.caf}${charNote}${psyNote}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${flameNote}${smokeNote}${siegeNote}${transNote} | ${wpnDesc}</div>
+            <div class="cat-line2">${u.standsCount} st · ${u.moveCm}cm · Sv${saveDesc} · CAF+${u.caf}${wpnShort ? ' · ' + wpnShort : ''}</div>
+            <div class="cat-more">📦 ${u.composition || (u.standsCount + ' stands')}<br>${u.vpValue} VP · Break ${u.breakPoint} · Morale ${u.morale}+${charNote}${psyNote}${shieldNote}${skimNote}${dsNote}${synNote}${regNote}${terNote}${masNote}${banNote}${flameNote}${smokeNote}${siegeNote}${transNote}<br>${wpnDesc}</div>
           </div>
-          <button class="btn-confirm" ${canAdd ? '' : 'disabled'} onclick="window.addDetachmentToRoster('${side}', '${u.key}')">${addLabel}</button>
+          <button class="btn-confirm cat-add" ${canAdd ? '' : 'disabled'} title="${whyNot}" onclick="window.addDetachmentToRoster('${side}', '${u.key}')">${addLabel}</button>
         `;
         catEl.appendChild(row);
       });
@@ -14536,7 +14639,7 @@ window.renderArmyModal = function() {
     if (rosEl) {
       rosEl.innerHTML = '';
       if (window.armyRosters[side].length === 0) {
-        rosEl.innerHTML = '<div class="sub-text" style="color:#94a3b8; padding:8px 4px; font-style:italic;">No cards in army. Tap "+ Add" above to add a Company Card and Support detachments.</div>';
+        rosEl.innerHTML = '<div class="sub-text" style="color:#94a3b8; padding:8px 4px; font-style:italic;">Your army is empty. Add a company card from Units first.</div>';
       } else {
         window.armyRosters[side].forEach((key, idx) => {
           const u = window.findCatalogUnit(key);
@@ -14546,13 +14649,18 @@ window.renderArmyModal = function() {
           const badgeText = isUnq ? '👑 UNIQUE' : u.cardType;
           const row = document.createElement('div');
           row.className = 'roster-item';
+          const rType = (u.cardType || 'SUPPORT').toUpperCase();
+          const rBadge = isUnq ? '👑' : ({ COMPANY: 'CO', SUPPORT: 'SUP', SPECIAL: 'SPC' }[rType] || rType);
           row.innerHTML = `
-            <div style="flex:1; min-width:0;">
-              <span class="card-badge ${badgeClass}" style="font-size:0.6rem; padding:1px 4px; margin-right:4px;">${badgeText}</span>
-              <b style="color:#f8fafc;">#${idx + 1} ${u.cardName || u.name}</b>
-              <div class="sub-text" style="margin-top:1px;">${u.composition || (u.standsCount + ' stands')} &bull; <span style="color:#fde047;">${u.points} pts</span> | <span style="color:#f59e0b;">Bk ${u.breakPoint}</span> | <span style="color:#38bdf8;">${u.vpValue} VP</span></div>
+            <div class="cat-main" onclick="this.parentElement.classList.toggle('open')" title="Tap for details">
+              <div class="cat-line1">
+                <span class="card-badge ${badgeClass}">${rBadge}</span>
+                <span class="cat-name">${u.cardName || u.name}</span>
+                <span class="cat-pts">${u.points}</span>
+              </div>
+              <div class="cat-more">📦 ${u.composition || (u.standsCount + ' stands')}<br>${u.vpValue} VP · Break ${u.breakPoint} · Morale ${u.morale}+</div>
             </div>
-            <button class="btn-fire" onclick="window.removeDetachmentFromRoster('${side}', ${idx})" title="Remove detachment">✕</button>
+            <button class="btn-fire cat-add" onclick="window.removeDetachmentFromRoster('${side}', ${idx})" title="Remove from army">✕</button>
           `;
           rosEl.appendChild(row);
         });
@@ -14565,13 +14673,13 @@ window.renderArmyModal = function() {
       if (bd.valid) {
         nextBtn.disabled = false;
         nextBtn.className = 'btn-primary';
-        nextBtn.innerText = (side === 'IMPERIUM') ? 'Next: Configure North Force →' : 'Next: Review & Deploy →';
+        nextBtn.innerText = 'Next →';
       } else {
         nextBtn.disabled = true;
         nextBtn.className = 'btn-primary disabled';
         let reason = 'Cannot Proceed';
-        if (bd.cardCount === 0) reason = '⚠️ Roster Empty: Add Units';
-        else if (bd.companies === 0) reason = '⚠️ Need ≥1 Company Card';
+        if (bd.cardCount === 0) reason = '⚠️ Army empty';
+        else if (bd.companies === 0) reason = '⚠️ Need a company';
         else if (bd.support > bd.maxSupport) reason = `⚠️ Too Many Support (${bd.support}/${bd.maxSupport})`;
         else if (bd.special > bd.maxSpecial) reason = `⚠️ Too Many Special (${bd.special}/${bd.maxSpecial})`;
         else if (bd.hasDuplicateUnique) reason = `⚠️ Duplicate: ${bd.duplicateName}`;
@@ -14836,7 +14944,7 @@ window.toggleOptionSFX = function() {
   }
   const hudBtn = document.getElementById('btn-sfx-toggle');
   if (hudBtn) {
-    hudBtn.innerText = window.sfxEnabled ? '🔊 SFX' : '🔇 Mute';
+    hudBtn.innerText = window.sfxEnabled ? '🔊 Sound' : '🔇 Muted';
     hudBtn.className = window.sfxEnabled ? 'btn-primary' : '';
   }
   window.updateOptionsUI();
@@ -14846,7 +14954,7 @@ window.toggleOptionCam = function() {
   window.aiCamFollow = !window.aiCamFollow;
   const hudBtn = document.getElementById('btn-cam-toggle');
   if (hudBtn) {
-    hudBtn.innerText = window.aiCamFollow ? '🎥 Follow Cam' : '🎥 Free Cam';
+    hudBtn.innerText = window.aiCamFollow ? '🎥 Follow' : '🎥 Free cam';
     hudBtn.className = window.aiCamFollow ? 'btn-primary' : '';
   }
   window.updateOptionsUI();
@@ -14856,7 +14964,7 @@ window.toggleOptionAmbientFire = function() {
   window.ambientBattlefieldFire = (window.ambientBattlefieldFire === false) ? true : false;
   const hudBtn = document.getElementById('btn-ambient-toggle');
   if (hudBtn) {
-    hudBtn.innerText = window.ambientBattlefieldFire ? '💥 Ambience: ON' : '💥 Ambience: OFF';
+    hudBtn.innerText = window.ambientBattlefieldFire ? '💥 Ambience' : '🔕 Ambience';
     hudBtn.className = window.ambientBattlefieldFire ? 'btn-primary' : '';
   }
   window.updateOptionsUI();
@@ -15402,7 +15510,8 @@ class NetEpicScene extends Phaser.Scene {
     this.spawnObjectives();
     this.spawnArmyLists(window.armyRosters.IMPERIUM, window.armyRosters.ORKS, true);
     this.setupCameraAndInput();
-    this.resetCamera();
+    this.applyViewOrientation(true);
+    this.scale.on('resize', () => this.applyViewOrientation());
     window.loadSavedOptions();
     window.renderArmyModal();
     window.returnToTitleScreen();
@@ -20605,7 +20714,8 @@ class NetEpicScene extends Phaser.Scene {
 
     const spanW = (maxX - minX) + 260;
     const spanH = (maxY - minY) + 240;
-    const fitZoom = Math.min(cam.width / spanW, cam.height / spanH);
+    const view = this.getViewSpan();
+    const fitZoom = Math.min(view.w / spanW, view.h / spanH);
     const targetZoom = Phaser.Math.Clamp(fitZoom, 0.45, 1.05);
 
     // Smoothly pan and zoom camera to comfortably frame both attacker and target
@@ -20903,21 +21013,21 @@ class NetEpicScene extends Phaser.Scene {
 
       // Update Button label and Status text for current step
       if (this._combatStep === 1) {
-        if (statusEl) statusEl.innerText = 'Step 1 of 3: Inspect Melee Matchup (Space to Roll)';
+        if (statusEl) statusEl.innerText = '1/3 · Matchup';
         if (btnContinue) {
-          btnContinue.innerText = '▶ Roll Melee Dice (Space) 🎲';
+          btnContinue.innerText = '🎲 Roll';
           btnContinue.className = 'btn-primary';
         }
       } else if (this._combatStep === 2) {
-        if (statusEl) statusEl.innerText = 'Step 2 of 3: Inspect Melee Rolls (Space to advance)';
+        if (statusEl) statusEl.innerText = '2/3 · Rolls';
         if (btnContinue) {
-          btnContinue.innerText = '▶ View Outcome & Casualties (Space) →';
+          btnContinue.innerText = '▶ Result';
           btnContinue.className = 'btn-primary';
         }
       } else {
-        if (statusEl) statusEl.innerText = 'Step 3 of 3: Confirm Casualties';
+        if (statusEl) statusEl.innerText = '3/3 · Result';
         if (btnContinue) {
-          btnContinue.innerText = data.kills > 0 ? '💥 Destroy Casualty & Continue (Space) ▶' : '✓ Continue (Space) ▶';
+          btnContinue.innerText = data.kills > 0 ? '💥 Continue' : '✓ Continue';
           btnContinue.className = 'btn-confirm';
         }
       }
@@ -20992,21 +21102,21 @@ class NetEpicScene extends Phaser.Scene {
 
     // Update Button label and Status text for current step
     if (this._combatStep === 1) {
-      if (statusEl) statusEl.innerText = 'Step 1 of 3: Inspect Hit Rolls (Space to advance)';
+      if (statusEl) statusEl.innerText = '1/3 · Hits';
       if (btnContinue) {
-        btnContinue.innerText = (data.hits > 0 && hasSaves) ? '▶ Reveal Saves & Shields (Space) →' : '▶ View Outcome (Space) →';
+        btnContinue.innerText = (data.hits > 0 && hasSaves) ? '▶ Saves' : '▶ Result';
         btnContinue.className = 'btn-primary';
       }
     } else if (this._combatStep === 2) {
-      if (statusEl) statusEl.innerText = 'Step 2 of 3: Inspect Saves & Defense (Space to advance)';
+      if (statusEl) statusEl.innerText = '2/3 · Saves';
       if (btnContinue) {
-        btnContinue.innerText = '▶ View Outcome & Casualties (Space) →';
+        btnContinue.innerText = '▶ Result';
         btnContinue.className = 'btn-primary';
       }
     } else {
-      if (statusEl) statusEl.innerText = 'Step 3 of 3: Confirm Casualties';
+      if (statusEl) statusEl.innerText = '3/3 · Result';
       if (btnContinue) {
-        btnContinue.innerText = data.kills > 0 ? '💥 Destroy Casualties & Continue (Space) ▶' : '✓ Continue (Space) ▶';
+        btnContinue.innerText = data.kills > 0 ? '💥 Continue' : '✓ Continue';
         btnContinue.className = 'btn-confirm';
       }
     }
@@ -21130,6 +21240,12 @@ class NetEpicScene extends Phaser.Scene {
       return `<div class="dice-row"><span style="color:#94a3b8; font-weight:700; margin-right:4px;">${r.label}:</span>${diceHtml}${summaryHtml}</div>`;
     }).join('');
     tray.style.display = 'block';
+    tray.onclick = () => { tray.style.display = 'none'; };
+    // On phones the tray fades out by itself so it doesn't sit over the map
+    if (this._diceTrayTimer) clearTimeout(this._diceTrayTimer);
+    if (window.innerWidth <= 900 || window.innerHeight <= 560) {
+      this._diceTrayTimer = setTimeout(() => { tray.style.display = 'none'; }, 6000);
+    }
   }
 
   updateTitanHUD(det) {
@@ -21838,7 +21954,9 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- PHASE 7: VISUAL FX, FLOATING POPUPS & EXPLOSIONS ---
   spawnFloatingText(x, y, text, colorHex = '#fde047', fontSize = '12px') {
-    const label = this.add.text(x, y - 10, text, {
+    const up = this.getScreenUpVector();
+    // Callers pass a point offset "above" the target in world Y; re-aim that offset at screen-up
+    const label = this.add.text(x + up.x * 10, y + up.y * 10, text, {
       fontSize,
       fontStyle: 'bold',
       color: colorHex,
@@ -21850,7 +21968,8 @@ class NetEpicScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: label,
-      y: y - 46,
+      x: x + up.x * 46,
+      y: y + up.y * 46,
       alpha: { from: 1, to: 0 },
       duration: 1200,
       ease: 'Cubic.easeOut',
@@ -25400,6 +25519,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    this.keepTextUpright();
     if (this._lastCamZoom !== this.cameras.main.zoom) {
       this._lastCamZoom = this.cameras.main.zoom;
       this.updateZoomLOD();
@@ -26043,18 +26163,78 @@ class NetEpicScene extends Phaser.Scene {
       }
       this.lastPinchDist = 0;
       if (pointer.isDown) {
-        cam.scrollX -= (pointer.x - pointer.prevPosition.x) / cam.zoom;
-        cam.scrollY -= (pointer.y - pointer.prevPosition.y) / cam.zoom;
+        const dx = pointer.x - pointer.prevPosition.x, dy = pointer.y - pointer.prevPosition.y;
+        const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
+        cam.scrollX -= (c * dx + sn * dy) / cam.zoom;
+        cam.scrollY -= (-sn * dx + c * dy) / cam.zoom;
       }
     });
   }
 
+  // Portrait phones: turn the table so its long edge runs up the screen (South on the left, North on the right)
+  isPortraitView() {
+    return this.scale.height > this.scale.width * 1.05;
+  }
+
+  applyViewOrientation(force = false) {
+    const cam = this.cameras.main;
+    const rot = this.isPortraitView() ? Math.PI / 2 : 0;
+    if (force || cam.rotation !== rot) {
+      cam.setRotation(rot);
+      this.resetCamera();
+    }
+  }
+
+  // Screen pixels available along the world's X and Y axes (swapped when the camera is turned)
+  getViewSpan() {
+    const cam = this.cameras.main;
+    const turned = Math.abs(Math.sin(cam.rotation)) > 0.5;
+    return turned ? { w: cam.height, h: cam.width } : { w: cam.width, h: cam.height };
+  }
+
+  // World direction that points "up" on screen
+  getScreenUpVector() {
+    const r = this.cameras.main.rotation;
+    return { x: -Math.sin(r), y: -Math.cos(r) };
+  }
+
+  // Keep every text label readable whatever way the camera or its parent container is turned
+  keepTextUpright() {
+    const camRot = this.cameras.main.rotation;
+    const walk = (list, parentRot) => {
+      for (let i = 0; i < list.length; i++) {
+        const o = list[i];
+        if (o.type === 'Text') {
+          const want = -camRot - parentRot;
+          if (o.rotation !== want) o.rotation = want;
+        } else if (o.type === 'Container' && o.list && o.list.length) {
+          walk(o.list, parentRot + o.rotation);
+        }
+      }
+    };
+    walk(this.children.list, 0);
+  }
+
   resetCamera() {
     const cam = this.cameras.main;
-    const zoomX = this.scale.width / (BOARD_W + 60);
-    const zoomY = this.scale.height / (BOARD_H + 120);
-    cam.setZoom(Math.min(zoomX, zoomY));
+    // Fit the table into the screen area between the top bar and the bottom unit panel
+    const topEl = document.getElementById('top-bar');
+    const botEl = document.getElementById('bottom-bar');
+    let topH = 60, botH = 110;
+    if (topEl && topEl.offsetHeight) topH = topEl.getBoundingClientRect().bottom + 4;
+    if (botEl && botEl.offsetHeight) botH = Math.max(botH, window.innerHeight - botEl.getBoundingClientRect().top + 4);
+    const availH = Math.max(120, cam.height - topH - botH);
+    const turned = Math.abs(Math.sin(cam.rotation)) > 0.5;
+    const zoomX = (turned ? availH : cam.width) / (BOARD_W + 30);
+    const zoomY = (turned ? cam.width : availH) / (BOARD_H + 30);
+    const zoom = Math.max(0.2, Math.min(zoomX, zoomY));
+    cam.setZoom(zoom);
     cam.centerOn(BOARD_W / 2, BOARD_H / 2);
+    // Nudge the view so the table sits in the middle of the free area, not the middle of the screen
+    const dy = (topH - botH) / 2;
+    const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
+    cam.scrollX -= (sn * dy) / zoom;
+    cam.scrollY -= (c * dy) / zoom;
     this.updateZoomLOD();
   }
 
@@ -28371,12 +28551,14 @@ class NetEpicScene extends Phaser.Scene {
     const endControls = document.getElementById('end-controls');
     const snapBanner = document.getElementById('snapfire-banner');
 
-    turnText.innerText = this.phase === 'DEPLOYMENT' ? 'Setup' : `Turn ${this.turn}`;
+    turnText.innerText = this.phase === 'DEPLOYMENT' ? '' : `T${this.turn}`;
     const impTot = this.getTotalVP('IMPERIUM');
     const orkTot = this.getTotalVP('ORKS');
     const sShort = this.getSideShort('IMPERIUM');
     const nShort = this.getSideShort('ORKS');
-    vpScore.innerText = `${sShort}: ${impTot} VP (Obj:${this.objVp.IMPERIUM}) | ${nShort}: ${orkTot} VP (Obj:${this.objVp.ORKS}) [Goal: ${this.getVictoryVpTarget()} VP]`;
+    const sCol = this.getSideMeta('IMPERIUM').colorHex, nCol = this.getSideMeta('ORKS').colorHex;
+    vpScore.innerHTML = `<b style="color:${sCol}">${impTot}</b>–<b style="color:${nCol}">${orkTot}</b> <span style="color:#94a3b8;font-weight:600;">/${this.getVictoryVpTarget()}</span>`;
+    vpScore.title = `Victory points: ${sShort} ${impTot} (objectives ${this.objVp.IMPERIUM}), ${nShort} ${orkTot} (objectives ${this.objVp.ORKS}). First to ${this.getVictoryVpTarget()} wins.`;
 
     // Live Next Unit tracker badge update
     const idleUnits = this.getIdleUnits();
@@ -28409,14 +28591,15 @@ class NetEpicScene extends Phaser.Scene {
     const btnMoveGrp = document.getElementById('btn-move-group');
     [btnDeployGrp, btnMoveGrp].forEach(b => {
       if (!b) return;
-      b.innerText = this.groupMoveMode ? '🔗 Group Move: ON (Double-Click)' : '🔓 Group Move: OFF (Double-Click)';
+      b.innerText = this.groupMoveMode ? '🔗 Group' : '🔓 Single';
+      b.title = this.groupMoveMode ? 'Dragging moves the whole detachment. Tap to move stands one at a time.' : 'Dragging moves one stand. Tap to move the whole detachment together.';
       b.className = this.groupMoveMode ? 'btn-group-on' : '';
     });
 
     if (this.phase === 'DEPLOYMENT') {
-      phaseBadge.innerText = '0. Deployment Phase';
+      phaseBadge.innerText = 'Deploy';
       phaseBadge.style.background = '#0284c7';
-      promptText.innerText = 'Drag detachments inside your Deployment Zone (🚐 Embark Troops or hold ☄️ Deep Strike units in Orbital Reserve!)';
+      promptText.innerText = 'Drag your units into your deployment zone. You can load troops (🚐) or hold deep strikers in reserve (☄️).';
       deployControls.style.display = 'flex';
 
       const btnDepTrans = document.getElementById('btn-deploy-transport');
@@ -28426,9 +28609,8 @@ class NetEpicScene extends Phaser.Scene {
           : null;
         if (tInfo) {
           btnDepTrans.style.display = 'block';
-          btnDepTrans.innerText = tInfo.action === 'EMBARK'
-            ? `🚐 Embark ${tInfo.passenger.name} into ${tInfo.transport.name}`
-            : `🚶 Disembark ${tInfo.passenger.name}`;
+          btnDepTrans.innerText = this.transportButtonLabel(tInfo, this.selectedDetachment);
+          btnDepTrans.title = tInfo.action === 'EMBARK' ? `${tInfo.passenger.name} boards ${tInfo.transport.name}` : `${tInfo.passenger.name} gets out of ${tInfo.transport.name}`;
         } else {
           btnDepTrans.style.display = 'none';
         }
@@ -28438,34 +28620,33 @@ class NetEpicScene extends Phaser.Scene {
       if (btnDepRes) {
         if (this.selectedDetachment && this.selectedDetachment.deepStrike && !this.isFactionAI(this.selectedDetachment.faction)) {
           btnDepRes.style.display = 'block';
-          btnDepRes.innerText = this.selectedDetachment.inReserve
-            ? `📍 Return ${this.selectedDetachment.name} to Deployment Zone`
-            : `☄️ Hold ${this.selectedDetachment.name} in Orbital Reserve (Deep Strike)`;
+          btnDepRes.innerText = this.selectedDetachment.inReserve ? '📍 Deploy' : '☄️ Reserve';
+          btnDepRes.title = this.selectedDetachment.inReserve ? 'Put this unit back on the table' : 'Hold this unit off-table to Deep Strike later';
         } else {
           btnDepRes.style.display = 'none';
         }
       }
     }
     else if (this.phase === 'ORDERS') {
-      phaseBadge.innerText = 'I. Orders Phase';
+      phaseBadge.innerText = 'Orders';
       phaseBadge.style.background = '#d97706';
       const remaining = this.detachments.filter(d => d.stands.length > 0 && !d.order && !d.embarkedOn).length;
       promptText.innerText = remaining > 0
-        ? `Place face-down Orders (${remaining} detachment${remaining > 1 ? 's' : ''} left)`
-        : 'All Orders placed! Roll Initiative to start Movement.';
+        ? `Give each unit an order (${remaining} left)`
+        : 'All orders given. Roll initiative to start moving.';
       ordersControls.style.display = (this.selectedDetachment && !this.selectedDetachment.embarkedOn && this.selectedDetachment.order !== 'FALL_BACK' && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
       lockOrdersRow.style.display = remaining === 0 ? 'flex' : 'none';
     } 
     else if (this.phase === 'SNAP_INTERRUPT') {
-      phaseBadge.innerText = '⚡ SNAP FIRE INTERRUPT';
+      phaseBadge.innerText = '⚡ Snap Fire';
       phaseBadge.style.background = '#dc2626';
       const shooterNames = this.snapCandidates.map(c => c.name).join(', ');
-      promptText.innerText = `⚡ SNAP FIRE: [${shooterNames}] aiming at moving enemy 🎯 [${this.snapTarget.name}]! (Cyan rays on map show LoS)`;
+      promptText.innerText = `${this.snapTarget.name} moved into sight. Fire at it with a First Fire unit, or pass.`;
       snapBanner.style.display = 'block';
 
       const snapTextEl = document.getElementById('snapfire-text');
       if (snapTextEl) {
-        snapTextEl.innerHTML = `⚡ <b>SNAP FIRE OPPORTUNITY!</b> Enemy <span style="color:#fef08a; text-decoration:underline;">🎯 ${this.snapTarget.name}</span> moved into sight! Select which First Fire unit shoots:`;
+        snapTextEl.innerHTML = `⚡ <b>Snap fire</b> at 🎯 ${this.snapTarget.name}?`;
       }
 
       const btnContainer = document.getElementById('snapfire-buttons');
@@ -28475,7 +28656,8 @@ class NetEpicScene extends Phaser.Scene {
         const neededHit = Math.min(6, cand.weapon.toHit + 1 - (cand.toHitPenalty || 0));
         const b = document.createElement('button');
         b.className = 'btn-fire';
-        b.innerText = `🔥 ${cand.name} ➔ 🎯 ${this.snapTarget.name} (${sol.validPairs.length}/${cand.stands.length} stands in LoS, Hit ${neededHit}+)`;
+        b.innerText = `🔥 ${this.shortName(cand.name)} (${sol.validPairs.length} stands, ${neededHit}+)`;
+        b.title = `${cand.name}: ${sol.validPairs.length}/${cand.stands.length} stands can see the target, hitting on ${neededHit}+`;
         b.onpointerenter = () => {
           this.previewSnapFirer = cand;
           this.panCameraBetween(this.getDetachmentCenter(cand), this.getDetachmentCenter(this.snapTarget), 450);
@@ -28485,31 +28667,35 @@ class NetEpicScene extends Phaser.Scene {
         btnContainer.appendChild(b);
       });
       const passBtn = document.createElement('button');
-      passBtn.innerText = '⏭️ Pass / Hold Fire (Save First Fire for Combat Phase)';
+      passBtn.innerText = '⏭ Pass';
+      passBtn.title = 'Keep your First Fire for the combat phase';
       passBtn.onclick = () => this.resolveSnapFireChoice(null);
       btnContainer.appendChild(passBtn);
     }
     else if (this.phase === 'MOVEMENT') {
       const actSideName = this.getSideName(this.activePlayer);
-      phaseBadge.innerText = `II. Movement (${actSideName})`;
+      phaseBadge.innerText = `Move · ${this.getSideShort(this.activePlayer)}`;
       phaseBadge.style.background = this.getSideMeta(this.activePlayer).borderHex;
       if (this.isFactionAI(this.activePlayer)) {
-        const aiUnit = this.activatingDetachment ? `${this.activatingDetachment.name} (${ORDER_INFO[this.activatingDetachment.order].label})` : `${actSideName} AI Commander`;
-        promptText.innerText = `🤖 ${aiUnit} is manoeuvring across the battlefield...`;
+        const aiOrd = this.activatingDetachment && ORDER_INFO[this.activatingDetachment.order];
+        const aiUnit = this.activatingDetachment ? `${this.activatingDetachment.name}${aiOrd ? ` (${aiOrd.label})` : ''}` : `${actSideName} AI`;
+        promptText.innerText = `🤖 ${aiUnit} is moving…`;
         moveControls.style.display = 'none';
       } else {
-        const grpHint = this.groupMoveMode ? ' [🔗 GROUP MOVE ON — Double-click to toggle]' : ' [Double-click unit to Group-Move]';
+        const grpHint = this.groupMoveMode ? ' (whole detachment)' : ' (one stand at a time)';
         const effMove = this.activatingDetachment ? this.getEffectiveMoveCm(this.activatingDetachment) : 0;
-        const roadTag = (this.activatingDetachment && this.hasRoadBonus(this.activatingDetachment)) ? ' (🛣️ +5cm Road Bonus!)' : '';
+        const roadTag = (this.activatingDetachment && this.hasRoadBonus(this.activatingDetachment)) ? ' (+5cm road)' : '';
         promptText.innerText = this.activatingDetachment
           ? (this.activatingDetachment.deepStrikeActive
-              ? `☄️ DEEP STRIKE / TELEPORT: Tap or drag anywhere on the battlefield to set your Drop Zone, then click Confirm Move (2D6cm Scatter)!`
+              ? `☄️ Deep Strike: tap where to land, then Confirm (scatters 2D6 cm)`
               : (this.activatingDetachment.order === 'CHARGE'
-                  ? `CHARGE! Drag stands up to ${effMove * 2} cm${roadTag} — Drag onto enemy stands to Pin & enter Close Combat!${grpHint}`
+                  ? `Charge: drag up to ${effMove * 2} cm${roadTag}; touch an enemy to fight${grpHint}`
                   : (this.activatingDetachment.order === 'FALL_BACK'
-                      ? `FALL BACK! Retreat up to ${effMove * 2} cm${roadTag} toward your home board edge (or click Auto-Retreat)`
-                      : `Drag stands up to ${effMove * ORDER_INFO[this.activatingDetachment.order].mult} cm${roadTag}${grpHint}`)))
-          : `${actSideName}: Tap one of your unmoved detachments to reveal its Order (Double-click to Group-Select)`;
+                      ? `Fall back: retreat up to ${effMove * 2} cm${roadTag} towards your edge, or tap Retreat`
+                      : (this.activatingDetachment.order === 'FIRST_FIRE'
+                          ? 'First Fire: this unit stays put. Turn it if needed, then Confirm.'
+                          : `Drag up to ${effMove * ORDER_INFO[this.activatingDetachment.order].mult} cm${roadTag}${grpHint}`))))
+          : `${actSideName}: tap one of your units that hasn't moved`;
 
         moveControls.style.display = (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) ? 'flex' : 'none';
         if (this.selectedDetachment && !this.isFactionAI(this.selectedDetachment.faction)) {
@@ -28518,7 +28704,7 @@ class NetEpicScene extends Phaser.Scene {
           const btnAct = document.getElementById('btn-activate');
           btnAct.style.display = isAct ? 'none' : 'block';
           btnAct.disabled = !canAct;
-          btnAct.innerText = this.selectedDetachment.moved ? 'Already Moved' : 'Reveal Order & Activate';
+          btnAct.innerText = this.selectedDetachment.moved ? '✓ Moved' : '▶ Activate';
           document.getElementById('btn-move-group').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-move-compact').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-move-rotate').style.display = isAct ? 'block' : 'none';
@@ -28527,17 +28713,16 @@ class NetEpicScene extends Phaser.Scene {
           document.getElementById('btn-undo-move').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-confirm-move').style.display = isAct ? 'block' : 'none';
           document.getElementById('btn-confirm-move').innerText = (isAct && this.activatingDetachment.deepStrikeActive)
-            ? '☄️ Confirm Drop Zone (Roll 2D6 Scatter)'
-            : 'Confirm Move';
+            ? '☄️ Drop here'
+            : '✅ Confirm';
 
           const btnMoveTrans = document.getElementById('btn-move-transport');
           if (btnMoveTrans) {
             const tInfo = isAct ? this.getTransportActionInfo(this.activatingDetachment) : null;
             if (tInfo) {
               btnMoveTrans.style.display = 'block';
-              btnMoveTrans.innerText = tInfo.action === 'EMBARK'
-                ? `🚐 Embark into ${tInfo.transport.name}`
-                : `🚶 Disembark ${tInfo.passenger.name}`;
+              btnMoveTrans.innerText = this.transportButtonLabel(tInfo, this.activatingDetachment);
+              btnMoveTrans.title = tInfo.action === 'EMBARK' ? `${tInfo.passenger.name} boards ${tInfo.transport.name}` : `${tInfo.passenger.name} gets out of ${tInfo.transport.name}`;
             } else {
               btnMoveTrans.style.display = 'none';
             }
@@ -28547,9 +28732,7 @@ class NetEpicScene extends Phaser.Scene {
           if (btnMovePop) {
             if (isAct && this.activatingDetachment.skimmer && this.activatingDetachment.order === 'FIRST_FIRE') {
               btnMovePop.style.display = 'block';
-              btnMovePop.innerText = this.activatingDetachment.poppedUp
-                ? '⬇️ Drop to Low Hover'
-                : '🚀 Pop-Up Attack (Rise Over Cover)';
+              btnMovePop.innerText = this.activatingDetachment.poppedUp ? '⬇️ Drop down' : '🚀 Pop-Up';
             } else {
               btnMovePop.style.display = 'none';
             }
@@ -28560,7 +28743,7 @@ class NetEpicScene extends Phaser.Scene {
             const dsDet = this.activatingDetachment || this.selectedDetachment;
             if (dsDet && dsDet.deepStrike && !dsDet.deepStrikeUsed && !dsDet.deepStrikeActive && !dsDet.moved && dsDet.faction === this.activePlayer) {
               btnMoveDs.style.display = 'block';
-              btnMoveDs.innerText = `☄️ Deep Strike / Teleport ${dsDet.name} Anywhere!`;
+              btnMoveDs.innerText = '☄️ Deep Strike';
             } else {
               btnMoveDs.style.display = 'none';
             }
@@ -28583,16 +28766,16 @@ class NetEpicScene extends Phaser.Scene {
     }
     else if (this.phase === 'COMBAT_CC') {
       const remainingCount = this.ccBouts ? this.ccBouts.length : 0;
-      phaseBadge.innerText = `III-2. Close Combat (${remainingCount} Left)`;
+      phaseBadge.innerText = `Melee · ${remainingCount} left`;
       phaseBadge.style.background = '#9333ea';
       combatControls.style.display = 'none';
       ccControls.style.display = 'flex';
 
       const b = this.cleanCloseCombatBouts();
       if (!b) {
-        promptText.innerText = '⚔️ All Close Combat bouts resolved!';
+        promptText.innerText = 'All close combats fought.';
         const btnNext = document.getElementById('btn-cc-next');
-        if (btnNext) btnNext.innerText = '✓ Proceed to Advance Fire';
+        if (btnNext) btnNext.innerText = '✓ Advance Fire';
       } else {
         const impDet = b.impStand.detachment;
         const orkDet = b.orkStand.detachment;
@@ -28614,14 +28797,14 @@ class NetEpicScene extends Phaser.Scene {
         promptText.innerHTML = `⚔️ <b>Next Melee:</b> 🛡️ <b style="color:#60a5fa;">${impDet.name} (${b.impStand.label})</b> [${impDice}D6+${impCaf}] vs 🟢 <b style="color:#4ade80;">${orkDet.name} (${b.orkStand.label})</b> [${orkDice}D6+${orkCaf}]`;
         const btnNext = document.getElementById('btn-cc-next');
         if (btnNext) {
-          btnNext.innerText = `⚔️ Fight Bout: ${b.impStand.label} vs ${b.orkStand.label} (${impDice}D6+${impCaf} vs ${orkDice}D6+${orkCaf})`;
+          btnNext.innerText = `⚔️ Fight (${impDice}D6+${impCaf} v ${orkDice}D6+${orkCaf})`;
         }
       }
     }
     else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
       const actSideName = this.getSideName(this.activePlayer);
-      const segTitle = this.phase === 'COMBAT_FIRST' ? 'III-1. First Fire' : 'III-3. Advance Fire';
-      phaseBadge.innerText = `${segTitle} (${actSideName})`;
+      const segTitle = this.phase === 'COMBAT_FIRST' ? 'First Fire' : 'Adv. Fire';
+      phaseBadge.innerText = `${segTitle} · ${this.getSideShort(this.activePlayer)}`;
       phaseBadge.style.background = '#dc2626';
 
       if (this.isFactionAI(this.activePlayer)) {
@@ -28641,9 +28824,7 @@ class NetEpicScene extends Phaser.Scene {
         if (btnCombatPop) {
           if (this.phase === 'COMBAT_FIRST' && this.activatingDetachment && this.activatingDetachment.skimmer) {
             btnCombatPop.style.display = 'block';
-            btnCombatPop.innerText = this.activatingDetachment.poppedUp
-              ? '⬇️ Drop to Low Hover'
-              : '🚀 Pop-Up Attack (Rise Over Cover)';
+            btnCombatPop.innerText = this.activatingDetachment.poppedUp ? '⬇️ Drop down' : '🚀 Pop-Up';
           } else {
             btnCombatPop.style.display = 'none';
           }
@@ -28679,13 +28860,15 @@ class NetEpicScene extends Phaser.Scene {
             if (isSalvoUnit) {
               const nextIdx = this.activatingDetachment.salvosFired || 0;
               const sWpn = this.getSalvoWeapon(this.activatingDetachment, nextIdx);
-              btnSplit.innerText = `🎯 Fire Salvo ${nextIdx + 1}/${this.activatingDetachment.maxSalvos}: ${sWpn.name} (${sWpn.dice}d, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
+              btnSplit.innerText = `🎯 ${this.shortName(sWpn.name, 16)}`;
+              btnSplit.title = `Fire weapon ${nextIdx + 1}/${this.activatingDetachment.maxSalvos}: ${sWpn.name} (${sWpn.dice}D6, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
             } else {
               const activeShooter = sol.validPairs[0].shooter;
               const standIdx = this.activatingDetachment.stands.indexOf(activeShooter) + 1;
               const sWpn = activeShooter.weapon || this.activatingDetachment.weapon;
               const sLabel = activeShooter.label || `Stand #${standIdx}`;
-              btnSplit.innerText = `🎯 Fire ${sLabel}: ${sWpn.name} (${sWpn.dice}d, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
+              btnSplit.innerText = '🎯 One stand';
+              btnSplit.title = `Fire just ${sLabel}: ${sWpn.name} (${sWpn.dice}D6, ${sWpn.rangeCm}cm, ${sWpn.toHit}+, TSM ${sWpn.tsm})`;
             }
           } else if (btnSplit) {
             btnSplit.style.display = 'none';
@@ -28693,53 +28876,47 @@ class NetEpicScene extends Phaser.Scene {
 
           if (this.activatingDetachment.weapon && this.activatingDetachment.weapon.pulsaRokkit) {
             const rokkitsLeft = this.activatingDetachment.rokkitsRemaining || 0;
-            btnFire.innerText = sol.validPairs.length > 0
-              ? `🚀 Launch Pulsa Rokkit (${rokkitsLeft}/3 rokkits ready) at ${this.targetDetachment.name}!`
-              : `🚫 ${this.targetDetachment.name} Outside 30° Front Arc / Out of Line of Sight`;
+            btnFire.innerText = sol.validPairs.length > 0 ? `🚀 Launch (${rokkitsLeft}/3)` : '🚫 Not in arc/sight';
           } else if (sol.isBarrage && sol.validPairs.length > 0) {
-            const modeTag = sol.isIndirect ? '📡 INDIRECT (-1 Hit)' : '💥 DIRECT';
-            btnFire.innerText = `${modeTag} Barrage at ${this.targetDetachment.name} (${sol.totalBp} BP → ${sol.templateTargets.length} stands under 6cm template!)`;
+            btnFire.innerText = `💥 ${sol.isIndirect ? 'Indirect' : 'Barrage'} ${sol.totalBp} BP`;
+            btnFire.title = `${sol.isIndirect ? 'Indirect (scatters 2D6 cm)' : 'Direct'} barrage at ${this.targetDetachment.name}: ${sol.totalBp} BP, ${sol.templateTargets.length} stands under the template`;
           } else {
             if (isSalvoUnit) {
               const allDice = Math.max(1, Math.round(this.activatingDetachment.weapon.dice * (salvosRemaining / this.activatingDetachment.maxSalvos)));
-              btnFire.innerText = sol.validPairs.length > 0
-                ? `🔥 Fire All Remaining Weapons (${salvosRemaining} Salvo${salvosRemaining > 1 ? 's' : ''}, ${allDice}d) at ${this.targetDetachment.name}`
-                : `🚫 No LoS / Out of Arc to ${this.targetDetachment.name}`;
+              btnFire.innerText = sol.validPairs.length > 0 ? `🔥 Fire all (${salvosRemaining})` : '🚫 No line of sight';
             } else {
               const totalRollDice = sol.validPairs.length * this.activatingDetachment.weapon.dice;
-              btnFire.innerText = sol.validPairs.length > 0
-                ? `🔥 Fire Full Volley (${sol.validPairs.length} Stand${sol.validPairs.length > 1 ? 's' : ''}, ${totalRollDice}d) at ${this.targetDetachment.name}`
-                : `🚫 No LoS / Out of Range to ${this.targetDetachment.name}`;
+              btnFire.innerText = sol.validPairs.length > 0 ? `🔥 Fire ${totalRollDice}D6` : '🚫 No line of sight';
             }
           }
           promptText.innerText = sol.isBarrage
-            ? `Orange 6cm Circle = Barrage Template | Orange ray = Indirect Fire (-1 Hit) | Green ray = Direct LoS`
-            : `Green ray = Clear LoS | Yellow ray = Cover (-1 Woods / -2 Building) | Red ray = Blocked/Out of Range/Arc`;
+            ? `Target: ${this.targetDetachment.name}. Circle = template, orange line = indirect, green = direct`
+            : `Target: ${this.targetDetachment.name}. Green line = clear, yellow = cover, red = blocked`;
         } else if (this.activatingDetachment) {
           btnFire.disabled = true;
           if (btnSplit) btnSplit.style.display = 'none';
           const isPulsa = Boolean(this.activatingDetachment.weapon && this.activatingDetachment.weapon.pulsaRokkit);
           const isArt = this.activatingDetachment.weapon.barrage;
           const isSkim = this.activatingDetachment.skimmer && this.phase === 'COMBAT_FIRST';
-          btnFire.innerText = isArt ? 'Tap an Enemy Stand to place 6cm Barrage Template' : 'Tap an Enemy Stand on the map to check LoS & Fire';
+          btnFire.innerText = 'Tap an enemy';
           promptText.innerText = isPulsa
-            ? `${actSideName}: ${this.activatingDetachment.name} — 30° Front Arc, Scatters 2D6cm, D6 Seismic Landing Table (${this.activatingDetachment.rokkitsRemaining || 0}/3 rokkits ready)! Tap an enemy stand in front arc.`
-            : `${actSideName}: Firing with ${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', 💥 6cm Barrage + Indirect on First Fire' : ''}${isSkim ? ', 🚀 Pop-Up available!' : ''}) — Tap an enemy unit!`;
+            ? `${this.activatingDetachment.name}: tap an enemy in the 30° front arc (${this.activatingDetachment.rokkitsRemaining || 0}/3 rokkits)`
+            : `${this.activatingDetachment.name} (${this.activatingDetachment.weapon.rangeCm}cm${isArt ? ', barrage' : ''}${isSkim ? ', can pop up' : ''}): tap an enemy`;
         }
       }
     }
     else if (this.phase === 'END_PHASE') {
-      phaseBadge.innerText = 'IV. End Phase (Shields, Rally & VP)';
+      phaseBadge.innerText = 'End Phase';
       phaseBadge.style.background = '#0d9488';
       endControls.style.display = 'flex';
       const fbCount = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK').length;
       const downShields = this.detachments.filter(d => d.stands.length > 0 && d.maxShields && d.shields < d.maxShields).length;
       promptText.innerText = (fbCount > 0 || downShields > 0)
-        ? `Objectives Scored! ${downShields > 0 ? `${downShields} Titan(s) roll Shield Repair; ` : ''}${fbCount} broken detachment(s) roll Rally.`
-        : `Objectives Scored! Click below to advance to Turn ${this.turn + 1}.`;
+        ? `Objectives scored. ${downShields > 0 ? `${downShields} shield repair roll(s), ` : ''}${fbCount} rally roll(s) to make.`
+        : 'Objectives scored.';
       document.getElementById('btn-rally-end').innerText = (fbCount > 0 || downShields > 0)
-        ? `🎲 Roll Shield Repairs & Rally Checks → Start Turn ${this.turn + 1}`
-        : `🏁 Complete End Phase → Start Turn ${this.turn + 1}`;
+        ? `🎲 Roll & start turn ${this.turn + 1}`
+        : `🏁 Start turn ${this.turn + 1}`;
     }
 
     if (this.selectedDetachment && this.selectedDetachment.stands.length > 0) {
@@ -28801,22 +28978,58 @@ class NetEpicScene extends Phaser.Scene {
       const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
       const breakLabel = d.isCompanyDetachment ? `Co Break: ${this.getCompanyCasualties(d)}/${d.companyBreakPoint}` : `Break: ${d.breakPoint} (${d.casualties}/${d.breakPoint})`;
       const coPrefix = d.isCompanyDetachment ? `[${d.companyName}] ` : '';
-      selTitle.innerText = `[${bookTag}] ${coPrefix}${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, ${breakLabel}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${chaplainBadge}${apothecaryBadge}${techmarineBadge}${painboyBadge}${mekboyBadge}${warbossBadge}${deathrollaBadge}${dhBadge}${yarrickBadge}${commissarBadge}${baronBadge}${techpriestBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
-      selStats.innerText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
+      const detailText = `[${bookTag}] ${coPrefix}${d.name} (${d.stands.length}/${d.initialCount} ${d.isTitan ? 'Titan' : 'stands'}, ${breakLabel}, Morale: ${d.morale}+${charBadge}${psyBadge}${calgarBadge}${chaplainBadge}${apothecaryBadge}${techmarineBadge}${painboyBadge}${mekboyBadge}${warbossBadge}${deathrollaBadge}${dhBadge}${yarrickBadge}${commissarBadge}${baronBadge}${techpriestBadge}${bjornBadge}${ghazBadge}${abaddonBadge}${guideBadge}${doomBadge}${transfixedBadge}${waaaghBadge}${shieldBadge}${dmgBadge}${skimBadge}${dsBadge}${synBadge}${regenBadge}${terrorBadge}${bansheeBadge}${squatBadge}${pinBadge}${garBadge}${transBadge}${roadBadge}${grpBadge}${aiBadge})`;
+      const statsText = `Move: ${d.moveCm}cm${this.hasRoadBonus(d) ? ' (+5cm Road)' : ''} | Save: ${saveStr} | CAF: ${effCaf} | Pin: ${PIN_CLASS_NAMES[d.pinningClass]} | Wpn: ${wpnInfo}`;
+      // Compact two-line summary; the full breakdown opens when the panel header is tapped
+      const flags = [
+        d.maxShields ? `🛡️${d.shields}/${d.maxShields}` : '',
+        d.damageState !== 'NONE' ? `🔥${d.damageState === 'HEAVY' ? 'Heavy' : 'Dmg'}` : '',
+        pinnedCount > 0 ? `📌${pinnedCount}` : '',
+        garrisonCount > 0 ? '🏰' : '',
+        d.passengerDet ? `🚐${d.passengerDet.stands.length}` : '',
+        d.inReserve ? '☄️Reserve' : '',
+        this.isFactionAI(d.faction) ? '🤖' : ''
+      ].filter(Boolean).join(' ');
+      selTitle.innerText = `${bookTag} · ${this.shortName(d.name, 40)}${flags ? '  ' + flags : ''}`;
+      const wpnShort = d.weapon.barrage
+        ? `${d.weapon.rangeCm}cm ${d.stands.length * d.weapon.barrageBp}BP`
+        : `${d.weapon.rangeCm}cm ${d.weapon.dice}D6 ${d.weapon.toHit - (d.toHitPenalty || 0)}+`;
+      const brk = d.isCompanyDetachment ? `${this.getCompanyCasualties(d)}/${d.companyBreakPoint}` : `${d.casualties}/${d.breakPoint}`;
+      selStats.innerText = `${d.stands.length}/${d.initialCount} · ${d.moveCm}cm · Sv${saveStr} · CAF${effCaf} · ${wpnShort} · Brk ${brk} · Mor ${d.morale}+`;
+      const selDetails = document.getElementById('sel-details');
+      if (selDetails) selDetails.innerText = `${detailText}\n${statsText}`;
       selOrderBadge.innerText = this.phase === 'DEPLOYMENT'
-        ? (d.inReserve ? 'Status: ☄️ Orbital Reserve' : 'Phase: Deployment')
+        ? (d.inReserve ? '☄️ Reserve' : '')
         : (d.order
             ? (d.orderRevealed
-                ? `Order: ${ORDER_INFO[d.order].label}`
-                : (this.isFactionAI(d.faction) ? 'Hidden Order: 🔒 AI SECRET' : `Hidden Order: ${ORDER_INFO[d.order].label}`))
-            : 'No Order Assigned');
+                ? ORDER_INFO[d.order].label
+                : (this.isFactionAI(d.faction) ? '🔒 Hidden' : `🔒 ${ORDER_INFO[d.order].label}`))
+            : 'No order');
     } else {
-      selTitle.innerText = 'No Detachment Selected';
-      selStats.innerText = 'Tap any unit stand on the battlefield (Double-click to toggle Group Move)';
+      selTitle.innerText = 'No unit selected';
+      selStats.innerText = 'Tap a unit on the map';
       selOrderBadge.innerText = '';
+      const selDetails = document.getElementById('sel-details');
+      if (selDetails) selDetails.innerText = '';
     }
 
     this.updateTitanHUD(this.selectedDetachment);
+  }
+
+  // Short unit name for buttons and the unit panel
+  shortName(name, max = 22) {
+    if (!name) return '';
+    let n = String(name)
+      .replace(/ Company/g, ' Co.').replace(/Detachment/g, 'Det').replace(/Squadron/g, 'Sqn')
+      .replace(/Battery/g, 'Bty').replace(/ - /g, ' ').replace(/\s+/g, ' ').trim();
+    return n.length > max ? n.slice(0, max - 1) + '…' : n;
+  }
+
+  // Transport button: a transport "loads" troops; infantry "board" a transport; either can unload
+  transportButtonLabel(tInfo, actor) {
+    if (!tInfo) return '';
+    if (tInfo.action === 'DISEMBARK') return actor === tInfo.transport ? '🚶 Unload' : '🚶 Get out';
+    return actor === tInfo.transport ? '🚐 Load troops' : '🚐 Board';
   }
 
   // --- SAVE & RESTORE SERIALIZATION ENGINE ---
@@ -28993,8 +29206,8 @@ class NetEpicScene extends Phaser.Scene {
       const btnAi = document.getElementById('btn-ai-toggle');
       if (btnAi) {
         btnAi.innerText = window.aiFaction === 'NONE'
-          ? '👥 Mode: 2P Hotseat'
-          : `🤖 AI: ${this.getSideName(window.aiFaction)}`;
+          ? '👥 2 Players'
+          : `🤖 AI: ${this.getSideShort(window.aiFaction)}`;
       }
 
       // 4. Restore turn, phase, scores
