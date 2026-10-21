@@ -623,6 +623,36 @@
     }
 
 
+
+    /* ===== Combat report card ===== */
+    @keyframes ccIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #combat-card-modal {
+      position: fixed; left: 50%; transform: translateX(-50%); z-index: 1200;
+      bottom: max(6px, env(safe-area-inset-bottom)); width: min(540px, calc(100% - 12px));
+      max-height: 46vh; overflow-y: auto; pointer-events: auto; cursor: pointer;
+      background: rgba(15, 23, 42, 0.97); border: 2px solid #38bdf8; border-radius: 10px;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.7); padding: 8px 10px; color: #f8fafc; font-size: 0.8rem;
+    }
+    .cc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    #combat-card-header { font-weight: 800; color: #fde047; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cc-auto { font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 3px; flex: 0 0 auto; cursor: pointer; }
+    .cc-vs { display: flex; align-items: center; gap: 6px; margin: 5px 0 2px; font-weight: 800; font-size: 0.84rem; min-width: 0; }
+    .cc-vs .cc-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cc-vs .cc-arrow { flex: 0 0 auto; color: #94a3b8; }
+    .cc-sub { color: #94a3b8; font-size: 0.72rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cc-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px dashed #334155; opacity: 0; animation: ccIn 0.25s ease forwards; }
+    .cc-label { flex: 0 0 auto; width: 52px; color: #94a3b8; font-weight: 700; font-size: 0.7rem; }
+    .cc-dice { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 3px; min-width: 0; }
+    .cc-dice .die-box { min-width: 22px; height: 22px; font-size: 0.72rem; }
+    .cc-sum { flex: 0 0 auto; font-weight: 800; white-space: nowrap; }
+    .cc-result { font-weight: 800; font-size: 0.86rem; padding: 5px 0 2px; border-top: 1px solid #475569; opacity: 0; animation: ccIn 0.25s ease forwards; }
+    .cc-foot { display: flex; align-items: center; gap: 8px; margin-top: 6px; position: relative; }
+    #combat-card-status { flex: 1 1 auto; color: #94a3b8; font-size: 0.7rem; }
+    #btn-combat-continue { flex: 0 0 auto; min-width: 0; padding: 7px 14px; font-size: 0.82rem; }
+    .cc-timer { position: absolute; left: 0; right: 0; top: -4px; height: 2px; background: transparent; }
+    #combat-card-timer { height: 100%; width: 0; background: #38bdf8; }
+
     /* ===== Compact setup screens ===== */
     .setup-label { font-weight: 700; color: #f8fafc; font-size: 0.84rem; margin-bottom: 5px; }
     .map-preset-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
@@ -710,7 +740,6 @@
       .btn-row { gap: 4px; }
       .btn-row button { padding: 7px 6px; font-size: 0.74rem; }
       .alert-banner { font-size: 0.72rem; padding: 4px 8px; }
-      #combat-card-modal { top: 48px !important; padding: 10px !important; max-height: calc(100dvh - 70px); overflow-y: auto; }
     }
     @media (orientation: landscape) and (max-height: 560px) {
       #top-bar { flex-direction: row; align-items: center; gap: 6px; }
@@ -1249,26 +1278,18 @@
     </div>
   </div>
 
-  <!-- Interactive Combat Resolution Modal (Stepped Dice & Damage) -->
-  <div id="combat-card-modal" style="display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:1200; width:92%; max-width:540px; background:rgba(15, 23, 42, 0.96); border:2px solid #38bdf8; border-radius:12px; box-shadow:0 12px 35px rgba(0,0,0,0.85), 0 0 20px rgba(56, 189, 248, 0.35); padding:14px; backdrop-filter:blur(6px); color:#f8fafc; pointer-events:auto; font-family:system-ui, -apple-system, sans-serif;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:10px;">
-      <div id="combat-card-header" style="font-weight:800; font-size:1rem; color:#fde047; display:flex; align-items:center; gap:6px;">
-        💥 SHOOTING ENGAGEMENT
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <label style="font-size:0.74rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:4px; user-select:none;" title="If checked, steps through rolls automatically. If unchecked, tap Space or click to inspect at your own pace.">
-          <input type="checkbox" id="combat-auto-advance" style="cursor:pointer;"> Auto
-        </label>
-        <button onclick="window.gameScene.advanceCombatResolution(true)" class="log-ctrl-btn" style="padding:2px 8px; font-size:0.74rem; background:#334155;" title="Skip directly to damage & casualties (Esc)">⚡ Skip</button>
-      </div>
+  <!-- Combat report card: docked at the bottom so the map stays visible; waits for a tap -->
+  <div id="combat-card-modal" style="display:none;" onclick="if (!event.target.closest('.cc-noadvance')) window.gameScene.advanceCombatResolution()">
+    <div class="cc-head">
+      <div id="combat-card-header">💥 Shooting</div>
+      <label class="cc-noadvance cc-auto" title="Continue automatically after a few seconds"><input type="checkbox" id="combat-auto-advance"> Auto</label>
     </div>
-    <div id="combat-card-meta" style="margin-bottom:10px; font-size:0.82rem; line-height:1.4;"></div>
-    <div id="combat-card-steps" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
-    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #334155; padding-top:10px;">
-      <span id="combat-card-status" style="font-size:0.75rem; color:#94a3b8;">1/3 · Hits</span>
-      <button id="btn-combat-continue" onclick="window.gameScene.advanceCombatResolution()" class="btn-confirm" style="padding:6px 16px; font-size:0.85rem; font-weight:700; box-shadow:0 0 10px rgba(34, 197, 94, 0.45); cursor:pointer;">
-        ▶ Saves
-      </button>
+    <div id="combat-card-meta"></div>
+    <div id="combat-card-steps"></div>
+    <div class="cc-foot">
+      <div class="cc-timer"><div id="combat-card-timer"></div></div>
+      <span id="combat-card-status"></span>
+      <button id="btn-combat-continue" class="btn-confirm">Continue ▸</button>
     </div>
   </div>
 
@@ -20712,14 +20733,25 @@ class NetEpicScene extends Phaser.Scene {
     const midX = Phaser.Math.Clamp((minX + maxX) / 2, 50, BOARD_W - 50);
     const midY = Phaser.Math.Clamp((minY + maxY) / 2, 50, BOARD_H - 50);
 
-    const spanW = (maxX - minX) + 260;
-    const spanH = (maxY - minY) + 240;
-    const view = this.getViewSpan();
-    const fitZoom = Math.min(view.w / spanW, view.h / spanH);
-    const targetZoom = Phaser.Math.Clamp(fitZoom, 0.45, 1.05);
+    const spanW = (maxX - minX) + 160;
+    const spanH = (maxY - minY) + 160;
+    // Fit into the screen area between the top bar and the report card / bottom panel
+    const topEl = document.getElementById('top-bar');
+    const botEl = document.getElementById('bottom-bar');
+    const card = document.getElementById('combat-card-modal');
+    const topH = topEl && topEl.offsetHeight ? topEl.getBoundingClientRect().bottom + 4 : 60;
+    let botH = botEl && botEl.offsetHeight ? window.innerHeight - botEl.getBoundingClientRect().top + 4 : 110;
+    const cardH = (card && card.style.display !== 'none' && card.offsetHeight) ? card.offsetHeight + 12 : Math.min(window.innerHeight * 0.46, 220);
+    botH = Math.max(botH, cardH);
+    const availH = Math.max(120, cam.height - topH - botH);
+    const turned = Math.abs(Math.sin(cam.rotation)) > 0.5;
+    const fitZoom = Math.min((turned ? availH : cam.width) / spanW, (turned ? cam.width : availH) / spanH);
+    const targetZoom = Phaser.Math.Clamp(fitZoom, 0.3, 1.2);
 
-    // Smoothly pan and zoom camera to comfortably frame both attacker and target
-    cam.pan(midX, midY, 450, 'Sine.easeInOut', true);
+    // Pan so the action sits in the middle of the free area, not behind the card
+    const dy = (topH - botH) / 2;
+    const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
+    cam.pan(midX - (sn * dy) / targetZoom, midY - (c * dy) / targetZoom, 450, 'Sine.easeInOut', true);
     cam.zoomTo(targetZoom, 450, 'Sine.easeInOut', true);
   }
 
@@ -20865,290 +20897,100 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Interactive Stepped Combat Resolution Card Modal (Tap-Through with No Auto-Advance by Default)
+  // Combat report card: one compact card docked at the bottom. Rows reveal in quick sequence,
+  // casualties play out on the map at the same time, and nothing moves on until the player taps
+  // (or the optional Auto timer runs out).
   showCombatModal(data, onContinue) {
     const modal = document.getElementById('combat-card-modal');
-    const headerEl = document.getElementById('combat-card-header');
-    const metaEl = document.getElementById('combat-card-meta');
-    const stepsEl = document.getElementById('combat-card-steps');
-    const autoAdvCheck = document.getElementById('combat-auto-advance');
-    if (!modal || !headerEl || !metaEl || !stepsEl) {
-      if (onContinue) onContinue();
-      return;
-    }
-
+    if (!modal) { if (onContinue) onContinue(); return; }
     this._activeCombatContinue = onContinue;
     this._combatCardData = data;
-    this._combatStep = 1; // 1: Hit Rolls, 2: Saves & Shields, 3: Outcome & Damage
-
-    if (this._combatAutoTimer) {
-      clearTimeout(this._combatAutoTimer);
-      this._combatAutoTimer = null;
-    }
-
-    headerEl.innerHTML = `${data.isMelee ? '⚔️' : '💥'} ${data.title || (data.isMelee ? 'CLOSE COMBAT ENGAGEMENT' : 'SHOOTING ENGAGEMENT')}`;
-
-    if (data.isMelee) {
-      metaEl.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; border:1.5px solid #c084fc; gap:10px;">
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:800; color:#60a5fa; font-size:0.86rem;">🛡️ ${data.attackerName}</div>
-            <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
-          </div>
-          <div style="font-weight:900; color:#fde047; font-size:1.05rem; flex-shrink:0;">⚔️ VS ⚔️</div>
-          <div style="flex:1; min-width:0; text-align:right;">
-            <div style="font-weight:800; color:#4ade80; font-size:0.86rem;">🟢 ${data.targetName}</div>
-            <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
-          </div>
-        </div>
-      `;
-    } else {
-      metaEl.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; border:1px solid #334155;">
-          <div>
-            <span style="font-weight:700; color:#38bdf8;">🔫 Attacker:</span> <b>${data.attackerName}</b>
-            <div style="color:#cbd5e1; font-size:0.75rem; margin-top:2px;">${data.weaponDesc}</div>
-          </div>
-          <div style="text-align:right;">
-            <span style="font-weight:700; color:#f87171;">🎯 Target:</span> <b>${data.targetName}</b>
-            <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">${data.targetDesc}</div>
-          </div>
-        </div>
-      `;
-    }
-
+    if (this._combatAutoTimer) { clearTimeout(this._combatAutoTimer); this._combatAutoTimer = null; }
     this.renderCombatStep();
     modal.style.display = 'block';
+    modal.scrollTop = 0;
+    const bb = document.getElementById('bottom-bar');
+    if (bb) bb.style.visibility = 'hidden'; // the card sits where the unit panel is
 
-    // Auto-advance is OFF by default so user can inspect rolls; only runs if explicitly checked
-    const autoAdvance = autoAdvCheck ? autoAdvCheck.checked : false;
-    if (autoAdvance) {
-      this._combatAutoTimer = setTimeout(() => {
-        this.advanceCombatResolution();
-      }, 2500);
+    const timerEl = document.getElementById('combat-card-timer');
+    const auto = document.getElementById('combat-auto-advance');
+    if (timerEl) { timerEl.style.transition = 'none'; timerEl.style.width = '0'; }
+    if (auto && auto.checked) {
+      const ms = 3500;
+      if (timerEl) {
+        requestAnimationFrame(() => { timerEl.style.transition = `width ${ms}ms linear`; timerEl.style.width = '100%'; });
+      }
+      this._combatAutoTimer = setTimeout(() => this.advanceCombatResolution(), ms);
     }
   }
 
   renderCombatStep() {
     const data = this._combatCardData;
     if (!data) return;
-
+    const headerEl = document.getElementById('combat-card-header');
+    const metaEl = document.getElementById('combat-card-meta');
     const stepsEl = document.getElementById('combat-card-steps');
     const statusEl = document.getElementById('combat-card-status');
-    const btnContinue = document.getElementById('btn-combat-continue');
-    const dieFaces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    const btn = document.getElementById('btn-combat-continue');
+    const faces = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    const dieHtml = d => {
+      const val = typeof d === 'object' ? d.val : d;
+      const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
+      const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
+      const tip = typeof d === 'object' && d.tip ? d.tip : '';
+      const face = (val >= 1 && val <= 6) ? `${faces[val]}${val}` : val;
+      return `<span class="die-box ${cls}" title="${tip}">${face}${sub}</span>`;
+    };
+    const side = det => det ? this.getSideMeta(det.faction).colorHex : '#f8fafc';
+    let delay = 0;
+    const row = (label, dice, sum) => {
+      const h = `<div class="cc-row" style="animation-delay:${delay}ms"><span class="cc-label">${label}</span><div class="cc-dice">${dice}</div><span class="cc-sum">${sum}</span></div>`;
+      delay += 450;
+      return h;
+    };
 
     if (data.isMelee) {
+      headerEl.innerHTML = '⚔️ Close combat';
+      metaEl.innerHTML = `<div class="cc-vs"><span class="cc-name" style="color:${side(data.impDet)}">${data.attackerName}</span><span class="cc-arrow">vs</span><span class="cc-name" style="color:${side(data.orkDet)}">${data.targetName}</span></div>
+        <div class="cc-sub">2D6 + CAF each, highest wins. No saves in close combat.</div>`;
+      const impCls = data.impWin ? 'die-pass' : (data.orkWin ? 'die-fail' : 'die-crit');
+      const orkCls = data.orkWin ? 'die-pass' : (data.impWin ? 'die-fail' : 'die-crit');
+      const sgn = v => (v >= 0 ? '+' : '') + v;
       let html = '';
-
-      // STEP 1 CARD (Combatants & CAF Factors)
-      html += `
-        <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 1 ? '#fde047' : '#334155'}; border-radius:6px; padding:8px 10px; transition:border-color 0.2s;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="font-weight:700; color:#fde047;">⚔️ Step 1: Close Combat Factors (CAF)</span>
-            <span style="font-weight:700; color:#c084fc; font-size:0.72rem;">No Armour Saves in Melee!</span>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:4px; font-size:0.78rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
-              <span style="color:#60a5fa; font-weight:700;">🛡️ ${data.attackerName}</span>
-              <span style="color:#f8fafc;"><b>${data.impDiceCount}D6</b> + <b>${data.impModCaf >= 0 ? '+' : ''}${data.impModCaf} CAF</b> ${data.gangTagImp || ''}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
-              <span style="color:#4ade80; font-weight:700;">🟢 ${data.targetName}</span>
-              <span style="color:#f8fafc;"><b>${data.orkDiceCount}D6</b> + <b>${data.orkModCaf >= 0 ? '+' : ''}${data.orkModCaf} CAF</b> ${data.gangTagOrk || ''}</span>
-            </div>
-          </div>
-          <div style="color:#94a3b8; font-size:0.72rem; margin-top:6px; text-align:center;">
-            Both stands roll 2D6+ (plus gang-up dice) + CAF. Highest total wins!
-          </div>
-        </div>
-      `;
-
-      // STEP 2 CARD (Dice Rolls & Total Scores)
-      if (this._combatStep >= 2) {
-        const impDiceHtml = (data.impRolls || []).map(v => `<span class="die-box ${data.impWin ? 'die-pass' : (data.orkWin ? 'die-fail' : 'die-crit')}">${dieFaces[v] || v}${v}</span>`).join('');
-        const orkDiceHtml = (data.orkRolls || []).map(v => `<span class="die-box ${data.orkWin ? 'die-pass' : (data.impWin ? 'die-fail' : 'die-crit')}">${dieFaces[v] || v}${v}</span>`).join('');
-
-        html += `
-          <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 2 ? '#38bdf8' : '#334155'}; border-radius:6px; padding:8px 10px; transition:border-color 0.2s; animation:fadeIn 0.2s ease;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-weight:700; color:#38bdf8;">🎲 Step 2: Melee Duel Rolls</span>
-              <span style="font-weight:700; color:${data.impWin ? '#60a5fa' : (data.orkWin ? '#4ade80' : '#c084fc')}; font-size:0.78rem;">
-                ${data.impWin ? `🛡️ ${data.attackerName} Leads!` : (data.orkWin ? `🟢 ${data.targetName} Leads!` : '🤝 Melee Tie!')}
-              </span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
-                <span style="color:#60a5fa; font-size:0.76rem; font-weight:700;">🛡️ ${data.attackerName}</span>
-                <div style="display:flex; gap:4px; align-items:center;">
-                  ${impDiceHtml}
-                  <span style="font-weight:800; font-size:0.85rem; color:#f8fafc; margin-left:4px;">+ ${data.impModCaf} = <b style="color:#60a5fa;">${data.impTotal}</b></span>
-                </div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:5px 8px; border-radius:4px;">
-                <span style="color:#4ade80; font-size:0.76rem; font-weight:700;">🟢 ${data.targetName}</span>
-                <div style="display:flex; gap:4px; align-items:center;">
-                  ${orkDiceHtml}
-                  <span style="font-weight:800; font-size:0.85rem; color:#f8fafc; margin-left:4px;">+ ${data.orkModCaf} = <b style="color:#4ade80;">${data.orkTotal}</b></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      // STEP 3 CARD (Outcome & Casualties)
-      if (this._combatStep >= 3) {
-        html += `
-          <div style="background:#0f172a; border:1.5px solid ${data.kills > 0 ? '#f87171' : '#c084fc'}; border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.2s ease;">
-            <div>
-              <span style="font-weight:700; color:${data.kills > 0 ? '#f87171' : '#c084fc'};">💥 Step 3 Outcome:</span>
-              <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
-            </div>
-            <span style="font-size:0.78rem; font-weight:800; color:${data.kills > 0 ? '#ef4444' : (data.isTie ? '#c084fc' : '#22c55e')};">${data.kills > 0 ? '1 Destroyed' : (data.isTie ? 'Both Locked' : 'Survives')}</span>
-          </div>
-        `;
-      }
-
-      if (stepsEl) stepsEl.innerHTML = html;
-
-      // Update Button label and Status text for current step
-      if (this._combatStep === 1) {
-        if (statusEl) statusEl.innerText = '1/3 · Matchup';
-        if (btnContinue) {
-          btnContinue.innerText = '🎲 Roll';
-          btnContinue.className = 'btn-primary';
-        }
-      } else if (this._combatStep === 2) {
-        if (statusEl) statusEl.innerText = '2/3 · Rolls';
-        if (btnContinue) {
-          btnContinue.innerText = '▶ Result';
-          btnContinue.className = 'btn-primary';
-        }
-      } else {
-        if (statusEl) statusEl.innerText = '3/3 · Result';
-        if (btnContinue) {
-          btnContinue.innerText = data.kills > 0 ? '💥 Continue' : '✓ Continue';
-          btnContinue.className = 'btn-confirm';
-        }
-      }
-      return;
-    }
-
-    const hitDiceHtml = (data.hitDice || []).map(d => {
-      const val = typeof d === 'object' ? d.val : d;
-      const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
-      const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
-      const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
-      return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
-    }).join('');
-
-    const hasSaves = (data.saveDice && data.saveDice.length > 0);
-    const saveDiceHtml = hasSaves ? data.saveDice.map(d => {
-      const val = typeof d === 'object' ? d.val : d;
-      const cls = typeof d === 'object' && d.cls ? d.cls : 'die-pass';
-      const sub = typeof d === 'object' && d.sub ? `<span style="font-size:0.55rem;line-height:0.9;">${d.sub}</span>` : '';
-      const face = (val >= 1 && val <= 6) ? `${dieFaces[val]}${val}` : val;
-      return `<span class="die-box ${cls}" title="${typeof d === 'object' && d.tip ? d.tip : ''}">${face}${sub}</span>`;
-    }).join('') : '';
-
-    let html = '';
-
-    // STEP 1 CARD (To-Hit Rolls)
-    html += `
-      <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 1 ? '#fde047' : '#334155'}; border-radius:6px; padding:6px 10px; transition:border-color 0.2s;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <span style="font-weight:700; color:#fde047;">🎯 Step 1: To-Hit Rolls (${data.neededToHit}+ needed)</span>
-          <span style="font-weight:700; color:${data.hits > 0 ? '#4ade80' : '#f87171'};">${data.hits} Hit(s) scored</span>
-        </div>
-        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${hitDiceHtml || '<span style="color:#94a3b8;">No shots fired</span>'}</div>
-      </div>
-    `;
-
-    // STEP 2 CARD (Shields & Armour Saves)
-    if (this._combatStep >= 2) {
-      if (hasSaves) {
-        html += `
-          <div style="background:#0f172a; border:1.5px solid ${this._combatStep === 2 ? '#38bdf8' : '#334155'}; border-radius:6px; padding:6px 10px; transition:border-color 0.2s; animation:fadeIn 0.2s ease;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <span style="font-weight:700; color:#38bdf8;">🛡️ Step 2: Shields & Armour Saves</span>
-              <span style="font-weight:700; color:#94a3b8;">${data.saves} Saved / Shielded</span>
-            </div>
-            <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">${saveDiceHtml}</div>
-          </div>
-        `;
-      } else {
-        html += `
-          <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:6px 10px; color:#94a3b8; font-size:0.75rem;">
-            🛡️ Step 2: No saves needed (all attacks missed).
-          </div>
-        `;
-      }
-    }
-
-    // STEP 3 CARD (Final Outcome & Destruction)
-    if (this._combatStep >= 3) {
-      html += `
-        <div style="background:#0f172a; border:1.5px solid #f87171; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.2s ease;">
-          <div>
-            <span style="font-weight:700; color:#f87171;">💥 Step 3 Outcome:</span>
-            <span style="color:#f8fafc; font-weight:600; margin-left:6px;">${data.outcomeText}</span>
-          </div>
-          <span style="font-size:0.78rem; font-weight:700; color:${data.kills > 0 ? '#ef4444' : '#22c55e'};">${data.kills > 0 ? `${data.kills} Destroyed` : 'No Casualties'}</span>
-        </div>
-      `;
-    }
-
-    if (stepsEl) stepsEl.innerHTML = html;
-
-    // Update Button label and Status text for current step
-    if (this._combatStep === 1) {
-      if (statusEl) statusEl.innerText = '1/3 · Hits';
-      if (btnContinue) {
-        btnContinue.innerText = (data.hits > 0 && hasSaves) ? '▶ Saves' : '▶ Result';
-        btnContinue.className = 'btn-primary';
-      }
-    } else if (this._combatStep === 2) {
-      if (statusEl) statusEl.innerText = '2/3 · Saves';
-      if (btnContinue) {
-        btnContinue.innerText = '▶ Result';
-        btnContinue.className = 'btn-primary';
-      }
+      html += row(this.getSideShort(data.impDet.faction), (data.impRolls || []).map(v => dieHtml({ val: v, cls: impCls })).join(''), `${sgn(data.impModCaf)} = <b style="color:${side(data.impDet)}">${data.impTotal}</b>`);
+      html += row(this.getSideShort(data.orkDet.faction), (data.orkRolls || []).map(v => dieHtml({ val: v, cls: orkCls })).join(''), `${sgn(data.orkModCaf)} = <b style="color:${side(data.orkDet)}">${data.orkTotal}</b>`);
+      const mods = [data.gangTagImp, data.gangTagOrk].filter(Boolean).join(' ');
+      if (mods.trim()) html += `<div class="cc-sub" style="white-space:normal; margin-top:2px;">${mods}</div>`;
+      const resCol = data.isTie ? '#c084fc' : '#f87171';
+      html += `<div class="cc-result" style="animation-delay:${delay}ms; color:${resCol}">${data.isTie ? '🤝 ' : '💥 '}${data.outcomeText}</div>`;
+      stepsEl.innerHTML = html;
     } else {
-      if (statusEl) statusEl.innerText = '3/3 · Result';
-      if (btnContinue) {
-        btnContinue.innerText = data.kills > 0 ? '💥 Continue' : '✓ Continue';
-        btnContinue.className = 'btn-confirm';
-      }
+      headerEl.innerHTML = data.title || '🔥 Shooting';
+      metaEl.innerHTML = `<div class="cc-vs"><span class="cc-name" style="color:${side(data.firerDet)}">${data.attackerName}</span><span class="cc-arrow">➔</span><span class="cc-name" style="color:${side(data.targetDet)}">${data.targetName}</span></div>
+        <div class="cc-sub" title="${data.weaponDesc}">${data.weaponDesc}</div>`;
+      let html = '';
+      html += row('Hits', (data.hitDice || []).map(dieHtml).join('') || '<span style="color:#94a3b8">no shots</span>', `${data.hits}/${(data.hitDice || []).length} <span style="color:#94a3b8;font-weight:600">(${data.neededToHit}+)</span>`);
+      if (data.saveDice && data.saveDice.length) html += row('Saves', data.saveDice.map(dieHtml).join(''), `${data.saves} saved`);
+      if (data.dmgDice && data.dmgDice.length) html += row('Damage', data.dmgDice.map(dieHtml).join(''), data.damageState || '');
+      const left = Math.max(0, data.remaining);
+      const resTxt = data.kills > 0
+        ? `💥 ${data.kills} destroyed · ${left} left`
+        : (data.hits > 0 ? '🛡️ No losses' : '💨 All missed');
+      html += `<div class="cc-result" style="animation-delay:${delay}ms; color:${data.kills > 0 ? '#f87171' : '#94a3b8'}">${resTxt}${data.extraNote ? ` <span style="color:#cbd5e1;font-weight:600;font-size:0.74rem">· ${data.extraNote}</span>` : ''}</div>`;
+      stepsEl.innerHTML = html;
     }
+    if (statusEl) statusEl.innerText = 'Tap to continue';
+    if (btn) btn.innerText = 'Continue ▸';
   }
 
-  advanceCombatResolution(skipToEnd = false) {
-    if (this._combatAutoTimer) {
-      clearTimeout(this._combatAutoTimer);
-      this._combatAutoTimer = null;
-    }
-
-    if (!skipToEnd && this._combatStep < 3) {
-      this._combatStep++;
-      this.renderCombatStep();
-
-      // If user enabled auto-advance, queue next step
-      const autoAdvCheck = document.getElementById('combat-auto-advance');
-      if (autoAdvCheck && autoAdvCheck.checked) {
-        this._combatAutoTimer = setTimeout(() => {
-          this.advanceCombatResolution();
-        }, 2500);
-      }
-      return;
-    }
-
-    // Step 3 finished (or skipped): close modal and proceed with casualty destruction
+  advanceCombatResolution() {
+    if (this._combatAutoTimer) { clearTimeout(this._combatAutoTimer); this._combatAutoTimer = null; }
     const modal = document.getElementById('combat-card-modal');
-    if (modal) modal.style.display = 'none';
-
+    if (!modal || modal.style.display === 'none') return;
+    modal.style.display = 'none';
+    const bb = document.getElementById('bottom-bar');
+    if (bb) bb.style.visibility = '';
     this._combatCardData = null;
-    this._combatStep = 1;
-
     if (this._activeCombatContinue) {
       const cb = this._activeCombatContinue;
       this._activeCombatContinue = null;
@@ -21198,10 +21040,10 @@ class NetEpicScene extends Phaser.Scene {
               duration: 320,
               ease: 'Power2',
               onComplete: () => {
-                const idx = targetDet.stands.indexOf(victimStand);
-                if (idx !== -1) targetDet.stands.splice(idx, 1);
-                targetDet.casualties = (targetDet.casualties || 0) + 1;
-                victimStand.container.destroy();
+                // Proper removal: counts the casualty, gives passengers their bail-out roll, updates badges
+                if (targetDet.stands.includes(victimStand)) {
+                  this.removeCasualty(targetDet, victimStand, this._lastShotTsm || 0, false, { quiet: true });
+                }
 
                 completed++;
                 if (completed >= casualties.length) {
@@ -25296,37 +25138,31 @@ class NetEpicScene extends Phaser.Scene {
         `<span class="log-save">${saves} Saved/Shielded</span> | <span class="log-kill">${kills} Killed</span>`
       );
 
-      const rows = [
-        { label: `To-Hit (${baseNeededToHit}+ base)`, dice: hitDiceUI, summary: `${hits} hit` }
-      ];
-      if (saveDiceUI.length) rows.push({ label: `Saves (${targetDet.name})`, dice: saveDiceUI, summary: `${saves} saved` });
-      if (this._dmgRollBuffer && this._dmgRollBuffer.length) rows.push({ label: 'Titan/SH Damage', dice: this._dmgRollBuffer, summary: targetDet.damageState });
-      this.showDiceRollTray(`🎲 ${firerDet.name} ➔ ${targetDet.name}${salvoTag}${isSnapFire ? ' ⚡SNAP' : ''} — <span style="color:#f87171;">${kills} killed</span>`, rows);
+      const dmgDice = this._dmgRollBuffer ? [...this._dmgRollBuffer] : [];
+      this._lastShotTsm = sol.isBarrage ? (sol.barrageStats ? sol.barrageStats.tsm : 0) : (activeWpn.tsm || 0);
       this._dmgRollBuffer = null;
 
-      // 4. Show Interactive Combat Resolution Card (Modal with Tap-Through)
-      const outcomeText = kills > 0
-        ? `${kills} Stand(s) destroyed!`
-        : (hits > 0 ? (saves > 0 ? 'All hits absorbed/deflected!' : 'No critical damage sustained') : 'All attacks missed');
-
+      // 4. Report card at the bottom; casualties play out on the map at the same time; wait for a tap
+      const shieldNote = targetDet.maxShields ? `${targetDet.shields}/${targetDet.maxShields} shields` : '';
       const combatCardData = {
-        title: sol.isBarrage ? `💥 ARTILLERY BARRAGE (${sol.totalBp} BP)` : `🔥 SHOOTING ENGAGEMENT${isSnapFire ? ' ⚡SNAP' : ''}`,
-        attackerName: firerDet.name + salvoTag,
-        weaponDesc: activeWpn.name + ` (${activeWpn.rangeCm}cm, ${activeWpn.dice}d, Hit ${activeWpn.toHit}+, TSM ${activeWpn.tsm})`,
-        targetName: targetDet.name,
-        targetDesc: `${targetDet.stands.length} Stand(s) remaining (Save ${targetDet.save}+)`,
+        title: sol.isBarrage ? `💥 Barrage · ${sol.totalBp} BP${sol.isIndirect ? ' · indirect' : ''}` : `🔥 ${isSnapFire ? 'Snap fire' : 'Shooting'}`,
+        firerDet, targetDet,
+        attackerName: this.shortName(firerDet.name, 26) + (salvoTag ? ` · ${this.shortName(activeWpn.name, 14)}` : ''),
+        targetName: this.shortName(targetDet.name, 26),
+        weaponDesc: `${activeWpn.name} · ${activeWpn.rangeCm}cm · ${sol.isBarrage ? sol.totalBp + ' BP' : activeWpn.dice + 'D6'} · hit ${baseNeededToHit}+ · TSM ${sol.isBarrage ? sol.barrageStats.tsm : activeWpn.tsm}${sol.scatterNote ? ' · ' + sol.scatterNote : ''}`,
         neededToHit: baseNeededToHit,
-        hitDice: hitDiceUI,
-        hits: hits,
-        saveDice: saveDiceUI,
-        saves: saves,
-        kills: kills,
-        outcomeText: outcomeText
+        hitDice: hitDiceUI, hits,
+        saveDice: saveDiceUI, saves,
+        dmgDice, damageState: targetDet.damageState !== 'NONE' ? targetDet.damageState : '',
+        kills,
+        remaining: targetDet.stands.length - casualtiesToDestroy.length,
+        extraNote: shieldNote
       };
 
-      this.showCombatModal(combatCardData, () => {
-        // 5. Finally, animate and execute casualties being destroyed
-        this.executeCasualtyDestruction(casualtiesToDestroy, targetDet, () => {
+      let tapped = false, animDone = false, finished = false;
+      const afterBoth = () => {
+        if (!tapped || !animDone || finished) return;
+        finished = true;
           if (targetBuilding && buildingSiHits > 0) {
             targetBuilding.siDamage = (targetBuilding.siDamage || 0) + buildingSiHits;
             window.sfx.playMeltdown();
@@ -25349,7 +25185,11 @@ class NetEpicScene extends Phaser.Scene {
               this.updateUI();
             }
           }
-        });
+      };
+      this.showCombatModal(combatCardData, () => { tapped = true; afterBoth(); });
+      this.frameShootingAction(firerDet, targetDet, sol.isBarrage ? sol.aimPoint : null);
+      this.time.delayedCall(550, () => {
+        this.executeCasualtyDestruction(casualtiesToDestroy, targetDet, () => { animDone = true; afterBoth(); });
       });
     });
   }
@@ -25370,7 +25210,7 @@ class NetEpicScene extends Phaser.Scene {
     this.updateDetachmentBadge(firerDet);
   }
 
-  removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false) {
+  removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false, opts = {}) {
     if (det.stands.length === 0) return;
     let victim = specificStand;
     if (victim) {
@@ -25383,9 +25223,11 @@ class NetEpicScene extends Phaser.Scene {
 
     const vx = victim.container.x;
     const vy = victim.container.y;
-    window.sfx.playExplosion(false);
-    this.spawnExplosionFX(vx, vy, 22, false);
-    this.spawnFloatingText(vx, vy, `💥 ${victim.label} KILLED!`, '#f87171', '12px');
+    if (!opts.quiet) {
+      window.sfx.playExplosion(false);
+      this.spawnExplosionFX(vx, vy, 22, false);
+      this.spawnFloatingText(vx, vy, `💥 ${victim.label} KILLED!`, '#f87171', '12px');
+    }
 
     victim.container.destroy();
     det.casualties++;
@@ -27727,7 +27569,7 @@ class NetEpicScene extends Phaser.Scene {
         victimStand = orkStand;
         victimDet = orkDet;
         outcomeHtml = `<span class="log-kill">💥 ${orkDet.name} (${orkStand.label}) Destroyed! (No Save)</span>`;
-        outcomeText = `${impDet.name} wins by ${impTotal - orkTotal}! ${orkStand.label} destroyed!`;
+        outcomeText = `${this.shortName(impDet.name, 20)} wins ${impTotal}–${orkTotal} · ${orkStand.label} destroyed`;
       }
     } else if (orkWin) {
       if (impDet.characterRules && impDet.characterRules.ghazghkull && this.waaaghActive) {
@@ -27741,15 +27583,14 @@ class NetEpicScene extends Phaser.Scene {
         victimStand = impStand;
         victimDet = impDet;
         outcomeHtml = `<span class="log-kill">💥 ${impDet.name} (${impStand.label}) Destroyed! (No Save)</span>`;
-        outcomeText = `${orkDet.name} wins by ${orkTotal - impTotal}! ${impStand.label} destroyed!`;
+        outcomeText = `${this.shortName(orkDet.name, 20)} wins ${orkTotal}–${impTotal} · ${impStand.label} destroyed`;
       }
     } else {
       outcomeHtml = `<span class="log-cc">🤝 Tie (${impTotal} vs ${orkTotal})! Both survive & remain locked in melee!</span>`;
-      outcomeText = `Tie (${impTotal} vs ${orkTotal})! Both stands remain locked in combat!`;
+      outcomeText = `Tie ${impTotal}–${orkTotal}: both stay locked in combat`;
     }
 
     const finalizeBout = () => {
-      this._ccResolving = false;
       window.sfx.playMelee();
 
       if (impWin) {
@@ -27787,11 +27628,12 @@ class NetEpicScene extends Phaser.Scene {
         `<b>${orkDet.name} ${orkStand.label}</b>${gangTagOrk} ([${orkRolls.join(',')}]+${orkModCaf} = <b>${orkTotal}</b>) → ${outcomeHtml}`
       );
 
-      this.showDiceRollTray(`⚔️ Close Combat — ${impWin ? impDet.name : (orkWin ? orkDet.name : 'TIE')}${impWin || orkWin ? ' wins' : ''}`, [
-        { label: `${impDet.name} (+${impModCaf} CAF)`, dice: impRolls.map(v => ({ val: v, cls: impWin ? 'die-pass' : (orkWin ? 'die-fail' : 'die-crit') })), summary: `= ${impTotal}` },
-        { label: `${orkDet.name} (+${orkModCaf} CAF)`, dice: orkRolls.map(v => ({ val: v, cls: orkWin ? 'die-pass' : (impWin ? 'die-fail' : 'die-crit') })), summary: `= ${orkTotal}` }
-      ]);
+      if (!isAuto) return; // the report card calls goNext() when the player taps
+      goNext();
+    };
 
+    const goNext = () => {
+      this._ccResolving = false;
       // Filter remaining bouts
       this.ccBouts = this.ccBouts.filter(b =>
         b.impStand && b.impStand.detachment && b.impStand.detachment.stands.includes(b.impStand) &&
@@ -27816,9 +27658,8 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    // Interactive Pre-Combat Resolution Card
+    // Report card: the result is applied straight away; the next fight waits for a tap
     this._ccResolving = true;
-    window.sfx.playMelee();
 
     const combatData = {
       isMelee: true,
@@ -27841,9 +27682,16 @@ class NetEpicScene extends Phaser.Scene {
       kills: (victimStand && !isSuperHeavyDamage) ? 1 : 0
     };
 
-    this.showCombatModal(combatData, () => {
-      finalizeBout();
-    });
+    combatData.attackerName = `${this.shortName(impDet.name, 18)} ${impStand.label || ''}`.trim();
+    combatData.targetName = `${this.shortName(orkDet.name, 18)} ${orkStand.label || ''}`.trim();
+    finalizeBout();
+    if (isSuperHeavyDamage && victimDet) {
+      combatData.outcomeText = victimDet.stands.length === 0
+        ? `${victimDet.name} is destroyed!`
+        : `${victimDet.name} is damaged (${victimDet.damageState})`;
+    }
+    this._ccResolving = true;
+    this.showCombatModal(combatData, () => goNext());
   }
 
   resolveAllCloseCombats() {
