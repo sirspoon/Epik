@@ -19770,21 +19770,23 @@ const EpikArt = (() => {
     shadow(g, true);
     // arms
     ellip(g, cx + 3 * s, cy + 0.4 * s, 1.1 * s, 1.9 * s, IRON, 0.45);             // spear arm
-    ellip(g, cx - 3.3 * s, cy - 1.4 * s, 1.1 * s, 2.3 * s, IRON, 0.45);           // left arm reaching forward
+    ellip(g, cx - 3.2 * s, cy - 1.2 * s, 0.95 * s, 2.1 * s, IRON, 0.45);          // upper arm
+    ellip(g, cx - 3.4 * s, cy - 3.5 * s, 0.6 * s, 1.6 * s, IRON, 0.4);            // forearm reaching forward
     shadow(g, false);
-    glow(g, cx - 3.5 * s, cy - 4 * s, 2 * s, 'rgba(220,20,30,0.55)');
+    glow(g, cx - 3.5 * s, cy - 5.6 * s, 1.7 * s, 'rgba(220,20,30,0.5)');
     { // the bloody hand, held out palm-down: palm, four fingers reaching forward, thumb turned in
-      const hx = cx - 3.5 * s, hy = cy - 3.7 * s, BLOOD = '#c4141c';
-      for (let f = 0; f < 4; f++) {
-        const fx = hx - 0.75 * s + f * 0.5 * s, len = [1.15, 1.45, 1.5, 1.3][f] * s;
-        box(g, fx - 0.21 * s, hy - 0.5 * s - len, 0.42 * s, len + 0.4 * s, 0.2 * s, BLOOD, 0.3);
+      const hx = cx - 3.45 * s, hy = cy - 5.3 * s, BLOOD = '#c4141c';
+      for (let f = 0; f < 4; f++) {   // long slender fingers, slightly splayed
+        const fx = hx - 0.48 * s + f * 0.32 * s, len = [1.25, 1.6, 1.65, 1.4][f] * s;
+        g.save(); g.translate(fx, hy - 0.35 * s); g.rotate((f - 1.5) * 0.09);
+        box(g, -0.13 * s, -len, 0.26 * s, len + 0.2 * s, 0.13 * s, BLOOD, 0.25); g.restore();
       }
-      g.save(); g.translate(hx + 0.75 * s, hy + 0.1 * s); g.rotate(-0.7);
-      box(g, -0.23 * s, -1.2 * s, 0.46 * s, 1.3 * s, 0.22 * s, BLOOD, 0.3); g.restore();   // thumb
-      box(g, hx - 0.95 * s, hy - 0.7 * s, 1.9 * s, 1.6 * s, 0.6 * s, BLOOD, 0.4);           // palm / back of hand
-      box(g, hx - 0.8 * s, hy + 0.7 * s, 1.6 * s, 0.9 * s, 0.3 * s, '#3a2c28', 0.35);       // iron wrist guard
+      g.save(); g.translate(hx + 0.5 * s, hy + 0.1 * s); g.rotate(-0.75);
+      box(g, -0.14 * s, -1.1 * s, 0.28 * s, 1.15 * s, 0.14 * s, BLOOD, 0.25); g.restore();   // thumb
+      box(g, hx - 0.62 * s, hy - 0.5 * s, 1.24 * s, 1.2 * s, 0.45 * s, BLOOD, 0.35);         // back of the hand
+      box(g, hx - 0.5 * s, hy + 0.55 * s, 1.0 * s, 0.6 * s, 0.25 * s, '#3a2c28', 0.3);       // iron wrist guard
     }
-    g.fillStyle = '#e01822'; [[-4.6, -2.4, 0.26], [-2.5, -2.9, 0.22], [-4.2, -1.4, 0.2], [-3.3, -0.5, 0.18]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(cx + dx * s, cy + dy * s, r * s, 0, 6.3); g.fill(); });
+    g.fillStyle = '#e01822'; [[-4.15, -4.6, 0.2], [-2.8, -4.4, 0.17], [-3.9, -3.6, 0.15], [-3.0, -2.6, 0.14]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(cx + dx * s, cy + dy * s, r * s, 0, 6.3); g.fill(); });
     shadow(g, true);
     // massive armoured torso of black iron, glowing through the cracks
     g.beginPath(); g.ellipse(cx, cy + 0.4 * s, 2.7 * s, 3.2 * s, 0, 0, 6.3);
