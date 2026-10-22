@@ -19749,6 +19749,61 @@ const EpikArt = (() => {
     if (o.rotor) { g.strokeStyle = 'rgba(40,40,40,0.7)'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(cx - w * 0.48, h * 0.4); g.lineTo(cx + w * 0.48, h * 0.4); g.moveTo(cx, h * 0.4 - w * 0.48); g.lineTo(cx, h * 0.4 + w * 0.48); g.stroke(); g.fillStyle = 'rgba(200,200,200,0.15)'; g.beginPath(); g.arc(cx, h * 0.4, w * 0.48, 0, 6.3); g.fill(); ball(g, cx, h * 0.4, 1.2, '#2a2c30'); }
   }
 
+
+  // Avatar of Khaine: towering molten-iron war god, burning crown, the Wailing Doom spear, bloody right hand
+  function avatar(g, P, w, h, o = {}) {
+    const cx = w / 2, cy = h / 2 + 0.6, s = Math.min(w, h) / 12;
+    const IRON = '#2e2522', BRONZE = '#a8632a', LAVA = '#ff6a1a', HOT = '#ffd36a';
+    glow(g, cx, cy, 7.5 * s, 'rgba(255,110,30,0.38)');           // heat haze
+    // scorched ground beneath his stride
+    g.fillStyle = 'rgba(40,12,4,0.45)'; g.beginPath(); g.ellipse(cx, cy + 0.5 * s, 4.8 * s, 5.4 * s, 0, 0, 6.3); g.fill();
+    shadow(g, true);
+    foot(g, cx - 1.3 * s, cy - 2.6 * s, s * 0.6, IRON); foot(g, cx + 1.4 * s, cy + 3.4 * s, s * 0.6, IRON);
+    shadow(g, false);
+    // the Wailing Doom: long spear held across the body, blade forward and wreathed in fire
+    const sx0 = cx + 3.6 * s, sy0 = cy + 4.6 * s, sx1 = cx + 1.2 * s, sy1 = cy - 7.4 * s;
+    g.strokeStyle = '#1b1210'; g.lineWidth = 0.9 * s; g.lineCap = 'round'; g.beginPath(); g.moveTo(sx0, sy0); g.lineTo(sx1, sy1 + 2.6 * s); g.stroke();
+    g.strokeStyle = BRONZE; g.lineWidth = 0.4 * s; g.beginPath(); g.moveTo(sx0, sy0); g.lineTo(sx1, sy1 + 2.6 * s); g.stroke(); g.lineCap = 'butt';
+    glow(g, sx1, sy1 + 1 * s, 2.6 * s, 'rgba(255,150,40,0.7)');
+    poly(g, [[sx1, sy1 - 0.4 * s], [sx1 + 0.95 * s, sy1 + 2.2 * s], [sx1, sy1 + 2.9 * s], [sx1 - 0.95 * s, sy1 + 2.2 * s]]);
+    g.fillStyle = grad(g, sx1, sy1, sx1, sy1 + 3 * s, [[0, '#fff3c4'], [0.5, HOT], [1, LAVA]]); g.fill(); g.lineWidth = 0.3; g.strokeStyle = INK; g.stroke();
+    shadow(g, true);
+    // arms
+    ellip(g, cx + 3 * s, cy + 0.4 * s, 1.1 * s, 1.9 * s, IRON, 0.45);             // spear arm
+    ellip(g, cx - 3.3 * s, cy - 1.4 * s, 1.1 * s, 2.3 * s, IRON, 0.45);           // left arm reaching forward
+    shadow(g, false);
+    glow(g, cx - 3.5 * s, cy - 4 * s, 2 * s, 'rgba(220,20,30,0.55)');
+    ball(g, cx - 3.5 * s, cy - 4 * s, 1.15 * s, '#c4141c', 0.4);                // the bloody hand, held out
+    g.fillStyle = '#e01822'; [[-4.3, -2.6, 0.32], [-3.2, -2.3, 0.26], [-3.9, -1.5, 0.22], [-3.4, -0.6, 0.2]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(cx + dx * s, cy + dy * s, r * s, 0, 6.3); g.fill(); });
+    shadow(g, true);
+    // massive armoured torso of black iron, glowing through the cracks
+    g.beginPath(); g.ellipse(cx, cy + 0.4 * s, 2.7 * s, 3.2 * s, 0, 0, 6.3);
+    g.fillStyle = rgrad(g, cx, cy + 0.4 * s, 3.2 * s, '#5a4038', IRON); g.fill(); g.lineWidth = 0.55; g.strokeStyle = INK; g.stroke();
+    shadow(g, false);
+    g.save(); g.beginPath(); g.ellipse(cx, cy + 0.4 * s, 2.7 * s, 3.2 * s, 0, 0, 6.3); g.clip();
+    g.strokeStyle = LAVA; g.lineWidth = 0.32 * s; g.shadowColor = LAVA; g.shadowBlur = 1.5 * R;
+    [[[-1.8, -1.2], [-0.6, 0.2], [-1.2, 1.8]], [[1.6, -1.6], [0.5, -0.2], [1.4, 1.4], [0.6, 2.8]], [[-0.2, 2.2], [0.4, 3.4]]].forEach(line => {
+      g.beginPath(); line.forEach(([dx, dy], i) => i ? g.lineTo(cx + dx * s, cy + dy * s) : g.moveTo(cx + dx * s, cy + dy * s)); g.stroke();
+    });
+    g.restore(); shadow(g, false);
+    // bronze pauldrons with molten rims
+    [-1, 1].forEach(k => { ball(g, cx + k * 2.5 * s, cy - 1.3 * s, 1.35 * s, BRONZE, 0.45); g.strokeStyle = LAVA; g.lineWidth = 0.25 * s; g.beginPath(); g.arc(cx + k * 2.5 * s, cy - 1.3 * s, 1 * s, 0, 6.3); g.stroke(); });
+    // burning mane streaming back over the shoulders, and a crown of flame round the helm
+    const flame = (a, L, wid, y0) => {
+      poly(g, [[cx + Math.cos(a + 1.57) * wid, y0 + Math.sin(a + 1.57) * wid], [cx + Math.cos(a) * L, y0 + Math.sin(a) * L], [cx - Math.cos(a + 1.57) * wid, y0 - Math.sin(a + 1.57) * wid]]);
+      g.fillStyle = grad(g, cx, y0, cx + Math.cos(a) * L, y0 + Math.sin(a) * L, [[0, HOT], [0.55, LAVA], [1, 'rgba(200,40,10,0.15)']]); g.fill();
+    };
+    for (let i = 0; i < 12; i++) flame(-Math.PI / 2 + i * Math.PI / 6, 2.3 * s, 0.42 * s, cy - 2.6 * s);
+    for (let i = -3; i <= 3; i++) {
+      const a = Math.PI / 2 + i * 0.22, L = (4.4 - Math.abs(i) * 0.4) * s;
+      poly(g, [[cx + Math.cos(a + 1.57) * 0.45 * s, cy - 2.4 * s + Math.sin(a + 1.57) * 0.45 * s], [cx + Math.cos(a) * L, cy - 2.4 * s + Math.sin(a) * L], [cx - Math.cos(a + 1.57) * 0.45 * s, cy - 2.4 * s - Math.sin(a + 1.57) * 0.45 * s]]);
+      g.fillStyle = grad(g, cx, cy - 2.4 * s, cx + Math.cos(a) * L, cy - 2.4 * s + Math.sin(a) * L, [[0, HOT], [0.6, LAVA], [1, 'rgba(200,40,10,0.2)']]); g.fill();
+    }
+    shadow(g, true); ball(g, cx, cy - 2.6 * s, 1.15 * s, '#3a2c28', 0.45); shadow(g, false);  // iron helm
+    g.fillStyle = HOT; g.fillRect(cx - 0.6 * s, cy - 3.25 * s, 1.2 * s, 0.28 * s);          // burning eyes in the helm slit
+    glow(g, cx, cy - 3.1 * s, 1.1 * s, 'rgba(255,200,90,0.8)');
+  }
+
   // Tyranid creatures
   function bio(g, P, w, h, o = {}) {
     const cx = w / 2, cy = h / 2 + 0.5, s = Math.min(w, h) / 12, kind = o.kind || 'carnifex';
@@ -19919,7 +19974,7 @@ const EpikArt = (() => {
     }
 
     if (book === 'ELDAR') {
-      if (has('avatar')) return R_('daemon', { body: '#c9301f', wing: '#7a1a10' });
+      if (has('avatar')) return R_('avatar', { margin: 5 });
       if (/\bexarch\b/.test(t) && !has('council')) return R_('squad', { fig: 'hero', n: 1, base: 'eldar', banner: false, s: 2.4 });
       if (has('warlock titan')) return R_('titan', { left: 'plasma', right: 'plasma', head: '#7a3fc8', holo: true, margin: 9 }, 'ELDAR');
       if (has('phantom')) return R_('titan', { left: 'cannon', right: 'plasma', holo: true, margin: 9 });
@@ -20107,7 +20162,7 @@ const EpikArt = (() => {
     return R_('squad', { fig: 'guard', n: 5, helm });
   }
 
-  const RECIPES = { squad, tank, landraider, walkerDread, knight, titan, gargant, grav, jetbike, bike, buggy, wagon, artillery, flyer, bio, daemon, squiggoth, airship, fortress, dropPod, tower, robot, kans };
+  const RECIPES = { avatar, squad, tank, landraider, walkerDread, knight, titan, gargant, grav, jetbike, bike, buggy, wagon, artillery, flyer, bio, daemon, squiggoth, airship, fortress, dropPod, tower, robot, kans };
 
   // Draw a recipe into a canvas of world size w x h (+ margin). Returns the canvas.
   function render(recipe, palKey, w, h, opts = {}) {
