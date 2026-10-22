@@ -23008,6 +23008,7 @@ class NetEpicScene extends Phaser.Scene {
 
   drawDeploymentZones() {
     this.deployGfx.clear();
+    (this._infilLabels || []).forEach(t => t.destroy()); this._infilLabels = [];
     const inDeploy = this.phase === 'DEPLOYMENT';
     const southMeta = this.getSideMeta('IMPERIUM');
     const northMeta = this.getSideMeta('ORKS');
@@ -23035,6 +23036,19 @@ class NetEpicScene extends Phaser.Scene {
     this.deployGfx.fillRect(0, BOARD_H - DEPLOY_DEPTH_PX, BOARD_W, DEPLOY_DEPTH_PX);
     this.deployGfx.lineStyle(2, southMeta.phaserColor, 0.7);
     this.deployGfx.lineBetween(0, BOARD_H - DEPLOY_DEPTH_PX, BOARD_W, BOARD_H - DEPLOY_DEPTH_PX);
+
+    // Dashed line: how far forward this side's infiltrators may set up
+    (this._infilLabels || []).forEach(t => t.destroy()); this._infilLabels = [];
+    ['IMPERIUM', 'ORKS'].forEach(f => {
+      if (this.isFactionAI(f)) return;
+      const cm = Math.max(0, ...this.detachments.filter(d => d.faction === f).map(d => this.infiltrateCm(d)));
+      if (!cm) return;
+      const y = f === 'IMPERIUM' ? BOARD_H - DEPLOY_DEPTH_PX - cm * PX_PER_CM : DEPLOY_DEPTH_PX + cm * PX_PER_CM;
+      const meta = this.getSideMeta(f);
+      this.deployGfx.lineStyle(1.5, meta.phaserColor, 0.6);
+      for (let x = 0; x < BOARD_W; x += 18) this.deployGfx.lineBetween(x, y, Math.min(BOARD_W, x + 9), y);
+      this._infilLabels.push(this.add.text(BOARD_W / 2, y + (f === 'IMPERIUM' ? -9 : 9), `🥷 Infiltrators may set up up to here (${cm} cm), not within 5 cm of the enemy`, { fontSize: '9px', color: meta.colorHex }).setOrigin(0.5).setDepth(6).setStroke('#0b1220', 3));
+    });
   }
 
   spawnObjectives() {
@@ -24693,6 +24707,7 @@ class NetEpicScene extends Phaser.Scene {
     } else {
       this.phase = 'ORDERS';
       this.groupMoveMode = false;
+      this.autoInfiltrate(['IMPERIUM', 'ORKS']); // quick skirmish: infiltrators move forward automatically
       this.assignAIOrders();
       this.log(`⚡ <b>Quick Skirmish (${southName} vs ${northName}) — Turn 1 Orders Phase!</b> Place hidden orders for your army!`);
       this.autoSaveTurn();
@@ -24705,6 +24720,8 @@ class NetEpicScene extends Phaser.Scene {
 
   finishDeploymentPhase() {
     if (this.phase !== 'DEPLOYMENT') return;
+    // The computer's infiltrators move once everyone has set up
+    this.autoInfiltrate(['IMPERIUM', 'ORKS'].filter(f => this.isFactionAI(f)));
     // Lock in starting positions for all stands
     this.detachments.forEach(d => {
       d.stands.forEach(s => {
@@ -24766,8 +24783,8 @@ class NetEpicScene extends Phaser.Scene {
 
       // Clamp to Deployment Zone or Movement Allowance
       if (this.phase === 'DEPLOYMENT') {
-        const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
-        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+        const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
+        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
         tx = Phaser.Math.Clamp(tx, 20, BOARD_W - 20);
         ty = Phaser.Math.Clamp(ty, minY, maxY);
       } else {
@@ -25776,10 +25793,12 @@ class NetEpicScene extends Phaser.Scene {
     }
     if (o.noSave) { S.kills++; S.casualties.push(stand); this.spawnFloatingText(vx, vy - 10, '💀 NO SAVE', '#ef4444', '10px'); return; }
     let ns = o.unmodifiedSave ? vDet.save : (this.isStandGarrisoned(stand) ? Math.min(vDet.save, 4) : vDet.save) - (o.tsm || 0);
+    const facTsm = o.unmodifiedSave ? 0 : this.facingArmourTsm(vDet, stand, S.from);
+    ns -= facTsm;
     if (vDet.fixedSave) ns = Math.min(ns, vDet.fixedSave);
     if (vDet.doomed) ns += 1;
     const sv = Phaser.Math.Between(1, 6), ok = ns <= 6 && sv >= ns;
-    S.saveDice.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${ns}+` });
+    S.saveDice.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${ns}+${this.facingNote(facTsm)}` });
     if (ok) { S.saves++; this.spawnFloatingText(vx, vy, `🛡️ SAVED (${sv})`, '#38bdf8', '10px'); return; }
     if (vDet.superHeavy) { if (this.applySuperHeavyDamage(vDet, stand, false)) S.kills++; return; }
     S.kills++; S.casualties.push(stand);
@@ -26010,14 +26029,16 @@ class NetEpicScene extends Phaser.Scene {
       this.drawBarrageTemplate(g, t.x, t.y, t.small ? R * 0.45 : R, { color: t.color || S.color || 0xf97316 });
       this.time.delayedCall(i * 120, () => this.spawnExplosionFX(t.x, t.y, t.small ? 10 : R * 0.8, !t.small));
     });
-    if (S.teardrop) {
-      const { x1, y1, ang, lenPx, wPx } = S.teardrop, x2 = x1 + Math.cos(ang) * lenPx, y2 = y1 + Math.sin(ang) * lenPx;
+    const drops = S.teardrops || (S.teardrop ? [S.teardrop] : []), bursts = [];
+    drops.forEach(td => {
+      const { x1, y1, ang, lenPx, wPx } = td, x2 = x1 + Math.cos(ang) * lenPx, y2 = y1 + Math.sin(ang) * lenPx;
       g.lineStyle(2, 0xfb923c, 0.9); g.beginPath();
       for (let i = 0; i <= 12; i++) { const t = i / 12, h = wPx / 2 * Math.min(1, t / 0.6); const px = x1 + Math.cos(ang) * lenPx * t - Math.sin(ang) * h, py = y1 + Math.sin(ang) * lenPx * t + Math.cos(ang) * h; i ? g.lineTo(px, py) : g.moveTo(px, py); }
       for (let i = 12; i >= 0; i--) { const t = i / 12, h = wPx / 2 * Math.min(1, t / 0.6); g.lineTo(x1 + Math.cos(ang) * lenPx * t + Math.sin(ang) * h, y1 + Math.sin(ang) * lenPx * t - Math.cos(ang) * h); }
       g.strokePath();
-      this.spawnFlameBurstFX([{ x1, y1, x2, y2 }]);
-    }
+      bursts.push({ x1, y1, x2, y2 });
+    });
+    if (bursts.length) this.spawnFlameBurstFX(bursts);
     if (S.line) {
       const { x1, y1, x2, y2, color, tremor } = S.line, ang = Math.atan2(y2 - y1, x2 - x1), d = Phaser.Math.Distance.Between(x1, y1, x2, y2);
       g.lineStyle(tremor ? 3 : 2, color, 0.9); g.beginPath();
@@ -26033,7 +26054,7 @@ class NetEpicScene extends Phaser.Scene {
 
   finishSpecialShot(firerDet, targetDet, wpn, S, title, desc, isSnapFire, opts, sol) {
     this.drawSpecialFX(S);
-    try { if (S.teardrop) window.sfx.playFlame(); else if (/psylance|custodian|warp/.test(wpn.fx)) window.sfx.playPsychic(); else window.sfx.playBarrage ? window.sfx.playBarrage() : window.sfx.playExplosion(true); } catch (e) {}
+    try { if (S.teardrop || (S.teardrops && S.teardrops.length)) window.sfx.playFlame(); else if (/psylance|custodian|warp/.test(wpn.fx)) window.sfx.playPsychic(); else window.sfx.playBarrage ? window.sfx.playBarrage() : window.sfx.playExplosion(true); } catch (e) {}
     const dmgDice = this._dmgRollBuffer ? [...this._dmgRollBuffer] : [];
     this._dmgRollBuffer = null;
     this.log(`🎲 <b>${firerDet.name}</b> fires the <i>${wpn.name}</i>: <span class="log-hit">${S.hits} hit(s)</span> | <span class="log-save">${S.saves} saved</span> | <span class="log-kill">${S.kills} killed</span>${S.notes.length ? ' — ' + S.notes.join('; ') : ''}.`);
@@ -26050,7 +26071,7 @@ class NetEpicScene extends Phaser.Scene {
     const afterBoth = () => {
       if (!tapped || !animDone || finished) return;
       finished = true;
-      this.markFirerAfterShot(firerDet, sol.validPairs.slice(0, 1), false, 1);
+      this.markFirerAfterShot(firerDet, opts._pairs || sol.validPairs.slice(0, 1), Boolean(opts._split), 1);
       new Set([targetDet, ...S.casualties.map(s => s.detachment).filter(Boolean)]).forEach(d => this.checkBreakPoint(d));
       if (opts.onComplete) opts.onComplete();
       else if (!isSnapFire) {
@@ -26081,6 +26102,82 @@ class NetEpicScene extends Phaser.Scene {
     if (r === 1) { st.harpooned = null; this.log(`🪝 The harpoon falls out of <b>${det.name}</b> (${r}).`); return; }
     st.noAct = true;
     this.log(`🪝 <b>${det.name}</b> is held by the harpoon (${r}): it can't move or fire this turn.`);
+  }
+
+  // ===== SIDE & REAR ARMOUR (core p. 32): vehicles and bigger lose 1 from the side and 2 from the rear =====
+  facingArmourApplies(det) {
+    if (!det || this.hasHitLocations(det) || !(det.save && det.save <= 6)) return false;
+    if (this.hasAbility(det, 'All-Around Armour') || this.hasAbility(det, 'AllAroundArmour') || det.allAroundArmour || det.floater) return false;
+    if (!(det.superHeavy || det.isPraetorian || (det.pinningClass || 1) >= 2 || det.isVehicle)) return false;
+    // cavalry and walkers aren't vehicle class
+    const n = `${det.name || ''} ${det.cardName || ''}`;
+    if ((det.pinningClass || 1) <= 2 && /bike|rider|cavalry|horse|boar|squig|wolves|steed|walker|dreadnought|sentinel|\bkans?\b|deff ?dread|tarantula|robot|exo-?armou?r/i.test(n)) return false;
+    return true;
+  }
+  // Which side a shot hits is set by an X drawn between the corners of the base
+  facingArmourTsm(det, stand, from) {
+    if (!from || !stand || !this.facingArmourApplies(det)) return 0;
+    const face = stand.facingRad != null ? stand.facingRad : (det.facingRad || 0);
+    const d = Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(from.y - stand.container.y, from.x - stand.container.x) - face));
+    const corner = Math.atan2((stand.baseW || 22) / 2, (stand.baseH || 22) / 2);
+    if (d <= corner) return 0;
+    return d >= Math.PI - corner ? -2 : -1;
+  }
+  facingNote(t) { return t === -2 ? ' (rear -2)' : (t === -1 ? ' (side -1)' : ''); }
+
+  // ===== FLAME TEMPLATES (core p. 35): each firing model lays a teardrop; every unit under it is attacked =====
+  executeFlameTemplateAttack(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
+    const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
+    if (!sol.validPairs.length) { this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`); if (opts.onComplete) opts.onComplete(); return; }
+    const pairs = opts.split ? [sol.validPairs[0]] : sol.validPairs;
+    const who = `${firerDet.name || ''} ${firerDet.cardName || ''}`;
+    const small = (/scorcher/i.test(wpn.name) && !/bowelburna/i.test(who)) || /spinner|vomit|corruption/i.test(wpn.name);
+    const lenCm = wpn.teardropCm || (small ? 10 : 25), lenPx = lenCm * PX_PER_CM, wPx = (small ? 5 : 6) * PX_PER_CM;
+    const S = { from: null, hitBonus: (firerDet.toHitPenalty || 0) + this.titanHitBonus(firerDet, targetDet), hitDice: [], saveDice: [], hits: 0, saves: 0, kills: 0, casualties: [], templates: [], notes: [], teardrops: [], line: null, color: 0xf97316 };
+    this._dmgRollBuffer = [];
+    pairs.forEach(p => {
+      const x1 = p.shooter.container.x, y1 = p.shooter.container.y, ang = Math.atan2(p.target.container.y - y1, p.target.container.x - x1);
+      S.from = { x: x1, y: y1 };
+      S.teardrops.push({ x1, y1, ang, lenPx, wPx });
+      this.standsInTeardrop(x1, y1, ang, lenPx, wPx, firerDet.faction).forEach(c => this.specialHit(S, c.det, c.stand, { need: wpn.toHit, tsm: wpn.tsm || 0, ignoreCover: true }));
+    });
+    const title = `🔥 ${wpn.name} · ${pairs.length} template${pairs.length > 1 ? 's' : ''}`;
+    const desc = `${lenCm} cm teardrop${pairs.length > 1 ? ' each' : ''} · hit ${wpn.toHit}+ · TSM ${wpn.tsm || 0} · ignores cover`;
+    this.finishSpecialShot(firerDet, targetDet, wpn, S, title, desc, isSnapFire, { ...opts, _pairs: pairs, _split: Boolean(opts.split) }, sol);
+  }
+
+  // ===== INFILTRATION (core p. 12): after setup infantry and walkers move double, cavalry and vehicles normally,
+  // never ending within 5 cm of an enemy. Players place infiltrators forward of their zone during deployment.
+  infiltrateCm(det) {
+    if (!det || !this.hasAbility(det, 'Infiltration') || !det.stands.length) return 0;
+    const double = (det.pinningClass || 1) === 1 || /walker|dreadnought|sentinel|\bkans?\b/i.test(det.name || '');
+    return (det.moveCm || 0) * (double ? 2 : 1);
+  }
+  tooCloseToEnemy(det, gapPx = 5 * PX_PER_CM) {
+    return det.stands.some(s => this.detachments.some(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve &&
+      o.stands.some(e => Phaser.Math.Distance.Between(s.container.x, s.container.y, e.container.x, e.container.y) < gapPx)));
+  }
+  enforceInfiltrationGap(det) {
+    const back = det.faction === 'IMPERIUM' ? 1 : -1; let moved = false;
+    for (let i = 0; i < 100 && this.tooCloseToEnemy(det); i++) { det.stands.forEach(s => { s.container.y += back * 5; s.originY = s.container.y; }); moved = true; }
+    if (moved) { this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det); this.log(`🥷 <b>${det.name}</b> can't infiltrate within 5 cm of the enemy, so it's pulled back.`); }
+  }
+  // Infiltrators the computer controls (and everyone's in a quick skirmish) move toward the nearest enemy
+  autoInfiltrate(factions) {
+    this.detachments.filter(d => factions.includes(d.faction) && this.infiltrateCm(d) > 0 && !d.embarkedOn && !d.inReserve).forEach(det => {
+      const c = this.getDetachmentCenter(det);
+      const foes = this.detachments.filter(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve);
+      let tx = c.x, ty = BOARD_H / 2;
+      if (foes.length) { const n = foes.map(o => this.getDetachmentCenter(o)).reduce((a, b) => Phaser.Math.Distance.Between(c.x, c.y, a.x, a.y) <= Phaser.Math.Distance.Between(c.x, c.y, b.x, b.y) ? a : b); tx = n.x; ty = n.y; }
+      const dist = Phaser.Math.Distance.Between(c.x, c.y, tx, ty) || 1, allow = this.infiltrateCm(det) * PX_PER_CM, ux = (tx - c.x) / dist, uy = (ty - c.y) / dist;
+      det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
+      this.translateDetachmentSafely(det, ux * Math.min(allow, dist), uy * Math.min(allow, dist), allow);
+      for (let i = 0; i < 60 && this.tooCloseToEnemy(det); i++) det.stands.forEach(s => { s.container.x -= ux * 5; s.container.y -= uy * 5; });
+      det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
+      this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
+      const c2 = this.getDetachmentCenter(det), cm = Math.round(Phaser.Math.Distance.Between(c.x, c.y, c2.x, c2.y) / PX_PER_CM);
+      if (cm > 0) this.log(`🥷 <b>${det.name}</b> infiltrates ${cm} cm forward.`);
+    });
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -26937,8 +27034,8 @@ class NetEpicScene extends Phaser.Scene {
           }
 
           if (this.phase === 'DEPLOYMENT') {
-            const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
-            const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+            const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
+            const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
             targetX = Phaser.Math.Clamp(targetX, 20, BOARD_W - 20);
             targetY = Phaser.Math.Clamp(targetY, minY, maxY);
           } else {
@@ -27738,6 +27835,8 @@ class NetEpicScene extends Phaser.Scene {
       const sw = this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0);
       if (sw && sw.fx) { this.executeTitanSpecialShot(firerDet, targetDet, sw, isSnapFire, opts); return; }
     }
+    const flameWpn = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
+    if (flameWpn && flameWpn.isFlame && !flameWpn.fx) { this.executeFlameTemplateAttack(firerDet, targetDet, flameWpn, isSnapFire, opts); return; }
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
       this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`);
@@ -27908,7 +28007,8 @@ class NetEpicScene extends Phaser.Scene {
             const saveRoll = Phaser.Math.Between(1, 6);
             const baseSave = garrisoned ? Math.min(vDet.save, 4) : vDet.save;
             const doomPen = vDet.doomed ? 1 : 0;
-            let neededSave = baseSave - barrageStats.tsm + doomPen;
+            const facTsm = this.facingArmourTsm(vDet, victimStand, this.getDetachmentCenter(firerDet));
+            let neededSave = baseSave - barrageStats.tsm - facTsm + doomPen;
             if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
             let saved = saveRoll >= neededSave && neededSave <= 6;
 
@@ -27934,7 +28034,7 @@ class NetEpicScene extends Phaser.Scene {
               }
             }
             if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
-              saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+              saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${neededSave}+${this.facingNote(facTsm)}${doomPen ? ' (Doomed)' : ''}` });
             }
 
             if (saved) {
@@ -28049,7 +28149,8 @@ class NetEpicScene extends Phaser.Scene {
               const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
               const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
               const doomPen = targetDet.doomed ? 1 : 0;
-              let neededSave = baseSave - curWpn.tsm + doomPen;
+              const facTsm = this.facingArmourTsm(targetDet, victimRef, { x: pair.shooter.container.x, y: pair.shooter.container.y });
+              let neededSave = baseSave - curWpn.tsm - facTsm + doomPen;
               if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
               const holoSave = this.getHoloFieldSave(targetDet);
               if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
@@ -28077,7 +28178,7 @@ class NetEpicScene extends Phaser.Scene {
                 }
               }
               if (!saveDiceUI.some(d => d.tip && d.tip.includes('Iron Will'))) {
-                saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${doomPen ? ' (Doomed)' : ''}` });
+                saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `Save needed ${neededSave}+${this.facingNote(facTsm)}${doomPen ? ' (Doomed)' : ''}` });
               }
 
               if (saved) {
@@ -28867,8 +28968,8 @@ class NetEpicScene extends Phaser.Scene {
 
       // --- 0. DEPLOYMENT PHASE DRAGGING (Within Faction Deployment Zone) ---
       if (this.phase === 'DEPLOYMENT') {
-        const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
-        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+        const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
+        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
 
         if (this.groupMoveMode) {
           let dx = dragX - stand.dragStartX;
@@ -29011,6 +29112,8 @@ class NetEpicScene extends Phaser.Scene {
       this.isDraggingStand = false;
       if (gameObject && gameObject.standData) {
         this.resolveStandOverlap(gameObject.standData, true);
+        const dd = gameObject.standData.detachment;
+        if (this.phase === 'DEPLOYMENT' && dd && this.infiltrateCm(dd) > 0) this.enforceInfiltrationGap(dd);
       }
       if (this.selectedDetachment && this.groupMoveMode) {
         this.resolveDetachmentSpacing(this.selectedDetachment);
