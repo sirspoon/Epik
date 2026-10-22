@@ -1218,6 +1218,7 @@
   <!-- In-battle menu (overlay) -->
   <div id="battle-menu-dropdown" style="display:none;">
     <button onclick="window.toggleBattleMenu(); window.openSaveLoadModal()" style="background:#047857; border-color:#10b981;">💾 Save / Load</button>
+    <button onclick="window.toggleBattleMenu(); window.gameScene && window.gameScene.showBattleReport()">📊 Battle report</button>
     <button onclick="window.toggleBattleMenu(); window.openOptionsModal()">⚙️ Options</button>
     <button onclick="window.toggleBattleMenu(); window.openArmyModal()">🛠️ Armies</button>
     <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()">🔊 Sound</button>
@@ -39531,6 +39532,8 @@ class NetEpicScene extends Phaser.Scene {
 
   // Animated Casualty Destruction Sequence (Shakes, Explodes, Dissolves)
   executeCasualtyDestruction(casualties, targetDet, onFinished) {
+    const killer = this._attacker;
+    (casualties || []).forEach(c => { if (c && !c._killedBy) c._killedBy = killer; });
     if (!casualties || casualties.length === 0) {
       if (onFinished) onFinished();
       return;
@@ -39988,6 +39991,7 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.forEach(det => {
       const dice = this.getPointDefense(det) * det.stands.length; // PD is per model
       if (!dice || det.stands.length === 0 || det.embarkedOn || det.inReserve || det.pdUsedTurn === this.turn) return;
+      this._attacker = det;
       if (det.locationDamage && det.locationDamage.reactor && /DAMAGED|CRIPPLED/i.test(det.locationDamage.reactor)) return;
       const near = [];
       this.detachments.forEach(e => {
@@ -41289,6 +41293,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   clearAllDetachments() {
+    this._reportShown = false;
     this._wrecks = [];
     if (!this.detachments) return;
     this.detachments.forEach(d => {
@@ -42869,6 +42874,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
+    this._attacker = firerDet;
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
     if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta/.test(wpn.fx) || (wpn.fx === 'teardrop' && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
@@ -43181,7 +43187,7 @@ class NetEpicScene extends Phaser.Scene {
   // ===== FLAME TEMPLATES (core p. 35): each firing model lays a teardrop; every unit under it is attacked =====
   executeFlameTemplateAttack(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
-    if (!sol.validPairs.length) { this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`); if (opts.onComplete) opts.onComplete(); return; }
+    if (!sol.validPairs.length) { this.log(`⚠️ <b>${firerDet.name}</b> can't fire at <b>${targetDet.name}</b>: ${this.explainNoShot(firerDet, targetDet)}.`); if (opts.onComplete) opts.onComplete(); return; }
     const pairs = opts.split ? [sol.validPairs[0]] : sol.validPairs;
     const who = `${firerDet.name || ''} ${firerDet.cardName || ''}`;
     const small = (/scorcher/i.test(wpn.name) && !/bowelburna/i.test(who)) || /spinner|vomit|corruption/i.test(wpn.name);
@@ -43305,6 +43311,59 @@ class NetEpicScene extends Phaser.Scene {
       const w = det.salvos[i], on = i === cur, reach = tgt ? this.salvoReaches(det, i, tgt) : true;
       return `<button onclick="window.gameScene.selectSalvo(${i})" style="padding:4px 7px;border-radius:7px;font-size:0.68rem;font-weight:700;border:1px solid ${on ? '#facc15' : '#334155'};background:${on ? '#854d0e' : '#1e293b'};color:${reach ? '#f8fafc' : '#64748b'}" title="${w.name}: ${w.rangeCm}cm">${on ? '▶ ' : ''}${this.shortName(w.name, 18)} · ${w.rangeCm}cm${tgt && !reach ? ' ✕' : ''}</button>`;
     }).join('');
+  }
+
+  // ===== BATTLE REPORT: who killed what =====
+  standValue(det) { // points a single stand is worth
+    const pts = det.points || (det.cfg && det.cfg.points) || 0;
+    const n = (det.isCompanyDetachment || det.companyCardId) && det.companyTotalStands ? det.companyTotalStands : (det.initialCount || 1);
+    return n ? pts / n : 0;
+  }
+  creditKill(det, victim) {
+    const k = (victim && victim._killedBy) || this._attacker;
+    const v = this.standValue(det);
+    det.ptsLost = (det.ptsLost || 0) + v;
+    if (!k || k.faction === det.faction) return;
+    k.bstats = k.bstats || { kills: 0, pts: 0, vp: 0 };
+    k.bstats.kills++; k.bstats.pts += v;
+    (det.killedBy = det.killedBy || {})[k.id] = ((det.killedBy || {})[k.id] || 0) + v;
+  }
+  // Victory points for breaking a unit go to the units that did the damage, in proportion
+  creditVp(dets, vp) {
+    const share = {};
+    dets.forEach(d => Object.entries(d.killedBy || {}).forEach(([id, v]) => { share[id] = (share[id] || 0) + v; }));
+    const tot = Object.values(share).reduce((a, b) => a + b, 0);
+    if (!tot) return;
+    Object.entries(share).forEach(([id, v]) => { const k = this.detachments.find(d => d.id === id); if (k) { k.bstats = k.bstats || { kills: 0, pts: 0, vp: 0 }; k.bstats.vp += vp * v / tot; } });
+  }
+  showBattleReport(resultText) {
+    let m = document.getElementById('battle-report-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'battle-report-modal'; document.body.appendChild(m); }
+    m.style.cssText = 'position:fixed;inset:0;z-index:430;background:rgba(2,6,23,0.72);display:flex;align-items:center;justify-content:center;padding:10px;';
+    const sides = ['IMPERIUM', 'ORKS'];
+    const units = this.detachments.filter(d => d.cfg || d.points);
+    const st = d => d.bstats || { kills: 0, pts: 0, vp: 0 };
+    const sideSum = f => {
+      const mine = units.filter(d => d.faction === f);
+      return { pts: mine.reduce((a, d) => a + st(d).pts, 0), lost: mine.reduce((a, d) => a + (d.ptsLost || 0), 0), wiped: mine.filter(d => !d.embarkedOn && d.stands.length === 0).length, broken: mine.filter(d => d.broken).length, vp: this.getTotalVP(f), objVp: (this.objVp || {})[f] || 0 };
+    };
+    const nm = d => this.shortName(d.name, 30);
+    const row = (d, i) => `<tr><td style="padding:2px 4px;color:#94a3b8">${i + 1}</td><td style="padding:2px 4px">${nm(d)}<div style="font-size:0.62rem;color:#64748b">${this.getSideShort ? this.getSideShort(d.faction) : d.faction}${d.stands.length ? '' : ' · destroyed'}</div></td><td style="text-align:right;padding:2px 4px">${Math.round(st(d).pts)}</td><td style="text-align:right;padding:2px 4px">${st(d).kills}</td><td style="text-align:right;padding:2px 4px">${st(d).vp ? st(d).vp.toFixed(1) : '0'}</td></tr>`;
+    const table = (list, title) => list.length ? `<div style="margin-top:10px;font-weight:800;font-size:0.82rem">${title}</div><table style="width:100%;border-collapse:collapse;font-size:0.72rem"><tr style="color:#94a3b8"><th></th><th style="text-align:left">Unit</th><th style="text-align:right">Pts killed</th><th style="text-align:right">Kills</th><th style="text-align:right">VP won</th></tr>${list.map(row).join('')}</table>` : '';
+    const byPts = units.filter(d => st(d).pts > 0).sort((a, b) => st(b).pts - st(a).pts);
+    const byVp = units.filter(d => st(d).vp > 0).sort((a, b) => st(b).vp - st(a).vp);
+    const mvp = byPts[0];
+    const sum = sides.map(f => { const x = sideSum(f), meta = this.getSideMeta(f); return `<div style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:9px;padding:7px"><div style="font-weight:800;color:${meta.colorHex}">${this.getSideName(f)}</div><div style="font-size:0.72rem;line-height:1.5">🏆 <b>${x.vp} VP</b> (${x.objVp} from objectives)<br>💀 Destroyed ${Math.round(x.pts)} pts of the enemy<br>🩸 Lost ${Math.round(x.lost)} pts · ${x.wiped} units wiped out · ${x.broken} broken</div></div>`; }).join('');
+    m.innerHTML = `<div style="width:min(520px,100%);max-height:90vh;overflow:auto;background:#111827;border:1px solid #334155;border-radius:14px;padding:12px 14px;color:#f8fafc;font-family:system-ui,sans-serif">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1.05rem">📊 Battle report · Turn ${this.turn}</b><button id="br-close" style="padding:6px 12px;border-radius:8px;background:#1f2937;color:#e5e7eb;border:1px solid #374151;font-weight:700">Close</button></div>
+      ${resultText ? `<div style="margin:6px 0;color:#fde68a;font-weight:800">🏆 ${resultText}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:6px">${sum}</div>
+      ${mvp ? `<div style="margin-top:10px;background:#422006;border:1px solid #a16207;border-radius:9px;padding:7px;font-size:0.78rem">🥇 <b>Unit of the battle:</b> ${nm(mvp)} (${this.getSideName(mvp.faction)}) — destroyed ${Math.round(st(mvp).pts)} pts in ${st(mvp).kills} kills${st(mvp).vp ? `, won ${st(mvp).vp.toFixed(1)} VP` : ''}</div>` : ''}
+      ${table(byPts.slice(0, 6), '💀 Most enemy points destroyed')}
+      ${table(byVp.slice(0, 5), '🏆 Most victory points won (for breaking enemy units)')}
+      ${sides.map(f => table(byPts.filter(d => d.faction === f).slice(0, 4), `${this.getSideName(f)}: top units`)).join('')}
+      <div style="font-size:0.62rem;color:#64748b;margin-top:8px">VP for breaking a unit is shared between the units that inflicted its casualties. Objective VP belongs to the army.</div></div>`;
+    m.querySelector('#br-close').onclick = () => { m.style.display = 'none'; };
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -43492,6 +43551,7 @@ class NetEpicScene extends Phaser.Scene {
     this.closePsykerModal();
     const det = this.activatingDetachment || this.selectedDetachment;
     if (!det || !det.isPsyker || det.stands.length === 0 || det.psychicPowerUsed) return;
+    this._attacker = det;
     const power = PSYCHIC_POWERS[powerKey];
     if (!power) return;
 
@@ -44628,6 +44688,27 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- LINE OF SIGHT, SKIMMER POP-UP, BUILDING GARRISONS, INDIRECT FIRE & TERRAIN RAYCASTER (NetEpic Rules p. 22, 26, 28, 33 & 36) ---
   checkStandLoS(shooterStand, targetStand, isSnapFire = false, customWpn = null) {
+    const r = this.checkStandLoSAt(shooterStand, targetStand, isSnapFire, customWpn, null, null);
+    if (r.valid || !/^Blocked|Stealth/.test(r.reason || '')) return r;
+    // Core p. 33: a model with a hit location template can be shot if any location can be seen (and it can see back the same way)
+    const pts = st => {
+      const big = this.hasHitLocations(st.detachment) || st.detachment.superHeavy;
+      if (!big) return [null];
+      const f = st.facingRad || 0, hw = (st.baseW || 22) * 0.4, hh = (st.baseH || 22) * 0.4, out = [null];
+      [[hw, hh], [-hw, hh], [hw, -hh], [-hw, -hh]].forEach(([a, b]) => out.push({ x: st.container.x + a * Math.cos(f) - b * Math.sin(f), y: st.container.y + a * Math.sin(f) + b * Math.cos(f) }));
+      return out;
+    };
+    const tp = pts(targetStand), sp = pts(shooterStand);
+    if (tp.length === 1 && sp.length === 1) return r;
+    for (const a of sp) for (const b of tp) {
+      if (!a && !b) continue;
+      const r2 = this.checkStandLoSAt(shooterStand, targetStand, isSnapFire, customWpn, a, b);
+      if (r2.valid) return { ...r2, reason: r2.reason + ' (part of the model in sight)' };
+    }
+    return r;
+  }
+
+  checkStandLoSAt(shooterStand, targetStand, isSnapFire = false, customWpn = null, fromPt = null, toPt = null) {
     if (shooterStand.detachment.embarkedOn || targetStand.detachment.embarkedOn ||
         shooterStand.detachment.inReserve || targetStand.detachment.inReserve) {
       return { valid: false, reason: 'In Reserve / Embarked', distCm: 0, coverMod: 0, indirect: false };
@@ -44644,8 +44725,8 @@ class NetEpicScene extends Phaser.Scene {
       return { valid: false, reason: 'Target in Close Combat', distCm: 0, coverMod: 0, indirect: false };
     }
 
-    const p1 = { x: shooterStand.container.x, y: shooterStand.container.y };
-    const p2 = { x: targetStand.container.x, y: targetStand.container.y };
+    const p1 = fromPt || { x: shooterStand.container.x, y: shooterStand.container.y };
+    const p2 = toPt || { x: targetStand.container.x, y: targetStand.container.y };
     const distPx = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
     const distCm = distPx / PX_PER_CM;
 
@@ -44692,7 +44773,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // 1. Check Buildings (Block direct LoS unless the shooter or target is Garrisoned inside that specific building!)
     for (const b of this.buildings) {
-      if (b === shooterBuilding || b === targetBuilding) continue;
+      if (b === shooterBuilding || b === targetBuilding || b.collapsed) continue; // ruins are rough ground and don't block (core p. 24)
       const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
       if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
         if (canFireIndirect) {
@@ -44763,7 +44844,7 @@ class NetEpicScene extends Phaser.Scene {
       if (det === shooterStand.detachment || det === targetStand.detachment || det.embarkedOn || det.inReserve) continue;
       if (det.pinningClass >= maxPin) {
         for (const s of det.stands) {
-          const c = new Phaser.Geom.Circle(s.container.x, s.container.y, 12);
+          const c = new Phaser.Geom.Circle(s.container.x, s.container.y, Math.max(8, Math.min(s.baseRadius || 11, 30) * 0.85));
           if (Phaser.Geom.Intersects.LineToCircle(line, c)) {
             if (canFireIndirect) {
               return { valid: true, indirect: true, reason: `Indirect over ${det.name}`, distCm, coverMod: baseCoverMod };
@@ -44778,6 +44859,33 @@ class NetEpicScene extends Phaser.Scene {
     const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : ((targetInWood || woodPixels > 0) ? -1 : 0));
     const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS'));
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
+  }
+
+  explainNoShot(firer, target) {
+    const w = this.isSalvoFirer(firer) ? this.getSalvoWeapon(firer, firer.salvosFired || 0) : null;
+    let best = null;
+    firer.stands.forEach(sh => target.stands.forEach(ts => { const r = this.checkStandLoS(sh, ts, false, w || sh.weapon || firer.weapon); const k = this.losKind(r); const rank = { blocked: 3, arc: 2, range: 1 }[k] || 0; if (!best || rank > best.rank || (rank === best.rank && r.distCm < best.r.distCm)) best = { r, k, rank }; }));
+    if (!best) return 'nothing to shoot';
+    return best.k === 'range' ? `out of range (nearest ${Math.round(best.r.distCm)} cm)` : (best.k === 'arc' ? 'outside its firing arc' : `no line of sight (${best.r.reason})`);
+  }
+
+  // Why a shot can't be made: 'range', 'arc', or 'blocked' (no line of sight)
+  losKind(r) {
+    if (!r || r.valid) return 'ok';
+    if (/Range/i.test(r.reason || '')) return 'range';
+    if (/Arc/i.test(r.reason || '')) return 'arc';
+    return 'blocked';
+  }
+  drawLosRay(x1, y1, x2, y2, r) {
+    const g = this.losGfx, k = this.losKind(r);
+    if (k === 'ok') {
+      const col = r.indirect ? 0xf97316 : (r.coverMod < 0 ? 0xfacc15 : 0x22c55e);
+      g.lineStyle(r.indirect ? 2.5 : 2, col, 0.85); g.lineBetween(x1, y1, x2, y2); return;
+    }
+    if (k === 'blocked') { g.lineStyle(2, 0xef4444, 0.85); g.lineBetween(x1, y1, x2, y2); return; }
+    const col = k === 'range' ? 0x94a3b8 : 0xc084fc, d = Phaser.Math.Distance.Between(x1, y1, x2, y2), ux = (x2 - x1) / (d || 1), uy = (y2 - y1) / (d || 1);
+    g.lineStyle(1.6, col, 0.75);
+    for (let t = 0; t < d; t += 12) g.lineBetween(x1 + ux * t, y1 + uy * t, x1 + ux * Math.min(t + 7, d), y1 + uy * Math.min(t + 7, d));
   }
 
   // Derive thematic weapon system name for Titan / Super-Heavy salvos
@@ -44954,6 +45062,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- RANGED COMBAT & ARTILLERY BARRAGE RESOLUTION ENGINE ---
   executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+    this._attacker = firerDet;
     if (firerDet.weapon && firerDet.weapon.pulsaRokkit) {
       this.executePulsaRokkitAttack(firerDet, targetDet, isSnapFire, opts);
       return;
@@ -44967,7 +45076,7 @@ class NetEpicScene extends Phaser.Scene {
     if (flameWpn && flameWpn.isFlame && !flameWpn.fx) { this.executeFlameTemplateAttack(firerDet, targetDet, flameWpn, isSnapFire, opts); return; }
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (sol.validPairs.length === 0) {
-      this.log(`⚠️ <b>${firerDet.name}</b> has no stands in range/LoS/arc of <b>${targetDet.name}</b>.`);
+      this.log(`⚠️ <b>${firerDet.name}</b> can't fire at <b>${targetDet.name}</b>: ${this.explainNoShot(firerDet, targetDet)}.`);
       if (opts.onComplete) opts.onComplete();
       return;
     }
@@ -45446,6 +45555,7 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
     if (det.isVehicle || det.isTitan || det.superHeavy) this.addWreck(vx, vy, Boolean(det.isTitan || det.superHeavy)); // burning wreck left behind
+    this.creditKill(det, victim);
     victim.container.destroy();
     det.casualties++;
 
@@ -45529,6 +45639,7 @@ class NetEpicScene extends Phaser.Scene {
 
       coDets.forEach(d => { d.companyBroken = true; d.broken = true; });
       this.vp[scoringSide] += coVpValue;
+      this.creditVp(coDets, coVpValue);
       window.sfx.playHorn();
       const dc = this.getDetachmentCenter(det);
       this.spawnFloatingText(dc.x, dc.y - 24, `🏢 ${det.companyName || 'COMPANY'} BROKEN! (+${coVpValue} VP)`, '#f59e0b', '14px');
@@ -45546,6 +45657,7 @@ class NetEpicScene extends Phaser.Scene {
     if (det.broken || det.casualties < det.breakPoint) return;
     det.broken = true;
     this.vp[scoringSide] += det.vpValue;
+    this.creditVp([det], det.vpValue);
     window.sfx.playHorn();
     const dc = this.getDetachmentCenter(det);
     this.spawnFloatingText(dc.x, dc.y - 22, `🏳️ BROKEN (+${det.vpValue} VP)`, '#f59e0b', '13px');
@@ -48017,6 +48129,7 @@ class NetEpicScene extends Phaser.Scene {
 
     const finalizeBout = () => {
       window.sfx.playMelee();
+      this._attacker = impWin ? impDet : (orkWin ? orkDet : null);
 
       if (impWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
@@ -48199,6 +48312,7 @@ class NetEpicScene extends Phaser.Scene {
   // --- IV. END PHASE (OBJECTIVE CAPTURE, SHIELD REPAIR, RALLY CHECKS & VICTORY) ---
   startEndPhase() {
     this.phase = 'END_PHASE';
+    this._attacker = null;
     this.selectedDetachment = null;
     this.activatingDetachment = null;
     this.targetDetachment = null;
@@ -48398,6 +48512,7 @@ class NetEpicScene extends Phaser.Scene {
       vicBanner.style.display = 'block';
       vicBanner.innerText = `🏆 VICTORY FOR ${winner}! (You may continue playing or open Armies Setup)`;
       this.log(`🏆 <b>VICTORY ACHIEVED: ${winner}!</b>`);
+      if (!this._reportShown) { this._reportShown = true; this.time.delayedCall(900, () => this.showBattleReport(`Victory for ${winner}`)); }
       document.getElementById('btn-restart-game').style.display = 'block';
     }
 
@@ -48625,15 +48740,14 @@ class NetEpicScene extends Phaser.Scene {
               bestCheck = chk;
             }
           }
-          const color = bestCheck.valid ? (bestCheck.coverMod < 0 ? 0xfacc15 : 0x38bdf8) : 0xef4444;
           const aimX = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.x : chosen.container.x;
           const aimY = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.y : chosen.container.y;
-          this.losGfx.lineStyle(bestCheck.valid ? 3 : 1.5, color, bestCheck.valid ? 0.95 : 0.45);
-          this.losGfx.lineBetween(shooter.container.x, shooter.container.y, aimX, aimY);
+          this.drawLosRay(shooter.container.x, shooter.container.y, aimX, aimY, bestCheck);
         });
       }
     }
 
+    if (this._losLabel) this._losLabel.setVisible(false);
     // 4. Draw Live Line of Sight Rays & 6cm Artillery Barrage Templates when targeting an enemy in Combat Phase
     if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
         this.activatingDetachment && this.targetDetachment) {
@@ -48681,6 +48795,7 @@ class NetEpicScene extends Phaser.Scene {
         ? sol.validPairs[0].shooter
         : null;
 
+      const losReasons = [];
       firer.stands.forEach(shooter => {
         // If this stand has already fired during split fire, do NOT draw firing rays from it!
         if (firer.standsFired && firer.standsFired.has(shooter.id)) {
@@ -48708,15 +48823,21 @@ class NetEpicScene extends Phaser.Scene {
             bestCheck = chk;
           }
         }
-        // Green = Clear LoS, Orange = Indirect Fire over terrain, Yellow = Woods/Building Cover, Red = Blocked/Out of range
-        const color = bestCheck.valid
-          ? (bestCheck.indirect ? 0xf97316 : (bestCheck.coverMod < 0 ? 0xfacc15 : 0x22c55e))
-          : 0xef4444;
+        // Green = clear, yellow = cover, orange = indirect; red = no line of sight, grey dashed = out of range, purple dashed = outside the arc
         const aimX = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.x : chosen.container.x;
         const aimY = (sol.isBarrage && sol.aimPoint && bestCheck.valid) ? sol.aimPoint.y : chosen.container.y;
-        this.losGfx.lineStyle(bestCheck.indirect ? 2.5 : 2, color, 0.85);
-        this.losGfx.lineBetween(shooter.container.x, shooter.container.y, aimX, aimY);
+        this.drawLosRay(shooter.container.x, shooter.container.y, aimX, aimY, bestCheck);
+        losReasons.push(bestCheck);
       });
+      // If nothing can fire, say why at the target
+      if (losReasons.length && !losReasons.some(r => r.valid)) {
+        const r = losReasons.find(x => this.losKind(x) === 'blocked') || losReasons.find(x => this.losKind(x) === 'arc') || losReasons[0];
+        const tc = this.getDetachmentCenter(target), k = this.losKind(r);
+        const txt = k === 'range' ? `📏 Out of range (${Math.round(r.distCm)} cm)` : (k === 'arc' ? '↪️ Outside firing arc' : `🚫 No line of sight: ${(r.reason || '').replace(/^Blocked (by )?/, '')}`);
+        if (!this._losLabel) this._losLabel = this.add.text(0, 0, '', { fontSize: '10px', fontStyle: 'bold', backgroundColor: '#0f172acc', padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(480);
+        this._losLabel.setText(txt).setColor(k === 'range' ? '#cbd5e1' : (k === 'arc' ? '#d8b4fe' : '#fca5a5')).setPosition(tc.x, tc.y - 34).setVisible(true);
+        if (this.keepTextUpright) this.keepTextUpright(this._losLabel);
+      }
     }
 
     const det = this.selectedDetachment;
@@ -49566,6 +49687,7 @@ class NetEpicScene extends Phaser.Scene {
         instinct: det.instinct || null,
         firedMounts: det.firedMounts || [],
         healUses: det.healUses || 0,
+        bstats: det.bstats || null, killedBy: det.killedBy || null, ptsLost: det.ptsLost || 0,
         obsTarget: det.obsTarget || null,
         salvosNow: det.titanState && det.salvos ? JSON.parse(JSON.stringify(det.salvos)) : null,
         damageLog: det.damageLog ? [...det.damageLog] : [],
@@ -49821,6 +49943,7 @@ class NetEpicScene extends Phaser.Scene {
         if (savedDet.instinct) det.instinct = savedDet.instinct;
         det.firedMounts = savedDet.firedMounts || [];
         det.healUses = savedDet.healUses || 0;
+        det.bstats = savedDet.bstats || null; det.killedBy = savedDet.killedBy || null; det.ptsLost = savedDet.ptsLost || 0;
         det.obsTarget = savedDet.obsTarget || null;
         if (savedDet.salvosNow) { det.salvos = savedDet.salvosNow; det.maxSalvos = det.salvos.length; }
         if (savedDet.damageLog) det.damageLog = [...savedDet.damageLog];
