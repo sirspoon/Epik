@@ -25118,11 +25118,11 @@ class NetEpicScene extends Phaser.Scene {
     // Damage table: + Penetrating, +1 for each earlier hit on this location
     st.hits[loc.id] = (st.hits[loc.id] || 0) + 1;
     const raw = Phaser.Math.Between(1, 6);
-    const roll = raw + (ctx.pen || 0) + (st.hits[loc.id] - 1) + (ctx.isCC ? 1 : 0) + (loc.plus || 0);
+    const roll = raw + (ctx.pen || 0) + (st.hits[loc.id] - 1) + (ctx.isCC ? 1 : 0) + ((st.plus && st.plus[loc.id]) || 0);
     const e = this.tableEntry(loc.table, roll);
     this.pushDmgDie(raw, 'die-crit', loc.name.split(' ')[0], `${loc.name}: ${e.text || e.effect} (roll ${raw}${roll !== raw ? ' → ' + Math.min(roll, 6) : ''})`);
     this.log(`💥 <b>${det.name}</b> hit in the <b>${loc.name}</b> (${facing}): damage roll ${raw}${roll !== raw ? ` (+${roll - raw})` : ''} → <i>${e.text || e.effect}</i>`);
-    if (e.plusFuture) loc.plus = (loc.plus || 0) + e.plusFuture;
+    if (e.plusFuture) { st.plus = st.plus || {}; st.plus[loc.id] = (st.plus[loc.id] || 0) + e.plusFuture; }
     if (det.damageLog) { det.damageLog.push(`${loc.name}: ${e.effect.replace(/_/g, ' ')}`); if (det.damageLog.length > 4) det.damageLog.shift(); }
     const destroyed = this.applyTitanEffect(det, stand, loc, e, ctx);
     if (!destroyed && st.woundsMax) { // bio-titans also bleed wounds
