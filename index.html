@@ -19545,6 +19545,7 @@ const EpikArt = (() => {
       box(g, cx - 2.6 * s, cy - 1.8 * s, 5.2 * s, 3.4 * s, 0.7 * s, P.dark, 0.45);
       for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) ball(g, cx - 1.8 * s + i * 1.2 * s, cy - 1 * s + j * 1.5 * s, 0.42 * s, P.accent, 0.2);
     }
+    if (o.holo) holoWings(g, P, cx, cy, s, bw);
     // head: armoured cowl jutting forward of the carapace (only its roof shows from above)
     shadow(g, true);
     poly(g, [[cx - 1.8 * s, cy - 2.8 * s], [cx + 1.8 * s, cy - 2.8 * s], [cx + 1.3 * s, cy - 5.6 * s], [cx, cy - 6.2 * s], [cx - 1.3 * s, cy - 5.6 * s]]);
@@ -19552,6 +19553,32 @@ const EpikArt = (() => {
     shadow(g, false);
     g.strokeStyle = P.trim; g.lineWidth = 0.45; g.beginPath(); g.moveTo(cx, cy - 6 * s); g.lineTo(cx, cy - 3 * s); g.stroke();
     if (o.spiky) spikes(g, [[cx - (bw + 1.8) * s, cy - 1.4 * s, Math.PI], [cx + (bw + 1.8) * s, cy - 1.4 * s, 0], [cx - (bw - 1.2) * s, cy + 4.2 * s, Math.PI * 0.75], [cx + (bw - 1.2) * s, cy + 4.2 * s, Math.PI * 0.25], [cx - bw * s, cy - 3 * s, -Math.PI * 0.75], [cx + bw * s, cy - 3 * s, -Math.PI * 0.25]], '#d8cfb8', 2 * s);
+  }
+
+  // Eldar holo-field: two fans of vanes rising from the back and sweeping out behind the titan
+  function holoWings(g, P, cx, cy, s, bw) {
+    glow(g, cx, cy + 4 * s, 11 * s, (P.lens) + '30');
+    [-1, 1].forEach(k => {
+      const ax = cx + k * (bw - 2.2) * s, ay = cy + 1.6 * s;   // root on the upper back
+      const vanes = 4;
+      for (let i = vanes - 1; i >= 0; i--) {
+        const ang = (Math.PI / 2) - k * (0.3 + i * 0.36);       // fan from backwards out to the side
+        const len = (9.5 - i * 0.6) * s, wid = 1.7 * s;
+        const tx = ax + Math.cos(ang) * len, ty = ay + Math.sin(ang) * len;
+        const nx = -Math.sin(ang), ny = Math.cos(ang);        // vane width direction
+        g.beginPath();
+        g.moveTo(ax + nx * 0.5 * s, ay + ny * 0.5 * s);
+        g.quadraticCurveTo(ax + Math.cos(ang) * len * 0.55 + nx * wid, ay + Math.sin(ang) * len * 0.55 + ny * wid, tx, ty);
+        g.quadraticCurveTo(ax + Math.cos(ang) * len * 0.55 - nx * wid * 0.6, ay + Math.sin(ang) * len * 0.55 - ny * wid * 0.6, ax - nx * 0.5 * s, ay - ny * 0.5 * s);
+        g.closePath();
+        g.fillStyle = grad(g, ax, ay, tx, ty, [[0, P.main], [0.45, mix(P.main, P.trim, 0.45) + 'e6'], [1, mix(P.trim, P.lens, 0.5) + '99']]);
+        g.fill(); g.lineWidth = 0.35; g.strokeStyle = INK; g.stroke();
+        // central rib and a bright edge so the vanes read as shimmering sails
+        g.strokeStyle = lift(P.light, 0.3); g.lineWidth = 0.3; g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax + Math.cos(ang) * len * 0.92, ay + Math.sin(ang) * len * 0.92); g.stroke();
+        glow(g, tx, ty, 1.1 * s, P.lens + '88');
+      }
+      ball(g, ax, ay, 1.2 * s, P.dark, 0.35); // vane mounting
+    });
   }
 
   function knight(g, P, w, h, o = {}) {
@@ -19894,9 +19921,9 @@ const EpikArt = (() => {
     if (book === 'ELDAR') {
       if (has('avatar')) return R_('daemon', { body: '#c9301f', wing: '#7a1a10' });
       if (/\bexarch\b/.test(t) && !has('council')) return R_('squad', { fig: 'hero', n: 1, base: 'eldar', banner: false, s: 2.4 });
-      if (has('warlock titan')) return R_('titan', { left: 'plasma', right: 'plasma', head: '#7a3fc8' }, 'ELDAR');
-      if (has('phantom')) return R_('titan', { left: 'cannon', right: 'plasma' });
-      if (has('revenant')) return R_('titan', { left: 'plasma', right: 'plasma', carapace: false });
+      if (has('warlock titan')) return R_('titan', { left: 'plasma', right: 'plasma', head: '#7a3fc8', holo: true, margin: 9 }, 'ELDAR');
+      if (has('phantom')) return R_('titan', { left: 'cannon', right: 'plasma', holo: true, margin: 9 });
+      if (has('revenant')) return R_('titan', { left: 'plasma', right: 'plasma', carapace: false, holo: true, margin: 9 });
       if (has('knight')) return R_('knight', { lance: has('bright', 'spear', 'fire knight') });
       if (has('wraithlord')) return R_('walkerDread', { body: '#e9e2cf', sarc: '#e39b28' });
       if (has('war walker')) return R_('walkerDread', { flame: false, body: '#e39b28' });
@@ -20085,7 +20112,7 @@ const EpikArt = (() => {
   // Draw a recipe into a canvas of world size w x h (+ margin). Returns the canvas.
   function render(recipe, palKey, w, h, opts = {}) {
     const P = { ...(PAL[palKey] || PAL.IMPERIUM), ...(opts.pal || {}) };
-    const M = 3; // margin for barrels / shadows outside the base
+    const M = opts.margin || 3; // margin for barrels / shadows / wings outside the base
     const cv = document.createElement('canvas'); cv.width = Math.ceil((w + M * 2) * R); cv.height = Math.ceil((h + M * 2) * R);
     const g = cv.getContext('2d'); g.scale(R, R); g.translate(M, M); g.lineJoin = 'round';
     (RECIPES[recipe] || squad)(g, P, w, h, opts);
