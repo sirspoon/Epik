@@ -35201,7 +35201,7 @@ window.returnToTitleScreen = function() {
     if (candidate) {
       resumeBtn.style.display = 'flex';
       if (resumeText) resumeText.innerText = `RESUME (Turn ${candidate.turn})`;
-      if (resumeSub) resumeSub.innerText = `${candidate.name || 'Saved Game'} &bull; ${candidate.dateStr || ''}`;
+      if (resumeSub) resumeSub.innerText = `${candidate.name || 'Saved Game'} • ${candidate.dateStr || ''}`;
     } else {
       resumeBtn.style.display = 'none';
     }
@@ -49500,6 +49500,14 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
+  // Deep copy of plain data only (drops Phaser objects such as building labels and graphics)
+  plainCopy(v) {
+    if (v === null || typeof v !== 'object') return typeof v === 'function' ? undefined : v;
+    if (Array.isArray(v)) return v.map(x => this.plainCopy(x));
+    if (Object.getPrototypeOf(v) !== Object.prototype) return undefined;
+    const o = {}; Object.keys(v).forEach(k => { const c = this.plainCopy(v[k]); if (c !== undefined) o[k] = c; }); return o;
+  }
+
   serializeGameState(saveName = null) {
     const d = new Date();
     const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -49552,6 +49560,10 @@ class NetEpicScene extends Phaser.Scene {
         locationDamage: det.locationDamage ? { ...det.locationDamage } : null,
         titanState: det.titanState ? JSON.parse(JSON.stringify(det.titanState)) : null,
         lastOrder: det.lastOrder || null,
+        instinct: det.instinct || null,
+        firedMounts: det.firedMounts || [],
+        healUses: det.healUses || 0,
+        obsTarget: det.obsTarget || null,
         salvosNow: det.titanState && det.salvos ? JSON.parse(JSON.stringify(det.salvos)) : null,
         damageLog: det.damageLog ? [...det.damageLog] : [],
         embarkedOnId: det.embarkedOn ? det.embarkedOn.id : null,
@@ -49589,6 +49601,7 @@ class NetEpicScene extends Phaser.Scene {
       objVp: { ...this.objVp },
       victoryVpTarget: this.getVictoryVpTarget(),
       pointsBudget: window.pointsBudget || 2000,
+      tableSize: window.tableSize || 'STANDARD_6X4',
       groupMoveMode: Boolean(this.groupMoveMode),
       mapPreset: window.mapPreset || 'INDUSTRIAL',
       aiFaction: window.aiFaction || 'NONE',
@@ -49618,6 +49631,11 @@ class NetEpicScene extends Phaser.Scene {
         collapsed: Boolean(b.collapsed),
         siDamage: b.siDamage || 0
       })),
+      // The battlefield itself: random maps are different every time one is generated
+      terrain: this.plainCopy({ roads: this.roads, rivers: this.rivers, bridges: this.bridges, woods: this.woods, fields: this.fields, dirtTracks: this.dirtTracks,
+        buildings: this.buildings, objectives: this.objectives }),
+      extraState: { waaaghActive: Boolean(this.waaaghActive), waaaghUsed: Boolean(this.waaaghUsed), lastInitiativeLoser: this.lastInitiativeLoser || null,
+        vortices: (this.vortices || []).map(v => ({ x: v.x, y: v.y, faction: v.faction })) },
       smokeClouds: this.smokeClouds ? JSON.parse(JSON.stringify(this.smokeClouds)) : [],
       pulsaFields: this.pulsaFields ? JSON.parse(JSON.stringify(this.pulsaFields)) : [],
       detachments: detachmentsData,
@@ -49647,18 +49665,25 @@ class NetEpicScene extends Phaser.Scene {
       this.clearAllDetachments();
 
       // 3. Restore globals and map
-      if (saveData.mapPreset && saveData.mapPreset !== window.mapPreset) {
-        window.mapPreset = saveData.mapPreset;
-        this.loadMapConfig(window.mapPreset);
-        this.drawBattlefield();
-        this.spawnObjectives();
-      }
+      if (saveData.mapPreset) window.mapPreset = saveData.mapPreset;
 
       window.aiFaction = saveData.aiFaction !== undefined ? saveData.aiFaction : 'NONE';
       window.aiCamFollow = saveData.aiCamFollow !== undefined ? saveData.aiCamFollow : true;
       if (saveData.pointsBudget) {
         window.pointsBudget = saveData.pointsBudget;
         if (window.setPointsBudget) window.setPointsBudget(saveData.pointsBudget);
+      }
+      if (saveData.tableSize && saveData.tableSize !== window.tableSize && window.setTableSize) window.setTableSize(saveData.tableSize);
+      // The saved battlefield goes back after the budget (changing the budget resizes the table and makes a new map)
+      if (saveData.terrain && saveData.terrain.buildings) {
+        const T = saveData.terrain;
+        ['roads', 'rivers', 'bridges', 'woods', 'fields', 'dirtTracks', 'buildings', 'objectives'].forEach(k => { if (T[k]) this[k] = JSON.parse(JSON.stringify(T[k])); });
+        this.drawBattlefield();
+        if (this.drawObjectives) this.drawObjectives();
+      } else if (saveData.mapPreset) {
+        this.loadMapConfig(saveData.mapPreset);
+        this.drawBattlefield();
+        this.spawnObjectives();
       }
       if (saveData.sideFaction) window.sideFaction = { ...saveData.sideFaction };
       if (saveData.armyRosters) window.armyRosters = { ...saveData.armyRosters };
@@ -49699,6 +49724,13 @@ class NetEpicScene extends Phaser.Scene {
         });
         this.drawObjectives();
       }
+
+      // 6b. Waaagh!, initiative tie-breaks and lingering vortices
+      const xs = saveData.extraState || {};
+      this.waaaghActive = Boolean(xs.waaaghActive); this.waaaghUsed = Boolean(xs.waaaghUsed);
+      this.lastInitiativeLoser = xs.lastInitiativeLoser || null;
+      (this.vortices || []).forEach(v => v.g && v.g.destroy()); this.vortices = [];
+      (xs.vortices || []).forEach(v => this.addVortex && this.addVortex({ x: v.x, y: v.y }, v.faction));
 
       // 7. Restore smoke clouds & pulsa fields
       this.smokeClouds = saveData.smokeClouds ? JSON.parse(JSON.stringify(saveData.smokeClouds)) : [];
@@ -49783,6 +49815,10 @@ class NetEpicScene extends Phaser.Scene {
         if (savedDet.locationDamage) det.locationDamage = { ...savedDet.locationDamage };
         if (savedDet.titanState) det.titanState = savedDet.titanState;
         if (savedDet.lastOrder) det.lastOrder = savedDet.lastOrder;
+        if (savedDet.instinct) det.instinct = savedDet.instinct;
+        det.firedMounts = savedDet.firedMounts || [];
+        det.healUses = savedDet.healUses || 0;
+        det.obsTarget = savedDet.obsTarget || null;
         if (savedDet.salvosNow) { det.salvos = savedDet.salvosNow; det.maxSalvos = det.salvos.length; }
         if (savedDet.damageLog) det.damageLog = [...savedDet.damageLog];
 
@@ -49871,6 +49907,12 @@ class NetEpicScene extends Phaser.Scene {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
+
+      // 13b. Steps that can't be resumed half-way: a snap-fire prompt goes back to movement, close combat re-pairs the fights
+      if (this.phase === 'SNAP_INTERRUPT') { this.phase = 'MOVEMENT'; this.snapTarget = null; this.snapCandidates = []; }
+      if (this.phase === 'COMBAT_CC') { this.defenderFoughtCounts = new Map(); this.titanApDone = new Set(); this.titanPreStrikes = new Map(); this.ccBouts = this.buildCloseCombatBouts(); }
+      this._ccResolving = false; this._awaitingInitChoice = false; this._activeCombatContinue = null;
+      ['title-screen', 'army-modal', 'save-load-modal', 'options-modal', 'psyker-modal', 'combat-card-modal', 'init-choice-modal', 'titan-loadout-modal'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
       // 14. Redraw overlays and update UI
       this.drawDeploymentZones();
