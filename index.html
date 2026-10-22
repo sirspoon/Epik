@@ -44191,7 +44191,8 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
 
-    if (det.stands.length > 1 && !this.checkCoherency(det)) {
+    // Core p. 21: units on First Fire may stay out of coherency as long as they don't move, so don't pull them together
+    if (det.stands.length > 1 && !this.checkCoherency(det) && det.order !== 'FIRST_FIRE') {
       this.compactSelectedDetachment(det.stands[0]);
     }
 
@@ -48732,7 +48733,9 @@ class NetEpicScene extends Phaser.Scene {
     const isEngageValid = this.checkEngagementMoveRule(det);
     const isFallBackValid = this.checkFallBackMoveRule(det);
     const isTerrainValid = this.checkTerrainMoveRule(det);
-    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && observesCoherency && !isCoherent) ? 'block' : 'none';
+    // Units on First Fire may stay out of coherency while they don't move; they regroup when next given other orders
+    const ffExempt = this.phase === 'MOVEMENT' && det.order === 'FIRST_FIRE';
+    document.getElementById('coherency-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && observesCoherency && !isCoherent && !ffExempt) ? 'block' : 'none';
     document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
     document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
     document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
@@ -48780,7 +48783,7 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     const confirmBtn = document.getElementById('btn-confirm-move');
-    if (confirmBtn) confirmBtn.disabled = !isCoherent || !isEngageValid || !isFallBackValid || !isTerrainValid;
+    if (confirmBtn) confirmBtn.disabled = !(isCoherent || ffExempt) || !isEngageValid || !isFallBackValid || !isTerrainValid;
   }
 
   updateDetachmentBadgePos(det) {
