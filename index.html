@@ -18059,7 +18059,7 @@ window.getRosterBreakdown = function(side) {
     }
 
     if (window.isUniqueUnit(u)) {
-      uniqueCount++;
+      if (!UNIQUE_PERSONALITY_KEYS.has(u.key) && !u.isCharacter) uniqueCount++; // personalities only can't be duplicated
       if (uniqueSeen.has(u.key)) {
         duplicateUnique = u.cardName || u.name;
       } else {
@@ -18071,7 +18071,7 @@ window.getRosterBreakdown = function(side) {
   const maxSupport = companies * 5;
   const maxSpecial = companies * 1;
   // NetEpic p. 13: 1 Unique per full 3,000 pts (min 1 allowed for armies up to 2000 pts)
-  const maxUnique = Math.max(1, Math.floor(window.pointsBudget / 3000) + (window.pointsBudget >= 3000 ? 1 : 0));
+  const maxUnique = Math.max(1, Math.floor(window.pointsBudget / 3000)); // 1 per full 3,000 pts (at least 1 in smaller games)
 
   const errors = [];
   if (roster.length === 0) {
@@ -18089,7 +18089,7 @@ window.getRosterBreakdown = function(side) {
     errors.push(`Duplicate Unique Character: "${duplicateUnique}" (personalities may never be duplicated).`);
   }
   if (uniqueCount > maxUnique) {
-    errors.push(`Unique limit exceeded: ${uniqueCount}/${maxUnique} unique characters at ${window.pointsBudget} pts.`);
+    errors.push(`Unique card limit exceeded: ${uniqueCount}/${maxUnique} at ${window.pointsBudget} pts (1 per full 3,000 pts).`);
   }
   if (totalPts > window.pointsBudget) {
     errors.push(`Points Budget exceeded: ${totalPts}/${window.pointsBudget} pts.`);
@@ -25768,7 +25768,7 @@ class NetEpicScene extends Phaser.Scene {
     const vx = stand.container.x, vy = stand.container.y;
     if (o.need != null) {
       let need = o.need - (S.hitBonus || 0);
-      if (!o.ignoreCover) need += this.isStandGarrisoned(stand) ? 2 : (this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r) ? 1 : 0);
+      if (!o.ignoreCover) need += this.isStandGarrisoned(stand) ? this.standCover(stand) : (this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r) ? 1 : 0);
       if (this.waaaghActive && vDet.armyBook === 'ORKS') need += 1;
       const h = this.rollNeed(need);
       S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', sub: h.x ? `+${h.x}` : '', tip: `${vDet.name}: needed ${need}+` });
@@ -25800,6 +25800,7 @@ class NetEpicScene extends Phaser.Scene {
     const sv = Phaser.Math.Between(1, 6), ok = ns <= 6 && sv >= ns;
     S.saveDice.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${ns}+${this.facingNote(facTsm)}` });
     if (ok) { S.saves++; this.spawnFloatingText(vx, vy, `🛡️ SAVED (${sv})`, '#38bdf8', '10px'); return; }
+    if (this.tryHealerSave(vDet, stand, S.saveDice)) { S.saves++; return; }
     if (vDet.superHeavy) { if (this.applySuperHeavyDamage(vDet, stand, false)) S.kills++; return; }
     S.kills++; S.casualties.push(stand);
   }
@@ -25817,7 +25818,7 @@ class NetEpicScene extends Phaser.Scene {
 
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
-    if (isSnapFire && /teardrop|multi|missiles|spores|vortex|distortion|lifta/.test(wpn.fx)) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
+    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta/.test(wpn.fx) || (wpn.fx === 'teardrop' && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (!sol.validPairs.length) return stop(`⚠️ <b>${firerDet.name}</b> can't bring the ${wpn.name} to bear on <b>${targetDet.name}</b>.`);
@@ -26178,6 +26179,26 @@ class NetEpicScene extends Phaser.Scene {
       const c2 = this.getDetachmentCenter(det), cm = Math.round(Phaser.Math.Distance.Between(c.x, c.y, c2.x, c2.y) / PX_PER_CM);
       if (cm > 0) this.log(`🥷 <b>${det.name}</b> infiltrates ${cm} cm forward.`);
     });
+  }
+
+  // Protection inside a structure: light -1 to hit / +1 CAF, standard -2 / +2, fortification -3 / +3
+  buildingCover(b) { if (!b) return 0; return b.type === 'BUNKER' ? 3 : ((b.type === 'CATHEDRAL' || b.type === 'MANUFACTORUM') ? 2 : 1); }
+  standCover(stand) { return this.isStandGarrisoned(stand) ? this.buildingCover(this.getBuildingAt(stand.container.x, stand.container.y)) : 0; }
+  // Medics (infantry, cavalry) and mechanics (walkers, vehicles, superheavies) within 10 cm: an unmodified 5+ roll
+  // saves a model that just died; each healer can try 5 times a turn (core p. 33)
+  tryHealerSave(vDet, stand, out) {
+    if (!vDet || !stand || this.hasHitLocations(vDet)) return false;
+    const mech = vDet.superHeavy || vDet.isVehicle || ((vDet.pinningClass || 1) >= 2 && /walker|dreadnought|sentinel|\bkans?\b|tank|vehicle/i.test(vDet.name || ''));
+    const need = mech ? 'mechanic' : 'medic';
+    if ((vDet.pinningClass || 1) > 3) return false;
+    const healer = this.detachments.find(h => h.faction === vDet.faction && h.stands.length && h.characterRules && h.characterRules[need] && (h.healUses || 0) < 5 &&
+      h.stands.some(hs => Phaser.Math.Distance.Between(hs.container.x, hs.container.y, stand.container.x, stand.container.y) <= 10 * PX_PER_CM));
+    if (!healer) return false;
+    healer.healUses = (healer.healUses || 0) + 1;
+    const r = Phaser.Math.Between(1, 6), ok = r >= 5;
+    if (out) out.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `${need === 'medic' ? '💊 Medic' : '🔧 Mechanic'} 5+ (${healer.healUses}/5 this turn)` });
+    if (ok) { this.spawnFloatingText(stand.container.x, stand.container.y - 8, need === 'medic' ? `💊 SAVED BY MEDIC (${r})` : `🔧 REPAIRED (${r})`, '#4ade80', '10px'); this.log(`${need === 'medic' ? '💊' : '🔧'} <b>${healer.name}</b> saves a stand of <b>${vDet.name}</b> (${r}).`); }
+    return ok;
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -27548,7 +27569,7 @@ class NetEpicScene extends Phaser.Scene {
       if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
     }
 
-    const baseCoverMod = targetBuilding ? -2 : (targetInWood ? -1 : 0);
+    const baseCoverMod = targetBuilding ? -this.buildingCover(targetBuilding) : (targetInWood ? -1 : 0);
 
     // p. 34: Stealth units in cover can't be seen from more than 25 cm away (until they shoot or fight)
     const tDet = targetStand.detachment;
@@ -27647,8 +27668,8 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // Flame weapons (Bjorn's heavy flamer, Hellhounds, bio-plasma spray) ignore cover! (Core Rules p. 30)
-    const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -2 : ((targetInWood || woodPixels > 0) ? -1 : 0));
-    const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? 'Garrison Cover (-2 Hit)' : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS'));
+    const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : ((targetInWood || woodPixels > 0) ? -1 : 0));
+    const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS'));
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
 
@@ -27723,7 +27744,7 @@ class NetEpicScene extends Phaser.Scene {
     // Core Rules p. 19: artillery and template weapons may not Snap Fire
     if (isSnapFire) {
       const w = activeSalvoWpn || firerDet.weapon || {};
-      if (w.barrage || w.indirect || w.template || w.isFlame || w.pulsaRokkit) {
+      if (w.barrage || w.indirect || w.template || w.pulsaRokkit || (w.isFlame && targetDet.order !== 'CHARGE')) {
         return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
       }
     }
@@ -27947,7 +27968,7 @@ class NetEpicScene extends Phaser.Scene {
           const vy = victimStand.container.y;
           const garrisoned = this.isStandGarrisoned(victimStand);
           const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
-          const coverMod = garrisoned ? -2 : (inWood ? -1 : 0);
+          const coverMod = garrisoned ? -this.standCover(victimStand) : (inWood ? -1 : 0);
           const waaaghMod = (this.waaaghActive && vDet.armyBook === 'ORKS') ? 1 : 0;
           const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod;
 
@@ -28012,19 +28033,7 @@ class NetEpicScene extends Phaser.Scene {
             if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
             let saved = saveRoll >= neededSave && neededSave <= 6;
 
-            if (!saved && (vDet.pinningClass === 1 || vDet.pinningClass === 2)) {
-              const hasMedic = this.detachments.some(md =>
-                md.faction === vDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
-                Phaser.Math.Distance.Between(victimStand.container.x, victimStand.container.y, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
-              );
-              if (hasMedic) {
-                const medRoll = Phaser.Math.Between(1, 6);
-                if (medRoll >= neededSave && neededSave <= 6) {
-                  saved = true;
-                  saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
-                }
-              }
-            }
+            if (!saved && this.tryHealerSave(vDet, victimStand, saveDiceUI)) saved = true; // medic / mechanic 5+
 
             if (!saved && vDet.characterRules && vDet.characterRules.rerollArmorSave) {
               const yrRoll = Phaser.Math.Between(1, 6);
@@ -28156,19 +28165,7 @@ class NetEpicScene extends Phaser.Scene {
               if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
               let saved = saveRoll >= neededSave && neededSave <= 6;
 
-              if (!saved && (targetDet.pinningClass === 1 || targetDet.pinningClass === 2)) {
-                const hasMedic = this.detachments.some(md =>
-                  md.faction === targetDet.faction && md.stands.length > 0 && md.characterRules && md.characterRules.medic &&
-                  Phaser.Math.Distance.Between(vx, vy, this.getDetachmentCenter(md).x, this.getDetachmentCenter(md).y) <= 10 * PX_PER_CM
-                );
-                if (hasMedic) {
-                  const medRoll = Phaser.Math.Between(1, 6);
-                  if (medRoll >= neededSave && neededSave <= 6) {
-                    saved = true;
-                    saveDiceUI.push({ val: medRoll, cls: 'die-pass', tip: `💊 Medic Treatment Re-roll (${saveRoll}→${medRoll})` });
-                  }
-                }
-              }
+              if (!saved && this.tryHealerSave(targetDet, victimRef, saveDiceUI)) saved = true; // medic / mechanic 5+
 
               if (!saved && targetDet.characterRules && targetDet.characterRules.rerollArmorSave) {
                 const yrRoll = Phaser.Math.Between(1, 6);
@@ -30001,7 +29998,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- PHASE TRANSITIONS & TURN LOGIC ---
   assignOrder(orderKey) {
-    if (!this.selectedDetachment || this.phase !== 'ORDERS') return;
+    if (!this.selectedDetachment || this.phase !== 'ORDERS' || this._awaitingInitChoice) return;
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
     if (this.selectedDetachment.order === 'FALL_BACK') return;
     if (this.isCommandUnit(this.selectedDetachment)) return; // Command units take no orders
@@ -30050,14 +30047,18 @@ class NetEpicScene extends Phaser.Scene {
 
     let impRoll = 0, orkRoll = 0;
     let impTotal = 0, orkTotal = 0;
+    let tieWinner = null;
     do {
       impRoll = Phaser.Math.Between(1, 6);
       orkRoll = Phaser.Math.Between(1, 6);
       impTotal = impRoll + southInitMod;
       orkTotal = orkRoll + northInitMod;
-    } while (impTotal === orkTotal);
+      // Core p. 17: re-roll ties only on the first turn; later, a tie goes to whoever lost initiative last turn
+      if (impTotal === orkTotal && this.turn > 1 && this.lastInitiativeLoser) tieWinner = this.lastInitiativeLoser;
+    } while (impTotal === orkTotal && !tieWinner);
 
-    this.initiativeWinner = impTotal > orkTotal ? 'IMPERIUM' : 'ORKS';
+    this.initiativeWinner = tieWinner || (impTotal > orkTotal ? 'IMPERIUM' : 'ORKS');
+    this.lastInitiativeLoser = this.initiativeWinner === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
     this.activePlayer = this.initiativeWinner;
     this.phase = 'MOVEMENT';
     this.selectedDetachment = null;
@@ -30072,6 +30073,8 @@ class NetEpicScene extends Phaser.Scene {
       { label: southName + (southInitMod > 0 ? ` (+${southInitMod})` : ''), dice: [{ val: impRoll, cls: impTotal > orkTotal ? 'die-pass' : 'die-fail' }], summary: `= ${impTotal}` },
       { label: northName + (northInitMod > 0 ? ` (+${northInitMod})` : ''), dice: [{ val: orkRoll, cls: orkTotal > impTotal ? 'die-pass' : 'die-fail' }], summary: `= ${orkTotal}` }
     ]);
+    if (tieWinner) this.log(`🎲 Tied initiative: it goes to <b>${this.getSideName(tieWinner)}</b>, who lost it last turn.`);
+    const afterChoice = () => {
     this.applyHiveMindOrders(true);
     const startMoves = () => { this.updateUI(); this.drawOverlays(); this.focusPlayerNextUnit(); this.checkAndRunAITurn(); };
     if (this.detachments.some(d => d.instinct && d.instinct !== 'NEST' && d.stands.length)) {
@@ -30086,6 +30089,29 @@ class NetEpicScene extends Phaser.Scene {
         startMoves();
       });
     } else startMoves();
+    };
+    // The winner chooses to move first or make the opponent move first (core p. 18)
+    const winner = this.initiativeWinner, loser = this.lastInitiativeLoser;
+    if (this.isFactionAI(winner)) {
+      if (!this.isFactionAI(loser)) { this.activePlayer = loser; this.log(`🤖 <b>${this.getSideName(winner)}</b> wins initiative and makes <b>${this.getSideName(loser)}</b> move first.`); }
+      afterChoice();
+    } else this.askInitiativeChoice(winner, loser, afterChoice);
+  }
+
+  // Pop-up for the player who won initiative: move first, or make the opponent move first
+  askInitiativeChoice(winner, loser, done) {
+    this._awaitingInitChoice = true;
+    let m = document.getElementById('init-choice-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'init-choice-modal'; document.body.appendChild(m); }
+    m.style.cssText = 'position:fixed;inset:0;z-index:420;background:rgba(2,6,23,0.55);display:flex;align-items:flex-end;justify-content:center;';
+    m.innerHTML = `<div style="width:min(420px,100vw);background:#111827;border:1px solid #334155;border-radius:14px 14px 0 0;padding:14px 16px 16px;color:#f8fafc;font-family:system-ui,sans-serif">
+      <div style="font-weight:800;font-size:1rem;margin-bottom:4px">🎲 ${this.getSideName(winner)} wins initiative</div>
+      <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:10px">Move first, or make your opponent move first and react to them?</div>
+      <div style="display:flex;gap:8px"><button id="init-first" style="flex:1;padding:11px;border-radius:9px;background:#16a34a;color:#fff;border:0;font-weight:800">Move first</button>
+      <button id="init-second" style="flex:1;padding:11px;border-radius:9px;background:#1f2937;color:#e5e7eb;border:1px solid #374151;font-weight:800">Opponent first</button></div></div>`;
+    const pick = first => { m.style.display = 'none'; this._awaitingInitChoice = false; this.activePlayer = first; this.log(`🎲 <b>${this.getSideName(winner)}</b> chooses for <b>${this.getSideName(first)}</b> to move first.`); done(); };
+    m.querySelector('#init-first').onclick = () => pick(winner);
+    m.querySelector('#init-second').onclick = () => pick(loser);
   }
 
   activateSelectedDetachment() {
@@ -30781,8 +30807,8 @@ class NetEpicScene extends Phaser.Scene {
     const impCC = ccBonus(impDet, impRolls, orkDet, impPreCaf), orkCC = ccBonus(orkDet, orkRolls, impDet, orkPreCaf);
     const impSum = impRolls.reduce((a, b) => a + b, 0);
     const orkSum = orkRolls.reduce((a, b) => a + b, 0);
-    const impGarrisonBonus = this.isStandGarrisoned(impStand) ? 2 : 0;
-    const orkGarrisonBonus = this.isStandGarrisoned(orkStand) ? 2 : 0;
+    const impGarrisonBonus = this.standCover(impStand);
+    const orkGarrisonBonus = this.standCover(orkStand);
     const impSynapseBonus = 0, orkSynapseBonus = 0; // the book gives synapse no close combat bonus
     // Grey Knights Daemonhunter rule: Immune to Terror, inflicts -2 CAF on enemy Daemons
     const isOrkDaemon = (orkDet.cardName && (orkDet.cardName.includes('Daemon') || orkDet.cardName.includes('Bloodthirster')));
@@ -30811,7 +30837,7 @@ class NetEpicScene extends Phaser.Scene {
     const gangTagImp =
       (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : (impWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${impDiceCount}D6!]</span>` : '') +
       (impImmuneGang ? ` <span class="log-save">[${impDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
-      (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
+      (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +${impGarrisonBonus} CAF]</span>` : '') +
       (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
       (impFbPen < 0 ? ` <span class="log-kill">[🏳️ -2 Falling back]</span>` : '') +
@@ -30823,7 +30849,7 @@ class NetEpicScene extends Phaser.Scene {
     const gangTagOrk =
       (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : (orkWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${orkDiceCount}D6!]</span>` : '') +
       (orkImmuneGang ? ` <span class="log-save">[${orkDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
-      (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
+      (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +${orkGarrisonBonus} CAF]</span>` : '') +
       (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
       (orkFbPen < 0 ? ` <span class="log-kill">[🏳️ -2 Falling back]</span>` : '') +
@@ -30891,8 +30917,8 @@ class NetEpicScene extends Phaser.Scene {
           if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
-          this.removeCasualty(victimDet, victimStand);
-          this.checkBreakPoint(victimDet);
+          if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
+          else { this.removeCasualty(victimDet, victimStand); this.checkBreakPoint(victimDet); }
         }
       } else if (orkWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
@@ -30904,8 +30930,8 @@ class NetEpicScene extends Phaser.Scene {
           if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
-          this.removeCasualty(victimDet, victimStand);
-          this.checkBreakPoint(victimDet);
+          if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
+          else { this.removeCasualty(victimDet, victimStand); this.checkBreakPoint(victimDet); }
         }
       } else {
         this.spawnFloatingText(midX, midY - 14, `🤝 MELEE TIE (${impTotal})`, '#c084fc', '12px');
@@ -31279,6 +31305,7 @@ class NetEpicScene extends Phaser.Scene {
       d.deepStrikeActive = false;
       d.salvosFired = 0;
       d.firedMounts = [];
+      d.healUses = 0;
       d.obsTarget = null;
       this.skipSpentSalvos(d);
       d.stealthBroken = false;
@@ -31974,8 +32001,8 @@ class NetEpicScene extends Phaser.Scene {
         const orkSyn = (orkDet.armyBook === 'TYRANIDS' && this.hasSynapseAura(orkDet)) ? 1 : 0;
         const impTer = (orkDet.daemonicTerror && !impDet.fearless && !impDet.daemonicTerror && !impSyn) ? -2 : 0;
         const orkTer = (impDet.daemonicTerror && !orkDet.fearless && !orkDet.daemonicTerror && !orkSyn) ? -2 : 0;
-        const impCaf = impBase + (this.isStandGarrisoned(b.impStand) ? 2 : 0) + impSyn + impTer;
-        const orkCaf = orkBase + (this.isStandGarrisoned(b.orkStand) ? 2 : 0) + orkSyn + orkTer;
+        const impCaf = impBase + this.standCover(b.impStand) + impSyn + impTer;
+        const orkCaf = orkBase + this.standCover(b.orkStand) + orkSyn + orkTer;
 
         promptText.innerHTML = `⚔️ <b>Next Melee:</b> 🛡️ <b style="color:#60a5fa;">${impDet.name} (${b.impStand.label})</b> [${impDice}D6+${impCaf}] vs 🟢 <b style="color:#4ade80;">${orkDet.name} (${b.orkStand.label})</b> [${orkDice}D6+${orkCaf}]`;
         const btnNext = document.getElementById('btn-cc-next');
