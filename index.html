@@ -20243,7 +20243,7 @@ class NetEpicScene extends Phaser.Scene {
     this.deployGfx = this.add.graphics().setDepth(2);
     this.objGfx = this.add.graphics().setDepth(3);
     this.smokeGfx = this.add.graphics().setDepth(350);
-    this.pulsaGfx = this.add.graphics().setDepth(340);
+    this.pulsaGfx = this.add.graphics().setDepth(56); // pulsa fields sit on the ground, under the units
     this.losGfx = this.add.graphics().setDepth(400);
     this.overlayGfx = this.add.graphics().setDepth(450);
 
@@ -22323,11 +22323,12 @@ class NetEpicScene extends Phaser.Scene {
       metaEl.innerHTML = `<div class="cc-vs"><span class="cc-name" style="color:${side(data.firerDet)}">${data.attackerName}</span><span class="cc-arrow">➔</span><span class="cc-name" style="color:${side(data.targetDet)}">${data.targetName}</span></div>
         <div class="cc-sub" title="${data.weaponDesc}">${data.weaponDesc}</div>`;
       let html = '';
-      html += row('Hits', (data.hitDice || []).map(dieHtml).join('') || '<span style="color:#94a3b8">no shots</span>', `${data.hits}/${(data.hitDice || []).length} <span style="color:#94a3b8;font-weight:600">(${data.neededToHit}+)</span>`);
+      if (data.rows) data.rows.forEach(r => { html += row(r.label, (r.dice || []).map(dieHtml).join('') || '<span style="color:#94a3b8">—</span>', r.sum || ''); });
+      else html += row('Hits', (data.hitDice || []).map(dieHtml).join('') || '<span style="color:#94a3b8">no shots</span>', `${data.hits}/${(data.hitDice || []).length} <span style="color:#94a3b8;font-weight:600">(${data.neededToHit}+)</span>`);
       if (data.saveDice && data.saveDice.length) html += row('Saves', data.saveDice.map(dieHtml).join(''), `${data.saves} saved`);
       if (data.dmgDice && data.dmgDice.length) html += row('Damage', data.dmgDice.map(dieHtml).join(''), data.damageState || '');
       const left = Math.max(0, data.remaining);
-      const resTxt = data.kills > 0
+      const resTxt = data.resultText ? data.resultText : data.kills > 0
         ? `💥 ${data.kills} destroyed · ${left} left`
         : (data.hits > 0 ? '🛡️ No losses' : '💨 All missed');
       html += `<div class="cc-result" style="animation-delay:${delay}ms; color:${data.kills > 0 ? '#f87171' : '#94a3b8'}">${resTxt}${data.extraNote ? ` <span style="color:#cbd5e1;font-weight:600;font-size:0.74rem">· ${data.extraNote}</span>` : ''}</div>`;
@@ -23365,96 +23366,125 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- BESPOKE ORK PULSA ROKKIT GRAPHICAL EFFECTS & RENDERER ---
+  // Ork pulsa generator seen from above: riveted base, spiky resonator dish, aerial with a blinking light
+  drawPulsaGenerator(gfx, x, y, sc = 1, time = 0, glowOn = true) {
+    const t = time * 0.004;
+    gfx.fillStyle(0x000000, 0.35); gfx.fillEllipse(x + 1.5 * sc, y + 2 * sc, 13 * sc, 9 * sc);
+    gfx.fillStyle(0x5b524a, 1); gfx.fillCircle(x, y, 5.5 * sc);                       // base plate
+    gfx.lineStyle(1, 0x1f1b18, 1); gfx.strokeCircle(x, y, 5.5 * sc);
+    gfx.fillStyle(0xc9b98f, 1); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.283; gfx.fillCircle(x + Math.cos(a) * 4.5 * sc, y + Math.sin(a) * 4.5 * sc, 0.55 * sc); }
+    for (let i = 0; i < 6; i++) { // resonator spikes
+      const a = i / 6 * 6.283 + 0.3; gfx.fillStyle(i % 2 ? 0xa3341f : 0xe3c13b, 1);
+      gfx.fillTriangle(x + Math.cos(a - 0.25) * 3 * sc, y + Math.sin(a - 0.25) * 3 * sc, x + Math.cos(a + 0.25) * 3 * sc, y + Math.sin(a + 0.25) * 3 * sc, x + Math.cos(a) * 7.5 * sc, y + Math.sin(a) * 7.5 * sc);
+    }
+    gfx.fillStyle(0x8f3b24, 1); gfx.fillCircle(x, y, 3 * sc); gfx.lineStyle(0.8, 0x1f1b18, 1); gfx.strokeCircle(x, y, 3 * sc);
+    const blink = glowOn ? (0.55 + 0.45 * Math.sin(t * 6)) : 0.2;
+    gfx.fillStyle(0x4ade80, 0.35 * blink); gfx.fillCircle(x, y, 4.5 * sc);
+    gfx.fillStyle(0xbef264, blink); gfx.fillCircle(x, y, 1.6 * sc);
+  }
+
+  // A jagged lightning bolt between two points
+  drawZap(gfx, x1, y1, x2, y2, col = 0x67e8f9, w = 1.4, jag = 5) {
+    const steps = 5; let px = x1, py = y1;
+    gfx.lineStyle(w + 1.6, col, 0.25);
+    const pts = [[x1, y1]];
+    for (let i = 1; i < steps; i++) { const f = i / steps; pts.push([x1 + (x2 - x1) * f + (Math.random() - 0.5) * jag * 2, y1 + (y2 - y1) * f + (Math.random() - 0.5) * jag * 2]); }
+    pts.push([x2, y2]);
+    for (let pass = 0; pass < 2; pass++) {
+      if (pass) gfx.lineStyle(w, 0xf0fdfa, 0.95);
+      gfx.beginPath(); pts.forEach(([qx, qy], i) => i ? gfx.lineTo(qx, qy) : gfx.moveTo(qx, qy)); gfx.strokePath();
+    }
+  }
+
+  // Cracks in the ground radiating from a landing point (fade out slowly)
+  spawnGroundCracks(x, y, len, count = 7, col = 0x1c1208, life = 9000) {
+    const g = this.add.graphics().setDepth(5);
+    for (let i = 0; i < count; i++) {
+      let a = i / count * 6.283 + Math.random() * 0.5, px = x, py = y, L = len * (0.6 + Math.random() * 0.5);
+      g.lineStyle(1.2, col, 0.38); g.beginPath(); g.moveTo(px, py);
+      for (let d = 0; d < L; d += 5) { a += (Math.random() - 0.5) * 0.7; px += Math.cos(a) * 5; py += Math.sin(a) * 5; g.lineTo(px, py); }
+      g.strokePath();
+    }
+    this.tweens.add({ targets: g, alpha: 0, delay: life, duration: 3000, onComplete: () => g.destroy() });
+    return g;
+  }
+
   spawnPulsaShockwaveFX(x, y, maxRadius = 30, type = 'HUM') {
     const gfx = this.add.graphics().setDepth(440);
-    const state = { t: 0.05 };
-
-    const colors = {
-      PHUT:   { primary: 0x94a3b8, secondary: 0x64748b, core: 0xcbd5e1, dur: 450 },
-      HUM:    { primary: 0x06b6d4, secondary: 0x10b981, core: 0xa3e635, dur: 750 },
-      KABOOM: { primary: 0xf97316, secondary: 0x22c55e, core: 0xfef08a, dur: 950 }
-    }[type] || { primary: 0x06b6d4, secondary: 0x10b981, core: 0xa3e635, dur: 750 };
-
+    const C = {
+      PHUT:   { ring: 0x94a3b8, core: 0xcbd5e1, dur: 700 },
+      HUM:    { ring: 0x22d3ee, core: 0xa3e635, dur: 1500 },
+      KABOOM: { ring: 0xf97316, core: 0xfef08a, dur: 1400 }
+    }[type] || { ring: 0x22d3ee, core: 0xa3e635, dur: 1500 };
+    const debris = type === 'KABOOM' ? Array.from({ length: 18 }, () => ({ a: Math.random() * 6.283, v: 0.6 + Math.random() * 0.6, s: 1 + Math.random() * 2 })) : [];
+    const sparks = type === 'PHUT' ? Array.from({ length: 10 }, () => ({ a: Math.random() * 6.283, v: 0.4 + Math.random() * 0.7 })) : [];
+    if (type !== 'PHUT') this.spawnGroundCracks(x, y, type === 'KABOOM' ? maxRadius * 0.8 : maxRadius * 2.2, type === 'KABOOM' ? 10 : 7);
+    const st = { t: 0 };
     this.tweens.add({
-      targets: state,
-      t: 1,
-      duration: colors.dur,
-      ease: 'Cubic.easeOut',
+      targets: st, t: 1, duration: C.dur, ease: 'Linear',
       onUpdate: () => {
         gfx.clear();
-        const r1 = maxRadius * state.t;
-        const alpha1 = Math.max(0, 1 - state.t * 0.85);
-
-        // Ring 1: Primary Shockwave Ring
-        gfx.lineStyle(type === 'KABOOM' ? 4 : 3, colors.primary, alpha1);
-        gfx.strokeCircle(x, y, r1);
-
-        // Ring 2: Trailing harmonic ripple
-        if (state.t > 0.2) {
-          const t2 = (state.t - 0.2) / 0.8;
-          const r2 = maxRadius * 0.8 * t2;
-          const alpha2 = Math.max(0, (1 - t2) * 0.7);
-          gfx.lineStyle(2, colors.secondary, alpha2);
-          gfx.strokeCircle(x, y, r2);
+        const t = st.t;
+        if (type === 'PHUT') {
+          // the generator coughs: a weak ring, sparks and a puff of black smoke
+          gfx.lineStyle(2, C.ring, 1 - t); gfx.strokeCircle(x, y, maxRadius * (0.4 + t));
+          sparks.forEach(sp => { const d = sp.v * maxRadius * 1.5 * t; gfx.fillStyle(0xfde047, 1 - t); gfx.fillCircle(x + Math.cos(sp.a) * d, y + Math.sin(sp.a) * d - t * 6, 1.2); });
+          gfx.fillStyle(0x3f3f46, 0.5 * (1 - t)); gfx.fillCircle(x, y - t * 14, 6 + t * 10);
+          return;
         }
-
-        // Ring 3: Tertiary resonance
-        if (state.t > 0.4) {
-          const t3 = (state.t - 0.4) / 0.6;
-          const r3 = maxRadius * 0.55 * t3;
-          const alpha3 = Math.max(0, (1 - t3) * 0.6);
-          gfx.lineStyle(1.5, colors.core, alpha3);
-          gfx.strokeCircle(x, y, r3);
+        // bright flash at the start
+        if (t < 0.25) { gfx.fillStyle(0xffffff, (0.25 - t) * 3); gfx.fillCircle(x, y, maxRadius * (type === 'KABOOM' ? 0.7 : 1.1)); }
+        // staggered resonance rings
+        for (let k = 0; k < (type === 'KABOOM' ? 3 : 4); k++) {
+          const tk = (t * (type === 'KABOOM' ? 1.4 : 2.2) - k * 0.22);
+          if (tk <= 0 || tk >= 1) continue;
+          const rr = (type === 'KABOOM' ? maxRadius : maxRadius * 2.4) * Math.sqrt(tk);
+          gfx.lineStyle((type === 'KABOOM' ? 6 : 4) * (1 - tk) + 1, k % 2 ? C.core : C.ring, (1 - tk) * 0.9);
+          gfx.strokeCircle(x, y, rr);
         }
-
-        // Inner seismic flash
-        gfx.fillStyle(colors.core, alpha1 * 0.35);
-        gfx.fillCircle(x, y, r1 * 0.4);
+        if (type === 'HUM') {
+          // energy crackling outwards
+          gfx.fillStyle(C.core, 0.25 * (1 - t)); gfx.fillCircle(x, y, maxRadius * (1 + Math.sin(t * 20) * 0.1));
+          if (Math.random() < 0.8) for (let i = 0; i < 4; i++) { const a = Math.random() * 6.283, L = maxRadius * (1 + Math.random() * 1.5); this.drawZap(gfx, x, y, x + Math.cos(a) * L, y + Math.sin(a) * L, 0x67e8f9, 1.2, 4); }
+        } else {
+          // KABOOM: fireball, flying debris, rolling smoke
+          const fr = maxRadius * 0.55 * Math.min(1, t * 3) * (1 - t * 0.3);
+          gfx.fillStyle(0xb91c1c, 0.55 * (1 - t)); gfx.fillCircle(x, y, fr * 1.2);
+          gfx.fillStyle(0xf97316, 0.7 * (1 - t)); gfx.fillCircle(x, y, fr);
+          gfx.fillStyle(0xfef08a, 0.85 * (1 - t)); gfx.fillCircle(x, y, fr * 0.5);
+          debris.forEach(d => { const dd = d.v * maxRadius * t; gfx.fillStyle(0x3f3a36, 1 - t); gfx.fillRect(x + Math.cos(d.a) * dd, y + Math.sin(d.a) * dd, d.s, d.s); });
+          if (t > 0.3) { gfx.fillStyle(0x52525b, 0.35 * (1 - t)); for (let i = 0; i < 6; i++) { const a = i * 1.05; gfx.fillCircle(x + Math.cos(a) * maxRadius * 0.35, y + Math.sin(a) * maxRadius * 0.35 - (t - 0.3) * 18, 10 + t * 12); } }
+        }
       },
       onComplete: () => gfx.destroy()
     });
   }
 
+  // Lingering Hummm fields: the planted generator thrums, rings roll outwards and arcs of energy crackle
   drawPulsaFields(time = 0) {
     if (!this.pulsaGfx) return;
     this.pulsaGfx.clear();
     if (!this.pulsaFields || this.pulsaFields.length === 0) return;
-
-    const t = time * 0.003;
+    const g = this.pulsaGfx, t = time * 0.001;
     this.pulsaFields.forEach(pf => {
-      const radius = pf.r || 15;
-      const pulse1 = (Math.sin(t * 3) + 1) * 0.5;
-      const pulse2 = (Math.cos(t * 2.5) + 1) * 0.5;
-
-      // 1. Outer seismic ripple ring expanding and fading
-      const rippleR = radius * (1.1 + 0.35 * ((t * 1.5) % 1));
-      const rippleAlpha = (1 - ((t * 1.5) % 1)) * 0.55;
-      this.pulsaGfx.lineStyle(2, 0x06b6d4, rippleAlpha);
-      this.pulsaGfx.strokeCircle(pf.x, pf.y, rippleR);
-
-      // 2. Base circular seismic hazard zone
-      this.pulsaGfx.fillStyle(0x10b981, 0.18 + 0.08 * pulse1);
-      this.pulsaGfx.fillCircle(pf.x, pf.y, radius);
-
-      // 3. Electric perimeter glow
-      this.pulsaGfx.lineStyle(2.5, 0x34d399, 0.75 + 0.25 * pulse2);
-      this.pulsaGfx.strokeCircle(pf.x, pf.y, radius);
-
-      // 4. Inner energetic resonance core
-      this.pulsaGfx.fillStyle(0xa3e635, 0.35 + 0.15 * pulse1);
-      this.pulsaGfx.fillCircle(pf.x, pf.y, radius * 0.45);
-
-      // 5. Crackling seismic discharge rays
-      const spikes = 6;
-      this.pulsaGfx.lineStyle(1.5, 0x67e8f9, 0.65);
-      for (let i = 0; i < spikes; i++) {
-        const ang = (i / spikes) * Math.PI * 2 + t * 0.8;
-        const innerX = pf.x + Math.cos(ang) * (radius * 0.3);
-        const innerY = pf.y + Math.sin(ang) * (radius * 0.3);
-        const outerX = pf.x + Math.cos(ang) * (radius * (0.85 + 0.15 * Math.sin(t * 5 + i)));
-        const outerY = pf.y + Math.sin(ang) * (radius * (0.85 + 0.15 * Math.sin(t * 5 + i)));
-        this.pulsaGfx.lineBetween(innerX, innerY, outerX, outerY);
+      const R = pf.r || 15;
+      // hazard zone with a soft glow
+      g.fillStyle(0x10b981, 0.10); g.fillCircle(pf.x, pf.y, R * 1.25);
+      g.fillStyle(0x22d3ee, 0.10 + 0.05 * Math.sin(t * 4)); g.fillCircle(pf.x, pf.y, R);
+      // rings rolling outwards from the generator
+      for (let k = 0; k < 3; k++) {
+        const ph = ((t * 0.9) + k / 3) % 1;
+        g.lineStyle(2.5 * (1 - ph) + 0.6, k % 2 ? 0xa3e635 : 0x22d3ee, 0.75 * (1 - ph));
+        g.strokeCircle(pf.x, pf.y, R * (0.3 + ph * 1.1));
       }
+      // dashed rim marking the template edge
+      g.lineStyle(1.6, 0x34d399, 0.85);
+      for (let i = 0; i < 16; i++) { const a0 = i / 16 * 6.283 + t * 0.4, a1 = a0 + 0.22; g.beginPath(); g.arc(pf.x, pf.y, R, a0, a1); g.strokePath(); }
+      // occasional arcs of energy
+      if (Math.sin(t * 7 + pf.x) > 0.55) { const a = (t * 3 + pf.y) % 6.283; this.drawZap(g, pf.x, pf.y, pf.x + Math.cos(a) * R * 1.05, pf.y + Math.sin(a) * R * 1.05, 0x67e8f9, 1, 2.5); }
+      this.drawPulsaGenerator(g, pf.x, pf.y, 0.75, time);
+      // turns left: small pips under the field
+      for (let i = 0; i < (pf.turnsRemaining || 0); i++) { g.fillStyle(0xbef264, 0.9); g.fillCircle(pf.x - 3 + i * 6, pf.y + R + 5, 1.8); }
     });
   }
 
@@ -23493,10 +23523,9 @@ class NetEpicScene extends Phaser.Scene {
       window.sfx.playLaser(true);
       this.spawnFloatingText(shooterStand.container.x, shooterStand.container.y - 20, '⚠️ MISFIRE! FIZZLE!', '#f87171', '13px');
       this.log(`⚠️ <b>MISFIRE!</b> The Pulsa Rokkit violently sputters and chokes on its launch rail! The rocket fails to ignite and is lost! (${firerDet.rokkitsRemaining} rokkits remaining)`);
-      this.showDiceRollTray('🎲 Pulsa Rokkit Launch: MISFIRE!', [
-        { label: 'Artillery Die', dice: [{ val: 'MISFIRE', cls: 'die-fail', tip: 'Failed to launch!' }] }
-      ]);
-      this.finishCombatActivation();
+      const sm = this.add.graphics().setDepth(445); const st = { t: 0 };
+      this.tweens.add({ targets: st, t: 1, duration: 1100, onUpdate: () => { sm.clear(); for (let i = 0; i < 6; i++) { sm.fillStyle(0x3f3f46, 0.5 * (1 - st.t)); sm.fillCircle(shooterStand.container.x + Math.cos(i) * 8 * st.t, shooterStand.container.y + Math.sin(i * 1.7) * 8 * st.t - st.t * 10, 4 + st.t * 9); } }, onComplete: () => sm.destroy() });
+      if (opts.onComplete) opts.onComplete(); else this.finishCombatActivation();
       this.drawOverlays();
       this.updateUI();
       return;
@@ -23525,174 +23554,252 @@ class NetEpicScene extends Phaser.Scene {
     const landX = Phaser.Math.Clamp(aimX + Math.cos(scatterAngle) * (scatterDistCm * PX_PER_CM), 30, BOARD_W - 30);
     const landY = Phaser.Math.Clamp(aimY + Math.sin(scatterAngle) * (scatterDistCm * PX_PER_CM), 30, BOARD_H - 30);
 
-    // Launch trajectory visual and sound
-    window.sfx.playBarrage();
-    this.spawnLaserFX(sx, sy, landX, landY, 0x10b981, true);
-
-    // 3. Landing 1D6 Roll on Pulsa Table
     const pulsaRoll = Phaser.Math.Between(1, 6);
     const PULSA_R_PX = 1.5 * PX_PER_CM; // 15px radius = 3cm small Pulsa template
-
-    // Find all stands under the 3cm template
-    const underTemplate = [];
-    const affectedDets = new Set([targetDet]);
-    this.detachments.forEach(d => {
-      if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
-      d.stands.forEach(s => {
-        if (Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y) <= PULSA_R_PX + 4) {
-          underTemplate.push(s);
-          affectedDets.add(d);
-        }
-      });
-    });
-
-    let kills = 0, saves = 0;
+    let kills = 0, saves = 0, outcomeLabel = '';
     const saveDiceUI = [];
+    const done = () => { if (opts.onComplete) opts.onComplete(); else this.finishCombatActivation(); this.drawOverlays(); this.updateUI(); };
 
-    // Damage resolution under 3cm template
-    underTemplate.forEach(victimStand => {
-      const vDet = victimStand.detachment;
-      if (!vDet || !vDet.stands.includes(victimStand)) return;
-      const vx = victimStand.container.x, vy = victimStand.container.y;
-      const isInfantry = (vDet.pinningClass === 1 || !vDet.superHeavy && !vDet.isTitan && !vDet.vehicle);
+    // Frame the launch and the landing, then fly the rokkit
+    this.frameShootingAction(firerDet, null, { x: landX, y: landY });
+    window.sfx.playBarrage();
+    this.clearTemplateFX();
+    const fx = this.add.graphics().setDepth(56);
+    const keep = [fx];
+    // aim reticle, where it was pointed (and where it fell short), plus the scatter to where it lands
+    const reticle = (x, y, col, a) => { fx.lineStyle(1.5, col, a); fx.strokeCircle(x, y, PULSA_R_PX); [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => fx.lineBetween(x + dx * 4, y + dy * 4, x + dx * (PULSA_R_PX + 5), y + dy * (PULSA_R_PX + 5))); };
+    if (fellShort) { reticle(tx, ty, 0xe2e8f0, 0.3); fx.lineStyle(1, 0xf87171, 0.6); fx.lineBetween(aimX, aimY, tx, ty); }
+    reticle(aimX, aimY, 0xe2e8f0, 0.55);
+    const scAng = Math.atan2(landY - aimY, landX - aimX), scD = Phaser.Math.Distance.Between(aimX, aimY, landX, landY);
+    fx.lineStyle(2, 0xbef264, 0.9);
+    for (let d = 0; d < scD - 6; d += 7) fx.lineBetween(aimX + Math.cos(scAng) * d, aimY + Math.sin(scAng) * d, aimX + Math.cos(scAng) * Math.min(d + 4, scD - 6), aimY + Math.sin(scAng) * Math.min(d + 4, scD - 6));
+    const lbl = this.add.text((aimX + landX) / 2, (aimY + landY) / 2 - 9, `${fellShort ? 'fell short · ' : ''}scatter ${scatterDistCm} cm`, { fontSize: '8px', fontStyle: 'bold', color: '#bef264' }).setOrigin(0.5).setDepth(470).setStroke('#0b1220', 3);
+    keep.push(lbl);
 
-      if (isInfantry) {
-        // All infantry stands under template take a hit at -6 TSM!
-        const neededSave = vDet.save + 6; // -6 TSM penalty
-        const saveRoll = Phaser.Math.Between(1, 6);
-        let saved = (saveRoll >= neededSave && neededSave <= 6);
+    // launch smoke at the rail
+    const launchSmoke = this.add.graphics().setDepth(445); const ls = { t: 0 };
+    this.tweens.add({ targets: ls, t: 1, duration: 900, onUpdate: () => { launchSmoke.clear(); for (let i = 0; i < 5; i++) { launchSmoke.fillStyle(0x71717a, 0.45 * (1 - ls.t)); launchSmoke.fillCircle(sx + Math.cos(i * 1.3) * 6 * ls.t, sy + Math.sin(i * 1.3) * 6 * ls.t, 4 + ls.t * 8); } }, onComplete: () => launchSmoke.destroy() });
 
-        // Titan void shields / Ghazghkull
-        if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
-          saved = true;
-        } else if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -6)) {
-          saved = true;
-        }
-
-        saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: needed ${neededSave}+ (-6 TSM)` });
-        if (saved) {
-          saves++;
-          this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
-        } else {
-          kills++;
-          this.removeCasualty(vDet, victimStand);
-        }
-      } else {
-        // Vehicles/Titans/Buildings suffer hits equal to roll (or 6 on Kaboom) at -2 TSM
-        const hitsCount = (pulsaRoll === 6 ? 6 : (pulsaRoll === 1 ? 1 : pulsaRoll));
-        for (let h = 0; h < hitsCount; h++) {
-          if (!vDet.stands.includes(victimStand)) break;
-          if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -2)) {
-            saves++;
-            continue;
-          }
-          const neededSave = vDet.save + 2; // -2 TSM
-          const saveRoll = Phaser.Math.Between(1, 6);
-          if (saveRoll >= neededSave && neededSave <= 6) {
-            saves++;
-            saveDiceUI.push({ val: saveRoll, cls: 'die-pass', tip: `${vDet.name}: saved ${neededSave}+` });
-          } else {
-            kills++;
-            saveDiceUI.push({ val: saveRoll, cls: 'die-fail', tip: `${vDet.name}: failed ${neededSave}+` });
-            if (vDet.superHeavy) {
-              this.applySuperHeavyDamage(vDet, victimStand, false);
-            } else {
-              this.removeCasualty(vDet, victimStand);
-            }
-          }
-        }
+    const rok = this.add.graphics().setDepth(460), trail = this.add.graphics().setDepth(444);
+    const drawRok = () => { // rokkit pointing along +x: red body, yellow bands, fins, flaming exhaust
+      rok.clear();
+      rok.fillStyle(0xf97316, 0.85); rok.fillTriangle(-6, -2, -6, 2, -11 - Math.random() * 4, 0);
+      rok.fillStyle(0xfde047, 0.95); rok.fillTriangle(-6, -1.2, -6, 1.2, -8.5 - Math.random() * 2, 0);
+      rok.fillStyle(0x3f3f46, 1); rok.fillTriangle(-6, -2, -3, -2, -7, -4.5); rok.fillTriangle(-6, 2, -3, 2, -7, 4.5);
+      rok.fillStyle(0xb91c1c, 1); rok.fillRect(-6, -2, 10, 4);
+      rok.fillStyle(0xe3c13b, 1); rok.fillRect(-2, -2, 1.5, 4); rok.fillRect(1.5, -2, 1.5, 4);
+      rok.fillStyle(0x9ca3af, 1); rok.fillTriangle(4, -2, 4, 2, 8, 0);
+      rok.lineStyle(0.6, 0x111111, 1); rok.strokeRect(-6, -2, 10, 4);
+    };
+    const flightDist = Phaser.Math.Distance.Between(sx, sy, landX, landY);
+    const arcH = Math.min(150, 30 + flightDist * 0.3);
+    const up = this.getScreenUpVector();
+    const posAt = f => {
+      const wob = Math.sin(f * 18) * 3 * (1 - f); // Orky wobble
+      const ang = Math.atan2(landY - sy, landX - sx);
+      return { x: Phaser.Math.Linear(sx, landX, f) + up.x * Math.sin(f * Math.PI) * arcH - Math.sin(ang) * wob, y: Phaser.Math.Linear(sy, landY, f) + up.y * Math.sin(f * Math.PI) * arcH + Math.cos(ang) * wob };
+    };
+    const puffs = [];
+    const fl = { f: 0 };
+    this.tweens.add({
+      targets: fl, f: 1, duration: 1150, ease: 'Sine.easeIn',
+      onUpdate: () => {
+        const p = posAt(fl.f), q = posAt(Math.max(0, fl.f - 0.02));
+        rok.setPosition(p.x, p.y); rok.setRotation(Math.atan2(p.y - q.y, p.x - q.x)); rok.setScale(1.4 + Math.sin(fl.f * Math.PI) * 1.0);
+        drawRok();
+        puffs.push({ x: q.x, y: q.y, born: fl.f });
+        trail.clear();
+        puffs.forEach(pf => { const age = fl.f - pf.born; trail.fillStyle(0x9ca3af, Math.max(0, 0.45 - age * 1.2)); trail.fillCircle(pf.x + Math.sin(pf.born * 40) * age * 10, pf.y + Math.cos(pf.born * 40) * age * 10, 2 + age * 14); });
+      },
+      onComplete: () => {
+        rok.destroy();
+        this.tweens.add({ targets: trail, alpha: 0, duration: 900, onComplete: () => trail.destroy() });
+        land();
       }
     });
 
-    // Knockback displacement for surviving models under the template
-    const pushRadius = (pulsaRoll === 6 ? 75 : PULSA_R_PX) + 8;
-    this.detachments.forEach(d => {
-      if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
-      d.stands.forEach(s => {
-        const curDist = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
-        if (curDist <= pushRadius) {
-          const angle = curDist > 0.1 ? Math.atan2(s.container.y - landY, s.container.x - landX) : Math.random() * Math.PI * 2;
-          const targetX = Phaser.Math.Clamp(landX + Math.cos(angle) * (pushRadius + 8), 25, BOARD_W - 25);
-          const targetY = Phaser.Math.Clamp(landY + Math.sin(angle) * (pushRadius + 8), 25, BOARD_H - 25);
+    const land = () => {
+      // impact: dust burst, then the generator unfolds where it came down
+      this.spawnExplosionFX(landX, landY, 12, false);
+      const gen = this.add.graphics().setDepth(58); keep.push(gen);
+      const gs = { s: 0 };
+      this.tweens.add({ targets: gs, s: 1, duration: 280, ease: 'Back.easeOut', onUpdate: () => { gen.clear(); this.drawPulsaGenerator(gen, landX, landY, 0.75 * gs.s, this.time.now, pulsaRoll !== 1); } });
+      if (pulsaRoll !== 2 && pulsaRoll !== 3 && pulsaRoll !== 4 && pulsaRoll !== 5) this.tweens.add({ targets: gen, alpha: 0, delay: pulsaRoll === 6 ? 150 : 1600, duration: 400 });
+      else this.tweens.add({ targets: gen, alpha: 0, delay: 1400, duration: 300 }); // the lingering field draws its own generator
 
-          this.tweens.add({
-            targets: s.container,
-            x: targetX,
-            y: targetY,
-            duration: 400,
-            ease: 'Back.easeOut'
-          });
-          s.originX = targetX;
-          s.originY = targetY;
-          d.suppressedByPulsa = true;
-          d.fired = true; // Cannot fire this turn
-          this.updateDetachmentBadge(d);
-          this.spawnFloatingText(targetX, targetY, '⚡ DISRUPTED!', '#a3e635', '11px');
-        }
-      });
-    });
+    // 3. Landing 1D6 Roll on Pulsa Table
+      const PULSA_R_PX = 1.5 * PX_PER_CM; // 15px radius = 3cm small Pulsa template
 
-    // Handle the 3 table outcomes
-    let outcomeLabel = '';
-    if (pulsaRoll === 1) {
-      outcomeLabel = '💨 PHUT!';
-      window.sfx.playPulsaHum(0.6);
-      this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'PHUT');
-      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#94a3b8', '14px');
-      this.log(`💨 <b>PHUT! (Roll 1):</b> The Pulsa Rokkit feebly unleashes a single ripple of energy before burning out. The template is removed.`);
-    } else if (pulsaRoll >= 2 && pulsaRoll <= 5) {
-      outcomeLabel = `⚡ HUMMMMM... (Roll ${pulsaRoll})`;
-      window.sfx.playPulsaHum(1.3);
-      if (this.cameras && this.cameras.main) this.cameras.main.shake(500, 0.008);
-      this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'HUM');
-      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#06b6d4', '15px');
-      this.pulsaFields.push({ id: 'pf_' + Date.now(), x: landX, y: landY, r: PULSA_R_PX, turnsRemaining: 2, expanded: false });
-      this.log(`⚡ <b>HUMMMMM... (Roll ${pulsaRoll}):</b> The Pulsa Rokkit emits violent subterranean seismic waves! The template remains in play as a persistent energy field!`);
-    } else if (pulsaRoll === 6) {
-      outcomeLabel = '💥 KABOOM! CRITICAL OVERLOAD!';
-      window.sfx.playExplosion(true);
-      window.sfx.playPulsaHum(1.8);
-      if (this.cameras && this.cameras.main) this.cameras.main.shake(700, 0.016);
-      this.spawnPulsaShockwaveFX(landX, landY, 75, 'KABOOM');
-      this.spawnFloatingText(landX, landY - 20, outcomeLabel, '#f97316', '16px');
-
-      // Secondary shockwave: all models within 6cm of template edge (dist <= 75px) hit on 3+ at -2 TSM!
+      // Find all stands under the 3cm template
+      const underTemplate = [];
+      const affectedDets = new Set([targetDet]);
       this.detachments.forEach(d => {
         if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
         d.stands.forEach(s => {
-          const dPx = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
-          if (dPx > PULSA_R_PX && dPx <= 75) {
+          if (Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y) <= PULSA_R_PX + 4) {
+            underTemplate.push(s);
             affectedDets.add(d);
-            const toHitRoll = Phaser.Math.Between(1, 6);
-            if (toHitRoll >= 3) {
-              const neededSave = d.save + 2; // -2 TSM
-              const saveRoll = Phaser.Math.Between(1, 6);
-              if (saveRoll >= neededSave && neededSave <= 6) {
-                saves++;
-              } else {
-                kills++;
-                if (d.superHeavy) this.applySuperHeavyDamage(d, s, false);
-                else this.removeCasualty(d, s);
-              }
-            }
           }
         });
       });
-      this.log(`💥 <b>KABOOM! (Roll 6):</b> The Pulsa generator tears itself apart in a cataclysmic 6cm shockwave! The generator is obliterated.`);
-    }
 
-    // Dice Tray summary
-    this.showDiceRollTray(`🚀 Pulsa Rokkit: ${outcomeLabel}`, [
-      { label: 'Artillery Die (Range)', dice: [{ val: artDieRoll, cls: 'die-pass', tip: `Max range: ${maxRangeCm}cm${fellShort ? ' (Fell Short!)' : ''}` }], summary: `${maxRangeCm}cm` },
-      { label: 'Scatter (2D6 cm)', dice: [{ val: sD1, cls: 'die-pass' }, { val: sD2, cls: 'die-pass' }], summary: `${scatterDistCm}cm` },
-      { label: 'Landing Table (1D6)', dice: [{ val: pulsaRoll, cls: pulsaRoll === 6 ? 'die-crit' : (pulsaRoll === 1 ? 'die-fail' : 'die-pass'), tip: outcomeLabel }], summary: outcomeLabel },
-      { label: 'Damage & Saves', dice: saveDiceUI, summary: `${kills} killed, ${saves} saved` }
-    ]);
+      kills = 0; saves = 0;
 
-    affectedDets.forEach(d => this.checkBreakPoint(d));
-    this.finishCombatActivation();
-    this.drawOverlays();
-    this.updateUI();
+  
+      // Damage resolution under 3cm template
+      underTemplate.forEach(victimStand => {
+        const vDet = victimStand.detachment;
+        if (!vDet || !vDet.stands.includes(victimStand)) return;
+        const vx = victimStand.container.x, vy = victimStand.container.y;
+        const isInfantry = (vDet.pinningClass === 1 || !vDet.superHeavy && !vDet.isTitan && !vDet.vehicle);
+
+        if (isInfantry) {
+          // All infantry stands under template take a hit at -6 TSM!
+          const neededSave = vDet.save + 6; // -6 TSM penalty
+          const saveRoll = Phaser.Math.Between(1, 6);
+          let saved = (saveRoll >= neededSave && neededSave <= 6);
+
+          // Titan void shields / Ghazghkull
+          if (vDet.characterRules && vDet.characterRules.ghazghkull && this.waaaghActive) {
+            saved = true;
+          } else if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -6)) {
+            saved = true;
+          }
+
+          saveDiceUI.push({ val: saveRoll, cls: saved ? 'die-pass' : 'die-fail', tip: `${vDet.name}: needed ${neededSave}+ (-6 TSM)` });
+          if (saved) {
+            saves++;
+            this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
+          } else {
+            kills++;
+            this.removeCasualty(vDet, victimStand);
+          }
+        } else {
+          // Vehicles/Titans/Buildings suffer hits equal to roll (or 6 on Kaboom) at -2 TSM
+          const hitsCount = (pulsaRoll === 6 ? 6 : (pulsaRoll === 1 ? 1 : pulsaRoll));
+          for (let h = 0; h < hitsCount; h++) {
+            if (!vDet.stands.includes(victimStand)) break;
+            if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, -2)) {
+              saves++;
+              continue;
+            }
+            const neededSave = vDet.save + 2; // -2 TSM
+            const saveRoll = Phaser.Math.Between(1, 6);
+            if (saveRoll >= neededSave && neededSave <= 6) {
+              saves++;
+              saveDiceUI.push({ val: saveRoll, cls: 'die-pass', tip: `${vDet.name}: saved ${neededSave}+` });
+            } else {
+              kills++;
+              saveDiceUI.push({ val: saveRoll, cls: 'die-fail', tip: `${vDet.name}: failed ${neededSave}+` });
+              if (vDet.superHeavy) {
+                this.applySuperHeavyDamage(vDet, victimStand, false);
+              } else {
+                this.removeCasualty(vDet, victimStand);
+              }
+            }
+          }
+        }
+      });
+
+      // Knockback displacement for surviving models under the template
+      const pushRadius = (pulsaRoll === 6 ? 75 : PULSA_R_PX) + 8;
+      this.detachments.forEach(d => {
+        if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+        d.stands.forEach(s => {
+          const curDist = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
+          if (curDist <= pushRadius) {
+            const angle = curDist > 0.1 ? Math.atan2(s.container.y - landY, s.container.x - landX) : Math.random() * Math.PI * 2;
+            const targetX = Phaser.Math.Clamp(landX + Math.cos(angle) * (pushRadius + 8), 25, BOARD_W - 25);
+            const targetY = Phaser.Math.Clamp(landY + Math.sin(angle) * (pushRadius + 8), 25, BOARD_H - 25);
+
+            this.tweens.add({
+              targets: s.container,
+              x: targetX,
+              y: targetY,
+              duration: 400,
+              ease: 'Back.easeOut'
+            });
+            s.originX = targetX;
+            s.originY = targetY;
+            if (!d.suppressedByPulsa) this.spawnFloatingText(targetX, targetY, '⚡ DISRUPTED!', '#a3e635', '11px');
+            d.suppressedByPulsa = true;
+            d.fired = true; // Cannot fire this turn
+            this.updateDetachmentBadge(d);
+          }
+        });
+      });
+
+      // Handle the 3 table outcomes
+
+      if (pulsaRoll === 1) {
+        outcomeLabel = '💨 PHUT!';
+        window.sfx.playPulsaHum(0.6);
+        this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'PHUT');
+        this.log(`💨 <b>PHUT! (Roll 1):</b> The Pulsa Rokkit feebly unleashes a single ripple of energy before burning out. The template is removed.`);
+      } else if (pulsaRoll >= 2 && pulsaRoll <= 5) {
+        outcomeLabel = `⚡ HUMMMMM... (Roll ${pulsaRoll})`;
+        window.sfx.playPulsaHum(1.3);
+        if (this.cameras && this.cameras.main) this.cameras.main.shake(500, 0.008);
+        this.spawnPulsaShockwaveFX(landX, landY, PULSA_R_PX, 'HUM');
+        this.pulsaFields.push({ id: 'pf_' + Date.now(), x: landX, y: landY, r: PULSA_R_PX, turnsRemaining: 2, expanded: false });
+        this.log(`⚡ <b>HUMMMMM... (Roll ${pulsaRoll}):</b> The Pulsa Rokkit emits violent subterranean seismic waves! The template remains in play as a persistent energy field!`);
+      } else if (pulsaRoll === 6) {
+        outcomeLabel = '💥 KABOOM! CRITICAL OVERLOAD!';
+        window.sfx.playExplosion(true);
+        window.sfx.playPulsaHum(1.8);
+        if (this.cameras && this.cameras.main) this.cameras.main.shake(700, 0.016);
+        this.spawnPulsaShockwaveFX(landX, landY, 75, 'KABOOM');
+
+        // Secondary shockwave: all models within 6cm of template edge (dist <= 75px) hit on 3+ at -2 TSM!
+        this.detachments.forEach(d => {
+          if (d.stands.length === 0 || d.embarkedOn || d.inReserve) return;
+          d.stands.forEach(s => {
+            const dPx = Phaser.Math.Distance.Between(landX, landY, s.container.x, s.container.y);
+            if (dPx > PULSA_R_PX && dPx <= 75) {
+              affectedDets.add(d);
+              const toHitRoll = Phaser.Math.Between(1, 6);
+              if (toHitRoll >= 3) {
+                const neededSave = d.save + 2; // -2 TSM
+                const saveRoll = Phaser.Math.Between(1, 6);
+                if (saveRoll >= neededSave && neededSave <= 6) {
+                  saves++;
+                } else {
+                  kills++;
+                  if (d.superHeavy) this.applySuperHeavyDamage(d, s, false);
+                  else this.removeCasualty(d, s);
+                }
+              }
+            }
+          });
+        });
+        this.log(`💥 <b>KABOOM! (Roll 6):</b> The Pulsa generator tears itself apart in a cataclysmic 6cm shockwave! The generator is obliterated.`);
+      }
+
+  
+      affectedDets.forEach(d => this.checkBreakPoint(d));
+      this.drawOverlays();
+
+      const outcomeCol = pulsaRoll === 6 ? '#fb923c' : (pulsaRoll === 1 ? '#94a3b8' : '#22d3ee');
+      const artCls = 'die-pass';
+      this.time.delayedCall(450, () => {
+        this._templateFx = keep;
+        this.showCombatModal({
+          title: '🚀 Pulsa Rokkit',
+          firerDet, targetDet,
+          attackerName: this.shortName(firerDet.name, 24),
+          targetName: this.shortName(targetDet.name, 22),
+          weaponDesc: `Range ${maxRangeCm} cm${fellShort ? ' (fell short)' : ''} · scatter ${scatterDistCm} cm · ${firerDet.rokkitsRemaining} rokkit${firerDet.rokkitsRemaining === 1 ? '' : 's'} left`,
+          rows: [
+            { label: 'Range', dice: [{ val: artDieRoll, cls: artCls, tip: 'Artillery die: 50 + 5 cm per pip' }], sum: `${maxRangeCm} cm` },
+            { label: 'Scatter', dice: [{ val: sD1, cls: 'die-pass' }, { val: sD2, cls: 'die-pass' }], sum: `${scatterDistCm} cm` },
+            { label: 'Pulsa', dice: [{ val: pulsaRoll, cls: pulsaRoll === 6 ? 'die-crit' : (pulsaRoll === 1 ? 'die-fail' : 'die-pass'), tip: outcomeLabel }], sum: `<b style="color:${outcomeCol}">${pulsaRoll === 1 ? 'Phut' : pulsaRoll === 6 ? 'Kaboom' : 'Hummm'}</b>` },
+            ...(saveDiceUI.length ? [{ label: 'Saves', dice: saveDiceUI, sum: `${saves} saved` }] : [])
+          ],
+          resultText: `${pulsaRoll === 1 ? '💨 Phut – it fizzles out' : pulsaRoll === 6 ? '💥 Kaboom! 6 cm shockwave' : '⚡ Hummm – field stays for 2 turns'}${kills ? ` · ${kills} destroyed` : ''}`,
+          kills, remaining: targetDet.stands.length
+        }, done);
+      });
+    };
   }
   
   // Teardrop Flame Template cone (Core Rules p. 30: ignores cover)
