@@ -3277,7 +3277,27 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1982639,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "salvos": [
+        {
+          "name": "Autocannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_pred_ac",
+          "mount": "Turret"
+        },
+        {
+          "name": "Lascannons",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_pred_las",
+          "mount": "Sponsons"
+        }
+      ]
     },
     {
       "key": "card_sm_pred_baal",
@@ -3366,6 +3386,24 @@ const UNIT_CATALOG = {
       "baseH": 34,
       "specialAbilities": [
         "PD4"
+      ],
+      "salvos": [
+        {
+          "name": "Assault Cannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_lrc_ac"
+        },
+        {
+          "name": "Multi-Melta",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -2,
+          "id": "sm_lrc_mm"
+        }
       ]
     },
     {
@@ -3510,7 +3548,27 @@ const UNIT_CATALOG = {
       "standsCount": 6,
       "color": 2450411,
       "baseW": 22,
-      "baseH": 30
+      "baseH": 30,
+      "salvos": [
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_rzb_las",
+          "mount": "Turret"
+        },
+        {
+          "name": "Plasma Gun",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_rzb_pg",
+          "mount": "Turret"
+        }
+      ]
     },
     {
       "key": "card_sm_thudd",
@@ -3603,6 +3661,28 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Flier",
         "PD3"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "thawk_bc",
+          "mount": "Nose"
+        },
+        {
+          "name": "Rockets",
+          "rangeCm": 50,
+          "dice": 6,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "thawk_rockets",
+          "mount": "Wings",
+          "barrage": true,
+          "barrageBp": 6
+        }
       ]
     },
     {
@@ -3809,23 +3889,22 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "baneblade_turret",
-          "mount": "Turret",
-          "name": "Turret Battlecannon & Demolisher",
+          "name": "Battlecannon",
           "rangeCm": 75,
           "dice": 2,
           "toHit": 4,
           "tsm": -2,
-          "damagesBuildings": true
+          "id": "baneblade_turret",
+          "mount": "Turret"
         },
         {
+          "name": "Lascannons",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
           "id": "baneblade_sponsons",
-          "mount": "Sponsons",
-          "name": "Sponson Lascannons & Heavy Bolters",
-          "rangeCm": 50,
-          "dice": 3,
-          "toHit": 4,
-          "tsm": -1
+          "mount": "Sponsons"
         }
       ],
       "standsCount": 1,
@@ -4346,22 +4425,23 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "furioso_melta",
-          "mount": "Right Fist",
           "name": "Meltagun",
           "rangeCm": 25,
           "dice": 1,
           "toHit": 4,
-          "tsm": -1
+          "tsm": -1,
+          "id": "furioso_melta",
+          "mount": "Right Fist"
         },
         {
-          "id": "furioso_flamer",
-          "mount": "Left Fist",
           "name": "Heavy Flamer",
           "rangeCm": 35,
           "dice": 1,
           "toHit": 4,
           "tsm": 0,
+          "id": "furioso_flamer",
+          "mount": "Left Fist",
+          "isFlame": true,
           "ignoresCover": true
         }
       ],
@@ -4405,22 +4485,23 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "ven_assault",
-          "mount": "Right Arm",
-          "name": "Twin Assault Cannon",
+          "name": "Assault Cannon",
           "rangeCm": 50,
           "dice": 2,
           "toHit": 4,
-          "tsm": 0
+          "tsm": 0,
+          "id": "ven_assault",
+          "mount": "Right Arm"
         },
         {
-          "id": "ven_flamer",
-          "mount": "Left Arm",
           "name": "Heavy Flamer",
           "rangeCm": 35,
           "dice": 1,
           "toHit": 4,
           "tsm": 0,
+          "id": "ven_flamer",
+          "mount": "Left Arm",
+          "isFlame": true,
           "ignoresCover": true
         }
       ],
@@ -4480,22 +4561,22 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "scatolo_hb",
-          "mount": "Torso",
           "name": "Heavy Bolters",
           "rangeCm": 25,
           "dice": 3,
           "toHit": 5,
-          "tsm": 0
+          "tsm": 0,
+          "id": "scatolo_hb",
+          "mount": "Torso"
         },
         {
-          "id": "scatolo_missile",
-          "mount": "Pod",
           "name": "Barrage Missiles",
           "rangeCm": 50,
-          "dice": 1,
-          "toHit": 5,
+          "dice": 4,
+          "toHit": 4,
           "tsm": -1,
+          "id": "scatolo_missile",
+          "mount": "Pod",
           "barrage": true,
           "barrageBp": 4
         }
@@ -4557,22 +4638,23 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "pred_vulk_ac",
-          "mount": "Turret",
           "name": "Autocannon",
           "rangeCm": 75,
           "dice": 1,
           "toHit": 5,
-          "tsm": -1
+          "tsm": -1,
+          "id": "pred_vulk_ac",
+          "mount": "Turret"
         },
         {
-          "id": "pred_vulk_flm",
-          "mount": "Sponsons",
           "name": "Heavy Flamer",
           "rangeCm": 25,
           "dice": 1,
           "toHit": 5,
           "tsm": 0,
+          "id": "pred_vulk_flm",
+          "mount": "Sponsons",
+          "isFlame": true,
           "ignoresCover": true
         }
       ],
@@ -4605,22 +4687,23 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "jaghatai_melta",
-          "mount": "Turret",
           "name": "Multi-Melta",
           "rangeCm": 25,
           "dice": 2,
           "toHit": 3,
-          "tsm": -2
+          "tsm": -2,
+          "id": "jaghatai_melta",
+          "mount": "Sponsons"
         },
         {
-          "id": "jaghatai_flamer",
-          "mount": "Sponsons",
           "name": "Heavy Flamer",
           "rangeCm": 25,
           "dice": 1,
           "toHit": 4,
           "tsm": 0,
+          "id": "jaghatai_flamer",
+          "mount": "Turret",
+          "isFlame": true,
           "ignoresCover": true
         }
       ],
@@ -4743,31 +4826,31 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "marauder_bc",
-          "mount": "Nose Turret",
-          "name": "Twin Battlecannon",
+          "name": "Battlecannon",
           "rangeCm": 50,
           "dice": 1,
           "toHit": 4,
-          "tsm": -2
+          "tsm": -2,
+          "id": "marauder_bc",
+          "mount": "Nose Turret"
         },
         {
-          "id": "marauder_las",
-          "mount": "Wings",
           "name": "Lascannons",
           "rangeCm": 50,
           "dice": 3,
           "toHit": 5,
-          "tsm": -1
+          "tsm": -1,
+          "id": "marauder_las",
+          "mount": "Wings"
         },
         {
-          "id": "marauder_bombs",
-          "mount": "Bomb Bay",
-          "name": "Heavy Bomb Payload",
+          "name": "Missiles",
           "rangeCm": 50,
-          "dice": 1,
-          "toHit": 5,
+          "dice": 4,
+          "toHit": 4,
           "tsm": -2,
+          "id": "marauder_bombs",
+          "mount": "Pylons",
           "barrage": true,
           "barrageBp": 4
         }
@@ -4802,22 +4885,22 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "tbolt_ac",
-          "mount": "Nose",
-          "name": "Twin Autocannon",
+          "name": "Autocannon",
           "rangeCm": 25,
           "dice": 3,
           "toHit": 5,
-          "tsm": -1
+          "tsm": -1,
+          "id": "tbolt_ac",
+          "mount": "Nose"
         },
         {
+          "name": "Rockets",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 4,
+          "tsm": -1,
           "id": "tbolt_rockets",
           "mount": "Pylons",
-          "name": "Hellstrike Rockets",
-          "rangeCm": 25,
-          "dice": 1,
-          "toHit": 5,
-          "tsm": -1,
           "barrage": true,
           "barrageBp": 4
         }
@@ -5198,7 +5281,24 @@ const UNIT_CATALOG = {
       "standsCount": 2,
       "color": 1981066,
       "baseW": 28,
-      "baseH": 32
+      "baseH": 32,
+      "independentModels": true,
+      "subDetachments": [
+        {
+          "name": "Warhound A",
+          "stands": 1,
+          "transport": 0,
+          "breakPoint": 1,
+          "vpValue": 2
+        },
+        {
+          "name": "Warhound B",
+          "stands": 1,
+          "transport": 0,
+          "breakPoint": 1,
+          "vpValue": 2
+        }
+      ]
     }
   ],
   "ORKS": [
@@ -6444,7 +6544,25 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 8736014,
       "baseW": 28,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Howdah Bombard",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": 0,
+          "id": "ork_sq_bombard"
+        },
+        {
+          "name": "Swivel Guns",
+          "rangeCm": 25,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ork_sq_swivel"
+        }
+      ]
     },
     {
       "key": "card_ork_lobbas",
@@ -6586,7 +6704,27 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 15680580,
       "baseW": 26,
-      "baseH": 30
+      "baseH": 30,
+      "salvos": [
+        {
+          "name": "Kustom Destruktor Rokkits",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "ork_fb_rok",
+          "barrage": true,
+          "barrageBp": 6
+        },
+        {
+          "name": "Kustom Shootas",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ork_fb_kannon"
+        }
+      ]
     },
     {
       "key": "card_ork_soopa_gun",
@@ -6685,6 +6823,25 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Fearless",
         "PD4"
+      ],
+      "salvos": [
+        {
+          "name": "Big Blasta",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -4,
+          "id": "ork_ss_blasta",
+          "damagesBuildings": true
+        },
+        {
+          "name": "Belly Cannons",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "ork_ss_cannons"
+        }
       ]
     },
     {
@@ -6906,7 +7063,28 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 7877903,
       "baseW": 36,
-      "baseH": 44
+      "baseH": 44,
+      "salvos": [
+        {
+          "name": "Mega-Lobba",
+          "rangeCm": 75,
+          "dice": 8,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "ork_msq_lobba",
+          "barrage": true,
+          "barrageBp": 8,
+          "damagesBuildings": true
+        },
+        {
+          "name": "Swivel Big Shootas",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ork_msq_shootas"
+        }
+      ]
     },
     {
       "key": "card_ork_ghazghkull",
@@ -8123,7 +8301,25 @@ const UNIT_CATALOG = {
       "standsCount": 4,
       "color": 1409085,
       "baseW": 24,
-      "baseH": 24
+      "baseH": 24,
+      "salvos": [
+        {
+          "name": "Zappa",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "ork_ons_zappa"
+        },
+        {
+          "name": "Shootas",
+          "rangeCm": 25,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ork_ons_shoota"
+        }
+      ]
     },
     {
       "key": "card_ork_blasta_bomma",
@@ -8155,7 +8351,36 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 1409085,
       "baseW": 38,
-      "baseH": 42
+      "baseH": 42,
+      "salvos": [
+        {
+          "name": "Blasta Cannon",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": -3,
+          "id": "ork_bb_cannon"
+        },
+        {
+          "name": "Big Shootas",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "ork_bb_bs"
+        },
+        {
+          "name": "Heavy Bomb Racks",
+          "rangeCm": 10,
+          "dice": 6,
+          "toHit": 4,
+          "tsm": -1,
+          "id": "ork_bb_bombs",
+          "barrage": true,
+          "barrageBp": 6,
+          "damagesBuildings": true
+        }
+      ]
     },
     {
       "key": "card_ork_heavy_bomma",
@@ -8182,7 +8407,35 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1409085,
       "baseW": 32,
-      "baseH": 34
+      "baseH": 34,
+      "salvos": [
+        {
+          "name": "Kustom Destruktor Rokkits",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 4,
+          "tsm": -1,
+          "id": "ork_hb_rok",
+          "barrage": true,
+          "barrageBp": 6
+        },
+        {
+          "name": "Kustom Shoota",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "ork_hb_kannon"
+        },
+        {
+          "name": "Big Shootas",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "ork_hb_bs"
+        }
+      ]
     },
     {
       "key": "card_ork_landa",
@@ -8211,7 +8464,27 @@ const UNIT_CATALOG = {
       "standsCount": 5,
       "color": 1409085,
       "baseW": 34,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Big Shootas",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "ork_landa_bs"
+        },
+        {
+          "name": "Rokkit Pods",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 4,
+          "tsm": -1,
+          "id": "ork_landa_rok",
+          "barrage": true,
+          "barrageBp": 4
+        }
+      ]
     },
     {
       "key": "card_ork_supa_transport_rokkit",
@@ -8407,7 +8680,25 @@ const UNIT_CATALOG = {
             "dice": 3,
             "toHit": 5,
             "tsm": 0
-          }
+          },
+          "salvos": [
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcan"
+            },
+            {
+              "name": "Shuriken Catapult",
+              "rangeCm": 15,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcat"
+            }
+          ]
         },
         {
           "name": "2nd Vyper Squad",
@@ -8424,7 +8715,25 @@ const UNIT_CATALOG = {
             "dice": 3,
             "toHit": 5,
             "tsm": 0
-          }
+          },
+          "salvos": [
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcan"
+            },
+            {
+              "name": "Shuriken Catapult",
+              "rangeCm": 15,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcat"
+            }
+          ]
         },
         {
           "name": "1st Jetbike Squad",
@@ -8600,6 +8909,24 @@ const UNIT_CATALOG = {
           },
           "specialAbilities": [
             "Fearless"
+          ],
+          "salvos": [
+            {
+              "name": "Lascannon",
+              "rangeCm": 75,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -2,
+              "id": "wl_las"
+            },
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "wl_shcan"
+            }
           ]
         },
         {
@@ -8619,6 +8946,24 @@ const UNIT_CATALOG = {
           },
           "specialAbilities": [
             "Fearless"
+          ],
+          "salvos": [
+            {
+              "name": "Lascannon",
+              "rangeCm": 75,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -2,
+              "id": "wl_las"
+            },
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "wl_shcan"
+            }
           ]
         }
       ]
@@ -8999,7 +9344,25 @@ const UNIT_CATALOG = {
       "standsCount": 5,
       "color": 16096779,
       "baseW": 22,
-      "baseH": 26
+      "baseH": 26,
+      "salvos": [
+        {
+          "name": "Shuriken Cannon",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "vyp_shcan"
+        },
+        {
+          "name": "Shuriken Catapult",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "vyp_shcat"
+        }
+      ]
     },
     {
       "key": "card_eld_falcons",
@@ -9120,6 +9483,24 @@ const UNIT_CATALOG = {
       "baseH": 22,
       "specialAbilities": [
         "Fearless"
+      ],
+      "salvos": [
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "wl_las"
+        },
+        {
+          "name": "Shuriken Cannon",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "wl_shcan"
+        }
       ]
     },
     {
@@ -9230,7 +9611,24 @@ const UNIT_CATALOG = {
       "standsCount": 2,
       "color": 16096779,
       "baseW": 34,
-      "baseH": 38
+      "baseH": 38,
+      "independentModels": true,
+      "subDetachments": [
+        {
+          "name": "Revenant A",
+          "stands": 1,
+          "transport": 0,
+          "breakPoint": 1,
+          "vpValue": 3
+        },
+        {
+          "name": "Revenant B",
+          "stands": 1,
+          "transport": 0,
+          "breakPoint": 1,
+          "vpValue": 3
+        }
+      ]
     },
     {
       "key": "card_eld_phantom",
@@ -9521,7 +9919,25 @@ const UNIT_CATALOG = {
             "dice": 3,
             "toHit": 5,
             "tsm": 0
-          }
+          },
+          "salvos": [
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcan"
+            },
+            {
+              "name": "Shuriken Catapult",
+              "rangeCm": 15,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "vyp_shcat"
+            }
+          ]
         },
         {
           "name": "1st Jetbike Squad",
@@ -9610,6 +10026,24 @@ const UNIT_CATALOG = {
           },
           "specialAbilities": [
             "Fearless"
+          ],
+          "salvos": [
+            {
+              "name": "Lascannon",
+              "rangeCm": 75,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -2,
+              "id": "wl_las"
+            },
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "wl_shcan"
+            }
           ]
         },
         {
@@ -9629,6 +10063,24 @@ const UNIT_CATALOG = {
           },
           "specialAbilities": [
             "Fearless"
+          ],
+          "salvos": [
+            {
+              "name": "Lascannon",
+              "rangeCm": 75,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -2,
+              "id": "wl_las"
+            },
+            {
+              "name": "Shuriken Cannon",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": 0,
+              "id": "wl_shcan"
+            }
           ]
         }
       ]
@@ -9659,7 +10111,25 @@ const UNIT_CATALOG = {
       "standsCount": 6,
       "color": 11817737,
       "baseW": 28,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Tempest Laser",
+          "rangeCm": 100,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": -3,
+          "id": "temp_laser"
+        },
+        {
+          "name": "Shuriken Cannon",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "temp_shcan"
+        }
+      ]
     },
     {
       "key": "card_eld_harlequin_masque",
@@ -10481,7 +10951,27 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 14251782,
       "baseW": 34,
-      "baseH": 40
+      "baseH": 40,
+      "salvos": [
+        {
+          "name": "Void Spinner",
+          "rangeCm": 100,
+          "dice": 8,
+          "toHit": 4,
+          "tsm": -3,
+          "id": "vs_spinner",
+          "barrage": true,
+          "barrageBp": 8
+        },
+        {
+          "name": "Shuriken Cannon",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "vs_shcan"
+        }
+      ]
     },
     {
       "key": "card_eld_tempest",
@@ -10509,7 +10999,25 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 11817737,
       "baseW": 28,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Tempest Laser",
+          "rangeCm": 100,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": -3,
+          "id": "temp_laser"
+        },
+        {
+          "name": "Shuriken Cannon",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "temp_shcan"
+        }
+      ]
     },
     {
       "key": "card_eld_fire_knights",
@@ -10621,23 +11129,31 @@ const UNIT_CATALOG = {
       },
       "salvos": [
         {
-          "id": "phoenix_sonic",
-          "mount": "Fuselage",
           "name": "Sonic Cannon",
           "rangeCm": 75,
           "dice": 2,
           "toHit": 4,
           "tsm": -3,
+          "id": "phoenix_sonic",
+          "mount": "Fuselage",
           "ignoresCover": true
         },
         {
-          "id": "phoenix_bombs",
-          "mount": "Bomb Racks",
+          "name": "Shuriken",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "phoenix_shur"
+        },
+        {
           "name": "Plasma Bombs",
           "rangeCm": 50,
           "dice": 1,
           "toHit": 3,
           "tsm": -3,
+          "id": "phoenix_bombs",
+          "mount": "Bomb Racks",
           "barrage": true,
           "barrageBp": 8
         }
@@ -10673,7 +11189,35 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1981066,
       "baseW": 26,
-      "baseH": 28
+      "baseH": 28,
+      "salvos": [
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "nw_las"
+        },
+        {
+          "name": "Shuriken",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "nw_shur"
+        },
+        {
+          "name": "Missiles",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 4,
+          "tsm": 0,
+          "id": "nw_missiles",
+          "barrage": true,
+          "barrageBp": 4
+        }
+      ]
     },
     {
       "key": "card_eld_vampyre",
@@ -10702,7 +11246,27 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 14251782,
       "baseW": 32,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Shuriken",
+          "rangeCm": 25,
+          "dice": 6,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "vamp_shur"
+        },
+        {
+          "name": "Missiles",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 4,
+          "tsm": -1,
+          "id": "vamp_missiles",
+          "barrage": true,
+          "barrageBp": 4
+        }
+      ]
     },
     {
       "key": "card_eld_warlock_titan",
@@ -12072,7 +12636,25 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 14427686,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "salvos": [
+        {
+          "name": "Autocannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "cpred_ac"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "cpred_las"
+        }
+      ]
     },
     {
       "key": "card_chs_landraider",
@@ -12940,7 +13522,27 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 8788367,
       "baseW": 24,
-      "baseH": 30
+      "baseH": 30,
+      "salvos": [
+        {
+          "name": "Acid Jets",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "hsp_acid"
+        },
+        {
+          "name": "Frag Spines",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": 0,
+          "id": "hsp_frag",
+          "barrage": true,
+          "barrageBp": 2
+        }
+      ]
     },
     {
       "key": "card_tyr_trygon",
@@ -13447,7 +14049,25 @@ const UNIT_CATALOG = {
       "standsCount": 9,
       "color": 9584654,
       "baseW": 24,
-      "baseH": 26
+      "baseH": 26,
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "gyro_bc"
+        },
+        {
+          "name": "Autocannon",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "gyro_ac"
+        }
+      ]
     },
     {
       "key": "card_sqt_robot_co",
@@ -13734,7 +14354,26 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 13273604,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "salvos": [
+        {
+          "name": "Mega-Thunderer",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -3,
+          "id": "ihm_mt",
+          "damagesBuildings": true
+        },
+        {
+          "name": "Heavy Bolters",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ihm_hb"
+        }
+      ]
     },
     {
       "key": "card_sqt_ironshield",
@@ -13762,7 +14401,25 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 16436245,
       "baseW": 22,
-      "baseH": 30
+      "baseH": 30,
+      "salvos": [
+        {
+          "name": "Autocannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "ish_ac"
+        },
+        {
+          "name": "Heavy Bolters",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ish_hb"
+        }
+      ]
     },
     {
       "key": "card_sqt_retributor",
@@ -13789,7 +14446,44 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 10576391,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "ret_bc"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "ret_las"
+        },
+        {
+          "name": "Missiles",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": 0,
+          "id": "ret_mis",
+          "barrage": true,
+          "barrageBp": 1,
+          "indirect": true
+        },
+        {
+          "name": "Heavy Bolters",
+          "rangeCm": 25,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ret_hb"
+        }
+      ]
     },
     {
       "key": "card_sqt_gyrocopters",
@@ -13817,7 +14511,25 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 3718648,
       "baseW": 24,
-      "baseH": 28
+      "baseH": 28,
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "gyro_bc"
+        },
+        {
+          "name": "Autocannon",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "gyro_ac"
+        }
+      ]
     },
     {
       "key": "card_sqt_molemortar",
@@ -13996,16 +14708,34 @@ const UNIT_CATALOG = {
       "superHeavy": true,
       "skimmer": true,
       "weapon": {
-        "name": "Autocannons",
-        "rangeCm": 50,
+        "name": "Battlecannons",
+        "rangeCm": 75,
         "dice": 6,
         "toHit": 5,
-        "tsm": 0
+        "tsm": -2
       },
       "standsCount": 1,
       "color": 16638023,
       "baseW": 32,
-      "baseH": 40
+      "baseH": 40,
+      "salvos": [
+        {
+          "name": "Battlecannons",
+          "rangeCm": 75,
+          "dice": 6,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "ovl_bc"
+        },
+        {
+          "name": "Autocannons",
+          "rangeCm": 50,
+          "dice": 4,
+          "toHit": 5,
+          "tsm": 0,
+          "id": "ovl_ac"
+        }
+      ]
     },
     {
       "key": "card_sqt_ancestor",
@@ -14581,6 +15311,25 @@ const UNIT_CATALOG = {
       "baseH": 40,
       "specialAbilities": [
         "PD4"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "mil_mam_bc",
+          "mount": "Turret"
+        },
+        {
+          "name": "Autocannons",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "mil_mam_ac"
+        }
       ]
     },
     {
@@ -14894,6 +15643,26 @@ const UNIT_CATALOG = {
       "baseH": 32,
       "specialAbilities": [
         "PD1"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "mil_lr_bc",
+          "mount": "Turret"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "mil_lr_las",
+          "mount": "Hull"
+        }
       ]
     },
     {
@@ -14922,7 +15691,27 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1467700,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "salvos": [
+        {
+          "name": "Thunderer",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -3,
+          "id": "mil_dem_thu",
+          "mount": "Turret",
+          "ignoresCover": true
+        },
+        {
+          "name": "Melta-Gun",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -2,
+          "id": "mil_dem_mg"
+        }
+      ]
     },
     {
       "key": "card_mil_hellhound",
@@ -15108,6 +15897,26 @@ const UNIT_CATALOG = {
       "baseH": 40,
       "specialAbilities": [
         "PD10"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "mil_bb_bc",
+          "mount": "Turret"
+        },
+        {
+          "name": "Lascannons",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "mil_bb_las",
+          "mount": "Sponsons"
+        }
       ]
     },
     {
@@ -15146,14 +15955,18 @@ const UNIT_CATALOG = {
           "rangeCm": 100,
           "dice": 1,
           "toHit": 3,
-          "tsm": -4
+          "tsm": -4,
+          "id": "mil_ss_vc",
+          "penetrating": 3
         },
         {
           "name": "Lascannons",
           "rangeCm": 75,
           "dice": 2,
           "toHit": 5,
-          "tsm": -1
+          "tsm": -1,
+          "id": "mil_ss_las",
+          "mount": "Sponsons"
         }
       ]
     },
@@ -15507,6 +16320,26 @@ const UNIT_CATALOG = {
           "stands": 3,
           "transport": 0
         }
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "mil_lr_bc",
+          "mount": "Turret"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "mil_lr_las",
+          "mount": "Hull"
+        }
       ]
     }
   ],
@@ -15561,6 +16394,24 @@ const UNIT_CATALOG = {
           "name": "2nd Detachment",
           "stands": 3,
           "transport": 0
+        }
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "am_pal_bc"
+        },
+        {
+          "name": "Heavy Bolters",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "am_pal_hb"
         }
       ]
     },
@@ -15833,6 +16684,44 @@ const UNIT_CATALOG = {
       "baseH": 42,
       "specialAbilities": [
         "PD8"
+      ],
+      "salvos": [
+        {
+          "name": "Plasma Blastgun",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 3,
+          "tsm": -4,
+          "id": "am_sb_plasma"
+        },
+        {
+          "name": "Battlecannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "am_sb_bc"
+        },
+        {
+          "name": "Hellion Missile",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -4,
+          "id": "am_sb_hellion",
+          "oneShot": true,
+          "penetrating": 2
+        },
+        {
+          "name": "Hunter/Killer Missiles",
+          "rangeCm": 75,
+          "dice": 4,
+          "toHit": 3,
+          "tsm": -1,
+          "id": "am_sb_hk",
+          "oneShot": true,
+          "penetrating": 2
+        }
       ]
     },
     {
@@ -15994,6 +16883,24 @@ const UNIT_CATALOG = {
       "baseH": 32,
       "specialAbilities": [
         "PD1"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_lr_bc"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "am_lr_las"
+        }
       ]
     },
     {
@@ -16204,6 +17111,24 @@ const UNIT_CATALOG = {
       "baseH": 26,
       "specialAbilities": [
         "PD1"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "am_pal_bc"
+        },
+        {
+          "name": "Heavy Bolters",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "am_pal_hb"
+        }
       ]
     },
     {
@@ -16298,6 +17223,24 @@ const UNIT_CATALOG = {
       "baseH": 28,
       "specialAbilities": [
         "PD1"
+      ],
+      "salvos": [
+        {
+          "name": "Quake Cannon",
+          "rangeCm": 100,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -3,
+          "id": "am_cru_quake"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_cru_las"
+        }
       ]
     },
     {
@@ -16331,6 +17274,24 @@ const UNIT_CATALOG = {
       "baseH": 28,
       "specialAbilities": [
         "PD1"
+      ],
+      "salvos": [
+        {
+          "name": "Quake Cannon",
+          "rangeCm": 100,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -3,
+          "id": "am_cas_quake"
+        },
+        {
+          "name": "Autocannon",
+          "rangeCm": 50,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "am_cas_ac"
+        }
       ]
     },
     {
@@ -16468,6 +17429,24 @@ const UNIT_CATALOG = {
         "HQ",
         "Inspirational",
         "PD2"
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 4,
+          "tsm": -2,
+          "id": "am_baron_bc"
+        },
+        {
+          "name": "Power Lance",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -3,
+          "id": "am_baron_lance"
+        }
       ]
     },
     {
@@ -16534,7 +17513,28 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 12131356,
       "baseW": 34,
-      "baseH": 42
+      "baseH": 42,
+      "salvos": [
+        {
+          "name": "Sonic Disruptor",
+          "rangeCm": 100,
+          "dice": 1,
+          "toHit": 2,
+          "tsm": -3,
+          "id": "am_om_sonic",
+          "barrage": true,
+          "barrageBp": 10,
+          "damagesBuildings": true
+        },
+        {
+          "name": "Lascannons",
+          "rangeCm": 50,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_om_las"
+        }
+      ]
     },
     {
       "key": "card_am_skitarii_co",
@@ -16645,7 +17645,28 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 12131356,
       "baseW": 34,
-      "baseH": 42
+      "baseH": 42,
+      "salvos": [
+        {
+          "name": "Hellfire Missiles",
+          "rangeCm": 120,
+          "dice": 1,
+          "toHit": 2,
+          "tsm": -2,
+          "id": "am_og_hellfire",
+          "barrage": true,
+          "barrageBp": 6,
+          "damagesBuildings": true
+        },
+        {
+          "name": "Lascannons",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_og_las"
+        }
+      ]
     },
     {
       "key": "card_am_ordinatus_armageddon",
@@ -16675,7 +17696,26 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 10033947,
       "baseW": 36,
-      "baseH": 44
+      "baseH": 44,
+      "salvos": [
+        {
+          "name": "Nova Cannon",
+          "rangeCm": 150,
+          "dice": 1,
+          "toHit": 2,
+          "tsm": -4,
+          "id": "am_oa_nova",
+          "damagesBuildings": true
+        },
+        {
+          "name": "Lascannons",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_oa_las"
+        }
+      ]
     },
     {
       "key": "card_am_leman_co",
@@ -16731,6 +17771,24 @@ const UNIT_CATALOG = {
           "name": "3rd Leman Russ Squadron",
           "stands": 3,
           "transport": 0
+        }
+      ],
+      "salvos": [
+        {
+          "name": "Battlecannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -2,
+          "id": "am_lr_bc"
+        },
+        {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "am_lr_las"
         }
       ]
     }
@@ -17356,7 +18414,9 @@ window.renderArmyModal = function() {
         const smokeNote = (u.weapon && u.weapon.canSmoke) ? ' | 💨 Smoke' : '';
         const siegeNote = (u.weapon && u.weapon.damagesBuildings) ? ' | 🏚️ Siege' : '';
         const saveDesc = u.holoField ? `${u.save}+ (💎 Holo)` : (u.fixedSave ? `${u.save}+ (${u.fixedSave}+f)` : `${u.save}+`);
-        const wpnDesc = u.weapon
+        const wpnDesc = (u.salvos && u.salvos.length > 1)
+          ? u.salvos.map(w => w.barrage ? `${w.name} (${w.rangeCm}cm, ${w.barrageBp || w.dice} BP)` : `${w.name} (${w.rangeCm}cm, ${w.dice}D6, ${w.toHit}+, TSM ${w.tsm})`).join(' · ')
+          : u.weapon
           ? (u.weapon.barrage
               ? `💥 ${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.barrageBp} BP/stand, 6cm Template${u.weapon.indirect ? ', Indirect' : ''})`
               : `${u.weapon.name} (${u.weapon.rangeCm}cm, ${u.weapon.dice}D6, ${u.weapon.toHit}+)`)
@@ -23901,7 +24961,7 @@ class NetEpicScene extends Phaser.Scene {
     for (let i = 0; i < maxS; i++) {
       const isReady = i >= firedS;
       const salvoName = this.getSalvoWeaponName ? this.getSalvoWeaponName(focusTitan, i) : `Salvo ${i + 1}`;
-      const dice = Math.max(1, Math.round((focusTitan.weapon ? focusTitan.weapon.dice : 6) / maxS));
+      const dice = this.getSalvoWeapon(focusTitan, i).dice;
       salvoPipsHtml += `<span class="vp-box" style="font-size:0.65rem; padding:2px 6px; background:${isReady ? '#0369a1' : '#1e293b'}; color:${isReady ? '#38bdf8' : '#64748b'}; border:1px solid ${isReady ? '#0284c7' : '#334155'};">
         ${isReady ? '●' : '○'} Salvo ${i + 1}: ${salvoName} (${dice}d) [${isReady ? 'READY' : 'FIRED'}]
       </span>`;
@@ -25067,7 +26127,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   getCompanySubDetachments(template) {
-    if (template.cardType !== 'COMPANY' || template.standsCount <= 1) {
+    if ((template.cardType !== 'COMPANY' && !template.independentModels) || template.standsCount <= 1) {
       return [{ ...template, subName: template.name, subStands: template.standsCount, transportStands: (template.dedicatedTransport ? template.dedicatedTransport.standsCount : 0) }];
     }
     const total = template.standsCount;
@@ -25077,7 +26137,9 @@ class NetEpicScene extends Phaser.Scene {
     if (Array.isArray(template.subDetachments) && template.subDetachments.length) {
       return template.subDetachments.map(sd => {
         const { name: subLabel, stands, transport, ...profile } = sd;
-        return { ...template, ...profile, subName: `${name} - ${subLabel}`, subStands: stands, transportStands: transport || 0 };
+        const out = { ...template, ...profile, subName: `${name} - ${subLabel}`, subStands: stands, transportStands: transport || 0 };
+        if (profile.weapon && !profile.salvos) delete out.salvos; // a different unit type keeps only its own weapon
+        return out;
       });
     }
 
@@ -25431,13 +26493,15 @@ class NetEpicScene extends Phaser.Scene {
         const startY = baseY + (isImp ? 1 : -1) * (cardIdx % 2) * 35;
 
         const subConfigs = this.getCompanySubDetachments(template);
-        const isCompany = (template.cardType === 'COMPANY' && subConfigs.length > 1);
+        const splitCard = subConfigs.length > 1;
+        // Company cards pool casualties; models bought together but acting alone (e.g. titan pairs) don't
+        const isCompany = (template.cardType === 'COMPANY' && splitCard && !template.independentModels);
 
         subConfigs.forEach((subCfg, subIdx) => {
           let detX = startX;
           let detY = startY;
 
-          if (isCompany) {
+          if (splitCard) {
             const numSubs = subConfigs.length;
             const spread = Math.min(260, (numSubs - 1) * 75);
             detX = Math.round(startX - (spread / 2) + (subIdx * (spread / (numSubs - 1))));
@@ -25447,9 +26511,9 @@ class NetEpicScene extends Phaser.Scene {
             }
           }
 
-          const detId = isCompany ? `${sidePrefix}_${cardIdx}_${key}_sub_${subIdx}` : `${sidePrefix}_${cardIdx}_${key}`;
+          const detId = splitCard ? `${sidePrefix}_${cardIdx}_${key}_sub_${subIdx}` : `${sidePrefix}_${cardIdx}_${key}`;
           const cleanCharName = template.name.replace(/\s*&\s*Command Rhino|\s*&\s*Cmd Rhino/i, '');
-          const detName = isCompany ? subCfg.subName : (template.isCharacter ? cleanCharName : `${template.name} #${cardIdx + 1}`);
+          const detName = splitCard ? subCfg.subName : (template.isCharacter ? cleanCharName : `${template.name} #${cardIdx + 1}`);
 
           const mainDet = this.createDetachment({
             ...subCfg,
@@ -25471,9 +26535,9 @@ class NetEpicScene extends Phaser.Scene {
           });
 
           // Automatically spawn and embark dedicated transports for this sub-detachment
-          if (template.dedicatedTransport && (subCfg.transportStands > 0 || (!isCompany && template.dedicatedTransport.standsCount > 0))) {
+          if (template.dedicatedTransport && (subCfg.transportStands > 0 || (!splitCard && template.dedicatedTransport.standsCount > 0))) {
             const tCfg = template.dedicatedTransport;
-            const tCount = isCompany ? subCfg.transportStands : tCfg.standsCount;
+            const tCount = splitCard ? subCfg.transportStands : tCfg.standsCount;
             if (tCount > 0) {
               const transDet = this.createDetachment({
                 ...tCfg,
@@ -27478,7 +28542,8 @@ class NetEpicScene extends Phaser.Scene {
       };
     }
 
-    if (firerDet.weapon && firerDet.weapon.barrage) {
+    const fireWpn = activeSalvoWpn || firerDet.weapon;
+    if (fireWpn && fireWpn.barrage) {
       if (validPairs.length === 0 || targetDet.stands.length === 0) {
         return { validPairs: [], isSnapFire, isBarrage: true, templateTargets: [], totalBp: 0, isIndirect: false };
       }
@@ -27489,7 +28554,7 @@ class NetEpicScene extends Phaser.Scene {
 
       targetDet.stands.forEach(candStand => {
         // Must be reachable by at least one firing stand
-        const reachable = firerDet.stands.some(sh => this.checkStandLoS(sh, candStand, isSnapFire).valid);
+        const reachable = firerDet.stands.some(sh => this.checkStandLoS(sh, candStand, isSnapFire, fireWpn).valid);
         if (!reachable) return;
 
         const caught = this.getTemplateTargets(candStand.container, firerDet.faction, isSnapFire);
@@ -27500,9 +28565,9 @@ class NetEpicScene extends Phaser.Scene {
         }
       });
 
-      const totalBp = validPairs.length * (firerDet.weapon.barrageBp || 2);
+      const totalBp = validPairs.length * (fireWpn.barrageBp || 2);
       const isIndirect = validPairs.some(p => p.res.indirect);
-      const barrageStats = this.getBarrageStats(totalBp, firerDet.weapon.tsm);
+      const barrageStats = this.getBarrageStats(totalBp, fireWpn.tsm);
 
       return {
         validPairs,
@@ -27548,7 +28613,7 @@ class NetEpicScene extends Phaser.Scene {
       // Core Rules p. 35: a battery combines the barrage points of every stand that can fire.
       // A titan weapon salvo or a single split-fire stand only adds its own.
       const bpEach = activeWpn.barrageBp || activeWpn.dice || 2;
-      sol.totalBp = (isSalvoUnit || split) ? bpEach : sol.validPairs.length * bpEach;
+      sol.totalBp = split ? bpEach : sol.validPairs.length * bpEach;
       sol.barrageStats = this.getBarrageStats(sol.totalBp, activeWpn.tsm);
       if (!sol.aimPoint) {
         const aimStand = sol.validPairs[0].target;
@@ -27607,7 +28672,7 @@ class NetEpicScene extends Phaser.Scene {
 
         this.spawnFloatingText(aimPoint.x, aimPoint.y - 22, `💥 ${totalBp} BP BARRAGE!`, '#fb923c', '13px');
         this.log(
-          `💥 <b>${firerDet.name}</b> unleashes <i>${wpn.name}</i> [${modeLabel}, <b>${totalBp} BP</b> → Hit ${barrageStats.toHit}+, TSM ${barrageStats.tsm}] ` +
+          `💥 <b>${firerDet.name}</b> unleashes <i>${activeWpn.name}</i> [${modeLabel}, <b>${totalBp} BP</b> → Hit ${barrageStats.toHit}+, TSM ${barrageStats.tsm}] ` +
           `covering <b>${templateTargets.length} stand(s)</b> under the 6cm template!`
         );
 
@@ -27939,8 +29004,10 @@ class NetEpicScene extends Phaser.Scene {
     firerDet.stealthBroken = true; // p. 34: Stealth is lost until the End Phase after a ranged attack
     if (!firerDet.standsFired) firerDet.standsFired = new Set();
     if ((firerDet.maxSalvos || 1) > 1) {
+      const firedWpn = firerDet.salvos && firerDet.salvos[firerDet.salvosFired || 0];
+      if (firedWpn && firedWpn.oneShot) (firerDet.spentOneShots = firerDet.spentOneShots || []).push(firedWpn.id || firedWpn.name);
       firerDet.salvosFired = (firerDet.salvosFired || 0) + (salvosUsed || 1);
-      firerDet.fired = firerDet.salvosFired >= firerDet.maxSalvos;
+      this.skipSpentSalvos(firerDet);
     } else if (split) {
       pairs.forEach(p => firerDet.standsFired.add(p.shooter.id));
       firerDet.fired = firerDet.stands.every(s => firerDet.standsFired.has(s.id));
@@ -27948,6 +29015,17 @@ class NetEpicScene extends Phaser.Scene {
       firerDet.fired = true;
     }
     this.updateDetachmentBadge(firerDet);
+  }
+
+  // One-shot weapons (e.g. Hellion missiles) can't fire again once used: step past them
+  skipSpentSalvos(det) {
+    const spent = det.spentOneShots || [];
+    while (det.salvos && (det.salvosFired || 0) < (det.maxSalvos || 1)) {
+      const w = det.salvos[det.salvosFired || 0];
+      if (!(w && w.oneShot && spent.includes(w.id || w.name))) break;
+      det.salvosFired = (det.salvosFired || 0) + 1;
+    }
+    if ((det.maxSalvos || 1) > 1) det.fired = (det.salvosFired || 0) >= det.maxSalvos;
   }
 
   removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false, opts = {}) {
@@ -28804,6 +29882,31 @@ class NetEpicScene extends Phaser.Scene {
     cam.pan(tx, ty, duration, 'Sine.easeInOut', true);
   }
 
+  // When the turn passes to a human player, bring the camera to a unit they can act with next
+  focusPlayerNextUnit() {
+    const side = this.activePlayer;
+    if (!side || this.isFactionAI(side)) return;
+    let det = null;
+    const cam = this.cameras.main;
+    const here = { x: cam.midPoint.x, y: cam.midPoint.y };
+    const nearest = list => list.reduce((best, d) => {
+      const c = this.getDetachmentCenter(d);
+      const dist = Phaser.Math.Distance.Between(here.x, here.y, c.x, c.y);
+      return (!best || dist < best.dist) ? { d, dist } : best;
+    }, null);
+    if (this.phase === 'MOVEMENT') {
+      const n = nearest(this.detachments.filter(d => d.faction === side && d.stands.length > 0 && !d.moved && !d.embarkedOn && !d.inReserve));
+      det = n && n.d;
+    } else if (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') {
+      det = (this.activatingDetachment && this.activatingDetachment.faction === side) ? this.activatingDetachment : null;
+    }
+    if (!det) return;
+    if (this.phase === 'MOVEMENT' && !this.activatingDetachment) { this.selectedDetachment = det; this.updateUI(); this.drawOverlays(); }
+    const c = this.getDetachmentCenter(det);
+    if (cam.zoom < 0.75) cam.zoomTo(0.9, 500, 'Sine.easeInOut', true);
+    cam.pan(Phaser.Math.Clamp(c.x, 50, BOARD_W - 50), Phaser.Math.Clamp(c.y, 50, BOARD_H - 50), 600, 'Sine.easeInOut', true);
+  }
+
   panCameraBetween(p1, p2, duration = 650) {
     if (!window.aiCamFollow || !p1 || !p2) return;
     this.panCameraTo((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, duration);
@@ -29465,13 +30568,19 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     let bestTarget = null;
-    let bestScore = 0;
+    let bestScore = -Infinity;
+    const aiWpn = (firer.maxSalvos || 1) > 1 ? this.getSalvoWeapon(firer, firer.salvosFired || 0) : firer.weapon;
+    const aiTsm = aiWpn ? (aiWpn.tsm || 0) : 0;
 
     enemies.forEach(eDet => {
       const sol = this.evaluateFireSolution(firer, eDet, false);
       if (sol.validPairs.length > 0) {
         const hitPotential = sol.isBarrage ? (sol.templateTargets ? sol.templateTargets.length : 1) : sol.validPairs.length;
         let score = hitPotential * 10 + (7 - eDet.save);
+        // Heavy weapons go after armour and titans, light weapons after lightly armoured troops
+        const armoured = eDet.save <= 3 || eDet.isTitan || eDet.superHeavy;
+        if (aiTsm <= -2) score += armoured ? 14 : -6;
+        else if (aiTsm >= 0) score += armoured ? -12 : 8;
         if (eDet.passengerDet) score += 18; // High priority: enemy transports carrying troops!
         if (eDet.isTitan) score += 16;      // Strip enemy Void Shields / Power Fields!
         if (!eDet.broken && (this.getCompanyCasualties(eDet) + 1 >= (eDet.companyBreakPoint || eDet.breakPoint))) score += 15;
@@ -29496,7 +30605,8 @@ class NetEpicScene extends Phaser.Scene {
       this.time.delayedCall(1150, () => {
         this.aiTimerPending = false;
         if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') && this.activatingDetachment === firer) {
-          this.fireAtSelectedTarget();
+          // Multi-weapon units fire one weapon at a time so each can pick a fitting target
+          this.fireAtSelectedTarget((firer.maxSalvos || 1) > 1);
         }
       });
     } else {
@@ -29583,6 +30693,7 @@ class NetEpicScene extends Phaser.Scene {
     ]);
     this.updateUI();
     this.drawOverlays();
+    this.focusPlayerNextUnit();
     this.checkAndRunAITurn();
   }
 
@@ -29902,6 +31013,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.drawOverlays();
     this.updateUI();
+    this.focusPlayerNextUnit();
     this.checkAndRunAITurn();
   }
 
@@ -29961,14 +31073,23 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    // Auto-select first eligible unit for convenience
-    const firstUnit = this.detachments.find(d => d.faction === this.activePlayer && this.isEligibleInCombatPhase(d));
+    // Auto-select first eligible unit for convenience (the one nearest the camera, for humans)
+    const eligible = this.detachments.filter(d => d.faction === this.activePlayer && this.isEligibleInCombatPhase(d));
+    let firstUnit = eligible[0];
+    if (firstUnit && !this.isFactionAI(this.activePlayer)) {
+      const m = this.cameras.main.midPoint;
+      firstUnit = eligible.reduce((a, b) => {
+        const ca = this.getDetachmentCenter(a), cb = this.getDetachmentCenter(b);
+        return Phaser.Math.Distance.Between(m.x, m.y, cb.x, cb.y) < Phaser.Math.Distance.Between(m.x, m.y, ca.x, ca.y) ? b : a;
+      });
+    }
     this.selectedDetachment = firstUnit || null;
     this.activatingDetachment = firstUnit || null;
     this.targetDetachment = null;
 
     this.drawOverlays();
     this.updateUI();
+    this.focusPlayerNextUnit();
     this.checkAndRunAITurn();
   }
 
@@ -30448,11 +31569,18 @@ class NetEpicScene extends Phaser.Scene {
   fireAtSelectedTarget(split = false) {
     const firer = this.activatingDetachment;
     if (!firer || !this.targetDetachment) return;
-    this.executeRangedAttack(firer, this.targetDetachment, false, {
+    const target = this.targetDetachment;
+    this.executeRangedAttack(firer, target, false, {
       split: Boolean(split),
       onComplete: () => {
         if (firer.fired || firer.stands.length === 0) {
           this.finishCombatActivation();
+        } else if (!split && (firer.maxSalvos || 1) > 1 && target.stands.length > 0 &&
+                   this.activatingDetachment === firer &&
+                   this.evaluateFireSolution(firer, target, false).validPairs.length > 0) {
+          // "All weapons": the next weapon system fires at the same target
+          this.targetDetachment = target;
+          this.fireAtSelectedTarget(false);
         } else {
           // Remaining stands / weapon salvos can now pick another target
           this.targetDetachment = null;
@@ -30722,6 +31850,7 @@ class NetEpicScene extends Phaser.Scene {
       d.fired = false;
       d.deepStrikeActive = false;
       d.salvosFired = 0;
+      this.skipSpentSalvos(d);
       d.stealthBroken = false;
       d.standsFired = new Set();
       d.rokkitFiredThisTurn = false;
@@ -31520,7 +32649,7 @@ class NetEpicScene extends Phaser.Scene {
           } else {
             if (isSalvoUnit) {
               const allDice = Math.max(1, Math.round(this.activatingDetachment.weapon.dice * (salvosRemaining / this.activatingDetachment.maxSalvos)));
-              btnFire.innerText = sol.validPairs.length > 0 ? `🔥 Fire all (${salvosRemaining})` : '🚫 No line of sight';
+              btnFire.innerText = sol.validPairs.length > 0 ? `🔥 All ${salvosRemaining} weapons` : '🚫 No line of sight';
             } else {
               const totalRollDice = sol.validPairs.length * this.activatingDetachment.weapon.dice;
               btnFire.innerText = sol.validPairs.length > 0 ? `🔥 Fire ${totalRollDice}D6` : '🚫 No line of sight';
@@ -31609,7 +32738,9 @@ class NetEpicScene extends Phaser.Scene {
       const holoSave = this.getHoloFieldSave(d);
       const saveStr = holoSave ? `${d.save}+ (🔮${holoSave}+ Holo)` : (d.fixedSave ? `${d.save}+ (${d.fixedSave}+ Fixed)` : `${d.save}+`);
       const effCaf = d.damageState === 'HEAVY' ? `${Math.floor(d.caf / 2)} (½ of +${d.caf})` : `+${d.caf}`;
-      const wpnInfo = d.weapon.barrage
+      const fmtW = w => w.barrage ? `${w.name} ${w.rangeCm}cm ${w.barrageBp || w.dice}BP` : `${w.name} ${w.rangeCm}cm ${w.dice}D6 ${w.toHit}+ TSM${w.tsm}`;
+      const multiW = (d.salvos && d.salvos.length > 1 && !d.isTitan) ? d.salvos : null;
+      const wpnInfo = multiW ? multiW.map((w, i) => `${i < (d.salvosFired || 0) ? '○' : '●'} ${fmtW(w)}`).join(' | ') : d.weapon.barrage
         ? `💥 ${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.barrageBp} BP/stand = ${d.stands.length * d.weapon.barrageBp} BP, 6cm Template${d.weapon.indirect ? ', Indirect' : ''})`
         : `${d.weapon.name} (${d.weapon.rangeCm}cm, ${d.weapon.dice}D6, Hit ${d.weapon.toHit - (d.toHitPenalty || 0)}+, TSM ${d.weapon.tsm})`;
       const bookTag = (FACTION_META[d.armyBook] || FACTION_META[d.faction]).short;
@@ -31628,7 +32759,7 @@ class NetEpicScene extends Phaser.Scene {
         this.isFactionAI(d.faction) ? '🤖' : ''
       ].filter(Boolean).join(' ');
       selTitle.innerText = `${bookTag} · ${this.shortName(d.name, 40)}${flags ? '  ' + flags : ''}`;
-      const wpnShort = d.weapon.barrage
+      const wpnShort = multiW ? `${multiW.length - (d.salvosFired || 0)}/${multiW.length} weapons` : d.weapon.barrage
         ? `${d.weapon.rangeCm}cm ${d.stands.length * d.weapon.barrageBp}BP`
         : `${d.weapon.rangeCm}cm ${d.weapon.dice}D6 ${d.weapon.toHit - (d.toHitPenalty || 0)}+`;
       const brk = d.isCompanyDetachment ? `${this.getCompanyCasualties(d)}/${d.companyBreakPoint}` : `${d.casualties}/${d.breakPoint}`;
@@ -31845,6 +32976,7 @@ class NetEpicScene extends Phaser.Scene {
         salvos: det.salvos ? JSON.parse(JSON.stringify(det.salvos)) : null,
         maxSalvos: det.maxSalvos,
         salvosFired: det.salvosFired || 0,
+        spentOneShots: det.spentOneShots || [],
         standsFired: det.standsFired ? Array.from(det.standsFired) : [],
         locationDamage: det.locationDamage ? { ...det.locationDamage } : null,
         damageLog: det.damageLog ? [...det.damageLog] : [],
@@ -32071,6 +33203,7 @@ class NetEpicScene extends Phaser.Scene {
         if (savedDet.salvos) det.salvos = JSON.parse(JSON.stringify(savedDet.salvos));
         det.maxSalvos = savedDet.maxSalvos || det.maxSalvos;
         det.salvosFired = savedDet.salvosFired || 0;
+        det.spentOneShots = savedDet.spentOneShots || [];
         det.standsFired = new Set(savedDet.standsFired || []);
         if (savedDet.locationDamage) det.locationDamage = { ...savedDet.locationDamage };
         if (savedDet.damageLog) det.damageLog = [...savedDet.damageLog];
