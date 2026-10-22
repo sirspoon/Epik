@@ -1379,6 +1379,7 @@
         <button id="btn-hold-fire" onclick="window.gameScene.holdFireDetachment()" style="display:none;" title="Wait and fire in the Advance Fire segment instead">⏳ Hold</button>
         <button id="btn-skip-fire" onclick="window.gameScene.skipFireDetachment()">⏭ Done</button>
       </div>
+      <div id="salvo-picker" style="display:none;flex-wrap:wrap;gap:4px;margin-top:4px"></div>
 
       <!-- III-2. Close Combat Segment Controls -->
       <div id="cc-controls" class="btn-row" style="display:none;">
@@ -43252,6 +43253,60 @@ class NetEpicScene extends Phaser.Scene {
     return ok;
   }
 
+  // ===== CHOOSING WHICH WEAPON FIRES NEXT =====
+  // Weapons fire from the front of det.salvos; picking one moves it into the next-to-fire slot
+  bringSalvoForward(det, idx) {
+    const cur = det.salvosFired || 0;
+    if (!det.salvos || idx === cur || idx < cur || idx >= det.salvos.length) return;
+    [det.salvos[cur], det.salvos[idx]] = [det.salvos[idx], det.salvos[cur]];
+  }
+  unfiredSalvoIdx(det) {
+    const out = [], spent = det.spentOneShots || [];
+    for (let i = det.salvosFired || 0; i < (det.salvos || []).length; i++) {
+      const w = det.salvos[i];
+      if (w.oneShot && spent.includes(w.id || w.name)) continue;
+      if (w.limitsOtherFire && (det.salvosFired || 0) > 0) continue;
+      out.push(i);
+    }
+    return out;
+  }
+  salvoReaches(det, idx, target) {
+    const cur = det.salvosFired || 0;
+    this.bringSalvoForward(det, idx);
+    const ok = this.evaluateFireSolution(det, target, false).validPairs.length > 0;
+    this.bringSalvoForward(det, idx); // swap back
+    return ok;
+  }
+  // If the next weapon can't reach the target, put one that can in front (returns false if none can)
+  pickReachableSalvo(det, target) {
+    if (!this.isSalvoFirer(det) || !target) return true;
+    const idxs = this.unfiredSalvoIdx(det);
+    if (!idxs.length) return false;
+    if (idxs[0] === (det.salvosFired || 0) && this.salvoReaches(det, idxs[0], target)) return true;
+    const hit = idxs.find(i => this.salvoReaches(det, i, target));
+    if (hit === undefined) return false;
+    this.bringSalvoForward(det, hit);
+    return true;
+  }
+  selectSalvo(idx) {
+    const det = this.activatingDetachment; if (!det) return;
+    this.bringSalvoForward(det, idx);
+    this.drawOverlays(); this.updateUI();
+  }
+  renderSalvoPicker() {
+    const el = document.getElementById('salvo-picker'); if (!el) return;
+    const det = this.activatingDetachment;
+    const show = det && (this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') && !det.fired && !this.isFactionAI(det.faction) && this.isSalvoFirer(det);
+    const idxs = show ? this.unfiredSalvoIdx(det) : [];
+    if (idxs.length < 2) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    const cur = det.salvosFired || 0, tgt = this.targetDetachment;
+    el.style.display = 'flex';
+    el.innerHTML = `<span style="font-size:0.66rem;color:#94a3b8;align-self:center">Fire next:</span>` + idxs.map(i => {
+      const w = det.salvos[i], on = i === cur, reach = tgt ? this.salvoReaches(det, i, tgt) : true;
+      return `<button onclick="window.gameScene.selectSalvo(${i})" style="padding:4px 7px;border-radius:7px;font-size:0.68rem;font-weight:700;border:1px solid ${on ? '#facc15' : '#334155'};background:${on ? '#854d0e' : '#1e293b'};color:${reach ? '#f8fafc' : '#64748b'}" title="${w.name}: ${w.rangeCm}cm">${on ? '▶ ' : ''}${this.shortName(w.name, 18)} · ${w.rangeCm}cm${tgt && !reach ? ' ✕' : ''}</button>`;
+    }).join('');
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -46996,6 +47051,10 @@ class NetEpicScene extends Phaser.Scene {
 
     let bestTarget = null;
     let bestScore = -Infinity;
+    if (this.isSalvoFirer(firer) && !enemies.some(e => this.evaluateFireSolution(firer, e, false).validPairs.length > 0)) {
+      const alt = this.unfiredSalvoIdx(firer).find(i => enemies.some(e => this.salvoReaches(firer, i, e)));
+      if (alt !== undefined) this.bringSalvoForward(firer, alt);
+    }
     const aiWpn = (firer.maxSalvos || 1) > 1 ? this.getSalvoWeapon(firer, firer.salvosFired || 0) : firer.weapon;
     const aiTsm = aiWpn ? (aiWpn.tsm || 0) : 0;
 
@@ -48070,13 +48129,14 @@ class NetEpicScene extends Phaser.Scene {
     const firer = this.activatingDetachment;
     if (!firer || !this.targetDetachment) return;
     const target = this.targetDetachment;
+    this.pickReachableSalvo(firer, target);
     this.executeRangedAttack(firer, target, false, {
       split: Boolean(split),
       onComplete: () => {
         if (firer.fired || firer.stands.length === 0) {
           this.finishCombatActivation();
         } else if (!split && (firer.maxSalvos || 1) > 1 && target.stands.length > 0 &&
-                   this.activatingDetachment === firer &&
+                   this.activatingDetachment === firer && this.pickReachableSalvo(firer, target) &&
                    this.evaluateFireSolution(firer, target, false).validPairs.length > 0) {
           // "All weapons": the next weapon system fires at the same target
           this.targetDetachment = target;
@@ -48087,8 +48147,8 @@ class NetEpicScene extends Phaser.Scene {
           if (firer.maxSalvos > 1) {
             const nextSalvoIdx = firer.salvosFired || 0;
             const nextWpn = this.getSalvoWeaponName(firer, nextSalvoIdx);
-            const remSalvos = firer.maxSalvos - nextSalvoIdx;
-            this.log(`🎯 <b>${firer.name}</b> still has <b>${remSalvos} weapon salvo(s)</b> ready! Next up: <b>${nextWpn}</b> — tap another enemy target (or click Done/Skip).`);
+            const remSalvos = this.unfiredSalvoIdx(firer).length;
+            this.log(`🎯 <b>${firer.name}</b> still has <b>${remSalvos} weapon(s)</b> ready (next: <b>${nextWpn}</b>) — pick a weapon and tap another target, or Done.`);
           } else {
             const remStands = firer.stands.filter(s => !(firer.standsFired && firer.standsFired.has(s.id))).length;
             this.log(`🎯 <b>${firer.name}</b> still has <b>${remStands} stand(s)</b> ready to fire — tap another enemy target (or click Done/Skip).`);
@@ -48795,6 +48855,12 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   updateUI() {
+    const r = this._updateUICore();
+    try { this.renderSalvoPicker(); } catch (e) {}
+    return r;
+  }
+
+  _updateUICore() {
     const phaseBadge = document.getElementById('phase-badge');
     const turnText = document.getElementById('turn-text');
     const vpScore = document.getElementById('vp-score');
@@ -49107,6 +49173,7 @@ class NetEpicScene extends Phaser.Scene {
         }
 
         if (this.activatingDetachment && this.targetDetachment) {
+          if (!this.isFactionAI(this.activatingDetachment.faction)) this.pickReachableSalvo(this.activatingDetachment, this.targetDetachment);
           const sol = this.evaluateFireSolution(this.activatingDetachment, this.targetDetachment, false);
           btnFire.disabled = sol.validPairs.length === 0;
 
