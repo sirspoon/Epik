@@ -19304,7 +19304,7 @@ const EpikTitans = {
       const p = this.profile(map.classId, lo, faction);
       const single = this.cost(map.classId, lo, faction);
       const count = map.count || 1;
-      t.titanLoadout = lo; t.salvos = p.salvos; t.caf = (c.caf || t.caf || 0) + p.cafBonus;
+      t.titanLoadout = lo; t.salvos = p.salvos; t.caf = c.caf || t.caf || 0;
       t.points = single * count; t.vpValue = Math.ceil(single / 100) * count;
       if (t.subDetachments) t.subDetachments = t.subDetachments.map(sd => ({ ...sd, vpValue: Math.ceil(single / 100) }));
       if (p.salvos.length) t.weapon = { ...t.weapon, name: p.salvos.map(s => s.name).join(' & ').slice(0, 60), rangeCm: Math.max(...p.salvos.map(s => s.rangeCm)) };
@@ -25515,6 +25515,147 @@ class NetEpicScene extends Phaser.Scene {
     Object.keys(cd).forEach(k => { if (cd[k] === locId) delete cd[k]; });
   }
 
+  // ===== TITAN CLOSE COMBAT (core p. 47 + army book weapon rules) =====
+  // What a titan's working weapons add to close combat
+  titanCCKit(det) {
+    const k = { cafFixed: 0, cafDice: 0, dmgBonus: 0, grab: 0, slash: false, burner: false, ram: false, wrecker: false, whip: false, tentacles: 0, reroll: false, hasCCWeapon: false, names: [] };
+    const c = this.titanClassOf(det); if (!c || !det.titanLoadout) return k;
+    const st = det.titanState || { status: {} };
+    const buyable = Boolean(c.weaponList); // fixed titans' card CAF already counts their weapons
+    const fired = new Set(det.firedMounts || []);
+    Object.entries(det.titanLoadout).forEach(([mount, name]) => {
+      const L = c.locations.find(x => x.mount === mount);
+      if (L && st.status[L.id]) return; // damaged or destroyed mounts don't fight
+      if (st.offline && st.offline[mount]) return;
+      const w = EpikTitans.findWeapon(det.titanClass, name, det.armyBook) || { name };
+      const n = name.toLowerCase();
+      const shoots = !w.closeCombat && (w.rangeCm || w.dice || w.barrageBp);
+      if (shoots && !/doomfist|razor claw|krusher|khorn|ripper fist|buzz saw|big.?choppa|eldar power fist/i.test(n)) return;
+      if (shoots && fired.has(mount)) return; // weapons that shoot OR fight: only if they didn't fire
+      let used = true;
+      if (/chain ?fist|power saw|ripper fist|buzz saw|big.?choppa/.test(n)) { if (buyable || shoots) k.cafDice++; k.dmgBonus = 2; }
+      else if (/close combat head/.test(n)) { if (buyable) k.cafFixed += 3; }
+      else if (/hellblade/.test(n)) { if (buyable) k.cafFixed += 3; k.slash = true; }
+      else if (/tail/.test(n)) { if (buyable || shoots) k.cafFixed += 2; }
+      else if (/power ram/.test(n)) { k.ram = true; if (buyable) k.cafFixed += 2; }
+      else if (/doomfist/.test(n)) { k.grab = Math.max(k.grab, 1); k.cafDice++; }
+      else if (/power fist|battle claw/.test(n)) { k.grab = Math.max(k.grab, 1); if (det.armyBook !== 'ELDAR') k.reroll = true; }
+      else if (/krusher/.test(n)) k.grab = Math.max(k.grab, 1);
+      else if (/snapper|razor claw/.test(n)) k.grab = Math.max(k.grab, 2);
+      else if (/laser burner/.test(n)) k.burner = true;
+      else if (/wrecker/.test(n)) k.wrecker = true;
+      else if (/energy whip/.test(n)) k.whip = true;
+      else if (/ripper tentacle/.test(n)) k.tentacles++;
+      else used = false;
+      if (used) { k.hasCCWeapon = true; k.names.push(name); }
+    });
+    return k;
+  }
+
+  // The location a close combat winner picks: the one most likely to do serious damage
+  pickTitanCCLocation(det, bonus = 0) {
+    const c = this.titanClassOf(det), st = det.titanState;
+    const sev = e => ({ titan_falls: 10, reactor_explodes: 10, destroyed: 10, crew_killed: /abandon/i.test(e.text || '') ? 10 : 3, reactor_crippled: 6, legs_immobile: 5, reactor_damaged: 4, head_destroyed: 4, head_damaged: 3, shields_down: 2.5, weapon_blown_off: 3, hull_breach: 3, weapon_destroyed: 2, legs_damaged: 2, fire: 2, none: 0.3 }[e.effect] || 1) + (e.wounds ? 2 : 0);
+    let best = null, bestScore = -1;
+    c.locations.forEach(L => {
+      if (st.status[L.id] === 'DESTROYED' || !L.table || !L.table.length) return;
+      const plus = (st.hits[L.id] || 0) + bonus + ((st.plus && st.plus[L.id]) || 0);
+      let s = 0; for (let d = 1; d <= 6; d++) s += sev(this.tableEntry(L.table, d + plus));
+      if (s > bestScore) { bestScore = s; best = L; }
+    });
+    return best;
+  }
+
+  // Strikes made before the close combat dice (Laser Burner, Wrecker, Chaos Energy Whip). Once per titan per segment.
+  // Returns the CAF a whip adds (shields stripped beyond what the target had).
+  titanPreCombat(tDet, tStand, fDet, fStand) {
+    if (!tDet.titanState) return 0;
+    this.titanPreStrikes = this.titanPreStrikes || new Map();
+    if (this.titanPreStrikes.has(tDet.id)) return this.titanPreStrikes.get(tDet.id);
+    const k = this.titanCCKit(tDet);
+    let extra = 0;
+    const from = { x: tStand.container.x, y: tStand.container.y };
+    const bigFoe = this.hasHitLocations(fDet);
+    if (k.burner && bigFoe) { // errata: D6 hits inside the shields as the enemy closes, no save, no modifiers
+      const n = Phaser.Math.Between(1, 6);
+      this.log(`🔦 <b>${tDet.name}</b>'s Laser Burner strikes <b>${fDet.name}</b> ${n} time${n > 1 ? 's' : ''} as it closes!`);
+      for (let i = 0; i < n && fDet.stands.includes(fStand); i++) this.applyTitanHit(fDet, fStand, { noSave: true, noMods: true, ignoreHolo: true, from });
+    }
+    if (k.wrecker && fDet.stands.includes(fStand)) { // one unit within 5 cm: smaller ones destroyed, titans save at -6
+      if (bigFoe) { this.log(`🔨 <b>${tDet.name}</b> swings its Wrecker at <b>${fDet.name}</b> (save at -6).`); this.applyTitanHit(fDet, fStand, { tsm: -6, ignoreHolo: true, from }); }
+      else { this.log(`🔨 <b>${tDet.name}</b>'s Wrecker smashes <b>${fDet.name}</b> ${fStand.label || ''}!`); this.removeCasualty(fDet, fStand, -6, false); }
+    }
+    if (k.whip && fDet.stands.includes(fStand)) { // 4+ to hit each model in contact, -1 TSM; shields lose D6
+      const r = Phaser.Math.Between(1, 6);
+      if (r >= 4) {
+        if (fDet.shields > 0) {
+          const lose = Phaser.Math.Between(1, 6), had = fDet.shields;
+          fDet.shields = Math.max(0, had - lose); extra += Math.max(0, lose - had);
+          this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(fDet);
+          this.log(`🌀 <b>${tDet.name}</b>'s Energy Whip strips ${Math.min(lose, had)} shield(s) from <b>${fDet.name}</b>${lose > had ? ` (+${lose - had} CAF)` : ''}.`);
+        } else if (bigFoe) { this.log(`🌀 <b>${tDet.name}</b>'s Energy Whip lashes <b>${fDet.name}</b>.`); this.applyTitanHit(fDet, fStand, { tsm: -1, from }); }
+        else {
+          const sv = Phaser.Math.Between(1, 6), need = (fDet.save || 7) + 1;
+          if (!(need <= 6 && sv >= need)) { this.log(`🌀 <b>${tDet.name}</b>'s Energy Whip kills <b>${fDet.name}</b> ${fStand.label || ''}.`); this.removeCasualty(fDet, fStand, -1, false); }
+        }
+      } else this.log(`🌀 <b>${tDet.name}</b>'s Energy Whip misses (${r}).`);
+    }
+    this.titanPreStrikes.set(tDet.id, extra);
+    return extra;
+  }
+
+  // A titan (or praetorian) lost a close combat: the winner picks a location and rolls damage, no scatter or save
+  titanLosesCloseCombat(wDet, wStand, lDet, lStand, margin) {
+    if (!this.hasHitLocations(lDet)) return this.applySuperHeavyDamage(lDet, lStand, true);
+    const k = wDet.titanState ? this.titanCCKit(wDet) : { dmgBonus: 0, grab: 0 };
+    const st = lDet.titanState, c = this.titanClassOf(lDet);
+    const hit = (L, opts = {}) => {
+      if (!lDet.stands.includes(lStand) || !L) return false;
+      if (c.bioTitan) { // a wound, then the location "just takes damage"
+        st.wounds -= 1;
+        if (st.wounds <= 0) { this.log(`💀 <b>${lDet.name}</b> has taken too many wounds and collapses!`); this.destroyTitan(lDet, lStand, 'fall'); return true; }
+      }
+      return this.rollTitanDamage(lDet, lStand, L, { isCC: true, ...opts }).destroyed;
+    };
+    const loc = this.pickTitanCCLocation(lDet, k.dmgBonus || 0);
+    let dead = false;
+    if (k.grab) {
+      const a = Phaser.Math.Between(1, 6), d = Phaser.Math.Between(1, 6);
+      this.log(`🦾 <b>${wDet.name}</b> grabs the <b>${loc.name}</b>: ${a}+${k.grab} vs ${d} → ${a + k.grab > d ? 'ripped apart (maximum damage)' : (a + k.grab === d ? 'normal damage' : 'it breaks free')}`);
+      if (a + k.grab > d) dead = hit(loc, { maxDamage: true });
+      else if (a + k.grab === d) dead = hit(loc, { damageBonus: k.dmgBonus });
+    } else if (k.tentacles) { // trapped weapon: damage on the chosen location and a weapon location, both +2
+      const wl = this.findTitanLoc(lDet, 'weapon');
+      this.log(`🐙 <b>${wDet.name}</b>'s Ripper Tentacles tear at the <b>${loc.name}</b>${wl && wl !== loc ? ` and the <b>${wl.name}</b>` : ''}.`);
+      dead = hit(loc, { damageBonus: 2 });
+      if (!dead && wl && wl !== loc) dead = hit(wl, { damageBonus: 2 });
+    } else {
+      this.log(`⚔️ <b>${wDet.name}</b> strikes the <b>${loc.name}</b> of <b>${lDet.name}</b>${k.dmgBonus ? ` (+${k.dmgBonus} chain fist)` : ''}.`);
+      dead = hit(loc, { damageBonus: k.dmgBonus || 0 });
+      if (!dead && k.slash && Phaser.Math.Between(1, 6) >= 3) { // slash: the aiming dice may carry it onto another square
+        const others = c.locations.filter(L => L !== loc && st.status[L.id] !== 'DESTROYED' && L.table && L.table.length);
+        const L2 = others.length ? Phaser.Utils.Array.GetRandom(others) : null;
+        if (L2) { this.log(`🗡️ The Hellblade slashes on into the <b>${L2.name}</b>!`); dead = hit(L2); }
+      }
+    }
+    // Power Ram: winning by more than 6 knocks an enemy titan back D6 cm; on a 4+ it falls (worst leg result)
+    if (!dead && k.ram && margin >= 7 && lDet.isTitan && !lDet.isPraetorian && lDet.stands.includes(lStand)) {
+      const cm = Phaser.Math.Between(1, 6), a = Math.atan2(lStand.container.y - wStand.container.y, lStand.container.x - wStand.container.x);
+      const dx = Math.cos(a) * cm * PX_PER_CM, dy = Math.sin(a) * cm * PX_PER_CM;
+      const sx = lStand.container.x, sy = lStand.container.y;
+      lDet.stands.forEach(s => { s.container.x = Phaser.Math.Clamp(s.container.x + dx, 10, BOARD_W - 10); s.container.y = Phaser.Math.Clamp(s.container.y + dy, 10, BOARD_H - 10); });
+      const path = new Phaser.Geom.Line(sx, sy, lStand.container.x, lStand.container.y);
+      this.detachments.slice().forEach(o => { if (o === lDet || o === wDet || !o.stands.length || o.embarkedOn || this.hasHitLocations(o)) return; o.stands.slice().forEach(s => { if (Phaser.Geom.Intersects.LineToCircle(path, new Phaser.Geom.Circle(s.container.x, s.container.y, 12))) this.removeCasualty(o, s, -5, false); }); });
+      const r = Phaser.Math.Between(1, 6);
+      this.log(`🐏 <b>${wDet.name}</b>'s Power Ram knocks <b>${lDet.name}</b> back ${cm} cm${r >= 4 ? ` — and it topples (${r})!` : ` (${r}: it stays up)`}`);
+      if (r >= 4) {
+        const legs = this.findTitanLoc(lDet, 'legs');
+        if (legs) dead = this.applyTitanEffect(lDet, lStand, legs, this.tableEntry(legs.table, 6), {});
+      }
+    }
+    return dead || lDet.stands.length === 0;
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -27580,6 +27721,7 @@ class NetEpicScene extends Phaser.Scene {
     if ((firerDet.maxSalvos || 1) > 1) {
       const firedWpn = firerDet.salvos && firerDet.salvos[firerDet.salvosFired || 0];
       if (firedWpn && firedWpn.oneShot) (firerDet.spentOneShots = firerDet.spentOneShots || []).push(firedWpn.id || firedWpn.name);
+      if (firedWpn && firedWpn.mountId) (firerDet.firedMounts = firerDet.firedMounts || []).push(firedWpn.mountId);
       firerDet.salvosFired = (firerDet.salvosFired || 0) + (salvosUsed || 1);
       if (firedWpn && firedWpn.limitsOtherFire) { firerDet.salvosFired = firerDet.maxSalvos; this.log(`⚡ <b>${firerDet.name}</b> has drained its reactor into the ${firedWpn.name}: no other weapons this turn.`); }
       this.skipSpentSalvos(firerDet);
@@ -29894,6 +30036,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // Core Rules p. 17: a unit on Fall Back orders that is caught in close combat tests morale or routs
     this.titanApDone = new Set();
+    this.titanPreStrikes = new Map();
     this.detachments.forEach(d => {
       if (d.order !== 'FALL_BACK' || d.stands.length === 0 || d.ccFallBackTestTurn === this.turn) return;
       if (!d.stands.some(s => this.isStandEngaged(s))) return;
@@ -29943,7 +30086,8 @@ class NetEpicScene extends Phaser.Scene {
       if (!this.titanApDone) this.titanApDone = new Set();
       if (!this.titanApDone.has(attacker)) {
         this.titanApDone.add(attacker);
-        const need = this.hasAbility(aDet, 'Elite') ? 4 : 3;
+        const tent = apTitan.titanState ? this.titanCCKit(apTitan).tentacles : 0;
+        const need = Math.max(1, (this.hasAbility(aDet, 'Elite') ? 4 : 3) - tent);
         const apRoll = Phaser.Math.Between(1, 6);
         let killed = false, saveTxt = '';
         if (apRoll >= need) {
@@ -29963,6 +30107,16 @@ class NetEpicScene extends Phaser.Scene {
           return;
         }
       }
+    }
+
+    // Strikes before the dice: Laser Burner, Wrecker, Chaos Energy Whip
+    const impPreCaf = impDet.titanState ? this.titanPreCombat(impDet, impStand, orkDet, orkStand) : 0;
+    const orkPreCaf = orkDet.titanState ? this.titanPreCombat(orkDet, orkStand, impDet, impStand) : 0;
+    if (!impDet.stands.includes(impStand) || !orkDet.stands.includes(orkStand)) {
+      [impDet, orkDet].forEach(d => this.checkBreakPoint(d));
+      this.focusCloseCombatBout(bout, 350); this.drawOverlays(); this.updateUI();
+      if (!this.cleanCloseCombatBouts()) { this.log(`✅ All Close Combat bouts resolved!`); this.startCombatSegment('COMBAT_ADVANCE'); }
+      return;
     }
 
     // Focus camera directly onto the combatants beforehand!
@@ -29985,8 +30139,9 @@ class NetEpicScene extends Phaser.Scene {
     const impWaaaghBonus = (this.waaaghActive && impDet.armyBook === 'ORKS') ? 1 : 0;
     const orkWaaaghBonus = (this.waaaghActive && orkDet.armyBook === 'ORKS') ? 1 : 0;
 
-    const impDiceCount = 2 + impExtraDice + impBansheeBonus + impWaaaghBonus;
-    const orkDiceCount = 2 + orkExtraDice + orkBansheeBonus + orkWaaaghBonus;
+    const immob = d => Boolean(d.titanState && (d.titanState.reactor || d.titanState.immobile));
+    const impDiceCount = (immob(impDet) ? 0 : 2) + impExtraDice + impBansheeBonus + impWaaaghBonus;
+    const orkDiceCount = (immob(orkDet) ? 0 : 2) + orkExtraDice + orkBansheeBonus + orkWaaaghBonus;
 
     this.defenderFoughtCounts.set(impStand, impFought + 1);
     this.defenderFoughtCounts.set(orkStand, orkFought + 1);
@@ -30047,6 +30202,18 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
+    // Titan close combat weapons: fixed CAF, extra dice, Power Fist re-rolls, Ripper Tentacles vs an unarmed titan
+    const ccBonus = (d, rolls, foe, pre) => {
+      if (!d.titanState) return { caf: 0, tag: '' };
+      const k = this.titanCCKit(d), fk = foe.titanState ? this.titanCCKit(foe) : null;
+      if (k.reroll) rolls.forEach((r, i) => { if (i < 2 && r <= 3) rolls[i] = Phaser.Math.Between(1, 6); });
+      const dice = []; for (let i = 0; i < k.cafDice; i++) dice.push(Phaser.Math.Between(1, 6));
+      let caf = k.cafFixed + dice.reduce((a, b) => a + b, 0) + pre;
+      let pen = 0; if (fk && fk.tentacles && !k.hasCCWeapon) { pen = Phaser.Math.Between(1, 6); caf -= pen; }
+      const parts = [k.cafFixed ? `+${k.cafFixed}` : '', dice.length ? `+[${dice.join(',')}]` : '', pre ? `+${pre} whip` : '', pen ? `-${pen} tentacles` : ''].filter(Boolean).join(' ');
+      return { caf, tag: parts ? ` <span class="log-hit">[🦾 ${parts}${k.names.length ? ' ' + k.names.join(', ') : ''}]</span>` : '' };
+    };
+    const impCC = ccBonus(impDet, impRolls, orkDet, impPreCaf), orkCC = ccBonus(orkDet, orkRolls, impDet, orkPreCaf);
     const impSum = impRolls.reduce((a, b) => a + b, 0);
     const orkSum = orkRolls.reduce((a, b) => a + b, 0);
     const impGarrisonBonus = this.isStandGarrisoned(impStand) ? 2 : 0;
@@ -30071,14 +30238,14 @@ class NetEpicScene extends Phaser.Scene {
     const halfCaf = d => d.damageState === 'HEAVY' || this.titanCond(d, 'cafHalved');
     const impBaseCaf = halfCaf(impDet) ? Math.ceil(impDet.caf / 2) : impDet.caf;
     const orkBaseCaf = halfCaf(orkDet) ? Math.ceil(orkDet.caf / 2) : orkDet.caf;
-    const impModCaf = impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
-    const orkModCaf = orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
+    const impModCaf = impCC.caf + impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
+    const orkModCaf = orkCC.caf + orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
     const impTotal = impSum + impModCaf;
     const orkTotal = orkSum + orkModCaf;
 
     const gangTagImp =
       (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : (impWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${impDiceCount}D6!]</span>` : '') +
-      (impImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
+      (impImmuneGang ? ` <span class="log-save">[${impDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
       (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (impTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
@@ -30086,11 +30253,11 @@ class NetEpicScene extends Phaser.Scene {
       (impLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (impDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (orkDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      impRerollNote;
+      impRerollNote + impCC.tag;
 
     const gangTagOrk =
       (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : (orkWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${orkDiceCount}D6!]</span>` : '') +
-      (orkImmuneGang ? ` <span class="log-save">[🦅 Calgar Unstoppable]</span>` : '') +
+      (orkImmuneGang ? ` <span class="log-save">[${orkDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
       (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +2 CAF]</span>` : '') +
       (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
       (orkTerrorPen < 0 ? ` <span class="log-kill">[😱 -2 Fear]</span>` : '') +
@@ -30098,7 +30265,7 @@ class NetEpicScene extends Phaser.Scene {
       (orkLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (orkDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (impDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      orkRerollNote;
+      orkRerollNote + orkCC.tag;
 
     const midX = (impStand.container.x + orkStand.container.x) / 2;
     const midY = (impStand.container.y + orkStand.container.y) / 2;
@@ -30152,11 +30319,11 @@ class NetEpicScene extends Phaser.Scene {
       if (impWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${impTotal} vs ${orkTotal}`, this.getSideMeta('IMPERIUM').colorHex, '12px');
         if (isSuperHeavyDamage && victimDet) {
-          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, false);
+          const destroyed = this.titanLosesCloseCombat(impDet, impStand, victimDet, victimStand, impTotal - orkTotal);
           outcomeHtml = destroyed
             ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
-            : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
-          if (destroyed) this.removeCasualty(victimDet, victimStand);
+            : `<span class="log-hit">⚠️ ${victimDet.name} is damaged in the melee!</span>`;
+          if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
           this.removeCasualty(victimDet, victimStand);
@@ -30165,11 +30332,11 @@ class NetEpicScene extends Phaser.Scene {
       } else if (orkWin) {
         this.spawnFloatingText(midX, midY - 14, `⚔️ ${orkTotal} vs ${impTotal}`, this.getSideMeta('ORKS').colorHex, '12px');
         if (isSuperHeavyDamage && victimDet) {
-          const destroyed = this.applySuperHeavyDamage(victimDet, victimStand, false);
+          const destroyed = this.titanLosesCloseCombat(orkDet, orkStand, victimDet, victimStand, orkTotal - impTotal);
           outcomeHtml = destroyed
             ? `<span class="log-kill">💥 ${victimDet.name} Destroyed in Melee!</span>`
-            : `<span class="log-hit">⚠️ ${victimDet.name} suffers Super-Heavy Melee Damage (${victimDet.damageState})!</span>`;
-          if (destroyed) this.removeCasualty(victimDet, victimStand);
+            : `<span class="log-hit">⚠️ ${victimDet.name} is damaged in the melee!</span>`;
+          if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
           this.removeCasualty(victimDet, victimStand);
@@ -30244,7 +30411,7 @@ class NetEpicScene extends Phaser.Scene {
     if (isSuperHeavyDamage && victimDet) {
       combatData.outcomeText = victimDet.stands.length === 0
         ? `${victimDet.name} is destroyed!`
-        : `${victimDet.name} is damaged (${victimDet.damageState})`;
+        : `${victimDet.name} is damaged${victimDet.titanState ? '' : ` (${victimDet.damageState})`}`;
     }
     this._ccResolving = true;
     this.showCombatModal(combatData, () => goNext());
@@ -30545,6 +30712,7 @@ class NetEpicScene extends Phaser.Scene {
       d.fired = false;
       d.deepStrikeActive = false;
       d.salvosFired = 0;
+      d.firedMounts = [];
       this.skipSpentSalvos(d);
       d.stealthBroken = false;
       d.standsFired = new Set();
