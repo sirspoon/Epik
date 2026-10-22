@@ -22135,12 +22135,18 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const gfx = this.add.graphics().setDepth(450);
-    const shots = pairs.map(p => ({
-      x1: p.shooter.container.x,
-      y1: p.shooter.container.y,
-      x2: p.target ? p.target.container.x : aimPoint.x,
-      y2: p.target ? p.target.container.y : aimPoint.y
-    }));
+    // Barrage shells all come down inside the template where it actually landed
+    const inTemplate = () => { const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * BARRAGE_RADIUS_PX * 0.85; return { x: aimPoint.x + Math.cos(a) * r, y: aimPoint.y + Math.sin(a) * r }; };
+    const shots = pairs.map(p => {
+      const dest = (isBarrage && aimPoint) ? inTemplate() : null;
+      return {
+        x1: p.shooter.container.x,
+        y1: p.shooter.container.y,
+        x2: dest ? dest.x : (p.target ? p.target.container.x : aimPoint.x),
+        y2: dest ? dest.y : (p.target ? p.target.container.y : aimPoint.y)
+      };
+    });
+    const flicker = () => 0.75 + Math.random() * 0.5;
 
     if (shots.length === 0 && aimPoint && firerDet.stands[0]) {
       shots.push({
@@ -22214,13 +22220,7 @@ class NetEpicScene extends Phaser.Scene {
             gfx.fillStyle(0xffffff, 1);
             gfx.fillCircle(curX, curY, 2);
           } else if (isFlame) {
-            const curX = Phaser.Math.Linear(s.x1, s.x2, p);
-            const curY = Phaser.Math.Linear(s.y1, s.y2, p);
-            const r = 4 + p * 12;
-            gfx.fillStyle(0xf97316, 0.45 * (1 - p * 0.4));
-            gfx.fillCircle(curX, curY, r);
-            gfx.fillStyle(0xfef08a, 0.85);
-            gfx.fillCircle(curX, curY, r * 0.5);
+            this.drawFlameTongue(gfx, s.x1, s.y1, s.x2, s.y2, Math.min(1, p * 1.6), flicker());
           } else {
             const headP = Math.min(1, p * 1.25);
             const tailP = Math.max(0, p * 1.25 - 0.25);
@@ -22238,9 +22238,13 @@ class NetEpicScene extends Phaser.Scene {
       },
       onComplete: () => {
         gfx.destroy();
-        shots.forEach(s => {
-          this.spawnExplosionFX(s.x2, s.y2, isBarrage ? BARRAGE_RADIUS_PX : (isMissile ? 22 : 12), isBarrage);
-        });
+        if (isBarrage && aimPoint) {
+          this.spawnBarrageImpactFX(sol, shots);
+        } else if (isFlame) {
+          this.spawnFlameBurstFX(shots);
+        } else {
+          shots.forEach(s => this.spawnExplosionFX(s.x2, s.y2, isMissile ? 22 : 12, false));
+        }
         if (onImpact) onImpact();
       }
     });
@@ -22341,6 +22345,7 @@ class NetEpicScene extends Phaser.Scene {
     const bb = document.getElementById('bottom-bar');
     if (bb) bb.style.visibility = '';
     this._combatCardData = null;
+    this.clearTemplateFX();
     if (this._activeCombatContinue) {
       const cb = this._activeCombatContinue;
       this._activeCombatContinue = null;
@@ -23203,6 +23208,134 @@ class NetEpicScene extends Phaser.Scene {
       ease: 'Quad.easeOut',
       onComplete: () => gfx.destroy()
     });
+  }
+
+  // Corner brackets hugging a stand's base (selection / target marker) - lighter than a full ring
+  drawStandBrackets(gfx, stand, color, pad = 3, lw = 1.8) {
+    const c = stand.container, w = (stand.baseW || 20) / 2 + pad, h = (stand.baseH || 20) / 2 + pad;
+    const L = Math.min(6, Math.min(w, h) * 0.6), cos = Math.cos(c.rotation), sin = Math.sin(c.rotation);
+    const P = (x, y) => [c.x + x * cos - y * sin, c.y + x * sin + y * cos];
+    gfx.lineStyle(lw + 1.6, 0x0b1220, 0.55); // dark under-stroke so the marker reads on any ground
+    for (let pass = 0; pass < 2; pass++) {
+      if (pass) gfx.lineStyle(lw, color, 1);
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sy]) => {
+        const [ax, ay] = P(sx * w, sy * (h - L)), [bx, by] = P(sx * w, sy * h), [cx2, cy2] = P(sx * (w - L), sy * h);
+        gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.lineTo(cx2, cy2); gfx.strokePath();
+      });
+    }
+  }
+
+  // A 6 cm barrage template as drawn on the table: tinted disc, double rim, range ticks and a crosshair
+  drawBarrageTemplate(gfx, x, y, r, opts = {}) {
+    const col = opts.color !== undefined ? opts.color : 0xf97316;
+    const a = opts.alpha !== undefined ? opts.alpha : 1;
+    gfx.fillStyle(col, 0.16 * a); gfx.fillCircle(x, y, r);
+    gfx.fillStyle(col, 0.10 * a); gfx.fillCircle(x, y, r * 0.55);
+    gfx.lineStyle(2.4, col, 0.95 * a); gfx.strokeCircle(x, y, r);
+    gfx.lineStyle(1, 0xfde68a, 0.7 * a); gfx.strokeCircle(x, y, r - 3.5);
+    for (let i = 0; i < 24; i++) { // tick marks round the rim, every 4th one longer
+      const ang = i / 24 * Math.PI * 2, len = i % 6 === 0 ? 6 : 2.5;
+      gfx.lineStyle(i % 6 === 0 ? 1.6 : 1, 0xfde68a, 0.85 * a);
+      gfx.lineBetween(x + Math.cos(ang) * (r - len), y + Math.sin(ang) * (r - len), x + Math.cos(ang) * r, y + Math.sin(ang) * r);
+    }
+    gfx.lineStyle(1.4, 0xfef9c3, 0.95 * a); // crosshair with an open centre
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => gfx.lineBetween(x + dx * 3, y + dy * 3, x + dx * r * 0.42, y + dy * r * 0.42));
+    gfx.fillStyle(0xfef9c3, a); gfx.fillCircle(x, y, 1.4);
+  }
+
+  // Remove any template still showing from the last shot
+  clearTemplateFX() {
+    (this._templateFx || []).forEach(o => {
+      if (!o || !o.scene) return;
+      this.tweens.add({ targets: o, alpha: 0, duration: 350, onComplete: () => o.destroy() });
+    });
+    this._templateFx = [];
+  }
+
+  // Barrage landing: the template stays on the table (with scatter shown) while the combat card is read
+  spawnBarrageImpactFX(sol, shots) {
+    this.clearTemplateFX();
+    const p = sol.aimPoint, R = BARRAGE_RADIUS_PX;
+    const tmpl = this.add.graphics().setDepth(55); // under the units, over the ground
+    const keep = [tmpl];
+    if (sol.intendedPoint && Phaser.Math.Distance.Between(sol.intendedPoint.x, sol.intendedPoint.y, p.x, p.y) > 2) {
+      // where it was aimed (ghost) and the drift to where it came down
+      const q = sol.intendedPoint;
+      this.drawBarrageTemplate(tmpl, q.x, q.y, R, { color: 0xe2e8f0, alpha: 0.35 });
+      const ang = Math.atan2(p.y - q.y, p.x - q.x), d = Phaser.Math.Distance.Between(q.x, q.y, p.x, p.y);
+      tmpl.lineStyle(2, 0xfde047, 0.9);
+      for (let t = 0; t < d - 8; t += 7) tmpl.lineBetween(q.x + Math.cos(ang) * t, q.y + Math.sin(ang) * t, q.x + Math.cos(ang) * Math.min(t + 4, d - 8), q.y + Math.sin(ang) * Math.min(t + 4, d - 8));
+      tmpl.fillStyle(0xfde047, 0.95);
+      tmpl.fillTriangle(p.x - Math.cos(ang) * 2, p.y - Math.sin(ang) * 2, p.x - Math.cos(ang) * 10 + Math.cos(ang + 1.57) * 4, p.y - Math.sin(ang) * 10 + Math.sin(ang + 1.57) * 4, p.x - Math.cos(ang) * 10 - Math.cos(ang + 1.57) * 4, p.y - Math.sin(ang) * 10 - Math.sin(ang + 1.57) * 4);
+      const cm = Math.round(d / PX_PER_CM);
+      const lbl = this.add.text((p.x + q.x) / 2, (p.y + q.y) / 2 - 8, `scatter ${cm} cm`, { fontSize: '8px', fontStyle: 'bold', color: '#fde047' }).setOrigin(0.5).setDepth(470).setStroke('#0b1220', 3);
+      keep.push(lbl);
+    }
+    this.drawBarrageTemplate(tmpl, p.x, p.y, R);
+    const bpLbl = this.add.text(p.x, p.y + R + 7, `${sol.totalBp || ''} BP${sol.barrageStats ? ` · hit ${sol.barrageStats.toHit}+` : ''}`, { fontSize: '8px', fontStyle: 'bold', color: '#fed7aa' }).setOrigin(0.5).setDepth(470).setStroke('#0b1220', 3);
+    keep.push(bpLbl);
+    // caught stands pulse red
+    const rings = this.add.graphics().setDepth(465); keep.push(rings);
+    (sol.templateTargets || []).forEach(st => this.drawStandBrackets(rings, st, 0xef4444, 2));
+    this.tweens.add({ targets: rings, alpha: { from: 1, to: 0.35 }, duration: 420, yoyo: true, repeat: 4 });
+    // scorch mark left on the ground
+    const scorch = this.add.graphics().setDepth(4);
+    for (let i = 0; i < 7; i++) { const a = Math.random() * 6.283, r = Math.random() * R * 0.6; scorch.fillStyle(0x1c1208, 0.16); scorch.fillCircle(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, R * (0.35 + Math.random() * 0.3)); }
+    this.tweens.add({ targets: scorch, alpha: 0, delay: 9000, duration: 4000, onComplete: () => scorch.destroy() });
+    // shells bursting across the template, then the main shockwave and drifting smoke
+    const bursts = Math.max(3, Math.min(9, sol.totalBp || shots.length || 3));
+    for (let i = 0; i < bursts; i++) {
+      const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * R * 0.85;
+      this.time.delayedCall(i * 70, () => this.spawnExplosionFX(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, 9 + Math.random() * 7, false));
+    }
+    this.time.delayedCall(bursts * 70, () => this.spawnExplosionFX(p.x, p.y, R, true));
+    const smoke = this.add.graphics().setDepth(440);
+    const puffs = Array.from({ length: 6 }, () => ({ a: Math.random() * 6.283, r: Math.random() * R * 0.7, s: 6 + Math.random() * 6 }));
+    const st = { t: 0 };
+    this.tweens.add({ targets: st, t: 1, delay: 200, duration: 1600, onUpdate: () => {
+      smoke.clear();
+      puffs.forEach(pf => { smoke.fillStyle(0x6b6b6b, 0.32 * (1 - st.t)); smoke.fillCircle(p.x + Math.cos(pf.a) * pf.r, p.y + Math.sin(pf.a) * pf.r - st.t * 10, pf.s * (1 + st.t)); });
+    }, onComplete: () => smoke.destroy() });
+    this._templateFx = keep;
+    this.time.delayedCall(7000, () => { if (this._templateFx === keep) this.clearTemplateFX(); });
+  }
+
+  // A flickering flame tongue from (x1,y1) towards (x2,y2); p = how far it has reached (0-1)
+  drawFlameTongue(gfx, x1, y1, x2, y2, p, flick = 1) {
+    const ang = Math.atan2(y2 - y1, x2 - x1), len = Phaser.Math.Distance.Between(x1, y1, x2, y2) * p;
+    const layers = [[0xb91c1c, 0.45, 1.0], [0xf97316, 0.7, 0.72], [0xfde047, 0.85, 0.42]];
+    layers.forEach(([col, alpha, k]) => {
+      const L = len * (0.55 + 0.45 * k), W = (4 + len * 0.22) * k * flick;
+      const pts = [];
+      for (let i = 0; i <= 10; i++) { // teardrop: narrow at the nozzle, round at the far end
+        const t = i / 10, half = W * Math.sin(Math.min(1, t * 1.15) * Math.PI * 0.62) * (t > 0.85 ? Math.cos((t - 0.85) / 0.15 * Math.PI / 2) : 1);
+        pts.push({ t, half });
+      }
+      gfx.fillStyle(col, alpha);
+      gfx.beginPath();
+      pts.forEach(({ t, half }, i) => { const d = L * t; const px = x1 + Math.cos(ang) * d - Math.sin(ang) * half, py = y1 + Math.sin(ang) * d + Math.cos(ang) * half; i ? gfx.lineTo(px, py) : gfx.moveTo(px, py); });
+      for (let i = pts.length - 1; i >= 0; i--) { const { t, half } = pts[i]; const d = L * t; gfx.lineTo(x1 + Math.cos(ang) * d + Math.sin(ang) * half, y1 + Math.sin(ang) * d - Math.cos(ang) * half); }
+      gfx.closePath(); gfx.fillPath();
+    });
+    // embers
+    for (let i = 0; i < 4; i++) { const d = len * (0.5 + Math.random() * 0.55), off = (Math.random() - 0.5) * (6 + len * 0.3); gfx.fillStyle(0xfef08a, 0.9); gfx.fillCircle(x1 + Math.cos(ang) * d - Math.sin(ang) * off, y1 + Math.sin(ang) * d + Math.cos(ang) * off, 1.2); }
+  }
+
+  // After the flames reach the target: a lingering burst of fire and a scorch mark
+  spawnFlameBurstFX(shots) {
+    const fire = this.add.graphics().setDepth(440);
+    const scorch = this.add.graphics().setDepth(4);
+    shots.forEach(s => { scorch.fillStyle(0x1c1208, 0.22); scorch.fillCircle(s.x2, s.y2, 9); });
+    this.tweens.add({ targets: scorch, alpha: 0, delay: 8000, duration: 3000, onComplete: () => scorch.destroy() });
+    const st = { t: 0 };
+    this.tweens.add({ targets: st, t: 1, duration: 900, onUpdate: () => {
+      fire.clear();
+      shots.forEach(s => {
+        this.drawFlameTongue(fire, s.x1, s.y1, s.x2, s.y2, 1, (0.8 + Math.random() * 0.4) * (1 - st.t * 0.7));
+        for (let i = 0; i < 3; i++) { fire.fillStyle([0xf97316, 0xfde047, 0xb91c1c][i], 0.5 * (1 - st.t)); fire.fillCircle(s.x2 + (Math.random() - 0.5) * 8, s.y2 + (Math.random() - 0.5) * 8 - st.t * 6, 3 + Math.random() * 4); }
+      });
+      fire.setAlpha(1 - st.t * 0.6);
+    }, onComplete: () => fire.destroy() });
   }
 
   spawnExplosionFX(x, y, maxRadius = 20, isBarrage = false) {
@@ -26187,6 +26320,7 @@ class NetEpicScene extends Phaser.Scene {
     }
     if (sol.isBarrage && sol.isIndirect && sol.aimPoint) {
       const sc = this.rollIndirectScatter(sol.aimPoint);
+      sol.intendedPoint = { ...sol.aimPoint };
       sol.aimPoint = sc.point;
       sol.scatterNote = sc.note;
       sol.templateTargets = this.getTemplateTargets(sc.point, firerDet.faction, isSnapFire);
@@ -29608,12 +29742,7 @@ class NetEpicScene extends Phaser.Scene {
       // Draw LoS rays (and Barrage Template if artillery) from the active/previewed Snap Fire candidate to the Moving Target
       if (activeCand) {
         const sol = this.evaluateFireSolution(activeCand, target, true);
-        if (sol.isBarrage && sol.aimPoint) {
-          this.losGfx.fillStyle(0xf97316, 0.22);
-          this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
-          this.losGfx.lineStyle(3, 0xf97316, 0.95);
-          this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
-        }
+        if (sol.isBarrage && sol.aimPoint) this.drawBarrageTemplate(this.losGfx, sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
         activeCand.stands.forEach(shooter => {
           if (target.stands.length === 0) return;
           let chosen = target.stands[0];
@@ -29661,24 +29790,16 @@ class NetEpicScene extends Phaser.Scene {
         }
       } else if (sol.isBarrage && sol.aimPoint) {
         // Draw 6cm Diameter (30px radius) Circular NetEpic Barrage Template!
-        this.losGfx.fillStyle(0xf97316, 0.22);
-        this.losGfx.fillCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
-        this.losGfx.lineStyle(3, 0xf97316, 0.95);
-        this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
-        this.losGfx.lineStyle(1.5, 0xfde047, 0.9);
-        this.losGfx.lineBetween(sol.aimPoint.x - 10, sol.aimPoint.y, sol.aimPoint.x + 10, sol.aimPoint.y);
-        this.losGfx.lineBetween(sol.aimPoint.x, sol.aimPoint.y - 10, sol.aimPoint.x, sol.aimPoint.y + 10);
+        this.drawBarrageTemplate(this.losGfx, sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX);
+        if (sol.isIndirect) { // indirect fire may scatter up to 12 cm: show the possible spread faintly
+          this.losGfx.lineStyle(1, 0xfde68a, 0.35);
+          this.losGfx.strokeCircle(sol.aimPoint.x, sol.aimPoint.y, BARRAGE_RADIUS_PX + 12 * PX_PER_CM);
+        }
 
         // Highlight every enemy stand caught under the 6cm template!
-        sol.templateTargets.forEach(ts => {
-          this.overlayGfx.lineStyle(2.5, 0xfacc15, 1);
-          this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 19);
-        });
+        sol.templateTargets.forEach(ts => this.drawStandBrackets(this.overlayGfx, ts, 0xfacc15, 2));
       } else {
-        target.stands.forEach(ts => {
-          this.overlayGfx.lineStyle(2, 0xef4444, 0.9);
-          this.overlayGfx.strokeCircle(ts.container.x, ts.container.y, 20);
-        });
+        target.stands.forEach(ts => this.drawStandBrackets(this.overlayGfx, ts, 0xef4444, 3));
       }
 
       const isSalvoUnit = (firer.maxSalvos || 1) > 1;
@@ -29776,8 +29897,7 @@ class NetEpicScene extends Phaser.Scene {
         this.overlayGfx.lineStyle(1.5, 0x22d3ee, 0.85);
         this.overlayGfx.strokeCircle(s.container.x, s.container.y, 22);
       } else {
-        this.overlayGfx.lineStyle(2, 0xfbbf24, 1);
-        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 18);
+        this.drawStandBrackets(this.overlayGfx, s, 0xfbbf24, 3);
       }
 
       if (this.phase === 'MOVEMENT' && this.activatingDetachment === det && maxMovePx > 0 && !s.pinnedAtStart && !det.deepStrikeActive) {
