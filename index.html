@@ -22353,7 +22353,7 @@ class NetEpicScene extends Phaser.Scene {
               onComplete: () => {
                 // Proper removal: counts the casualty, gives passengers their bail-out roll, updates badges
                 if (targetDet.stands.includes(victimStand)) {
-                  this.removeCasualty(targetDet, victimStand, this._lastShotTsm || 0, false, { quiet: true });
+                  this.removeCasualty(targetDet, victimStand, this._lastShotTsm || 0, false, { quiet: true, regen: true });
                 }
 
                 completed++;
@@ -22625,32 +22625,196 @@ class NetEpicScene extends Phaser.Scene {
     }
   }
 
-  // Tyranid Hive Mind Synapse Aura (06_tyranid_army_book_v5 p. 4): Within 25cm (250px) of an unbroken Synapse creature
-  hasSynapseAura(det) {
-    if (!det || det.stands.length === 0 || det.armyBook !== 'TYRANIDS') return false;
-    if (det.synapse && !det.broken) return true;
-    const dc = this.getDetachmentCenter(det);
-    return this.detachments.some(other =>
-      other.faction === det.faction &&
-      other.synapse &&
-      !other.broken &&
-      other.stands.length > 0 &&
-      !other.inReserve &&
-      Phaser.Math.Distance.Between(dc.x, dc.y, this.getDetachmentCenter(other).x, this.getDetachmentCenter(other).y) <= 25 * PX_PER_CM
-    );
+  // ---- Tyranid Hive Mind (Tyranid Army Book p. 4-5) ----
+  // What a brood is: a Synapse creature (with its Hive Mind radius), Independent, or Instinctive (Rampage / Hunt / Nest)
+  getTyranidRole(det) {
+    if (!det || det.armyBook !== 'TYRANIDS') return null;
+    const t = `${det.key || ''} ${det.name || ''} ${det.subName || ''}`.toLowerCase();
+    if (/dominatrix/.test(t)) return { type: 'synapse', radiusCm: 40 };
+    if (/swarmlord|hive queen/.test(t)) return { type: 'synapse', radiusCm: 25 };
+    if (det.synapse || /tyrant|warrior|harridan|synapse/.test(t)) return { type: 'synapse', radiusCm: 10 };
+    if (/hierodule|hierophant|bio.?titan|genestealer|lictor|broodlord/.test(t) || det.isTitan) return { type: 'independent' };
+    if (/hormagaunt|carnifex|haruspex|razorfex|devourer/.test(t)) return { type: 'instinct', instinct: 'RAMPAGE' };
+    if (/biovore|exocrine|zoanthrope|dactylis/.test(t)) return { type: 'instinct', instinct: 'NEST' };
+    return { type: 'instinct', instinct: 'HUNT' }; // termagants, gargoyles, trygons, raveners...
   }
 
-  // Chaos Nurgle / Daemonic & Tyranid Bio-Regeneration (5+ Feel No Pain save on failed armor save)
-  rollRegenerationSave(det, vx, vy) {
-    if (!det || !det.regeneration) return false;
-    const regRoll = Phaser.Math.Between(1, 6);
-    if (regRoll >= 5) {
-      window.sfx.playSave();
-      this.spawnFloatingText(vx, vy - 10, `💚 REGENERATED! (${regRoll})`, '#4ade80', '11px');
-      this.log(`💚 <b>${det.name}</b> shrugs off the wound with <b>Regeneration</b> (rolled <b>${regRoll}</b> on 5+)!`);
-      return true;
-    }
-    return false;
+  // Is this brood inside the Hive Mind radius of an unbroken Synapse brood? (Synapse broods always are)
+  hasSynapseAura(det) {
+    const role = this.getTyranidRole(det);
+    if (!role || det.stands.length === 0) return false;
+    if (role.type !== 'instinct' && !det.broken) return true;
+    return this.detachments.some(sy => {
+      if (sy === det || sy.faction !== det.faction || sy.broken || sy.stands.length === 0 || sy.inReserve || sy.embarkedOn) return false;
+      const r = this.getTyranidRole(sy);
+      if (!r || r.type !== 'synapse') return false;
+      const R = r.radiusCm * PX_PER_CM;
+      return sy.stands.some(a => det.stands.some(b => Phaser.Math.Distance.Between(a.container.x, a.container.y, b.container.x, b.container.y) <= R + (a.baseRadius || 10)));
+    });
+  }
+
+  // Orders: instinctive broods out of synapse (or broken ones that fail a Hive Mind test) act on instinct
+  applyHiveMindOrders(afterInitiative = false) {
+    const ORD = { RAMPAGE: 'CHARGE', HUNT: 'ADVANCE', NEST: 'FIRST_FIRE' };
+    this.detachments.forEach(det => {
+      const role = this.getTyranidRole(det);
+      if (!role || role.type !== 'instinct' || det.stands.length === 0 || det.embarkedOn || det.inReserve) return;
+      let instinct = false;
+      if (!this.hasSynapseAura(det)) instinct = true;
+      else if (afterInitiative && det.broken && !det.instinct) {
+        const roll = Phaser.Math.Between(1, 6);
+        instinct = roll < (det.morale || 4);
+        this.log(`🧠 <b>${det.name}</b> is broken and tests the Hive Mind: rolled ${roll} vs ${det.morale || 4}+ → ${instinct ? '<b>reverts to instinct</b>' : 'stays under control'}.`);
+      } else if (afterInitiative && det.instinct) instinct = true;
+      if (instinct) {
+        det.instinct = role.instinct;
+        det.order = ORD[role.instinct];
+        det.orderRevealed = true;
+      } else if (det.instinct && !afterInitiative) {
+        det.instinct = null; det.order = null; det.orderRevealed = false; // back in synapse: takes orders again
+      }
+      this.updateDetachmentBadge(det);
+    });
+  }
+
+  // Compulsory movement for instinctive broods: Rampage (double move, straight at the nearest free enemy) and
+  // Hunt (normal move towards the nearest free enemy). Nesting broods stay put.
+  runInstinctMoves(done) {
+    const movers = this.detachments.filter(d => d.instinct && d.instinct !== 'NEST' && d.stands.length && !d.moved && !d.embarkedOn);
+    const next = () => {
+      const det = movers.shift();
+      if (!det) { done(); return; }
+      const enemies = [];
+      this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
+      det.moved = true;
+      if (!enemies.length) { this.updateDetachmentBadge(det); next(); return; }
+      const allowance = this.getEffectiveMoveCm(det) * (det.instinct === 'RAMPAGE' ? 2 : 1) * PX_PER_CM;
+      const dests = det.stands.map(st => {
+        const sx = st.container.x, sy = st.container.y;
+        const tgt = enemies.reduce((a, b) => Phaser.Math.Distance.Between(sx, sy, b.container.x, b.container.y) < Phaser.Math.Distance.Between(sx, sy, a.container.x, a.container.y) ? b : a);
+        const d = Phaser.Math.Distance.Between(sx, sy, tgt.container.x, tgt.container.y);
+        const stopAt = (st.baseRadius || 10) + (tgt.baseRadius || 10) - 2; // base-to-base contact
+        const ang = Math.atan2(tgt.container.y - sy, tgt.container.x - sx);
+        let k = Math.max(0, Math.min(allowance, d - stopAt));
+        while (k > 0 && this.getBuildingAt(sx + Math.cos(ang) * k, sy + Math.sin(ang) * k)) k -= 4; // stop short of buildings
+        k = Math.max(0, k);
+        return { st, x: sx + Math.cos(ang) * k, y: sy + Math.sin(ang) * k, ang };
+      });
+      const dc = this.getDetachmentCenter(det);
+      this.panCameraTo(dc.x, dc.y, 400);
+      this.spawnFloatingText(dc.x, dc.y - 22, det.instinct === 'RAMPAGE' ? '🧠 RAMPAGE!' : '🧠 HUNTING', '#f0abfc', '11px');
+      const from = dests.map(d => ({ x: d.st.container.x, y: d.st.container.y }));
+      const anim = { p: 0 };
+      this.tweens.add({ targets: anim, p: 1, delay: 350, duration: 650, ease: 'Sine.easeInOut', onUpdate: () => {
+        dests.forEach((d, i) => { d.st.container.x = Phaser.Math.Linear(from[i].x, d.x, anim.p); d.st.container.y = Phaser.Math.Linear(from[i].y, d.y, anim.p); });
+        this.updateDetachmentBadgePos(det);
+      }, onComplete: () => {
+        dests.forEach(d => { d.st.originX = d.x; d.st.originY = d.y; d.st.facingRad = d.ang; });
+        this.applyStandFacing(det);
+        this.log(`🧠 <b>${det.name}</b> acts on instinct: <b>${det.instinct === 'RAMPAGE' ? 'Rampage' : 'Hunt'}</b>.`);
+        this.updateDetachmentBadge(det); this.drawOverlays();
+        next();
+      } });
+    };
+    next();
+  }
+
+  // Instinctive broods shoot at the nearest enemy they can see (Hunt in Advance Fire, Nest in First Fire)
+  executeInstinctFire(det) {
+    if (!det || this.activatingDetachment !== det || det.fired) return;
+    const dc = this.getDetachmentCenter(det);
+    const dist = e => { const c = this.getDetachmentCenter(e); return Phaser.Math.Distance.Between(dc.x, dc.y, c.x, c.y); };
+    const cands = this.detachments.filter(e => e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve && this.evaluateFireSolution(det, e, false).validPairs.length > 0);
+    if (!cands.length) { this.skipFireDetachment(); return; }
+    cands.sort((a, b) => dist(a) - dist(b));
+    this.targetDetachment = cands[0];
+    this.drawOverlays(); this.updateUI();
+    this.fireAtSelectedTarget((det.maxSalvos || 1) > 1);
+  }
+
+  // ---- Point Defence (Core Rules): PD(X) = X dice, 15 cm, 360°, hit on 6+, TSM 0, once per turn ----
+  getPointDefense(det) {
+    if (!det) return 0;
+    let pd = det.pointDefense || 0;
+    (det.specialAbilities || []).forEach(a => { const m = /^PD\(?(\d+)\)?$/i.exec(String(a)); if (m) pd = Math.max(pd, +m[1]); });
+    return pd;
+  }
+
+  // At the start of First Fire every unit with Point Defence that hasn't used it fires: first at enemies
+  // that charged into contact (no penalty), otherwise at the nearest enemy within 15 cm.
+  resolveAllPointDefense() {
+    const R = 15 * PX_PER_CM;
+    this.detachments.forEach(det => {
+      const dice = this.getPointDefense(det) * det.stands.length; // PD is per model
+      if (!dice || det.stands.length === 0 || det.embarkedOn || det.inReserve || det.pdUsedTurn === this.turn) return;
+      if (det.locationDamage && det.locationDamage.reactor && /DAMAGED|CRIPPLED/i.test(det.locationDamage.reactor)) return;
+      const near = [];
+      this.detachments.forEach(e => {
+        if (e.faction === det.faction || e.stands.length === 0 || e.embarkedOn || e.inReserve) return;
+        e.stands.forEach(es => {
+          let best = Infinity, from = null;
+          det.stands.forEach(ms => { const d = Phaser.Math.Distance.Between(ms.container.x, ms.container.y, es.container.x, es.container.y); if (d < best) { best = d; from = ms; } });
+          if (best <= R + (es.baseRadius || 10)) near.push({ e, es, d: best, from, engaged: this.isStandEngaged(es) && best <= (es.baseRadius || 10) + (from.baseRadius || 10) + 6 });
+        });
+      });
+      if (!near.length) return;
+      near.sort((a, b) => (b.engaged - a.engaged) || (a.d - b.d));
+      det.pdUsedTurn = this.turn;
+      let hits = 0, kills = 0;
+      const rolls = [];
+      for (let i = 0; i < dice; i++) {
+        const tgt = near.find(n => n.e.stands.includes(n.es));
+        if (!tgt) break;
+        const r = Phaser.Math.Between(1, 6); rolls.push(r);
+        if (r < 6) continue;
+        hits++;
+        const td = tgt.e;
+        if (td.shields > 0) continue; // TSM 0 can't take down void shields
+        const sv = Phaser.Math.Between(1, 6);
+        let need = td.save; if (td.fixedSave) need = Math.min(need, td.fixedSave);
+        if (sv >= need && need <= 6) continue;
+        if (td.superHeavy || td.isTitan) { if (this.applySuperHeavyDamage(td, tgt.es, false)) kills++; }
+        else { this.removeCasualty(td, tgt.es, 0, false, { quiet: true, regen: true }); kills++; }
+      }
+      // tracers from the point defence guns
+      const shots = near.slice(0, Math.min(4, dice));
+      shots.forEach((n, i) => this.time.delayedCall(i * 90, () => { if (n.from && n.from.container && n.from.container.scene) this.spawnAmbientTracers(n.from.container.x, n.from.container.y, n.es.container ? n.es.container.x : n.from.container.x, n.es.container ? n.es.container.y : n.from.container.y); }));
+      const dc = this.getDetachmentCenter(det);
+      this.spawnFloatingText(dc.x, dc.y - 20, `🔫 Point defence: ${hits} hit${hits === 1 ? '' : 's'}${kills ? `, ${kills} down` : ''}`, '#fde68a', '10px');
+      this.log(`🔫 <b>${det.name}</b> point defence (${dice} dice, 6+) at ${near[0].e.name}${near[0].engaged ? ' (charging)' : ''}: rolled ${rolls.join(' ')} → <b>${hits}</b> hit(s), <b>${kills}</b> destroyed.`);
+      [...new Set(near.map(n => n.e))].forEach(e => this.checkBreakPoint(e));
+    });
+  }
+
+  canRegenerate(det) {
+    return Boolean(det && (det.regeneration || this.hasAbility(det, 'Regeneration')) && !det.isTitan && !det.superHeavy);
+  }
+
+  // End Phase: every downed creature rolls a D6 per wound; if all come up 4+ it gets back up
+  resolveRegeneration() {
+    this.detachments.forEach(det => {
+      if (!det.downed || det.downed.length === 0) return;
+      const healed = [], dead = [];
+      det.downed.forEach(st => {
+        const rolls = Array.from({ length: st.downedWounds || 1 }, () => Phaser.Math.Between(1, 6));
+        (rolls.every(r => r >= 4) ? healed : dead).push({ st, rolls });
+      });
+      det.downed = [];
+      healed.forEach(({ st }) => {
+        const wasEmpty = det.stands.length === 0;
+        det.stands.push(st);
+        det.casualties = Math.max(0, det.casualties - 1);
+        st.downedWounds = 0;
+        st.container.setAlpha(1).setDepth(60).setInteractive({ draggable: true });
+        this.spawnFloatingText(st.container.x, st.container.y - 8, '💚 Regenerated!', '#4ade80', '11px');
+        if (wasEmpty && det.badge) det.badge.setVisible(true);
+      });
+      dead.forEach(({ st }) => st.container.destroy());
+      if (healed.length) { this.applyStandFacing(det); this.updateDetachmentBadge(det); }
+      const all = [...healed, ...dead].map(x => x.rolls.join('/')).join(', ');
+      this.log(`💚 <b>${det.name}</b> regeneration (4+): ${all} → <b>${healed.length}</b> back up, ${dead.length} dead.`);
+      if (det.stands.length === 0 && det.badge) det.badge.setVisible(false);
+    });
   }
 
   drawDeploymentZones() {
@@ -23868,6 +24032,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!this.detachments) return;
     this.detachments.forEach(d => {
       d.stands.forEach(s => s.container.destroy());
+      (d.downed || []).forEach(s => s.container.destroy());
       if (d.badge) d.badge.destroy();
     });
     this.detachments = [];
@@ -26531,8 +26696,6 @@ class NetEpicScene extends Phaser.Scene {
             if (saved) {
               saves++;
               this.spawnFloatingText(vx, vy, `🛡️ SAVED (${saveRoll})`, '#38bdf8', '11px');
-            } else if (this.rollRegenerationSave(vDet, vx, vy)) {
-              saves++;
             } else if (vDet.superHeavy) {
               if (this.applySuperHeavyDamage(vDet, victimStand, false)) kills++;
             } else {
@@ -26608,8 +26771,14 @@ class NetEpicScene extends Phaser.Scene {
 
             if (hitSuccess) {
               hits++;
+              // The hit lands on the stand this shooter aimed at; if that one is already going down,
+              // on the nearest surviving stand to it
               const availableStands = targetDet.stands.filter(s => !casualtiesToDestroy.includes(s));
-              const victimRef = availableStands[availableStands.length - 1];
+              let victimRef = (pair.target && availableStands.includes(pair.target)) ? pair.target : null;
+              if (!victimRef && availableStands.length) {
+                const ax = pair.target ? pair.target.container.x : pair.shooter.container.x, ay = pair.target ? pair.target.container.y : pair.shooter.container.y;
+                victimRef = availableStands.reduce((a, b) => Phaser.Math.Distance.Between(ax, ay, b.container.x, b.container.y) < Phaser.Math.Distance.Between(ax, ay, a.container.x, a.container.y) ? b : a);
+              }
               const vx = victimRef ? victimRef.container.x : pair.target.container.x;
               const vy = victimRef ? victimRef.container.y : pair.target.container.y;
 
@@ -26669,8 +26838,6 @@ class NetEpicScene extends Phaser.Scene {
                   isHolo ? `💎 HOLO-FIELD (${saveRoll} vs ${holoSave}+)` : `🛡️ ${garrisoned ? 'FORTIFIED ' : (targetDet.fixedSave && saveRoll === targetDet.fixedSave ? 'FIXED ' : '')}SAVED (${saveRoll})`,
                   isHolo ? '#fbbf24' : '#38bdf8', '11px'
                 );
-              } else if (this.rollRegenerationSave(targetDet, vx, vy)) {
-                saves++;
               } else if (targetDet.superHeavy) {
                 if (this.applySuperHeavyDamage(targetDet, victimRef, false)) kills++;
               } else if (victimRef) {
@@ -26807,6 +26974,19 @@ class NetEpicScene extends Phaser.Scene {
       this.spawnFloatingText(vx, vy, `💥 ${victim.label} KILLED!`, '#f87171', '12px');
     }
 
+    // Regeneration (Core Rules): a creature that fails an armour save to shooting is knocked down, not killed,
+    // and may heal in the End Phase. It counts as a casualty until then.
+    if (opts.regen && !isMeltdown && this.canRegenerate(det)) {
+      victim.downedWounds = 1;
+      (det.downed = det.downed || []).push(victim);
+      victim.container.setAlpha(0.42).setDepth(55).disableInteractive();
+      victim.container.rotation += Math.PI / 2;
+      det.casualties++;
+      this.spawnFloatingText(vx, vy - 8, '💚 Down – may regenerate', '#4ade80', '10px');
+      if (det.stands.length === 0) { det.badge.setVisible(false); this.log(`💚 <b>${det.name}</b> is down, but may regenerate in the End Phase.`); }
+      else this.updateDetachmentBadgePos(det);
+      return;
+    }
     if (det.isVehicle || det.isTitan || det.superHeavy) this.addWreck(vx, vy, Boolean(det.isTitan || det.superHeavy)); // burning wreck left behind
     victim.container.destroy();
     det.casualties++;
@@ -27831,6 +28011,7 @@ class NetEpicScene extends Phaser.Scene {
   // AI secretly assigns Orders during I. Orders Phase
   assignAIOrders() {
     this.applyCommandOrders();
+    this.applyHiveMindOrders();
     if (window.aiFaction === 'NONE') return;
     let assignedCount = 0;
 
@@ -27848,7 +28029,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(det => {
       if (det.faction !== window.aiFaction || det.stands.length === 0) return;
-      if (det.order === 'FALL_BACK' || this.isCommandUnit(det)) return;
+      if (det.order === 'FALL_BACK' || this.isCommandUnit(det) || det.instinct) return;
       if (det.embarkedOn) {
         det.order = 'ADVANCE';
         det.orderRevealed = false;
@@ -28392,6 +28573,7 @@ class NetEpicScene extends Phaser.Scene {
   executeAICombatTurn() {
     const firer = this.activatingDetachment;
     if (!firer || firer.stands.length === 0) return;
+    if (firer.instinct) { this.executeInstinctFire(firer); return; } // instinct: nearest enemy, no choice
 
     const enemies = this.detachments.filter(d => d.faction !== firer.faction && d.stands.length > 0 && !d.embarkedOn && !d.inReserve);
 
@@ -28467,6 +28649,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
     if (this.selectedDetachment.order === 'FALL_BACK') return;
     if (this.isCommandUnit(this.selectedDetachment)) return; // Command units take no orders
+    if (this.selectedDetachment.instinct) { this.log(`🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     // If this is a Transport carrying embarked passengers, automatically set the passenger's order to ADVANCE
@@ -28532,10 +28715,20 @@ class NetEpicScene extends Phaser.Scene {
       { label: southName + (southInitMod > 0 ? ` (+${southInitMod})` : ''), dice: [{ val: impRoll, cls: impTotal > orkTotal ? 'die-pass' : 'die-fail' }], summary: `= ${impTotal}` },
       { label: northName + (northInitMod > 0 ? ` (+${northInitMod})` : ''), dice: [{ val: orkRoll, cls: orkTotal > impTotal ? 'die-pass' : 'die-fail' }], summary: `= ${orkTotal}` }
     ]);
-    this.updateUI();
-    this.drawOverlays();
-    this.focusPlayerNextUnit();
-    this.checkAndRunAITurn();
+    this.applyHiveMindOrders(true);
+    const startMoves = () => { this.updateUI(); this.drawOverlays(); this.focusPlayerNextUnit(); this.checkAndRunAITurn(); };
+    if (this.detachments.some(d => d.instinct && d.instinct !== 'NEST' && d.stands.length)) {
+      this.aiTimerPending = true;
+      this.runInstinctMoves(() => {
+        this.aiTimerPending = false;
+        if (!this.detachments.some(d => d.faction === this.activePlayer && d.stands.length && !d.moved && !d.embarkedOn)) {
+          const other = this.activePlayer === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+          if (this.detachments.some(d => d.faction === other && d.stands.length && !d.moved && !d.embarkedOn)) this.activePlayer = other;
+          else { this.startCombatSegment('COMBAT_FIRST'); return; }
+        }
+        startMoves();
+      });
+    } else startMoves();
   }
 
   activateSelectedDetachment() {
@@ -28864,6 +29057,7 @@ class NetEpicScene extends Phaser.Scene {
     // Must have at least one stand NOT locked in Close Combat
     const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s) || this.canFireOutOfCombat(s));
     if (!hasUnengagedStand) return false;
+    if (det.instinct === 'RAMPAGE') return false; // rampaging creatures make no ranged attacks
     // Close-combat-only units (no ranged weapon) have nothing to shoot with
     const hasRanged = (det.weapon && det.weapon.rangeCm > 0) || (det.salvos && det.salvos.length) ||
       det.stands.some(s => s.weapon && s.weapon.rangeCm > 0);
@@ -28884,6 +29078,7 @@ class NetEpicScene extends Phaser.Scene {
     this.selectedDetachment = null;
     this.activatingDetachment = null;
     this.targetDetachment = null;
+    if (segment === 'COMBAT_FIRST') this.resolveAllPointDefense();
 
     // Reveal all orders for eligible units in this segment
     this.detachments.forEach(d => {
@@ -28931,6 +29126,10 @@ class NetEpicScene extends Phaser.Scene {
     this.drawOverlays();
     this.updateUI();
     this.focusPlayerNextUnit();
+    if (firstUnit && firstUnit.instinct && !this.isFactionAI(firstUnit.faction)) {
+      this.time.delayedCall(500, () => this.executeInstinctFire(firstUnit)); // instinctive broods pick their own target
+      return;
+    }
     this.checkAndRunAITurn();
   }
 
@@ -29201,8 +29400,7 @@ class NetEpicScene extends Phaser.Scene {
     const orkSum = orkRolls.reduce((a, b) => a + b, 0);
     const impGarrisonBonus = this.isStandGarrisoned(impStand) ? 2 : 0;
     const orkGarrisonBonus = this.isStandGarrisoned(orkStand) ? 2 : 0;
-    const impSynapseBonus = this.hasSynapseAura(impDet) ? 1 : 0;
-    const orkSynapseBonus = this.hasSynapseAura(orkDet) ? 1 : 0;
+    const impSynapseBonus = 0, orkSynapseBonus = 0; // the book gives synapse no close combat bonus
     // Grey Knights Daemonhunter rule: Immune to Terror, inflicts -2 CAF on enemy Daemons
     const isOrkDaemon = (orkDet.cardName && (orkDet.cardName.includes('Daemon') || orkDet.cardName.includes('Bloodthirster')));
     const isImpDaemon = (impDet.cardName && (impDet.cardName.includes('Daemon') || impDet.cardName.includes('Bloodthirster')));
@@ -29483,6 +29681,8 @@ class NetEpicScene extends Phaser.Scene {
     this.activatingDetachment = null;
     this.targetDetachment = null;
 
+    // Regenerating creatures get back up (or don't) before losses are counted
+    this.resolveRegeneration();
     // Core Rules p. 41: count losses against every Break Point now
     [...this.detachments].forEach(d => this.checkBreakPoint(d));
 
@@ -30026,9 +30226,10 @@ class NetEpicScene extends Phaser.Scene {
 
     const maxMovePx = det.order ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult * PX_PER_CM : 0;
     det.stands.forEach(s => {
-      if (det.synapse && det.order !== 'FALL_BACK') {
-        this.overlayGfx.lineStyle(1.5, 0xd946ef, 0.35);
-        this.overlayGfx.strokeCircle(s.container.x, s.container.y, 25 * PX_PER_CM);
+      const synRole = this.getTyranidRole(det);
+      if (synRole && synRole.type === 'synapse' && !det.broken) {
+        this.overlayGfx.lineStyle(1.5, 0xd946ef, 0.45);
+        this.overlayGfx.strokeCircle(s.container.x, s.container.y, synRole.radiusCm * PX_PER_CM + (s.baseRadius || 10));
       }
       if (det.deepStrikeActive) {
         this.overlayGfx.lineStyle(3, 0xc084fc, 1);
@@ -30066,7 +30267,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   updateDetachmentBadge(det) {
-    if (det.stands.length === 0) return;
+    if (det.stands.length === 0 || !det.badge || !det.badge.scene) return;
     if (det.embarkedOn) {
       det.badge.setVisible(false);
       return;
@@ -30081,7 +30282,7 @@ class NetEpicScene extends Phaser.Scene {
     const popSuffix = det.poppedUp ? ' 🚀POP-UP' : '';
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
-    const synSuffix = det.synapse ? ' 🧠SYN' : '';
+    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
     const rokkitSuffix = (det.weapon && det.weapon.pulsaRokkit) ? ` 🚀${det.rokkitsRemaining || 0}/3` : '';
     const pulsaSuppSuffix = det.suppressedByPulsa ? ' ⚡DISRUPTED' : '';
     const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + rokkitSuffix + pulsaSuppSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
@@ -30530,10 +30731,12 @@ class NetEpicScene extends Phaser.Scene {
       const transBadge = d.passengerDet
         ? ` | 🚐 Carrying: ${d.passengerDet.name} (${d.passengerDet.stands.length} stands)`
         : (d.transportCapacity ? ` | 🚐 Transport (Cap: ${d.stands.length * d.transportCapacity} Inf)` : '');
-      const synBadge = d.synapse
-        ? ' | 🧠 Synapse Node (25cm Aura)'
-        : (d.armyBook === 'TYRANIDS' && this.hasSynapseAura(d) ? ' | 🧠 In Synapse (+1 CAF, Fearless)' : '');
-      const regenBadge = d.regeneration ? ' | 💚 5+ Regen' : '';
+      const tyrRole = this.getTyranidRole(d);
+      const synBadge = !tyrRole ? '' : tyrRole.type === 'synapse' ? ` | 🧠 Synapse (Hive Mind ${tyrRole.radiusCm}cm)`
+        : tyrRole.type === 'independent' ? ' | 🧠 Independent'
+        : d.instinct ? ` | 🧠 Instinct: ${d.instinct.charAt(0) + d.instinct.slice(1).toLowerCase()}`
+        : (this.hasSynapseAura(d) ? ' | 🧠 In synapse' : ` | 🧠 Out of synapse (${tyrRole.instinct.toLowerCase()})`);
+      const regenBadge = this.canRegenerate(d) ? ` | 💚 Regenerates${d.downed && d.downed.length ? ` (${d.downed.length} down)` : ''}` : '';
       const terrorBadge = d.daemonicTerror ? ' | 😱 Daemonic Terror (-2 Enemy CAF)' : '';
       const bansheeBadge = d.bansheeMask ? ' | 🎭 Banshee Mask (+1D6 vs Inf)' : '';
       const squatBadge = d.squatMastery ? ' | ⚒️ CC Mastery (Re-roll 1s)' : '';
@@ -30638,6 +30841,7 @@ class NetEpicScene extends Phaser.Scene {
   // Roll a morale test: D6 >= Morale (+1 within 10 cm of an Inspirational unit). Fearless units always pass.
   testMorale(det, reason = '') {
     if (!det || det.stands.length === 0) return true;
+    if (det.armyBook === 'TYRANIDS') return true; // Tyranids never take morale tests
     if (this.isFearlessUnit(det)) {
       this.log(`🧠 <b>${det.name}</b> is fearless and ignores the morale test${reason ? ` (${reason})` : ''}.`);
       return true;
