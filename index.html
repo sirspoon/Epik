@@ -1477,299 +1477,258 @@ window.sfxEnabled = true;
 window.ambientBattlefieldFire = true;
 window.sfx = {
   ctx: null,
+  // Everything goes through one bus: a little room reverb, then a limiter so stacked sounds never clip
   ensureCtx() {
     if (!window.sfxEnabled) return null;
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+      if (!AudioCtx) return null;
+      const ctx = this.ctx = new AudioCtx();
+      this.master = ctx.createGain(); this.master.gain.value = 0.9;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.25;
+      this.master.connect(comp); comp.connect(ctx.destination);
+      // synthetic outdoor reverb: a short decaying noise impulse
+      this.verb = ctx.createConvolver();
+      const len = Math.floor(ctx.sampleRate * 1.6), ir = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+      this.verb.buffer = ir;
+      this.verbIn = ctx.createGain(); this.verbIn.gain.value = 0.28;
+      this.verbIn.connect(this.verb); this.verb.connect(this.master);
+      // shared noise sources
+      const nlen = ctx.sampleRate * 2;
+      this.white = ctx.createBuffer(1, nlen, ctx.sampleRate);
+      this.brown = ctx.createBuffer(1, nlen, ctx.sampleRate);
+      const w = this.white.getChannelData(0), b = this.brown.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < nlen; i++) { w[i] = Math.random() * 2 - 1; last = (last + 0.02 * w[i]) / 1.02; b[i] = last * 3.5; }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
-    }
+    if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     return this.ctx;
   },
-  playLaser(isHeavy = false) {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = isHeavy ? 'sawtooth' : 'square';
-    osc.frequency.setValueAtTime(isHeavy ? 520 : 880, now);
-    osc.frequency.exponentialRampToValueAtTime(isHeavy ? 95 : 180, now + (isHeavy ? 0.22 : 0.14));
-    gain.gain.setValueAtTime(0.14, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + (isHeavy ? 0.24 : 0.15));
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + (isHeavy ? 0.24 : 0.15));
+  // Output node for one sound: gain -> stereo pan -> master (+ reverb send)
+  out(vol = 1, pan = 0, wet = 1) {
+    const ctx = this.ctx;
+    const g = ctx.createGain(); g.gain.value = vol;
+    let node = g;
+    if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan || 0)); g.connect(p); node = p; }
+    node.connect(this.master);
+    if (wet > 0) { const s = ctx.createGain(); s.gain.value = wet; node.connect(s); s.connect(this.verbIn); }
+    return g;
   },
-  playDistantShot(isLaser = false) {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    try {
-      const now = ctx.currentTime;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(isLaser ? 650 : 360, now);
-
-      osc.type = isLaser ? 'sawtooth' : 'triangle';
-      osc.frequency.setValueAtTime(isLaser ? 420 : 180, now);
-      osc.frequency.exponentialRampToValueAtTime(isLaser ? 90 : 50, now + 0.16);
-
-      gain.gain.setValueAtTime(0.022, now); // Soft, distant ambient volume
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.18);
-    } catch (e) {}
+  // Filtered noise burst with an attack/decay envelope
+  noise(dest, t, dur, { type = 'lowpass', f0 = 1000, f1 = null, q = 0.8, vol = 0.5, attack = 0.003, brown = false, curve = 2 } = {}) {
+    const ctx = this.ctx, src = ctx.createBufferSource();
+    src.buffer = brown ? this.brown : this.white;
+    src.playbackRate.value = 0.9 + Math.random() * 0.2;
+    const f = ctx.createBiquadFilter(); f.type = type; f.Q.value = q;
+    f.frequency.setValueAtTime(f0, t); if (f1) f.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + attack);
+    g.gain.setTargetAtTime(0.0001, t + attack, dur / (curve * 2));
+    src.connect(f); f.connect(g); g.connect(dest);
+    src.start(t, Math.random() * 1.5); src.stop(t + dur + 0.1);
   },
-  playBarrage() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    // Incoming shell whistle
-    const osc = ctx.createOscillator();
-    const wGain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(950, now);
-    osc.frequency.exponentialRampToValueAtTime(220, now + 0.26);
-    wGain.gain.setValueAtTime(0.09, now);
-    wGain.gain.exponentialRampToValueAtTime(0.005, now + 0.26);
-    osc.connect(wGain);
-    wGain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.26);
-    // Deep artillery detonation boom
-    setTimeout(() => this.playExplosion(true), 230);
+  // Oscillator with a pitch sweep and decay
+  tone(dest, t, dur, { type = 'sine', f0 = 440, f1 = null, vol = 0.3, attack = 0.004, detune = 0 } = {}) {
+    const ctx = this.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.detune.value = detune;
+    o.frequency.setValueAtTime(f0, t); if (f1) o.frequency.exponentialRampToValueAtTime(Math.max(10, f1), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + 0.05);
+    return o;
   },
-  playPulsaHum(durationSec = 1.0) {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
+  vary(v, amt = 0.08) { return v * (1 + (Math.random() * 2 - 1) * amt); },
+
+  // ---- weapons ----
+  // Solid-shot guns (bolters, shootas, autocannons, battle cannons): sharp crack + body thump; several shots for a volley
+  playGun(isHeavy = false, count = 1, pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const n = Math.max(1, Math.min(isHeavy ? 3 : 6, count));
     const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const lfo = ctx.createOscillator();
-    const lfoGain = ctx.createGain();
-    const gain = ctx.createGain();
-
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(85, now);
-    osc.frequency.exponentialRampToValueAtTime(50, now + durationSec);
-
-    lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(14, now);
-    lfoGain.gain.setValueAtTime(25, now);
-    lfo.connect(osc.frequency);
-
-    gain.gain.setValueAtTime(0.24, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    lfo.start(now);
-    osc.start(now);
-    lfo.stop(now + durationSec);
-    osc.stop(now + durationSec);
-  },
-  playExplosion(isBig = false) {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const dur = isBig ? 0.48 : 0.28;
-    const bufSize = Math.floor(ctx.sampleRate * dur);
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.6);
+    for (let i = 0; i < n; i++) {
+      const t = now + i * (isHeavy ? 0.16 : 0.07) + Math.random() * 0.03;
+      const o = this.out(isHeavy ? 0.9 : 0.55, pan + (Math.random() - 0.5) * 0.3, isHeavy ? 1 : 0.6);
+      if (isHeavy) {
+        this.noise(o, t, 0.5, { type: 'lowpass', f0: 1800, f1: 120, vol: 0.55, brown: false });
+        this.tone(o, t, 0.45, { f0: this.vary(110), f1: 32, vol: 0.7 });
+        this.noise(o, t, 0.05, { type: 'highpass', f0: 2500, vol: 0.25 });
+      } else {
+        this.noise(o, t, 0.09, { type: 'bandpass', f0: this.vary(2200, 0.2), q: 1.2, vol: 0.5 });
+        this.tone(o, t, 0.08, { type: 'triangle', f0: this.vary(160), f1: 55, vol: 0.4 });
+      }
     }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buf;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(isBig ? 420 : 680, now);
-    filter.frequency.exponentialRampToValueAtTime(75, now + dur);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(isBig ? 0.28 : 0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    noise.start(now);
   },
-  playSave() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1040, now);
-    osc.frequency.exponentialRampToValueAtTime(1680, now + 0.09);
-    gain.gain.setValueAtTime(0.11, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.1);
+  playLaser(isHeavy = false, pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(isHeavy ? 1.0 : 0.85, pan, 0.8);
+    const dur = isHeavy ? 0.42 : 0.2;
+    // resonant downward zap with a fizzing edge
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 8;
+    f.frequency.setValueAtTime(isHeavy ? 3200 : 5000, t); f.frequency.exponentialRampToValueAtTime(isHeavy ? 200 : 600, t + dur);
+    f.connect(o);
+    this.tone(f, t, dur, { type: 'sawtooth', f0: this.vary(isHeavy ? 900 : 1600), f1: isHeavy ? 70 : 220, vol: 0.5 });
+    this.tone(f, t, dur, { type: 'square', f0: this.vary(isHeavy ? 455 : 1210), f1: isHeavy ? 60 : 180, vol: 0.2, detune: 12 });
+    this.noise(o, t, dur * 0.8, { type: 'highpass', f0: 4000, vol: 0.12 });
+    if (isHeavy) this.tone(o, t, 0.5, { f0: 70, f1: 35, vol: 0.4 });
   },
-  playMelee() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
+  playPlasma(pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.6, pan, 0.9);
+    this.noise(o, t, 0.35, { type: 'bandpass', f0: 600, f1: 3000, q: 2, vol: 0.45, attack: 0.04 });
+    this.tone(o, t, 0.3, { type: 'sine', f0: 300, f1: 1400, vol: 0.25, attack: 0.03 });
+    this.tone(o, t + 0.25, 0.35, { f0: 90, f1: 40, vol: 0.5 });
+  },
+  playMissile(pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.6, pan, 0.8);
+    this.noise(o, t, 0.6, { type: 'bandpass', f0: 500, f1: 2500, q: 1.5, vol: 0.5, attack: 0.05, curve: 1.2 }); // launch whoosh
+    this.tone(o, t, 0.12, { f0: 140, f1: 60, vol: 0.4 });
+    setTimeout(() => this.playExplosion(false, pan), 480);
+  },
+  playBarrage(pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const o = this.out(0.5, pan, 1);
+    this.tone(o, t, 0.25, { f0: 70, f1: 40, vol: 0.5 });                         // distant guns firing
+    this.noise(o, t, 0.3, { type: 'lowpass', f0: 600, f1: 100, vol: 0.4 });
+    // incoming whistle, falling in pitch with a slight wobble
+    const w = this.out(0.22, pan, 0.6);
+    const osc = this.tone(w, t + 0.12, 0.62, { type: 'sine', f0: 1500, f1: 380, vol: 0.5, attack: 0.15 });
+    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 9; lg.gain.value = 25; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(t); lfo.stop(t + 0.8);
+    setTimeout(() => { this.playExplosion(true, pan); setTimeout(() => this.playExplosion(false, pan + 0.15), 110); }, 720);
+  },
+  playExplosion(isBig = false, pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(isBig ? 1 : 0.7, pan, 1);
+    const dur = isBig ? 1.4 : 0.7;
+    this.noise(o, t, 0.06, { type: 'highpass', f0: 1500, vol: 0.5 });                                  // crack
+    this.noise(o, t, dur, { type: 'lowpass', f0: isBig ? 1400 : 2200, f1: 60, vol: isBig ? 0.9 : 0.6, brown: true, curve: 1.5 }); // body
+    this.tone(o, t, dur * 0.8, { f0: this.vary(isBig ? 65 : 95), f1: 25, vol: isBig ? 0.9 : 0.55 });                       // sub thump
+    for (let i = 0; i < (isBig ? 6 : 3); i++) this.noise(o, t + 0.1 + Math.random() * dur * 0.6, 0.05, { type: 'bandpass', f0: 800 + Math.random() * 2000, q: 2, vol: 0.12 }); // debris crackle
+  },
+  playFlame(pan = 0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.7, pan, 0.6);
+    const g = ctx.createGain(); g.connect(o);
+    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 13; lg.gain.value = 0.35; lfo.connect(lg); lg.connect(g.gain); lfo.start(t); lfo.stop(t + 0.9); // flutter
+    g.gain.value = 0.65;
+    this.noise(g, t, 0.85, { type: 'bandpass', f0: 400, f1: 1200, q: 0.7, vol: 0.8, attack: 0.06, curve: 1 });
+    this.noise(g, t, 0.8, { type: 'lowpass', f0: 300, vol: 0.5, brown: true, attack: 0.05, curve: 1 });
+  },
+
+  // ---- impacts and events ----
+  playSave() { // armour ping
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.65, 0, 0.7);
+    [1870, 2630, 3520].forEach((f, i) => this.tone(o, t, 0.25 - i * 0.05, { type: 'sine', f0: this.vary(f, 0.03), vol: 0.3 / (i + 1) }));
+    this.noise(o, t, 0.03, { type: 'highpass', f0: 5000, vol: 0.2 });
+  },
+  playShieldHit(pan = 0) { // void shield flare
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.85, pan, 1);
+    const car = ctx.createOscillator(), mod = ctx.createOscillator(), mg = ctx.createGain(), g = ctx.createGain();
+    car.frequency.setValueAtTime(900, t); car.frequency.exponentialRampToValueAtTime(260, t + 0.5);
+    mod.frequency.value = 57; mg.gain.value = 300; mod.connect(mg); mg.connect(car.frequency);
+    g.gain.setValueAtTime(0.4, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    car.connect(g); g.connect(o); car.start(t); mod.start(t); car.stop(t + 0.6); mod.stop(t + 0.6);
+    this.noise(o, t, 0.4, { type: 'highpass', f0: 3000, vol: 0.15 });
+  },
+  playMelee() { // clash of blades and armour
+    const ctx = this.ensureCtx(); if (!ctx) return;
     const now = ctx.currentTime;
-    [320, 480].forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-      osc.frequency.exponentialRampToValueAtTime(140, now + idx * 0.06 + 0.11);
-      gain.gain.setValueAtTime(0.13, now + idx * 0.06);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.12);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + idx * 0.06);
-      osc.stop(now + idx * 0.06 + 0.12);
+    for (let i = 0; i < 3; i++) {
+      const t = now + i * 0.11 + Math.random() * 0.04, o = this.out(0.45, (Math.random() - 0.5) * 0.4, 0.7);
+      this.noise(o, t, 0.12, { type: 'bandpass', f0: this.vary(3200, 0.25), q: 3, vol: 0.5 });
+      [1240, 1810, 2730].forEach(f => this.tone(o, t, 0.22, { type: 'triangle', f0: this.vary(f, 0.1), vol: 0.08 }));
+      this.tone(o, t, 0.12, { f0: 180, f1: 70, vol: 0.3 });
+    }
+  },
+  playHorn() { // war horn when a unit breaks
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.45, 0, 1);
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(400, t); f.frequency.linearRampToValueAtTime(1400, t + 0.3); f.frequency.linearRampToValueAtTime(600, t + 1.2); f.connect(o);
+    [110, 110.6, 165, 220].forEach((fr, i) => {
+      const osc = ctx.createOscillator(), g = ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.value = fr;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.18 / (i ? 1.5 : 1), t + 0.25); g.gain.setValueAtTime(0.16, t + 0.9); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+      osc.connect(g); g.connect(f); osc.start(t); osc.stop(t + 1.35);
     });
-  },
-  playHorn() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    [440, 554.37, 659.25].forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
-      gain.gain.setValueAtTime(0.1, now + idx * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.22);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + idx * 0.07);
-      osc.stop(now + idx * 0.07 + 0.22);
-    });
-  },
-  playShieldHit() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1420, now);
-    osc.frequency.exponentialRampToValueAtTime(420, now + 0.22);
-    gain.gain.setValueAtTime(0.16, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.24);
   },
   playTeleport() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    [220, 440, 880].forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.8, now + 0.28);
-      gain.gain.setValueAtTime(0.12, now + idx * 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + idx * 0.04);
-      osc.stop(now + 0.32);
-    });
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.4, 0, 1);
+    this.noise(o, t, 0.5, { type: 'bandpass', f0: 300, f1: 6000, q: 4, vol: 0.4, attack: 0.1 });
+    [220, 330, 495].forEach((f, i) => this.tone(o, t + i * 0.05, 0.45, { f0: f, f1: f * 3, vol: 0.15 }));
+    this.tone(o, t + 0.4, 0.4, { f0: 90, f1: 40, vol: 0.4 });
   },
   playPsychic() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    [392, 587.33, 783.99, 1174.66].forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.03);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + 0.35);
-      gain.gain.setValueAtTime(0.12, now + idx * 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + idx * 0.03);
-      osc.stop(now + 0.38);
-    });
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.4, 0, 1.4);
+    [196, 277.2, 392, 554.4].forEach((f, i) => { const osc = this.tone(o, t + i * 0.04, 0.9, { type: 'sine', f0: f, f1: f * 1.06, vol: 0.12, attack: 0.15 }); });
+    this.noise(o, t, 0.9, { type: 'bandpass', f0: 2000, f1: 500, q: 6, vol: 0.2, attack: 0.2 });
   },
   playMeltdown() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    // Reactor alarm whine
-    const alarm = ctx.createOscillator();
-    const aGain = ctx.createGain();
-    alarm.type = 'sawtooth';
-    alarm.frequency.setValueAtTime(800, now);
-    alarm.frequency.exponentialRampToValueAtTime(1600, now + 0.15);
-    alarm.frequency.exponentialRampToValueAtTime(400, now + 0.3);
-    aGain.gain.setValueAtTime(0.2, now);
-    aGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-    alarm.connect(aGain);
-    aGain.connect(ctx.destination);
-    alarm.start(now);
-    alarm.stop(now + 0.32);
-    // Huge catastrophic blast boom
-    setTimeout(() => {
-      this.playExplosion(true);
-      setTimeout(() => this.playExplosion(true), 120);
-    }, 200);
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.6, 0, 0.6);
+    for (let i = 0; i < 3; i++) this.tone(o, t + i * 0.18, 0.16, { type: 'square', f0: 880, f1: 1320, vol: 0.25 }); // alarm
+    setTimeout(() => { this.playExplosion(true); setTimeout(() => this.playExplosion(true, 0.2), 150); }, 520);
   },
-  playFlame() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const dur = 0.38;
-    const bufSize = Math.floor(ctx.sampleRate * dur);
-    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < bufSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 1.2);
+  playPulsaHum(durationSec = 1.0) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime, o = this.out(0.55, 0, 1);
+    const g = ctx.createGain(); g.gain.value = 0.5; g.connect(o);
+    const trem = ctx.createOscillator(), tg = ctx.createGain(); trem.frequency.value = 7; tg.gain.value = 0.45; trem.connect(tg); tg.connect(g.gain); trem.start(t); trem.stop(t + durationSec);
+    [55, 82.5, 110.3].forEach((f, i) => { const osc = ctx.createOscillator(), og = ctx.createGain(); osc.type = i ? 'sawtooth' : 'square'; osc.frequency.setValueAtTime(f, t); osc.frequency.exponentialRampToValueAtTime(f * 0.7, t + durationSec);
+      og.gain.setValueAtTime(0.0001, t); og.gain.linearRampToValueAtTime(0.25 / (i + 1), t + 0.08); og.gain.exponentialRampToValueAtTime(0.0001, t + durationSec);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500; osc.connect(lp); lp.connect(og); og.connect(g); osc.start(t); osc.stop(t + durationSec + 0.05); });
+    for (let i = 0; i < Math.round(durationSec * 6); i++) this.noise(o, t + Math.random() * durationSec, 0.04, { type: 'highpass', f0: 3000, vol: 0.15 }); // crackle
+  },
+  playWaaagh() { // a mob roaring
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    for (let v = 0; v < 7; v++) {
+      const o = this.out(0.22, (Math.random() - 0.5) * 1.2, 1), st = t + Math.random() * 0.15;
+      const f0 = 95 + Math.random() * 70;
+      const formant = ctx.createBiquadFilter(); formant.type = 'bandpass'; formant.Q.value = 3; formant.frequency.setValueAtTime(500, st); formant.frequency.linearRampToValueAtTime(900, st + 0.3); formant.frequency.linearRampToValueAtTime(650, st + 1);
+      formant.connect(o);
+      const osc = ctx.createOscillator(), g = ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(f0, st); osc.frequency.linearRampToValueAtTime(f0 * 1.3, st + 0.35); osc.frequency.linearRampToValueAtTime(f0 * 0.95, st + 1.1);
+      g.gain.setValueAtTime(0.0001, st); g.gain.linearRampToValueAtTime(0.5, st + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, st + 1.2);
+      osc.connect(g); g.connect(formant); osc.start(st); osc.stop(st + 1.25);
     }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buf;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(850, now);
-    filter.Q.setValueAtTime(1.5, now);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.22, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    noise.start(now);
+    this.noise(this.out(0.3, 0, 1), t, 1.1, { type: 'bandpass', f0: 800, q: 0.8, vol: 0.4, attack: 0.1, curve: 1 });
   },
-  playWaaagh() {
-    const ctx = this.ensureCtx();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    [130.81, 196.00, 261.63, 329.63].forEach((freq) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.45);
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.55);
-    });
+  playPip() { // small UI tick
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    this.tone(this.out(0.7, 0, 0), ctx.currentTime, 0.06, { type: 'triangle', f0: 1400, f1: 1800, vol: 0.3 });
+  },
+
+  // ---- ambience: far-off fighting, panned to where it happens on screen ----
+  playDistantShot(kind = false, pan = 0, vol = 1) {
+    const ctx = this.ensureCtx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const o = this.out(0.16 * vol, pan, 1.6); // mostly reverb: sounds far away
+    const k = kind === true ? 'laser' : (kind || 'gun');
+    if (k === 'laser') this.tone(o, t, 0.2, { type: 'sawtooth', f0: this.vary(700, 0.2), f1: 120, vol: 0.9 });
+    else if (k === 'rattle') { for (let i = 0; i < 4 + Math.floor(Math.random() * 4); i++) this.noise(o, t + i * 0.075, 0.07, { type: 'bandpass', f0: this.vary(1200, 0.2), q: 1, vol: 0.8 }); }
+    else if (k === 'boom') { this.noise(o, t, 1.2, { type: 'lowpass', f0: 500, f1: 50, vol: 0.9, brown: true, curve: 1.3 }); this.tone(o, t, 0.9, { f0: this.vary(55), f1: 25, vol: 0.6 }); }
+    else this.noise(o, t, 0.12, { type: 'bandpass', f0: this.vary(900, 0.25), q: 1, vol: 0.5 });
+  },
+  // Low rumble of a battle going on somewhere, for as long as ambience is on
+  startAmbienceBed() {
+    const ctx = this.ensureCtx(); if (!ctx || this.bed) return;
+    const src = ctx.createBufferSource(); src.buffer = this.brown; src.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 180;
+    const g = ctx.createGain(); g.gain.value = 0.0001; g.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 2);
+    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.07; lg.gain.value = 0.025; lfo.connect(lg); lg.connect(g.gain); lfo.start();
+    src.connect(f); f.connect(g); g.connect(this.master); src.start();
+    this.bed = { src, g, lfo };
+  },
+  stopAmbienceBed() {
+    if (!this.bed || !this.ctx) return;
+    const { src, g, lfo } = this.bed; this.bed = null;
+    g.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4);
+    setTimeout(() => { try { src.stop(); lfo.stop(); } catch (e) {} }, 1500);
   }
 };
 
@@ -1780,7 +1739,7 @@ window.toggleSFX = function() {
     btn.innerText = window.sfxEnabled ? '🔊 Sound' : '🔇 Muted';
     btn.className = window.sfxEnabled ? 'btn-primary' : '';
   }
-  if (window.sfxEnabled) window.sfx.playSave();
+  if (window.sfxEnabled) window.sfx.playSave(); else window.sfx.stopAmbienceBed();
 };
 
 window.aiCamFollow = true;
@@ -22122,17 +22081,13 @@ class NetEpicScene extends Phaser.Scene {
       return;
     }
 
-    if (isFlame) {
-      window.sfx.playFlame();
-    } else if (isBarrage) {
-      window.sfx.playBarrage();
-    } else if (isMissile) {
-      window.sfx.playExplosion(false);
-    } else if (isLaser || isPlasma) {
-      window.sfx.playLaser(activeWpn.tsm <= -1);
-    } else {
-      window.sfx.playLaser(false);
-    }
+    const fc = this.getDetachmentCenter(firerDet), pan = this.sfxPan(fc.x, fc.y);
+    if (isFlame) window.sfx.playFlame(pan);
+    else if (isBarrage) window.sfx.playBarrage(pan);
+    else if (isMissile) window.sfx.playMissile(pan);
+    else if (isPlasma) window.sfx.playPlasma(pan);
+    else if (isLaser) window.sfx.playLaser(activeWpn.tsm <= -2, pan);
+    else window.sfx.playGun(activeWpn.tsm <= -2 || /cannon|battle|earthshaker|thunderer|howitzer|mortar/.test(wName), pairs.length * (activeWpn.dice || 1), pan);
 
     const gfx = this.add.graphics().setDepth(450);
     // Barrage shells all come down inside the template where it actually landed
@@ -23909,6 +23864,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   clearAllDetachments() {
+    this._wrecks = [];
     if (!this.detachments) return;
     this.detachments.forEach(d => {
       d.stands.forEach(s => s.container.destroy());
@@ -26851,6 +26807,7 @@ class NetEpicScene extends Phaser.Scene {
       this.spawnFloatingText(vx, vy, `💥 ${victim.label} KILLED!`, '#f87171', '12px');
     }
 
+    if (det.isVehicle || det.isTitan || det.superHeavy) this.addWreck(vx, vy, Boolean(det.isTitan || det.superHeavy)); // burning wreck left behind
     victim.container.destroy();
     det.casualties++;
 
@@ -26972,32 +26929,125 @@ class NetEpicScene extends Phaser.Scene {
 
   // --- ATMOSPHERIC BACKGROUND BATTLEFIELD FIRE ENGINE ---
   // Purely cosmetic ambient skirmish fire across no-man's land (0 impact on units, rules or camera)
+  // Stereo position (-1 left .. 1 right) of a world point on screen, so sounds come from where things happen
+  sfxPan(x, y) {
+    const cam = this.cameras.main;
+    const dx = x - cam.midPoint.x, dy = y - cam.midPoint.y, r = cam.rotation;
+    const sx = (dx * Math.cos(r) - dy * Math.sin(r)) * cam.zoom;
+    return Phaser.Math.Clamp(sx / (cam.width / 2), -1, 1) * 0.85;
+  }
+
+  // Background battle: a steady trickle of fire across the lines that swells into flurries, distant
+  // artillery, flares, drifting smoke and burning wrecks. Purely cosmetic.
   updateAmbientBattlefieldFire(time) {
+    this.drawWrecks(time);
+    const on = window.ambientBattlefieldFire !== false && this.phase !== 'DEPLOYMENT' && this.turn >= 1 && window.sfxEnabled;
+    if (on) window.sfx.startAmbienceBed(); else window.sfx.stopAmbienceBed();
     if (window.ambientBattlefieldFire === false) return;
     if (this.phase === 'DEPLOYMENT' || this.turn < 1) return;
-
-    // Pause ambient fire during interactive combat resolution card
+    // Hold fire while a combat card is being read
     const combatModal = document.getElementById('combat-card-modal');
     if (combatModal && combatModal.style.display !== 'none') return;
 
-    if (!this._nextAmbientFireTime) {
-      this._nextAmbientFireTime = time + Phaser.Math.Between(2200, 4800);
-      return;
-    }
+    if (!this._nextAmbientFireTime) { this._nextAmbientFireTime = time + Phaser.Math.Between(600, 1400); this._nextAmbientEvent = time + 4000; return; }
 
+    // intensity drifts slowly between lulls and heavy exchanges
+    const intensity = 0.55 + 0.45 * Math.sin(time / 9000) * Math.sin(time / 3700 + 1);
     if (time >= this._nextAmbientFireTime) {
-      this._nextAmbientFireTime = time + Phaser.Math.Between(2400, 5200);
+      this._nextAmbientFireTime = time + Phaser.Math.Between(450, 1300) / Math.max(0.35, intensity);
       this.spawnAmbientShot(false);
-
-      // 32% chance for a rapid return-fire exchange from the enemy line
-      if (Math.random() < 0.32) {
-        this.time.delayedCall(Phaser.Math.Between(360, 620), () => {
-          if (this.phase !== 'DEPLOYMENT') {
-            this.spawnAmbientShot(true);
-          }
-        });
-      }
+      if (Math.random() < 0.45) this.time.delayedCall(Phaser.Math.Between(250, 600), () => { if (this.phase !== 'DEPLOYMENT') this.spawnAmbientShot(true); });
+      // occasional flurry: a burst of exchanges along the line
+      if (Math.random() < 0.08 * intensity) for (let i = 1; i <= Phaser.Math.Between(3, 6); i++) this.time.delayedCall(i * Phaser.Math.Between(140, 320), () => { if (this.phase !== 'DEPLOYMENT') this.spawnAmbientShot(Math.random() < 0.5); });
     }
+    // bigger set pieces every few seconds
+    if (time >= this._nextAmbientEvent) {
+      this._nextAmbientEvent = time + Phaser.Math.Between(2500, 6000);
+      const r = Math.random();
+      if (r < 0.45) this.spawnAmbientArtillery();
+      else if (r < 0.65) this.spawnAmbientFlare();
+      else this.spawnAmbientSmoke();
+    }
+  }
+
+  // A point somewhere in no-man's land between the armies (or near the front line)
+  ambientFrontPoint() {
+    const pts = [];
+    this.detachments.forEach(d => { if (d.stands.length && !d.embarkedOn && !d.inReserve) pts.push({ side: d.faction, c: this.getDetachmentCenter(d) }); });
+    const S = pts.filter(p => p.side === 'IMPERIUM'), N = pts.filter(p => p.side !== 'IMPERIUM');
+    if (!S.length || !N.length) return { x: Phaser.Math.Between(80, BOARD_W - 80), y: Phaser.Math.Between(80, BOARD_H - 80) };
+    const a = Phaser.Utils.Array.GetRandom(S).c, b = Phaser.Utils.Array.GetRandom(N).c, f = 0.25 + Math.random() * 0.5;
+    return { x: Phaser.Math.Clamp(Phaser.Math.Linear(a.x, b.x, f) + Phaser.Math.Between(-60, 60), 30, BOARD_W - 30), y: Phaser.Math.Clamp(Phaser.Math.Linear(a.y, b.y, f) + Phaser.Math.Between(-60, 60), 30, BOARD_H - 30) };
+  }
+
+  // Off-table artillery landing near the front: flash, dust ring, smoke and a far-off boom
+  spawnAmbientArtillery() {
+    const shells = Math.random() < 0.4 ? Phaser.Math.Between(2, 4) : 1;
+    const base = this.ambientFrontPoint();
+    for (let i = 0; i < shells; i++) {
+      this.time.delayedCall(i * Phaser.Math.Between(180, 420), () => {
+        const x = base.x + Phaser.Math.Between(-40, 40), y = base.y + Phaser.Math.Between(-40, 40);
+        window.sfx.playDistantShot('boom', this.sfxPan(x, y), 0.8);
+        const g = this.add.graphics().setDepth(396); const st = { t: 0 };
+        this.tweens.add({ targets: st, t: 1, duration: 1600, onUpdate: () => {
+          g.clear(); const t = st.t;
+          if (t < 0.15) { g.fillStyle(0xfff1c2, (0.15 - t) * 5); g.fillCircle(x, y, 10); }
+          g.lineStyle(2, 0xd6c3a0, 0.6 * (1 - t)); g.strokeCircle(x, y, 6 + t * 26);
+          g.fillStyle(0xf97316, 0.5 * Math.max(0, 1 - t * 3)); g.fillCircle(x, y, 7 * (1 - t));
+          for (let k = 0; k < 4; k++) { g.fillStyle(0x6b6b6b, 0.35 * (1 - t)); g.fillCircle(x + Math.cos(k * 1.6) * 6 * t, y + Math.sin(k * 1.6) * 6 * t - t * 14, 5 + t * 10); }
+        }, onComplete: () => g.destroy() });
+        const sc = this.add.graphics().setDepth(4); sc.fillStyle(0x1c1208, 0.18); sc.fillCircle(x, y, 7);
+        this.tweens.add({ targets: sc, alpha: 0, delay: 12000, duration: 4000, onComplete: () => sc.destroy() });
+      });
+    }
+  }
+
+  // A flare fired up over the battlefield, drifting down and lighting the ground under it
+  spawnAmbientFlare() {
+    const p = this.ambientFrontPoint();
+    const col = Phaser.Utils.Array.GetRandom([0xfef08a, 0xfca5a5, 0xbbf7d0]);
+    const g = this.add.graphics().setDepth(397); const st = { t: 0 };
+    window.sfx.playDistantShot('gun', this.sfxPan(p.x, p.y), 0.5);
+    this.tweens.add({ targets: st, t: 1, duration: 4200, onUpdate: () => {
+      g.clear(); const t = st.t, x = p.x + Math.sin(t * 5) * 6, y = p.y - 30 + t * 30, a = t < 0.1 ? t * 10 : (1 - t);
+      g.fillStyle(col, 0.08 * a); g.fillCircle(x, y + 14, 46);
+      g.fillStyle(col, 0.16 * a); g.fillCircle(x, y + 10, 22);
+      g.fillStyle(0xffffff, 0.95 * a); g.fillCircle(x, y, 1.8);
+      g.lineStyle(1, 0xd4d4d8, 0.35 * a); g.lineBetween(x, y - 2, x - Math.sin(t * 5) * 4, y - 14);
+    }, onComplete: () => g.destroy() });
+  }
+
+  // A slow plume of drifting smoke
+  spawnAmbientSmoke() {
+    const p = this.ambientFrontPoint();
+    const g = this.add.graphics().setDepth(398); const st = { t: 0 };
+    const puffs = Array.from({ length: 6 }, (_, i) => ({ d: i * 0.12, ox: Phaser.Math.Between(-8, 8) }));
+    const wind = { x: Phaser.Math.FloatBetween(-1, 1), y: Phaser.Math.FloatBetween(-1, 1) };
+    this.tweens.add({ targets: st, t: 1, duration: 6000, onUpdate: () => {
+      g.clear();
+      puffs.forEach(pf => { const tt = Phaser.Math.Clamp((st.t - pf.d) / (1 - pf.d), 0, 1); if (tt <= 0) return; g.fillStyle(0x52525b, 0.22 * (1 - tt)); g.fillCircle(p.x + pf.ox + wind.x * tt * 50, p.y + wind.y * tt * 50, 6 + tt * 22); });
+    }, onComplete: () => g.destroy() });
+  }
+
+  // Wrecks burn for a while where units were destroyed (small fire and a column of smoke)
+  addWreck(x, y, big = false) {
+    if (!this._wrecks) this._wrecks = [];
+    this._wrecks.push({ x, y, big, born: this.time.now, turn: this.turn });
+    if (this._wrecks.length > 14) this._wrecks.shift();
+  }
+  drawWrecks(time) {
+    if (!this._wrecks || !this._wrecks.length) { if (this.wreckGfx) this.wreckGfx.clear(); return; }
+    if (!this.wreckGfx) this.wreckGfx = this.add.graphics().setDepth(57);
+    const g = this.wreckGfx; g.clear();
+    this._wrecks = this._wrecks.filter(w => this.turn - w.turn < 3);
+    this._wrecks.forEach((w, i) => {
+      const k = w.big ? 1.6 : 1, f = 0.7 + 0.3 * Math.sin(time * 0.02 + i * 2);
+      g.fillStyle(0x1c1208, 0.35); g.fillCircle(w.x, w.y, 6 * k);
+      g.fillStyle(0xb91c1c, 0.5 * f); g.fillCircle(w.x, w.y, 3.4 * k * f);
+      g.fillStyle(0xf97316, 0.75 * f); g.fillCircle(w.x + Math.sin(time * 0.013 + i) * k, w.y, 2.2 * k * f);
+      g.fillStyle(0xfde047, 0.8 * f); g.fillCircle(w.x, w.y, 1 * k);
+      for (let p = 0; p < 4; p++) { const ph = ((time / 2400) + p / 4 + i * 0.13) % 1; g.fillStyle(0x3f3f46, 0.28 * (1 - ph)); g.fillCircle(w.x + ph * 10 * k, w.y - ph * 22 * k, (2.5 + ph * 7) * k); }
+    });
   }
 
   spawnAmbientShot(isReturnFire = false) {
@@ -27017,57 +27067,42 @@ class NetEpicScene extends Phaser.Scene {
     const firerSide = isReturnFire
       ? (this._lastAmbientFirerSide === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM')
       : (Math.random() < 0.5 ? 'IMPERIUM' : 'ORKS');
-
     this._lastAmbientFirerSide = firerSide;
 
     const firerStands = firerSide === 'IMPERIUM' ? southStands : northStands;
     const targetPool = firerSide === 'IMPERIUM' ? northStands : southStands;
-
     const shooter = Phaser.Utils.Array.GetRandom(firerStands);
     if (!shooter || !shooter.container) return;
+    const sx = shooter.container.x, sy = shooter.container.y;
 
-    const sx = shooter.container.x;
-    const sy = shooter.container.y;
-
-    // Pick enemy stand within reasonable distance (150px to 950px)
     const sortedTargets = targetPool
       .filter(t => t && t.container)
       .map(t => ({ stand: t, dist: Phaser.Math.Distance.Between(sx, sy, t.container.x, t.container.y) }))
       .filter(item => item.dist >= 120 && item.dist <= 980)
       .sort((a, b) => a.dist - b.dist);
-
-    let targetStand = null;
-    if (sortedTargets.length > 0) {
-      const topCount = Math.min(3, sortedTargets.length);
-      targetStand = sortedTargets[Phaser.Math.Between(0, topCount - 1)].stand;
-    } else {
-      targetStand = Phaser.Utils.Array.GetRandom(targetPool);
-    }
-
+    let targetStand = sortedTargets.length ? sortedTargets[Phaser.Math.Between(0, Math.min(3, sortedTargets.length) - 1)].stand : Phaser.Utils.Array.GetRandom(targetPool);
     if (!targetStand || !targetStand.container) return;
 
-    // Scatter slightly around target for realistic suppressive / near-miss effect
-    const tx = Phaser.Math.Clamp(targetStand.container.x + Phaser.Math.Between(-34, 34), 25, BOARD_W - 25);
-    const ty = Phaser.Math.Clamp(targetStand.container.y + Phaser.Math.Between(-34, 34), 25, BOARD_H - 25);
-
-    const rollType = Math.random();
-    const firerMeta = this.getSideMeta(firerSide);
-    const beamColor = firerMeta.phaserColor || 0x38bdf8;
-
-    if (rollType < 0.45) {
-      this.spawnAmbientTracers(sx, sy, tx, ty);
-    } else if (rollType < 0.78) {
-      this.spawnAmbientLaser(sx, sy, tx, ty, beamColor);
-    } else if (rollType < 0.90) {
-      this.spawnAmbientPlasma(sx, sy, tx, ty);
-    } else {
-      this.spawnAmbientRocket(sx, sy, tx, ty);
-    }
+    // near misses: land around the target, never on it
+    const tx = Phaser.Math.Clamp(targetStand.container.x + Phaser.Math.Between(-38, 38), 25, BOARD_W - 25);
+    const ty = Phaser.Math.Clamp(targetStand.container.y + Phaser.Math.Between(-38, 38), 25, BOARD_H - 25);
+    const beamColor = this.getSideMeta(firerSide).phaserColor || 0x38bdf8;
+    // what the shooter carries decides what it fires
+    const det = shooter.detachment || {};
+    const wn = ((det.weapon && det.weapon.name) || '').toLowerCase();
+    const r = Math.random();
+    if (/las|lance|pulse|prism|beam|zzap/.test(wn) && r < 0.7) this.spawnAmbientLaser(sx, sy, tx, ty, beamColor);
+    else if (/plasma|melta|fusion|thermal/.test(wn) && r < 0.7) this.spawnAmbientPlasma(sx, sy, tx, ty);
+    else if (/missile|rokkit|rocket/.test(wn) && r < 0.6) this.spawnAmbientRocket(sx, sy, tx, ty);
+    else if (r < 0.62) this.spawnAmbientTracers(sx, sy, tx, ty);
+    else if (r < 0.84) this.spawnAmbientLaser(sx, sy, tx, ty, beamColor);
+    else if (r < 0.92) this.spawnAmbientPlasma(sx, sy, tx, ty);
+    else this.spawnAmbientRocket(sx, sy, tx, ty);
   }
 
   // 1. Ambient Tracer Burst (3 rapid bullet streaks)
   spawnAmbientTracers(x1, y1, x2, y2) {
-    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(false);
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot('rattle', this.sfxPan(x1, y1), 0.8);
     const gfx = this.add.graphics().setDepth(395);
     const count = Phaser.Math.Between(2, 4);
 
@@ -27117,7 +27152,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // 2. Ambient Laser Streak
   spawnAmbientLaser(x1, y1, x2, y2, color = 0x38bdf8) {
-    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(true);
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot('laser', this.sfxPan(x1, y1), 0.7);
     const gfx = this.add.graphics().setDepth(395);
     const anim = { p: 0 };
 
@@ -27162,7 +27197,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // 3. Ambient Plasma Bolt
   spawnAmbientPlasma(x1, y1, x2, y2) {
-    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(true);
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot('laser', this.sfxPan(x1, y1), 0.6);
     const gfx = this.add.graphics().setDepth(395);
     const anim = { p: 0 };
 
@@ -27200,7 +27235,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // 4. Ambient Rocket / Mortar Puff
   spawnAmbientRocket(x1, y1, x2, y2) {
-    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot(false);
+    if (window.sfx && window.sfx.playDistantShot) window.sfx.playDistantShot('gun', this.sfxPan(x1, y1), 0.7);
     const gfx = this.add.graphics().setDepth(395);
     const anim = { p: 0 };
 
@@ -27229,6 +27264,7 @@ class NetEpicScene extends Phaser.Scene {
         gfx.destroy();
         // Tiny harmless dust/explosion puff
         this.spawnExplosionFX(x2, y2, 8, false);
+        if (window.sfx) window.sfx.playDistantShot('boom', this.sfxPan(x2, y2), 0.35);
       }
     });
   }
