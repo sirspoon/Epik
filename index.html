@@ -901,6 +901,44 @@
     <div id="wizard-step-1" class="wizard-step" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
       <div class="wizard-scroll-body" style="flex:1; min-height:0; overflow-y:auto; padding:6px 2px; display:flex; flex-direction:column; gap:10px;">
         <div>
+          <div class="setup-label">📜 Scenario</div>
+          <div class="map-preset-grid">
+            <div id="scn-card-OPEN" class="preset-card active" onclick="window.setScenario('OPEN')">
+              <div style="font-size:1.3rem;">⚔️</div>
+              <div style="font-weight:700; color:#f8fafc;">Open Battle</div>
+            </div>
+            <div id="scn-card-SULPHUR" class="preset-card" onclick="window.setScenario('SULPHUR')">
+              <div style="font-size:1.3rem;">🌉</div>
+              <div style="font-weight:700; color:#f8fafc;">Sulphur River</div>
+            </div>
+            <div id="scn-card-HELLBLADE" class="preset-card" onclick="window.setScenario('HELLBLADE')">
+              <div style="font-size:1.3rem;">⛰️</div>
+              <div style="font-weight:700; color:#f8fafc;">Hellblade Mountains</div>
+            </div>
+            <div id="scn-card-HIGHWAY" class="preset-card" onclick="window.setScenario('HIGHWAY')">
+              <div style="font-size:1.3rem;">🛣️</div>
+              <div style="font-weight:700; color:#f8fafc;">Hell's Highway</div>
+            </div>
+            <div id="scn-card-BREAKTHROUGH" class="preset-card" onclick="window.setScenario('BREAKTHROUGH')">
+              <div style="font-size:1.3rem;">🪖</div>
+              <div style="font-weight:700; color:#f8fafc;">Breakthrough</div>
+            </div>
+            <div id="scn-card-AMBUSH" class="preset-card" onclick="window.setScenario('AMBUSH')">
+              <div style="font-size:1.3rem;">💥</div>
+              <div style="font-weight:700; color:#f8fafc;">Ambush!</div>
+            </div>
+            <div id="scn-card-PINCER" class="preset-card" onclick="window.setScenario('PINCER')">
+              <div style="font-size:1.3rem;">🗜️</div>
+              <div style="font-weight:700; color:#f8fafc;">Death of Incentives</div>
+            </div>
+            <div id="scn-card-MOONLIGHT" class="preset-card" onclick="window.setScenario('MOONLIGHT')">
+              <div style="font-size:1.3rem;">🌙</div>
+              <div style="font-weight:700; color:#f8fafc;">Ill Met by Moonlight</div>
+            </div>
+          </div>
+          <div id="scn-brief" class="sub-text" style="margin-top:6px; color:#cbd5e1; line-height:1.35;"><b>⚔️ Open Battle</b><br>The standard game: both armies set up along their own long edge. Hold objectives and break enemy units; the first side to reach the VP goal wins.</div>
+        </div>
+        <div>
           <div class="setup-label">🗺️ Map</div>
           <div class="map-preset-grid">
             <div id="map-card-INDUSTRIAL" class="preset-card active" onclick="window.setMapPreset('INDUSTRIAL')" title="Factory ruins, toxic waterways, cargo containers & rail lines.">
@@ -1826,7 +1864,7 @@ window.updateBriefingCard = function() {
   const bMap = document.getElementById('briefing-map');
   const bMode = document.getElementById('briefing-mode');
   const bBudget = document.getElementById('briefing-budget');
-  if (bMap) bMap.innerText = `🗺️ Map: ${MAP_LABELS[window.mapPreset] || window.mapPreset}`;
+  if (bMap) { const sc = window.currentScenario && window.currentScenario(); bMap.innerText = `🗺️ Map: ${MAP_LABELS[window.mapPreset] || window.mapPreset}${sc ? ` · 📜 ${sc.name} (${sc.turns} turns)` : ''}`; }
   if (bMode) {
     const modeLabel = window.aiFaction === 'ORKS' ? 'vs North AI' : (window.aiFaction === 'IMPERIUM' ? 'vs South AI' : '2-Player Hotseat');
     bMode.innerText = `🤖 Mode: ${modeLabel}`;
@@ -1851,7 +1889,7 @@ window.updateBriefingCard = function() {
   }
   if (bSouthDetails && sBd) {
     const sStatus = sBd.valid ? '<span style="color:#4ade80;">✅ Legal NetEpic Force</span>' : `<span style="color:#ef4444;">⚠️ ${sBd.errors[0]}</span>`;
-    bSouthDetails.innerHTML = `${sBd.totalPts} / ${window.pointsBudget} pts (${sBd.cardCount} Cards &bull; 🏢 ${sBd.companies} Co, 🛡️ ${sBd.support} Sup, ⚔️ ${sBd.special} Spc, 👑 ${sBd.uniqueCount} Unq)<br>${sStatus}`;
+    bSouthDetails.innerHTML = `${sBd.totalPts} / ${window.sideBudget('IMPERIUM')} pts (${sBd.cardCount} Cards &bull; 🏢 ${sBd.companies} Co, 🛡️ ${sBd.support} Sup, ⚔️ ${sBd.special} Spc, 👑 ${sBd.uniqueCount} Unq)<br>${sStatus}`;
   }
 
   const bNorthName = document.getElementById('briefing-north-name');
@@ -1862,7 +1900,7 @@ window.updateBriefingCard = function() {
   }
   if (bNorthDetails && nBd) {
     const nStatus = nBd.valid ? '<span style="color:#4ade80;">✅ Legal NetEpic Force</span>' : `<span style="color:#ef4444;">⚠️ ${nBd.errors[0]}</span>`;
-    bNorthDetails.innerHTML = `${nBd.totalPts} / ${window.pointsBudget} pts (${nBd.cardCount} Cards &bull; 🏢 ${nBd.companies} Co, 🛡️ ${nBd.support} Sup, ⚔️ ${nBd.special} Spc, 👑 ${nBd.uniqueCount} Unq)<br>${nStatus}`;
+    bNorthDetails.innerHTML = `${nBd.totalPts} / ${window.sideBudget('ORKS')} pts (${nBd.cardCount} Cards &bull; 🏢 ${nBd.companies} Co, 🛡️ ${nBd.support} Sup, ⚔️ ${nBd.special} Spc, 👑 ${nBd.uniqueCount} Unq)<br>${nStatus}`;
   }
 
   const btnDeployPhase = document.getElementById('btn-deploy-phase');
@@ -34471,10 +34509,70 @@ const MAP_LABELS = {
   HIVE: '🏙️ Hive Complex',
   RANDOM: '🎲 Randomized'
 };
+// ===== SCENARIOS (from the campaign supplements, converted to NetEpic): North (defender) v South (attacker) =====
+// zones: per side, a list of shapes in 6'x4' table coordinates (scaled to the table):
+//   { band: 'N'|'S', cm }  strip along that edge; { rect: [x, y, w, h] }; { road: /name/, cm } within cm of that road;
+//   { all: true, awayFromRoad: /name/, cm } anywhere at least cm from that road
+const SCENARIOS = {
+  OPEN: { name: 'Open Battle', icon: '⚔️', short: 'Any map. First to the VP goal wins.', brief: 'The standard game: both armies set up along their own long edge. Hold objectives and break enemy units; the first side to reach the VP goal wins.' },
+  SULPHUR: { name: 'Battle of the Sulphur River', icon: '🌉', map: 'RIVER', turns: 5,
+    short: 'Seize the bridges. 5 turns.',
+    brief: 'The River Lethe can only be crossed at two bridges and a ford. Each end of each crossing is an objective worth 4 VP. After 5 turns the side with the most VP wins.',
+    objectives: 'CROSSINGS', objVp: 4 },
+  HELLBLADE: { name: 'The Hellblade Mountains', icon: '⛰️', map: 'PASS', turns: 5, defender: 'ORKS',
+    short: 'Force the pass and break out. 5 turns.',
+    brief: 'North holds the mountain pass (deploys up to 55 cm deep); South attacks from a 25 cm strip. South scores 3 VP for every detachment that moves off the north edge. North scores 5 VP if none get through. Objectives are worth 3 VP. South gets a third more points.',
+    zones: { ORKS: [{ band: 'N', cm: 55 }], IMPERIUM: [{ band: 'S', cm: 25 }] }, exit: { faction: 'IMPERIUM', edge: 'N', vp: 3 }, objVp: 3,
+    keepObjectives: ['Pass Gatehouse', 'Pass Road', 'Watch Hill'], points: { IMPERIUM: 1.33 } },
+  HIGHWAY: { name: "Hell's Highway", icon: '🛣️', map: 'HIGHWAY', turns: 6, defender: 'ORKS',
+    short: 'Hold the highway. Sudden death from turn 4.',
+    brief: 'North is strung out along the Promethium Highway; South comes in from two corners. From turn 4, a side that is the only one with unbroken units on the highway wins at once. Otherwise most VP after 6 turns. The three highway markers are worth 3 VP.',
+    zones: { ORKS: [{ road: /Promethium/, cm: 15 }], IMPERIUM: [{ rect: [0, 0, 520, 330] }, { rect: [1330, 920, 520, 330] }] },
+    objectives: [[480, 820, 'West Highway'], [940, 650, 'Junction'], [1400, 430, 'East Highway']], objVp: 3, holdRoad: /Promethium/, holdFrom: 4 },
+  BREAKTHROUGH: { name: 'Breakthrough', icon: '🪖', map: 'FORTIFIED', turns: 6, defender: 'ORKS',
+    short: 'Break the trench line. 6 turns.',
+    brief: 'North holds the fortified line (deploys up to 56 cm deep, trenches and bunkers included); South must break through. South scores 3 VP for every detachment that moves off the north edge. Objectives 5 VP. South gets a third more points.',
+    zones: { ORKS: [{ band: 'N', cm: 56 }], IMPERIUM: [{ band: 'S', cm: 30 }] }, exit: { faction: 'IMPERIUM', edge: 'N', vp: 3 }, points: { IMPERIUM: 1.33 } },
+  AMBUSH: { name: 'Ambush!', icon: '💥', map: 'HIGHWAY', turns: 6, defender: 'IMPERIUM',
+    short: 'A convoy is caught on the road. 6 turns.',
+    brief: "South's convoy is strung along the highway; North lies in wait at least 30 cm away. The convoy is caught by surprise: on turn 1 it can't move or shoot. No objectives: break enemy units for VP. Most VP after 6 turns wins.",
+    zones: { IMPERIUM: [{ road: /Promethium/, cm: 8 }], ORKS: [{ all: true, awayFromRoad: /Promethium/, cm: 30 }] }, objectives: [], surprised: 'IMPERIUM' },
+  PINCER: { name: 'The Death of Incentives', icon: '🗜️', turns: 6, defender: 'ORKS',
+    short: 'Any map. Survive the pincer. 6 turns.',
+    brief: 'North sets up in the middle third of the table; South splits into both ends and closes the jaws. No objectives: South scores for breaking units as usual, North scores 2 VP for every detachment still unbroken at the end. South gets a quarter more points.',
+    zones: { ORKS: [{ rect: [630, 0, 590, 1250] }], IMPERIUM: [{ rect: [0, 0, 440, 1250] }, { rect: [1410, 0, 440, 1250] }] }, objectives: [], surviveVp: { faction: 'ORKS', vp: 2 }, points: { IMPERIUM: 1.25 } },
+  MOONLIGHT: { name: 'Ill Met by Moonlight', icon: '🌙', map: 'INDUSTRIAL', turns: 6,
+    short: 'A night battle along the highway. 6 turns.',
+    brief: 'Two columns meet on the highway at night. Turns 1-2: nobody can see further than 15 cm. Turn 3: -1 to hit beyond 15 cm. Seven markers along and beside the road, 3 VP each. Most VP after 6 turns wins.',
+    objectives: [[955, 160, 'North Road'], [925, 625, 'Crossroads'], [895, 1090, 'South Road'], [625, 330, 'North-West'], [1225, 330, 'North-East'], [625, 920, 'South-West'], [1225, 920, 'South-East']], objVp: 3, night: true }
+};
+const SCENARIO_ORDER = ['OPEN', 'SULPHUR', 'HELLBLADE', 'HIGHWAY', 'BREAKTHROUGH', 'AMBUSH', 'PINCER', 'MOONLIGHT'];
+window.scenarioId = 'OPEN';
+window.currentScenario = function() { const s = SCENARIOS[window.scenarioId]; return (s && window.scenarioId !== 'OPEN') ? s : null; };
+// A side's points budget (some scenarios give one side more or fewer points)
+window.sideBudget = function(side) {
+  const s = window.currentScenario(), m = (s && s.points && s.points[side]) || 1;
+  return Math.round((window.pointsBudget || 2000) * m / 50) * 50;
+};
+window.setScenario = function(id) {
+  if (!SCENARIOS[id]) id = 'OPEN';
+  window.scenarioId = id;
+  const s = SCENARIOS[id];
+  SCENARIO_ORDER.forEach(k => { const c = document.getElementById(`scn-card-${k}`); if (c) c.classList.toggle('active', k === id); });
+  const b = document.getElementById('scn-brief');
+  if (b) b.innerHTML = `<b>${s.icon} ${s.name}</b>${s.map ? ` · map: ${MAP_LABELS[s.map]}` : ''}${s.turns ? ` · ${s.turns} turns` : ''}<br>${s.brief}`;
+  { const bVp = document.getElementById('budget-vp-target'); if (bVp) bVp.innerText = id !== 'OPEN' ? `(${s.turns} turns, most VP wins)` : `(Goal: ${window.getVictoryVpTarget(window.pointsBudget)} VP)`; }
+  if (s.map && window.mapPreset !== s.map) window.setMapPreset(s.map, true);
+  else if (window.gameScene && window.gameScene.applyMapPreset) window.gameScene.applyMapPreset(window.mapPreset);
+  if (window.updateBriefingCard) window.updateBriefingCard();
+  if (window.renderArmyModal) window.renderArmyModal();
+};
 const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'RANDOM'];
 
-window.setMapPreset = function(preset) {
+window.setMapPreset = function(preset, fromScenario = false) {
   window.mapPreset = preset;
+  const scn = window.currentScenario && window.currentScenario();
+  if (!fromScenario && scn && scn.map && scn.map !== preset) { window.scenarioId = 'OPEN'; SCENARIO_ORDER.forEach(k => { const c = document.getElementById(`scn-card-${k}`); if (c) c.classList.toggle('active', k === 'OPEN'); }); const b = document.getElementById('scn-brief'); if (b) b.innerHTML = `<b>${SCENARIOS.OPEN.icon} ${SCENARIOS.OPEN.name}</b><br>${SCENARIOS.OPEN.brief}`; }
   MAP_ORDER.forEach(p => {
     const b = document.getElementById(`map-preset-${p}`);
     if (b) b.className = (p === preset) ? 'btn-primary' : '';
@@ -34598,7 +34696,7 @@ window.setPointsBudget = function(pts) {
     if (btn) btn.className = (p === pts) ? 'btn-primary' : '';
   });
   const bVp = document.getElementById('budget-vp-target');
-  if (bVp) bVp.innerText = `(Goal: ${window.getVictoryVpTarget(pts)} VP)`;
+  if (bVp) { const sc = window.currentScenario && window.currentScenario(); bVp.innerText = sc ? `(${sc.turns} turns, most VP wins)` : `(Goal: ${window.getVictoryVpTarget(pts)} VP)`; }
 
   // Automatically enlarge battlefield for larger armies (NetEpic standard: 6x4 for 1000-2000, 8x4 for 3000, 8x5 for 4000-5000)
   if (pts <= 2000) {
@@ -34671,7 +34769,7 @@ window.getRosterBreakdown = function(side) {
   const maxSupport = companies * 5;
   const maxSpecial = companies * 1;
   // NetEpic p. 13: 1 Unique per full 3,000 pts (min 1 allowed for armies up to 2000 pts)
-  const maxUnique = Math.max(1, Math.floor(window.pointsBudget / 3000)); // 1 per full 3,000 pts (at least 1 in smaller games)
+  const maxUnique = Math.max(1, Math.floor(window.sideBudget(side) / 3000)); // 1 per full 3,000 pts (at least 1 in smaller games)
 
   const errors = [];
   if (roster.length === 0) {
@@ -34689,10 +34787,10 @@ window.getRosterBreakdown = function(side) {
     errors.push(`Duplicate Unique Character: "${duplicateUnique}" (personalities may never be duplicated).`);
   }
   if (uniqueCount > maxUnique) {
-    errors.push(`Unique card limit exceeded: ${uniqueCount}/${maxUnique} at ${window.pointsBudget} pts (1 per full 3,000 pts).`);
+    errors.push(`Unique card limit exceeded: ${uniqueCount}/${maxUnique} at ${window.sideBudget(side)} pts (1 per full 3,000 pts).`);
   }
-  if (totalPts > window.pointsBudget) {
-    errors.push(`Points Budget exceeded: ${totalPts}/${window.pointsBudget} pts.`);
+  if (totalPts > window.sideBudget(side)) {
+    errors.push(`Points Budget exceeded: ${totalPts}/${window.sideBudget(side)} pts.`);
   }
 
   return {
@@ -34753,7 +34851,7 @@ window.addDetachmentToRoster = function(side, key) {
   const unit = window.findCatalogUnit(key);
   if (!unit) return;
   const bd = window.getRosterBreakdown(side);
-  if (bd.totalPts + unit.points > window.pointsBudget) return;
+  if (bd.totalPts + unit.points > window.sideBudget(side)) return;
 
   const type = (unit.cardType || 'SUPPORT').toUpperCase();
   if (type !== 'COMPANY') {
@@ -34851,17 +34949,17 @@ window.renderArmyModal = function() {
     // Live Points Badge & Progress Bar (Always at top)
     const badge = document.getElementById(`${prefix}-pts-badge`);
     if (badge) {
-      badge.innerText = `${bd.totalPts}/${window.pointsBudget}`;
-      badge.title = `${bd.totalPts} of ${window.pointsBudget} points, ${bd.cardCount} cards`;
-      badge.style.borderColor = bd.totalPts > window.pointsBudget ? '#ef4444' : (bd.totalPts >= window.pointsBudget * 0.85 ? '#10b981' : '#475569');
-      badge.style.color = bd.totalPts > window.pointsBudget ? '#ef4444' : '#f8fafc';
+      badge.innerText = `${bd.totalPts}/${window.sideBudget(side)}`;
+      badge.title = `${bd.totalPts} of ${window.sideBudget(side)} points, ${bd.cardCount} cards`;
+      badge.style.borderColor = bd.totalPts > window.sideBudget(side) ? '#ef4444' : (bd.totalPts >= window.sideBudget(side) * 0.85 ? '#10b981' : '#475569');
+      badge.style.color = bd.totalPts > window.sideBudget(side) ? '#ef4444' : '#f8fafc';
     }
 
     const ptsBar = document.getElementById(`${prefix}-pts-bar`);
     if (ptsBar) {
-      const pct = Math.min(100, Math.round((bd.totalPts / window.pointsBudget) * 100));
+      const pct = Math.min(100, Math.round((bd.totalPts / window.sideBudget(side)) * 100));
       ptsBar.style.width = `${pct}%`;
-      ptsBar.style.backgroundColor = bd.totalPts > window.pointsBudget ? '#ef4444' : (bd.totalPts >= window.pointsBudget * 0.85 ? '#10b981' : meta.borderHex);
+      ptsBar.style.backgroundColor = bd.totalPts > window.sideBudget(side) ? '#ef4444' : (bd.totalPts >= window.sideBudget(side) * 0.85 ? '#10b981' : meta.borderHex);
     }
 
     // NetEpic Quota Chips (🏢 Co, 🛡️ Sup, ⚔️ Spc, 👑 Unq)
@@ -34890,7 +34988,7 @@ window.renderArmyModal = function() {
     if (chipUnq) {
       chipUnq.innerText = `👑 ${bd.uniqueCount}/${bd.maxUnique}`;
       chipUnq.className = 'quota-chip ' + (bd.uniqueCount <= bd.maxUnique ? 'quota-ok' : 'quota-err');
-      chipUnq.title = `Unique Personalities: Max ${bd.maxUnique} at ${window.pointsBudget} pts (NetEpic p. 13).`;
+      chipUnq.title = `Unique Personalities: Max ${bd.maxUnique} at ${window.sideBudget(side)} pts (NetEpic p. 13).`;
     }
 
     // Inline Rule Alert / Status
@@ -34935,7 +35033,7 @@ window.renderArmyModal = function() {
         let canAdd = true;
         let addLabel = '+';
 
-        if (bd.totalPts + u.points > window.pointsBudget) {
+        if (bd.totalPts + u.points > window.sideBudget(side)) {
           canAdd = false;
           addLabel = 'pts';
         } else if (type !== 'COMPANY' && bd.companies === 0) {
@@ -35057,7 +35155,7 @@ window.renderArmyModal = function() {
         else if (bd.special > bd.maxSpecial) reason = `⚠️ Too Many Special (${bd.special}/${bd.maxSpecial})`;
         else if (bd.hasDuplicateUnique) reason = `⚠️ Duplicate: ${bd.duplicateName}`;
         else if (bd.uniqueCount > bd.maxUnique) reason = `⚠️ Max ${bd.maxUnique} Unique Hero`;
-        else if (bd.totalPts > window.pointsBudget) reason = `⚠️ Over Budget (${bd.totalPts}/${window.pointsBudget})`;
+        else if (bd.totalPts > window.sideBudget(side)) reason = `⚠️ Over Budget (${bd.totalPts}/${window.sideBudget(side)})`;
         nextBtn.innerText = reason;
       }
     }
@@ -35976,7 +36074,7 @@ window.openTitanLoadout = function (side, index) {
       const newKey = EpikTitans.makeKey(map ? String(key).split('@')[0] : key, cur);
       const bd = window.getRosterBreakdown(side);
       const delta = (window.findCatalogUnit(newKey).points || 0) - (u.points || 0);
-      if (bd.totalPts + delta > window.pointsBudget) { alert('Not enough points left for that loadout.'); return; }
+      if (bd.totalPts + delta > window.sideBudget(side)) { alert('Not enough points left for that loadout.'); return; }
       window.armyRosters[side][index] = newKey;
       modal.style.display = 'none';
       window.renderArmyModal();
@@ -38321,6 +38419,7 @@ class NetEpicScene extends Phaser.Scene {
       b.siDamage = 0;
       b.collapsed = false;
     });
+    this.applyScenarioToMap();
   }
 
   applyMapPreset(preset) {
@@ -40118,6 +40217,17 @@ class NetEpicScene extends Phaser.Scene {
       this.impDeployLabel.setColor(southMeta.colorHex);
     }
     if (!inDeploy) return;
+    if (this.customZones()) {
+      this.drawScenarioZones(this.deployGfx);
+      [['ORKS', this.orkDeployLabel], ['IMPERIUM', this.impDeployLabel]].forEach(([f, lbl]) => {
+        if (!lbl) return; const z = this.zoneShapes(f)[0]; if (!z) return;
+        const p = z.kind === 'rect' ? { x: z.x + z.w / 2, y: z.y + z.h / 2 } : (z.kind === 'road' && z.roads.length ? { x: z.roads[Math.floor(z.roads.length / 2)].x1, y: z.roads[Math.floor(z.roads.length / 2)].y1 - z.r - 14 } : { x: BOARD_W / 2, y: f === 'ORKS' ? 60 : BOARD_H - 60 });
+        lbl.setPosition(p.x, p.y).setText(`${this.getSideMeta(f).icon} ${this.getSideName(f)} SETS UP HERE`);
+      });
+      return;
+    }
+    if (this.orkDeployLabel) this.orkDeployLabel.setPosition(BOARD_W / 2, DEPLOY_DEPTH_PX - 18);
+    if (this.impDeployLabel) this.impDeployLabel.setPosition(BOARD_W / 2, BOARD_H - DEPLOY_DEPTH_PX + 18);
 
     // North Deployment Zone (0 .. DEPLOY_DEPTH_PX)
     this.deployGfx.fillStyle(northMeta.phaserColor, 0.08);
@@ -40152,7 +40262,7 @@ class NetEpicScene extends Phaser.Scene {
     this.objectiveLabels = [];
     this.objectives.forEach(obj => {
       if (obj.label) obj.label.destroy();
-      obj.label = this.add.text(obj.x, obj.y + 18, `🚩 OBJ #${obj.id} (5 VP)\n[NEUTRAL]`, {
+      obj.label = this.add.text(obj.x, obj.y + 18, `🚩 OBJ #${obj.id} (${obj.vp || 5} VP)\n[NEUTRAL]`, {
         fontSize: '10px', fontStyle: 'bold', color: '#fde047', align: 'center',
         backgroundColor: 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
       }).setOrigin(0.5);
@@ -40184,7 +40294,7 @@ class NetEpicScene extends Phaser.Scene {
       this.objGfx.strokeCircle(obj.x, obj.y, 9);
 
       if (obj.label) {
-        obj.label.setText(`🚩 OBJ #${obj.id} (5 VP)\n[${ownerLabel}]`);
+        obj.label.setText(`🚩 OBJ #${obj.id} (${obj.vp || 5} VP)\n[${ownerLabel}]`);
         obj.label.setColor(hex);
       }
     });
@@ -40219,17 +40329,17 @@ class NetEpicScene extends Phaser.Scene {
       if (logChanges && obj.owner !== prevOwner) {
         const ownerName = this.getSideName(obj.owner);
         const ownerMeta = this.getSideMeta(obj.owner);
-        this.log(`🚩 <b>${obj.name}</b> captured by <b>${ownerName}</b>! (+5 VP)`);
-        this.spawnFloatingText(obj.x, obj.y - 16, `🚩 ${ownerName} +5 VP!`, ownerMeta.colorHex, '13px');
+        this.log(`🚩 <b>${obj.name}</b> captured by <b>${ownerName}</b>! (+${obj.vp || 5} VP)`);
+        this.spawnFloatingText(obj.x, obj.y - 16, `🚩 ${ownerName} +${obj.vp || 5} VP!`, ownerMeta.colorHex, '13px');
         window.sfx.playHorn();
       }
 
-      if (obj.owner === 'IMPERIUM') impCount++;
-      if (obj.owner === 'ORKS') orkCount++;
+      if (obj.owner === 'IMPERIUM') impCount += obj.vp || 5;
+      if (obj.owner === 'ORKS') orkCount += obj.vp || 5;
     });
 
-    this.objVp.IMPERIUM = impCount * 5;
-    this.objVp.ORKS = orkCount * 5;
+    this.objVp.IMPERIUM = impCount;
+    this.objVp.ORKS = orkCount;
     this.drawObjectives();
   }
 
@@ -41794,6 +41904,8 @@ class NetEpicScene extends Phaser.Scene {
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
     this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
+    this.scnState = {}; this._surpriseLogged = false; this._reportShown = false;
+    if (this.customZones()) ['IMPERIUM', 'ORKS'].forEach(f => this.scenarioPlaceSide(f));
 
     // Select first player-controlled detachment by default
     this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction)) || this.detachments[0] || null;
@@ -41888,8 +42000,7 @@ class NetEpicScene extends Phaser.Scene {
 
       // Clamp to Deployment Zone or Movement Allowance
       if (this.phase === 'DEPLOYMENT') {
-        const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
-        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
+        const { minY, maxY } = this.deployBand(det); // infiltrators may set up forward
         tx = Phaser.Math.Clamp(tx, 20, BOARD_W - 20);
         ty = Phaser.Math.Clamp(ty, minY, maxY);
       } else {
@@ -41910,6 +42021,7 @@ class NetEpicScene extends Phaser.Scene {
         s.originY = ty;
       }
     });
+    if (this.phase === 'DEPLOYMENT') this.zoneClampDet(det);
 
     this.updateDetachmentBadgePos(det);
     this.drawOverlays();
@@ -43661,8 +43773,10 @@ class NetEpicScene extends Phaser.Scene {
     const titan = det && (det.isTitan || det.superHeavy);
     return !titan && (this.rivers || []).length > 0 && this.isPointInImpassableRiver(x, y);
   }
+  navVehicle(det) { return Boolean(det && !det.flyer && !det.skimmer && !det.jump && !det.isFlyer && (det.pinningClass || 1) > 1); }
   segmentClear(det, a, b) {
     for (const r of (this.rocks || [])) if (this.lineHitsPoly(r.points, a.x, a.y, b.x, b.y)) return false;
+    if (this.navVehicle(det)) for (const bd of (this.buildings || [])) if (!bd.collapsed && this.lineHitsRect(bd, a.x, a.y, b.x, b.y, -12)) return false;
     const titan = det && (det.isTitan || det.superHeavy);
     if (!titan && (this.rivers || []).length) {
       const d = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y), n = Math.max(1, Math.ceil(d / 12));
@@ -43670,9 +43784,9 @@ class NetEpicScene extends Phaser.Scene {
     }
     return true;
   }
-  navNodes(titan) {
-    const key = titan ? 't' : 'g';
-    const sig = JSON.stringify([(this.rocks || []).map(r => r.points), (this.bridges || []).map(b => [b.x1, b.y1, b.x, b.y]), (this.rivers || []).length, BOARD_W, BOARD_H]);
+  navNodes(titan, veh = false) {
+    const key = (titan ? 't' : 'g') + (veh ? 'v' : '');
+    const sig = JSON.stringify([(this.rocks || []).map(r => r.points), (this.bridges || []).map(b => [b.x1, b.y1, b.x, b.y]), (this.rivers || []).length, BOARD_W, BOARD_H, veh ? (this.buildings || []).map(b => [b.x, b.y, b.rot, b.collapsed]) : 0]);
     this._nav = this._nav || {};
     if (this._nav[key] && this._nav[key].sig === sig) return this._nav[key];
     const nodes = [], M = 34;
@@ -43687,8 +43801,9 @@ class NetEpicScene extends Phaser.Scene {
       const d = Math.max(1, Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y)), ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
       nodes.push({ x: a.x - ux * 14, y: a.y - uy * 14, bridge: true }, { x: b.x + ux * 14, y: b.y + uy * 14, bridge: true });
     });
-    const fake = { isTitan: titan };
-    const ok = nodes.filter(n => n.x > 10 && n.y > 10 && n.x < BOARD_W - 10 && n.y < BOARD_H - 10 && !this.rockAt(n.x, n.y) && (titan || !(this.rivers || []).length || !this.isPointInImpassableRiver(n.x, n.y)));
+    if (veh) (this.buildings || []).forEach(b => { if (!b.collapsed) this.rectCorners(b, 42).forEach(p => nodes.push(p)); });
+    const fake = { isTitan: titan, pinningClass: veh ? 2 : 1 };
+    const ok = nodes.filter(n => n.x > 10 && n.y > 10 && n.x < BOARD_W - 10 && n.y < BOARD_H - 10 && !this.rockAt(n.x, n.y) && !(veh && this.getBuildingAt(n.x, n.y)) && (titan || !(this.rivers || []).length || !this.isPointInImpassableRiver(n.x, n.y)));
     const adj = ok.map((a, i) => ok.map((b, j) => (i !== j && this.segmentClear(fake, a, b)) ? Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y) : 0));
     this._nav[key] = { sig, nodes: ok, adj };
     return this._nav[key];
@@ -43697,7 +43812,7 @@ class NetEpicScene extends Phaser.Scene {
   findRoute(det, a, b) {
     if (this.segmentClear(det, a, b)) return [b];
     const titan = Boolean(det && (det.isTitan || det.superHeavy));
-    const { nodes, adj } = this.navNodes(titan), n = nodes.length;
+    const { nodes, adj } = this.navNodes(titan, this.navVehicle(det)), n = nodes.length;
     if (!n) return null;
     const dist = new Array(n + 1).fill(Infinity), prev = new Array(n + 1).fill(-1), done = new Array(n + 1).fill(false);
     for (let i = 0; i < n; i++) if (this.segmentClear(det, a, nodes[i])) dist[i] = Phaser.Math.Distance.Between(a.x, a.y, nodes[i].x, nodes[i].y);
@@ -43717,7 +43832,7 @@ class NetEpicScene extends Phaser.Scene {
   // The AI heads for the next corner of its route instead of walking into rock or a river
   navNextWaypoint(det, from, goal) {
     if (det.flyer || det.skimmer || det.jump || det.isFlyer) return null;
-    if (!(this.rocks || []).length && !(this.rivers || []).length) return null;
+    if (!(this.rocks || []).length && !(this.rivers || []).length && !(this.navVehicle(det) && (this.buildings || []).length)) return null;
     const r = this.findRoute(det, from, goal);
     if (!r || r.length < 2) return null;
     for (const p of r) if (Phaser.Math.Distance.Between(from.x, from.y, p.x, p.y) > 30) return p;
@@ -43980,6 +44095,186 @@ class NetEpicScene extends Phaser.Scene {
       });
       if (!moved) break;
     }
+  }
+
+  // ===== SCENARIOS: zones, objectives, special rules and how the game ends =====
+  scn() { return window.currentScenario ? window.currentScenario() : null; }
+  scnScale() { return { sx: BOARD_W / (185 * PX_PER_CM), sy: BOARD_H / (125 * PX_PER_CM) }; }
+  scnRoads(re) { return (this.roads || []).filter(r => re.test(r.name || '')); }
+  distToRoads(roads, x, y) { let best = Infinity, pt = null; roads.forEach(r => { const d = this.distToPolyline([{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }], x, y); if (d < best) { best = d; const l2 = Phaser.Math.Distance.Squared(r.x1, r.y1, r.x2, r.y2) || 1, t = Phaser.Math.Clamp(((x - r.x1) * (r.x2 - r.x1) + (y - r.y1) * (r.y2 - r.y1)) / l2, 0, 1); pt = { x: r.x1 + t * (r.x2 - r.x1), y: r.y1 + t * (r.y2 - r.y1) }; } }); return { d: best, pt }; }
+  // The deployment shapes for a side, in board pixels
+  zoneShapes(f) {
+    const s = this.scn(), { sx, sy } = this.scnScale();
+    const src = (s && s.zones && s.zones[f]) || [{ band: f === 'ORKS' ? 'N' : 'S', cm: DEPLOY_DEPTH_PX / PX_PER_CM, std: true }];
+    return src.map(z => {
+      if (z.band) { const d = z.std ? DEPLOY_DEPTH_PX : z.cm * PX_PER_CM; return { kind: 'rect', x: 0, y: z.band === 'N' ? 0 : BOARD_H - d, w: BOARD_W, h: d }; }
+      if (z.rect) return { kind: 'rect', x: z.rect[0] * sx, y: z.rect[1] * sy, w: z.rect[2] * sx, h: z.rect[3] * sy };
+      if (z.road) return { kind: 'road', roads: this.scnRoads(z.road), r: z.cm * PX_PER_CM };
+      if (z.all) return { kind: 'away', roads: this.scnRoads(z.awayFromRoad), r: z.cm * PX_PER_CM };
+      return null;
+    }).filter(Boolean);
+  }
+  customZones() { const s = this.scn(); return Boolean(s && s.zones); }
+  inZoneShape(z, x, y) {
+    if (z.kind === 'rect') return x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h;
+    if (z.kind === 'road') return this.distToRoads(z.roads, x, y).d <= z.r;
+    if (z.kind === 'away') return this.distToRoads(z.roads, x, y).d >= z.r;
+    return false;
+  }
+  inDeployZone(f, x, y) { return this.zoneShapes(f).some(z => this.inZoneShape(z, x, y)); }
+  nearestInZone(f, x, y) {
+    let best = null, bd = Infinity;
+    this.zoneShapes(f).forEach(z => {
+      let p;
+      if (z.kind === 'rect') p = { x: Phaser.Math.Clamp(x, z.x + 18, z.x + z.w - 18), y: Phaser.Math.Clamp(y, z.y + 18, z.y + z.h - 18) };
+      else if (z.kind === 'road') { const r = this.distToRoads(z.roads, x, y); p = r.d <= z.r - 4 ? { x, y } : { x: r.pt.x + (x - r.pt.x) / (r.d || 1) * (z.r - 6), y: r.pt.y + (y - r.pt.y) / (r.d || 1) * (z.r - 6) }; }
+      else { let q = { x, y }; for (let i = 0; i < 4; i++) { const r = this.distToRoads(z.roads, q.x, q.y); if (r.d >= z.r) break; const ux = (q.x - r.pt.x) / (r.d || 1), uy = (q.y - r.pt.y) / (r.d || 1); q = { x: r.pt.x + ux * (z.r + 6), y: r.pt.y + uy * (z.r + 6) }; } p = q; }
+      p.x = Phaser.Math.Clamp(p.x, 18, BOARD_W - 18); p.y = Phaser.Math.Clamp(p.y, 18, BOARD_H - 18);
+      const d = Phaser.Math.Distance.Between(x, y, p.x, p.y); if (d < bd) { bd = d; best = p; }
+    });
+    return best || { x, y };
+  }
+  // Keep a set-up position inside the side's zone (infiltrators may be up to their allowance outside it)
+  zoneClamp(det, x, y) {
+    if (this.inDeployZone(det.faction, x, y)) return { x, y };
+    const p = this.nearestInZone(det.faction, x, y), extra = this.infiltrateCm ? this.infiltrateCm(det) * PX_PER_CM : 0, d = Phaser.Math.Distance.Between(x, y, p.x, p.y);
+    if (extra && d <= extra) return { x, y };
+    return extra ? { x: p.x + (x - p.x) / d * extra, y: p.y + (y - p.y) / d * extra } : p;
+  }
+  // The y-range of the standard strip (used by the existing set-up code); custom zones are clamped afterwards
+  deployBand(det) {
+    const infPx = this.infiltrateCm(det) * PX_PER_CM;
+    const sh = this.zoneShapes(det.faction);
+    if (sh.length === 1 && sh[0].kind === 'rect' && sh[0].w >= BOARD_W - 1) {
+      const z = sh[0];
+      return z.y === 0 ? { minY: 18, maxY: z.h - 18 + infPx } : { minY: z.y + 18 - infPx, maxY: BOARD_H - 18 };
+    }
+    return { minY: 18, maxY: BOARD_H - 18 };
+  }
+  zoneClampDet(det) {
+    if (!this.customZones()) return;
+    det.stands.forEach(s => { const p = this.zoneClamp(det, s.container.x, s.container.y); s.container.x = s.originX = p.x; s.container.y = s.originY = p.y; });
+    this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
+  }
+  // Spread a side's detachments over its zone (used for the AI and for the first placement of everyone)
+  scenarioPlaceSide(f, dets) {
+    dets = (dets || this.detachments.filter(d => d.faction === f)).filter(d => d.stands.length && !d.embarkedOn && !d.inReserve);
+    if (!dets.length) return;
+    const pts = [], step = 46;
+    for (let y = 30; y < BOARD_H - 20; y += step) for (let x = 30; x < BOARD_W - 20; x += step) {
+      if (!this.inDeployZone(f, x, y) || this.isGroundBlocked({}, x, y) || this.getBuildingAt(x, y)) continue;
+      pts.push({ x, y });
+    }
+    if (!pts.length) return;
+    // order: along the zone (by x, then y) so detachments spread out
+    pts.sort((a, b) => (a.x - b.x) || (a.y - b.y));
+    const enemy = f === 'ORKS' ? 'IMPERIUM' : 'ORKS', ez = this.zoneShapes(enemy), ec = ez.length ? { x: ez.reduce((a, z) => a + (z.kind === 'rect' ? z.x + z.w / 2 : BOARD_W / 2), 0) / ez.length, y: ez.reduce((a, z) => a + (z.kind === 'rect' ? z.y + z.h / 2 : BOARD_H / 2), 0) / ez.length } : { x: BOARD_W / 2, y: BOARD_H / 2 };
+    dets.forEach((det, i) => {
+      const p = pts[Math.floor((i + 0.5) / dets.length * pts.length)];
+      const cols = Math.min(3, Math.ceil(det.stands.length / 2)), sp = 32, ang = Math.atan2(ec.y - p.y, ec.x - p.x);
+      det.stands.forEach((s, k) => {
+        const col = (k % cols) - (cols - 1) / 2, row = Math.floor(k / cols);
+        const x = p.x + Math.cos(ang + Math.PI / 2) * col * sp - Math.cos(ang) * row * sp, y = p.y + Math.sin(ang + Math.PI / 2) * col * sp - Math.sin(ang) * row * sp;
+        const q = this.inDeployZone(f, x, y) ? { x, y } : this.nearestInZone(f, x, y);
+        s.container.x = s.originX = q.x; s.container.y = s.originY = q.y;
+        if (s.facingRad != null || det.isVehicle || det.hasFireArc) this.setStandFacing ? this.setStandFacing(s, ang) : null;
+      });
+      this.nudgeOutOfTerrain(det);
+      this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
+    });
+  }
+  autoDeployAIFaction() {
+    if (!this.customZones()) return this.autoDeployAIFactionCore();
+    if (window.aiFaction === 'NONE') return;
+    const ai = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0 && !d.embarkedOn);
+    ai.filter(d => d.deepStrike).forEach(d => { d.inReserve = false; this.toggleReserveStatus(d); });
+    this.scenarioPlaceSide(window.aiFaction, ai.filter(d => !d.deepStrike));
+    const aiTransports = this.detachments.filter(d => d.faction === window.aiFaction && d.transportCapacity && !d.passengerDet && d.stands.length > 0);
+    aiTransports.forEach(trans => {
+      const c = this.detachments.filter(inf => this.canUnitEmbarkInto(inf, trans, false));
+      c.sort((a, b) => (b.caf * 10 + b.stands.length) - (a.caf * 10 + a.stands.length));
+      if (c.length > 0) this.embarkDetachment(c[0], trans, false);
+    });
+  }
+  // Scenario objectives replace the map's own
+  applyScenarioToMap() {
+    const s = this.scn(); if (!s) return;
+    if (s.map && s.map !== window.mapPreset) return;
+    const { sx, sy } = this.scnScale(), vp = s.objVp || 5;
+    if (s.objectives === 'CROSSINGS') {
+      const out = [];
+      (this.bridges || []).forEach(br => {
+        if (br.x1 == null) return;
+        const d = Phaser.Math.Distance.Between(br.x1, br.y1, br.x2, br.y2), ux = (br.x2 - br.x1) / d, uy = (br.y2 - br.y1) / d;
+        [[br.x1 - ux * 30, br.y1 - uy * 30], [br.x2 + ux * 30, br.y2 + uy * 30]].forEach(([x, y]) => out.push({ x: Math.round(x), y: Math.round(y), name: `${br.name} (${y < BOARD_H / 2 ? 'north' : 'south'} end)` }));
+      });
+      this.objectives = out.map((o, i) => ({ id: i + 1, name: `Obj #${i + 1} (${o.name})`, x: o.x, y: o.y, owner: 'NEUTRAL', vp }));
+    } else if (Array.isArray(s.objectives)) {
+      this.objectives = s.objectives.map(([x, y, n], i) => ({ id: i + 1, name: `Obj #${i + 1} (${n})`, x: Math.round(x * sx), y: Math.round(y * sy), owner: 'NEUTRAL', vp }));
+    } else if (s.keepObjectives) {
+      this.objectives = this.objectives.filter(o => s.keepObjectives.some(k => o.name.includes(k))).map((o, i) => ({ ...o, id: i + 1, name: o.name.replace(/^Obj #\d+/, `Obj #${i + 1}`), vp }));
+    } else this.objectives.forEach(o => { o.vp = vp; });
+  }
+  // Night: short sight; dusk: -1 beyond 15 cm
+  scenarioNight() { const s = this.scn(); if (!s || !s.night) return null; return this.turn <= 2 ? 'dark' : (this.turn === 3 ? 'dusk' : null); }
+  // Units moving off the far edge in breakout scenarios score and leave the table
+  scenarioExit(det) {
+    const s = this.scn(); if (!s || !s.exit || det.faction !== s.exit.faction || !det.stands.length) return false;
+    const atEdge = st => s.exit.edge === 'N' ? st.container.y <= 28 : st.container.y >= BOARD_H - 28;
+    if (!det.stands.some(atEdge)) return false;
+    const leave = d => { d.exited = true; d.stands.forEach(st => st.container.destroy()); d.stands = []; if (d.badge) d.badge.setVisible(false); if (d.downed) d.downed = []; };
+    if (det.passengerDet) leave(det.passengerDet);
+    leave(det);
+    this.vp[det.faction] += s.exit.vp;
+    this.scnState = this.scnState || {}; this.scnState.exits = (this.scnState.exits || 0) + 1;
+    this.log(`🏁 <b>${det.name}</b> breaks through and leaves the table: <b>+${s.exit.vp} VP</b> to ${this.getSideName(det.faction)}!`);
+    this.spawnFloatingText(BOARD_W / 2, s.exit.edge === 'N' ? 60 : BOARD_H - 60, `🏁 BREAKTHROUGH +${s.exit.vp} VP`, '#4ade80', '14px');
+    return true;
+  }
+  // Where the AI should head in scenarios with their own goals
+  scenarioAIGoal(det, c) {
+    const s = this.scn(); if (!s) return null;
+    if (s.exit && det.faction === s.exit.faction && (!det.transportCapacity || det.passengerDet)) return { x: c.x, y: s.exit.edge === 'N' ? 10 : BOARD_H - 10 };
+    return null;
+  }
+  // Turn 1 surprise: the ambushed side gets no orders and can't shoot
+  applyScenarioOrders() {
+    const s = this.scn(); if (!s || !s.surprised || this.turn !== 1) return;
+    let n = 0;
+    this.detachments.forEach(d => { if (d.faction === s.surprised && d.stands.length && !d.inReserve) { d.order = 'FIRST_FIRE'; d.orderRevealed = true; d.fired = true; d.moved = true; d.surprised = true; n++; this.updateDetachmentBadge(d); } });
+    if (n && !this._surpriseLogged) { this._surpriseLogged = true; this.log(`💥 <b>AMBUSH!</b> ${this.getSideName(s.surprised)} is caught by surprise: no moving or shooting on turn 1.`); }
+  }
+  // End of turn: sudden death and the turn limit. Returns { text, winner } or null
+  scenarioEndCheck() {
+    const s = this.scn(); if (!s) return null;
+    const name = f => this.getSideName(f);
+    if (s.holdRoad && this.turn >= (s.holdFrom || 1)) {
+      const roads = this.scnRoads(s.holdRoad), on = f => this.detachments.some(d => d.faction === f && d.stands.length && !d.broken && d.order !== 'FALL_BACK' && !d.embarkedOn && d.stands.some(st => this.distToRoads(roads, st.container.x, st.container.y).d <= 40));
+      const a = on('IMPERIUM'), b = on('ORKS');
+      if (a !== b) { const w = a ? 'IMPERIUM' : 'ORKS'; return { winner: w, text: `${name(w)} (sole control of the highway)` }; }
+    }
+    if (this.turn < s.turns) return null;
+    // Final scoring
+    const bonus = { IMPERIUM: 0, ORKS: 0 }, notes = [];
+    if (s.surviveVp) { const n = this.detachments.filter(d => d.faction === s.surviveVp.faction && d.stands.length && !d.broken).length; bonus[s.surviveVp.faction] += n * s.surviveVp.vp; notes.push(`${name(s.surviveVp.faction)} +${n * s.surviveVp.vp} VP for ${n} unbroken detachments`); }
+    if (s.exit && !(this.scnState && this.scnState.exits)) { const def = s.exit.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM'; bonus[def] += 5; notes.push(`${name(def)} +5 VP: nobody broke through`); }
+    ['IMPERIUM', 'ORKS'].forEach(f => { this.vp[f] += bonus[f]; });
+    notes.forEach(n => this.log(`🏁 ${n}.`));
+    const a = this.getTotalVP('IMPERIUM'), b = this.getTotalVP('ORKS');
+    if (a === b) return { winner: null, text: `Draw (${a} VP each after ${s.turns} turns)` };
+    const w = a > b ? 'IMPERIUM' : 'ORKS';
+    return { winner: w, text: `${name(w)} (${Math.max(a, b)} vs ${Math.min(a, b)} VP after ${s.turns} turns)` };
+  }
+  // Draw the scenario's deployment zones
+  drawScenarioZones(g) {
+    ['ORKS', 'IMPERIUM'].forEach(f => {
+      const meta = this.getSideMeta(f);
+      this.zoneShapes(f).forEach(z => {
+        if (z.kind === 'rect') { g.fillStyle(meta.phaserColor, 0.1); g.fillRect(z.x, z.y, z.w, z.h); g.lineStyle(2, meta.phaserColor, 0.7); g.strokeRect(z.x, z.y, z.w, z.h); }
+        else if (z.kind === 'road') { g.lineStyle(z.r * 2, meta.phaserColor, 0.14); z.roads.forEach(r => g.lineBetween(r.x1, r.y1, r.x2, r.y2)); z.roads.forEach(r => { g.fillStyle(meta.phaserColor, 0.14); g.fillCircle(r.x2, r.y2, z.r); }); }
+        else if (z.kind === 'away') { g.fillStyle(meta.phaserColor, 0.06); g.fillRect(0, 0, BOARD_W, BOARD_H); g.lineStyle(z.r * 2, 0x0f172a, 0.35); z.roads.forEach(r => g.lineBetween(r.x1, r.y1, r.x2, r.y2)); }
+      });
+    });
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -44837,8 +45132,7 @@ class NetEpicScene extends Phaser.Scene {
           }
 
           if (this.phase === 'DEPLOYMENT') {
-            const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
-            const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
+            const { minY, maxY } = this.deployBand(det); // infiltrators may set up forward
             targetX = Phaser.Math.Clamp(targetX, 20, BOARD_W - 20);
             targetY = Phaser.Math.Clamp(targetY, minY, maxY);
           } else {
@@ -44846,6 +45140,7 @@ class NetEpicScene extends Phaser.Scene {
             targetY = Phaser.Math.Clamp(targetY, 18, BOARD_H - 18);
           }
 
+          if (this.phase === 'DEPLOYMENT' && this.customZones()) { const q = this.zoneClamp(det, targetX, targetY); targetX = q.x; targetY = q.y; }
           stand.container.x = targetX;
           stand.container.y = targetY;
         }
@@ -45211,9 +45506,9 @@ class NetEpicScene extends Phaser.Scene {
       let ty = Phaser.Math.Clamp(baseY + off.dy, 20, BOARD_H - 20);
 
       if (this.phase === 'DEPLOYMENT') {
-        const minY = infDet.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18) : 18;
-        const maxY = infDet.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18);
+        const { minY, maxY } = this.deployBand({ ...infDet, specialAbilities: [] });
         ty = Phaser.Math.Clamp(ty, minY, maxY);
+        if (this.customZones()) { const q = this.zoneClamp(infDet, tx, ty); tx = q.x; ty = q.y; }
       }
 
       s.container.x = tx;
@@ -45350,6 +45645,7 @@ class NetEpicScene extends Phaser.Scene {
     if (distCm > wpn.rangeCm) {
       return { valid: false, reason: 'Out of Range', distCm, coverMod: 0, indirect: false };
     }
+    if (distCm > 15 && this.scenarioNight() === 'dark') return { valid: false, reason: 'Out of Range in the dark (15 cm at night)', distCm, coverMod: 0, indirect: false };
 
     // Skimmer Pop-Up Attack (NetEpic p. 22) or Towering Class 4 Titans ignore intervening ground terrain blocks!
     if (!this.isInFireArc(shooterStand, p2.x, p2.y)) {
@@ -45481,6 +45777,7 @@ class NetEpicScene extends Phaser.Scene {
     const tCov = this.terrainCover(targetStand), woodMod = (targetInWood || woodPixels > 0) ? -1 : 0;
     const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : Math.min(woodMod, -tCov));
     const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (tCov > -woodMod ? `${tCov === 2 ? 'Trench' : 'Crater/Crops'} Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS')));
+    if (distCm > 15 && this.scenarioNight() === 'dusk') return { valid: true, indirect: false, reason: coverTag + ' · dusk -1', distCm, coverMod: coverMod - 1 };
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
 
@@ -46807,8 +47104,7 @@ class NetEpicScene extends Phaser.Scene {
 
       // --- 0. DEPLOYMENT PHASE DRAGGING (Within Faction Deployment Zone) ---
       if (this.phase === 'DEPLOYMENT') {
-        const infPx = this.infiltrateCm(det) * PX_PER_CM; const minY = det.faction === 'IMPERIUM' ? (BOARD_H - DEPLOY_DEPTH_PX + 18 - infPx) : 18; // infiltrators may set up forward
-        const maxY = det.faction === 'IMPERIUM' ? (BOARD_H - 18) : (DEPLOY_DEPTH_PX - 18 + infPx);
+        const { minY, maxY } = this.deployBand(det); // infiltrators may set up forward
 
         if (this.groupMoveMode) {
           let dx = dragX - stand.dragStartX;
@@ -46828,9 +47124,11 @@ class NetEpicScene extends Phaser.Scene {
             s.originX = s.container.x;
             s.originY = s.container.y;
           });
+          this.zoneClampDet(det);
         } else {
           gameObject.x = Phaser.Math.Clamp(dragX, 20, BOARD_W - 20);
           gameObject.y = Phaser.Math.Clamp(dragY, minY, maxY);
+          if (this.customZones()) { const q = this.zoneClamp(det, gameObject.x, gameObject.y); gameObject.x = q.x; gameObject.y = q.y; }
           stand.originX = gameObject.x;
           stand.originY = gameObject.y;
         }
@@ -47153,7 +47451,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Automatically position AI detachments across its Deployment Zone, Embark Infantry into Transports, and stage Deep Strike units in Orbital Reserve!
-  autoDeployAIFaction() {
+  autoDeployAIFactionCore() {
     if (window.aiFaction === 'NONE') return;
     const aiUnits = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0 && !d.embarkedOn);
     if (aiUnits.length === 0) return;
@@ -47206,6 +47504,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // AI secretly assigns Orders during I. Orders Phase
   assignAIOrders() {
+    this.applyScenarioOrders();
     this.applyCommandOrders();
     this.applyHiveMindOrders();
     if (window.aiFaction === 'NONE') return;
@@ -47283,6 +47582,7 @@ class NetEpicScene extends Phaser.Scene {
         chosenOrder = 'ADVANCE';
       }
 
+      { const sc = this.scn(); if (sc && sc.exit && det.faction === sc.exit.faction && chosenOrder === 'FIRST_FIRE' && !det.weapon.indirect && this.turn > 1) chosenOrder = 'ADVANCE'; }
       if (!det.order) assignedCount++;
       det.order = chosenOrder;
       det.orderRevealed = false;
@@ -47615,6 +47915,7 @@ class NetEpicScene extends Phaser.Scene {
       goalY = ec.y;
     }
 
+    { const sg = this.scenarioAIGoal(det, center); if (sg) { goalX = sg.x; goalY = sg.y; } }
     { const wp = this.navNextWaypoint(det, center, { x: goalX, y: goalY }); if (wp) { goalX = wp.x; goalY = wp.y; } }
     // Compute desired translation vector (dx, dy) toward (goalX, goalY)
     const distToGoal = Phaser.Math.Distance.Between(center.x, center.y, goalX, goalY);
@@ -48102,6 +48403,7 @@ class NetEpicScene extends Phaser.Scene {
       if (Math.hypot(dx, dy) > 10) det.facingRad = Math.atan2(dy, dx);
     }
     if (didMove && !wasDeepStriking) this.resolveMinefields(det);
+    if (didMove && this.scenarioExit(det)) { det.moved = true; this.finishMovementActivation(); return; }
     if (det.stands.length === 0) { det.moved = true; this.finishMovementActivation(); return; }
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     this.syncEmbarkedPassengers(det);
@@ -49127,8 +49429,12 @@ class NetEpicScene extends Phaser.Scene {
     const northName = this.getSideName('ORKS');
 
     let winner = null;
-    if (!orkAlive && impAlive) winner = `${southName} (Total Annihilation)`;
-    else if (!impAlive && orkAlive) winner = `${northName} (Total Annihilation)`;
+    const impIn = impAlive || this.detachments.some(d => d.faction === 'IMPERIUM' && d.exited), orkIn = orkAlive || this.detachments.some(d => d.faction === 'ORKS' && d.exited);
+    if (!orkIn && impIn) winner = `${southName} (Total Annihilation)`;
+    else if (!impIn && orkIn) winner = `${northName} (Total Annihilation)`;
+    else if (this.scn()) {
+      if (!this._scnOver) { const r = this.scenarioEndCheck(); if (r) { this._scnOver = true; winner = r.winner ? r.text : null; if (!r.winner) { this.log(`🤝 <b>${r.text}</b>`); document.getElementById('victory-alert').style.display = 'block'; document.getElementById('victory-alert').innerText = `🤝 ${r.text}`; if (!this._reportShown) { this._reportShown = true; this.time.delayedCall(900, () => this.showBattleReport(r.text)); } } } }
+    }
     else if ((impTot >= vpTarget || orkTot >= vpTarget) && impTot !== orkTot) {
       winner = impTot > orkTot ? `${southName} (${impTot} vs ${orkTot} VP, Goal: ${vpTarget})` : `${northName} (${orkTot} vs ${impTot} VP, Goal: ${vpTarget})`;
     }
@@ -49636,7 +49942,7 @@ class NetEpicScene extends Phaser.Scene {
     const sShort = this.getSideShort('IMPERIUM');
     const nShort = this.getSideShort('ORKS');
     const sCol = this.getSideMeta('IMPERIUM').colorHex, nCol = this.getSideMeta('ORKS').colorHex;
-    vpScore.innerHTML = `<b style="color:${sCol}">${impTot}</b>–<b style="color:${nCol}">${orkTot}</b> <span style="color:#94a3b8;font-weight:600;">/${this.getVictoryVpTarget()}</span>`;
+    vpScore.innerHTML = `<b style="color:${sCol}">${impTot}</b>–<b style="color:${nCol}">${orkTot}</b> <span style="color:#94a3b8;font-weight:600;">${this.scn() ? ` T${this.turn}/${this.scn().turns}` : '/' + this.getVictoryVpTarget()}</span>`;
     vpScore.title = `Victory points: ${sShort} ${impTot} (objectives ${this.objVp.IMPERIUM}), ${nShort} ${orkTot} (objectives ${this.objVp.ORKS}). First to ${this.getVictoryVpTarget()} wins.`;
 
     // Live Next Unit tracker badge update
@@ -50357,6 +50663,7 @@ class NetEpicScene extends Phaser.Scene {
       tableSize: window.tableSize || 'STANDARD_6X4',
       groupMoveMode: Boolean(this.groupMoveMode),
       mapPreset: window.mapPreset || 'INDUSTRIAL',
+      scenarioId: window.scenarioId || 'OPEN', scnState: this.scnState || {}, scnOver: Boolean(this._scnOver),
       aiFaction: window.aiFaction || 'NONE',
       aiCamFollow: Boolean(window.aiCamFollow),
       sideFaction: { ...window.sideFaction },
@@ -50419,6 +50726,7 @@ class NetEpicScene extends Phaser.Scene {
 
       // 3. Restore globals and map
       if (saveData.mapPreset) window.mapPreset = saveData.mapPreset;
+      window.scenarioId = saveData.scenarioId || 'OPEN'; this.scnState = saveData.scnState || {}; this._scnOver = Boolean(saveData.scnOver);
 
       window.aiFaction = saveData.aiFaction !== undefined ? saveData.aiFaction : 'NONE';
       window.aiCamFollow = saveData.aiCamFollow !== undefined ? saveData.aiCamFollow : true;
