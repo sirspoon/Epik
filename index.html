@@ -37853,6 +37853,7 @@ class NetEpicScene extends Phaser.Scene {
     this.objectives = [];
     this.fields = [];
     this.dirtTracks = [];
+    this.hills = []; this.rocks = []; this.trenches = []; this.minefields = []; this.craters = []; this.crops = [];
 
     const scaleX = BOARD_W / (185 * PX_PER_CM);
     const scaleY = BOARD_H / (125 * PX_PER_CM);
@@ -38331,6 +38332,8 @@ class NetEpicScene extends Phaser.Scene {
 
   drawBattlefield() {
     this.boardGfx.clear();
+    (this._bldGfx || []).forEach(g => g.destroy()); this._bldGfx = [];
+    (this.buildings || []).forEach(b => { b._gfx = null; });
     if (this.terrainLabels) {
       this.terrainLabels.forEach(lbl => lbl.destroy());
     }
@@ -38516,8 +38519,12 @@ class NetEpicScene extends Phaser.Scene {
     this.boardGfx.lineStyle(2, 0x334155, 0.35);
     this.boardGfx.lineBetween(0, centerY, BOARD_W, centerY);
 
+    // 4.5 Hills, ridges, rock, crops, craters, trenches, minefields
+    this.drawExtraTerrain();
+
     // 5. Rivers, Glacial Chasms & Dry Canyon Wadis
     this.rivers.forEach(rv => {
+      if (rv.points) { this.drawWindingRiver(rv); return; }
       if (window.mapPreset === 'SNOW') {
         // Frozen Glacial Ice Chasm
         this.boardGfx.fillStyle(0x64748b, 0.85);
@@ -38631,6 +38638,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // 7. Bridges & Shallow Fords across Rivers
     this.bridges.forEach(br => {
+      if (br.x1 != null) { this.drawSpanBridge(br); return; }
       if (br.isFord) {
         // Shallow stepping-stone & gravel ford with white water foam
         this.boardGfx.fillStyle(0x38bdf8, 0.42);
@@ -38908,7 +38916,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- DETAILED 6MM SCALE ARCHITECTURAL BUILDING RENDERER ---
-  drawDetailedBuilding(b) {
+  drawDetailedBuildingCore(b) {
     if (b.labelObj) {
       b.labelObj.destroy();
       const idx = this.terrainLabels.indexOf(b.labelObj);
@@ -40250,7 +40258,7 @@ class NetEpicScene extends Phaser.Scene {
   getBuildingAt(x, y) {
     if (!this.buildings) return null;
     for (const b of this.buildings) {
-      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+      if (this.pointInRect(b, x, y)) {
         return b;
       }
     }
@@ -40278,6 +40286,11 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   clampPointOutsideBuilding(x, y, b, margin = 16) {
+    if (b.rot) {
+      if (!this.pointInRect(b, x, y)) return { x, y };
+      const p = this.toLocal(b, x, y), q = this.clampPointOutsideBuilding(p.x, p.y, { x: b.x, y: b.y, w: b.w, h: b.h }, margin);
+      return this.toWorld(b, q.x, q.y);
+    }
     if (x < b.x || x > b.x + b.w || y < b.y || y > b.y + b.h) {
       return { x, y };
     }
@@ -40336,7 +40349,7 @@ class NetEpicScene extends Phaser.Scene {
         buildingPenaltyPx = 10 * PX_PER_CM; // Exit first + enter second
       } else if (!startB && !endB) {
         for (const b of (this.buildings || [])) {
-          if (this.doesLineIntersectRect(sx, sy, tx, ty, b.x, b.y, b.w, b.h)) {
+          if (this.lineHitsRect(b, sx, sy, tx, ty)) {
             buildingPenaltyPx = 10 * PX_PER_CM; // Enter + exit through building
             break;
           }
@@ -40396,7 +40409,7 @@ class NetEpicScene extends Phaser.Scene {
 
     let intersectingBuilding = null;
     for (const b of (this.buildings || [])) {
-      if (this.doesLineIntersectRect(sx, sy, tx, ty, b.x, b.y, b.w, b.h)) {
+      if (this.lineHitsRect(b, sx, sy, tx, ty)) {
         intersectingBuilding = b;
         break;
       }
@@ -40418,19 +40431,14 @@ class NetEpicScene extends Phaser.Scene {
     // Obstacle avoidance routing around building corners
     const b = intersectingBuilding;
     const margin = 16;
-    const corners = [
-      { x: b.x - margin, y: b.y - margin },
-      { x: b.x + b.w + margin, y: b.y - margin },
-      { x: b.x + b.w + margin, y: b.y + b.h + margin },
-      { x: b.x - margin, y: b.y + b.h + margin }
-    ];
+    const corners = this.rectCorners(b, margin);
 
     let bestDist = Infinity;
     let bestWaypoints = [{ x: sx, y: sy }, { x: tx, y: ty }];
 
     for (const c of corners) {
-      if (!this.doesLineIntersectRect(sx, sy, c.x, c.y, b.x + 1, b.y + 1, b.w - 2, b.h - 2) &&
-          !this.doesLineIntersectRect(c.x, c.y, tx, ty, b.x + 1, b.y + 1, b.w - 2, b.h - 2)) {
+      if (!this.lineHitsRect(b, sx, sy, c.x, c.y, 1) &&
+          !this.lineHitsRect(b, c.x, c.y, tx, ty, 1)) {
         const d = Math.hypot(c.x - sx, c.y - sy) + Math.hypot(tx - c.x, ty - c.y);
         if (d < bestDist) {
           bestDist = d;
@@ -40495,6 +40503,11 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   isPointInImpassableRiver(x, y) {
+    if ((this.rivers || []).some(rv => rv.points)) {
+      const wet = this.rivers.some(rv => rv.points ? this.distToPolyline(rv.points, x, y) <= (rv.width || 160) / 2 : (y >= rv.y && y <= rv.y + rv.h));
+      if (!wet) return false;
+      return !(this.bridges || []).some(br => br.x1 != null ? this.distToPolyline([{ x: br.x1, y: br.y1 }, { x: br.x2, y: br.y2 }], x, y) <= (br.width || 50) / 2 + 4 : (x >= br.x && x <= br.x + br.w && y >= br.y && y <= br.y + br.h));
+    }
     if (!this.rivers || this.rivers.length === 0) return false;
     const inRiver = this.rivers.some(rv => y >= rv.y && y <= rv.y + rv.h);
     if (!inRiver) return false;
@@ -40505,6 +40518,8 @@ class NetEpicScene extends Phaser.Scene {
   // Validate that no Vehicle/Titan ends inside a Building or cuts straight through intact buildings
   checkTerrainMoveRule(det) {
     if (!det) return true;
+    this._terrainWhy = null;
+    if (this.phase === 'MOVEMENT') for (const s of det.stands) { const why = this.terrainMoveBlock(det, s); if (why) { this._terrainWhy = why; return false; } }
     const isInfantry = det.pinningClass === 1;
     const isFlyerOrSkimmer = Boolean(det.flyer || det.skimmer || det.jump);
     const isTitan = Boolean(det.isTitan || det.superHeavy);
@@ -40516,7 +40531,7 @@ class NetEpicScene extends Phaser.Scene {
       }
       if (!isInfantry && !isFlyerOrSkimmer) {
         for (const b of (this.buildings || [])) {
-          if (this.doesLineIntersectRect(s.originX, s.originY, x, y, b.x + 2, b.y + 2, b.w - 4, b.h - 4)) {
+          if (this.lineHitsRect(b, s.originX, s.originY, x, y, 2)) {
             return false; // Vehicles cannot pass through buildings
           }
         }
@@ -42825,7 +42840,7 @@ class NetEpicScene extends Phaser.Scene {
     const vx = stand.container.x, vy = stand.container.y;
     if (o.need != null) {
       let need = o.need - (S.hitBonus || 0);
-      if (!o.ignoreCover) need += this.isStandGarrisoned(stand) ? this.standCover(stand) : (this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r) ? 1 : 0);
+      if (!o.ignoreCover) need += this.isStandGarrisoned(stand) ? this.standCover(stand) : Math.max(this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r) ? 1 : 0, this.terrainCover(stand));
       if (this.waaaghActive && vDet.armyBook === 'ORKS') need += 1;
       const h = this.rollNeed(need);
       S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', sub: h.x ? `+${h.x}` : '', tip: `${vDet.name}: needed ${need}+` });
@@ -42866,8 +42881,7 @@ class NetEpicScene extends Phaser.Scene {
   wreckBuildingsAt(point, radiusPx, S, label) {
     this.buildings.forEach(b => {
       if (b.collapsed) return;
-      const cx = Phaser.Math.Clamp(point.x, b.x, b.x + b.w), cy = Phaser.Math.Clamp(point.y, b.y, b.y + b.h);
-      if (Phaser.Math.Distance.Between(point.x, point.y, cx, cy) > radiusPx) return;
+      if (this.distToRect(b, point.x, point.y) > radiusPx) return;
       b.siDamage = b.siMax || 99; this.drawDetailedBuilding(b);
       S.notes.push(`${b.name} destroyed`); this.log(`🏚️ <b>${b.name}</b> is destroyed by the ${label}!`);
     });
@@ -42987,7 +43001,7 @@ class NetEpicScene extends Phaser.Scene {
           if (d === firerDet || !d.stands.length || d.embarkedOn || d.inReserve) return;
           d.stands.forEach(s => { if (s !== aim && Phaser.Geom.Intersects.LineToCircle(line, new Phaser.Geom.Circle(s.container.x, s.container.y, 8))) this.specialHit(S, d, s, { need: 5, tsm: -2, ignoreShields: true, titanCtx: { location: 'legs', template: false } }); });
         });
-        this.buildings.forEach(b => { if (!b.collapsed && this.doesLineIntersectRect(S.from.x, S.from.y, P.x, P.y, b.x, b.y, b.w, b.h)) { b.siDamage = b.siMax || 99; this.drawDetailedBuilding(b); S.notes.push(`${b.name} shaken apart`); } });
+        this.buildings.forEach(b => { if (!b.collapsed && this.lineHitsRect(b, S.from.x, S.from.y, P.x, P.y)) { b.siDamage = b.siMax || 99; this.drawDetailedBuilding(b); S.notes.push(`${b.name} shaken apart`); } });
         title = '〰️ Tremor Cannon'; desc = 'Target hit 3+, everything on the line 5+ · save at -2 · ignores shields · titans hit in the legs';
         break;
       }
@@ -43241,7 +43255,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // Protection inside a structure: light -1 to hit / +1 CAF, standard -2 / +2, fortification -3 / +3
   buildingCover(b) { if (!b) return 0; return b.type === 'BUNKER' ? 3 : ((b.type === 'CATHEDRAL' || b.type === 'MANUFACTORUM') ? 2 : 1); }
-  standCover(stand) { return this.isStandGarrisoned(stand) ? this.buildingCover(this.getBuildingAt(stand.container.x, stand.container.y)) : 0; }
+  standCover(stand) { return this.isStandGarrisoned(stand) ? this.buildingCover(this.getBuildingAt(stand.container.x, stand.container.y)) : this.terrainCover(stand); }
   // Medics (infantry, cavalry) and mechanics (walkers, vehicles, superheavies) within 10 cm: an unmodified 5+ roll
   // saves a model that just died; each healer can try 5 times a turn (core p. 33)
   tryHealerSave(vDet, stand, out) {
@@ -43364,6 +43378,239 @@ class NetEpicScene extends Phaser.Scene {
       ${sides.map(f => table(byPts.filter(d => d.faction === f).slice(0, 4), `${this.getSideName(f)}: top units`)).join('')}
       <div style="font-size:0.62rem;color:#64748b;margin-top:8px">VP for breaking a unit is shared between the units that inflicted its casualties. Objective VP belongs to the army.</div></div>`;
     m.querySelector('#br-close').onclick = () => { m.style.display = 'none'; };
+  }
+
+  // ===== TERRAIN: rotated buildings, hills & ridges, impassable rock, tall crops, craters, trenches, minefields, winding rivers =====
+  bCenter(b) { return { x: b.x + b.w / 2, y: b.y + b.h / 2 }; }
+  // Rectangles (buildings, minefields, crops) may be turned by b.rot (radians) about their centre
+  toLocal(b, x, y) {
+    if (!b.rot) return { x, y };
+    const c = this.bCenter(b), co = Math.cos(-b.rot), si = Math.sin(-b.rot), dx = x - c.x, dy = y - c.y;
+    return { x: c.x + dx * co - dy * si, y: c.y + dx * si + dy * co };
+  }
+  toWorld(b, x, y) {
+    if (!b.rot) return { x, y };
+    const c = this.bCenter(b), co = Math.cos(b.rot), si = Math.sin(b.rot), dx = x - c.x, dy = y - c.y;
+    return { x: c.x + dx * co - dy * si, y: c.y + dx * si + dy * co };
+  }
+  pointInRect(b, x, y, m = 0) { const p = this.toLocal(b, x, y); return p.x >= b.x - m && p.x <= b.x + b.w + m && p.y >= b.y - m && p.y <= b.y + b.h + m; }
+  lineHitsRect(b, x1, y1, x2, y2, inset = 0) {
+    const a = this.toLocal(b, x1, y1), c = this.toLocal(b, x2, y2);
+    return this.doesLineIntersectRect(a.x, a.y, c.x, c.y, b.x + inset, b.y + inset, b.w - 2 * inset, b.h - 2 * inset);
+  }
+  rectCorners(b, m = 0) { return [[b.x - m, b.y - m], [b.x + b.w + m, b.y - m], [b.x + b.w + m, b.y + b.h + m], [b.x - m, b.y + b.h + m]].map(([x, y]) => this.toWorld(b, x, y)); }
+  distToRect(b, x, y) { const p = this.toLocal(b, x, y); const cx = Phaser.Math.Clamp(p.x, b.x, b.x + b.w), cy = Phaser.Math.Clamp(p.y, b.y, b.y + b.h); return Phaser.Math.Distance.Between(p.x, p.y, cx, cy); }
+  // Ellipses (hills, ridges, craters): {x, y, rx, ry, rot}
+  inEllipse(e, x, y, grow = 0) {
+    const co = Math.cos(-(e.rot || 0)), si = Math.sin(-(e.rot || 0)), dx = x - e.x, dy = y - e.y;
+    const lx = dx * co - dy * si, ly = dx * si + dy * co, a = e.rx + grow, b = (e.ry || e.rx) + grow;
+    return (lx * lx) / (a * a) + (ly * ly) / (b * b) <= 1;
+  }
+  ellipsePts(e, n = 32, grow = 0, jag = 0) {
+    const out = [], co = Math.cos(e.rot || 0), si = Math.sin(e.rot || 0);
+    for (let i = 0; i < n; i++) {
+      const t = i / n * Math.PI * 2, k = jag ? 1 + Math.sin(t * 5 + e.x * 0.01) * jag + Math.sin(t * 3 + e.y * 0.013) * jag * 0.6 : 1;
+      const lx = Math.cos(t) * (e.rx + grow) * k, ly = Math.sin(t) * ((e.ry || e.rx) + grow) * k;
+      out.push({ x: e.x + lx * co - ly * si, y: e.y + lx * si + ly * co });
+    }
+    return out;
+  }
+  lineThroughEllipse(e, x1, y1, x2, y2) {
+    const n = Math.max(12, Math.ceil(Phaser.Math.Distance.Between(x1, y1, x2, y2) / 6));
+    for (let i = 1; i < n; i++) { const t = i / n; if (this.inEllipse(e, x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)) return true; }
+    return false;
+  }
+  // Polygons (rock): [{x, y}, ...]
+  inPoly(pts, x, y) {
+    let inside = false;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const a = pts[i], b = pts[j];
+      if (((a.y > y) !== (b.y > y)) && (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) inside = !inside;
+    }
+    return inside;
+  }
+  lineHitsPoly(pts, x1, y1, x2, y2) {
+    if (this.inPoly(pts, x1, y1) || this.inPoly(pts, x2, y2)) return true;
+    const L = new Phaser.Geom.Line(x1, y1, x2, y2);
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) if (Phaser.Geom.Intersects.LineToLine(L, new Phaser.Geom.Line(pts[j].x, pts[j].y, pts[i].x, pts[i].y))) return true;
+    return false;
+  }
+  // Polylines with a width (trenches, winding rivers)
+  distToPolyline(pts, x, y) {
+    let best = Infinity;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1], l2 = Phaser.Math.Distance.Squared(a.x, a.y, b.x, b.y);
+      const t = l2 ? Phaser.Math.Clamp(((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / l2, 0, 1) : 0;
+      best = Math.min(best, Phaser.Math.Distance.Between(x, y, a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)));
+    }
+    return best;
+  }
+  polylineCrossed(pts, x1, y1, x2, y2) {
+    const L = new Phaser.Geom.Line(x1, y1, x2, y2);
+    for (let i = 0; i < pts.length - 1; i++) if (Phaser.Geom.Intersects.LineToLine(L, new Phaser.Geom.Line(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y))) return true;
+    return false;
+  }
+  hillAt(x, y) { return (this.hills || []).find(h => this.inEllipse(h, x, y, 2)) || null; }
+  rockAt(x, y) { return (this.rocks || []).find(r => this.inPoly(r.points, x, y)) || null; }
+  inTrench(x, y) { return (this.trenches || []).some(t => this.distToPolyline(t.points, x, y) <= (t.width || 14) / 2 + 2); }
+  inCrater(x, y) { return (this.craters || []).some(c => this.inEllipse(c, x, y)); }
+  inCrops(x, y) { return (this.crops || []).some(c => this.pointInRect(c, x, y)); }
+
+  // Line of sight through the new terrain: a reason string if blocked, else null
+  terrainLosBlock(p1, p2) {
+    for (const r of (this.rocks || [])) if (this.lineHitsPoly(r.points, p1.x, p1.y, p2.x, p2.y)) return `Blocked by ${r.name || 'rock'}`;
+    for (const h of (this.hills || [])) {
+      if (this.inEllipse(h, p1.x, p1.y, 4) || this.inEllipse(h, p2.x, p2.y, 4)) continue; // on the hill: can see over it
+      if (this.lineThroughEllipse(h, p1.x, p1.y, p2.x, p2.y)) return `Blocked by ${h.name || (h.kind === 'ridge' ? 'ridge' : 'hill')}`;
+    }
+    if ((this.crops || []).length) { // tall crops act like woods: more than 2 cm blocks
+      const d = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), n = Math.max(10, Math.ceil(d / 4)); let inside = 0;
+      for (let i = 1; i < n; i++) { const t = i / n; if (this.inCrops(p1.x + (p2.x - p1.x) * t, p1.y + (p2.y - p1.y) * t)) inside += d / n; }
+      if (inside > 2 * PX_PER_CM) return 'Blocked (>2 cm of tall crops)';
+    }
+    return null;
+  }
+  // Extra protection for a stand: trench -2 / +2 CAF for infantry, crater or crop edge -1
+  terrainCover(stand) {
+    const x = stand.container.x, y = stand.container.y, pc = stand.detachment.pinningClass || 1;
+    if (pc === 1 && this.inTrench(x, y)) return 2;
+    if (pc <= 2 && (this.inCrater(x, y) || this.inCrops(x, y))) return 1;
+    return 0;
+  }
+  // Movement: rock is impassable to ground units; units on Charge orders can't cross a trench (core p. 29)
+  terrainMoveBlock(det, s) {
+    const air = Boolean(det.flyer || det.skimmer || det.jump || det.isFlyer);
+    const x = s.container.x, y = s.container.y, ox = s.originX != null ? s.originX : x, oy = s.originY != null ? s.originY : y;
+    if (!air) for (const r of (this.rocks || [])) if (this.inPoly(r.points, x, y) || (Phaser.Math.Distance.Between(ox, oy, x, y) > 1 && this.lineHitsPoly(r.points, ox, oy, x, y))) return `${r.name || 'Rock'} is impassable`;
+    const big = det.isTitan || det.superHeavy || (det.pinningClass || 1) >= 3;
+    if (!air && !big && det.order === 'CHARGE' && Phaser.Math.Distance.Between(ox, oy, x, y) > 1) {
+      for (const t of (this.trenches || [])) if (this.polylineCrossed(t.points, ox, oy, x, y) && this.distToPolyline(t.points, x, y) > (t.width || 14) / 2) return 'Units on Charge orders can enter a trench but not cross it';
+    }
+    return null;
+  }
+  // Minefields (core p. 29): moving over, through or out of one is a 4+ hit at -2 TSM; big models are attacked D6 times
+  resolveMinefields(det) {
+    if (!(this.minefields || []).length || det.flyer || det.isFlyer || det.stands.length === 0) return;
+    let hits = 0;
+    det.stands.slice().forEach(s => {
+      const x = s.container.x, y = s.container.y, ox = s.originX, oy = s.originY;
+      if (ox == null || Phaser.Math.Distance.Between(ox, oy, x, y) < 2) return;
+      const mf = this.minefields.find(m => this.pointInRect(m, x, y) || this.pointInRect(m, ox, oy) || this.lineHitsRect(m, ox, oy, x, y));
+      if (!mf) return;
+      const n = (det.superHeavy || this.hasHitLocations(det)) ? Phaser.Math.Between(1, 6) : 1;
+      for (let i = 0; i < n && det.stands.includes(s); i++) {
+        const r = Phaser.Math.Between(1, 6);
+        if (r >= 4) { hits++; this.spawnExplosionFX(x + Phaser.Math.Between(-6, 6), y + Phaser.Math.Between(-6, 6), 10, false); this.blastHitStand(det, s, -2, { x, y }); }
+      }
+    });
+    if (hits) { this.log(`💣 <b>${det.name}</b> runs into a minefield: ${hits} hit${hits > 1 ? 's' : ''} at -2 TSM!`); this.checkBreakPoint(det); }
+  }
+
+  // Rotated buildings are drawn on their own turned layer; the label stays upright
+  drawDetailedBuilding(b) {
+    if (!b.rot) return this.drawDetailedBuildingCore(b);
+    if (!b._gfx || !b._gfx.scene) { b._gfx = this.add.graphics().setDepth(this.boardGfx.depth); (this._bldGfx = this._bldGfx || []).push(b._gfx); }
+    const c = this.bCenter(b), g = b._gfx, main = this.boardGfx, ox = b.x, oy = b.y;
+    g.clear(); g.setPosition(c.x, c.y).setRotation(b.rot);
+    this.boardGfx = g; b.x = -b.w / 2; b.y = -b.h / 2;
+    try { this.drawDetailedBuildingCore(b); } finally { b.x = ox; b.y = oy; this.boardGfx = main; }
+    if (b.labelObj) b.labelObj.setPosition(c.x, c.y);
+  }
+
+  // Terrain drawing for the new features (called from drawBattlefield)
+  drawExtraTerrain() {
+    const g = this.boardGfx, preset = window.mapPreset;
+    const pal = preset === 'SNOW' ? { hill: [0xcbd5e1, 0xe2e8f0, 0xf8fafc], line: 0x94a3b8, rock: [0x475569, 0x64748b] }
+      : (preset === 'DESERT' || preset === 'HIGHWAY') ? { hill: [0x9a6b3a, 0xb7884f, 0xd1a467], line: 0x6b4423, rock: [0x7c4a2a, 0xa0623a] }
+      : preset === 'PASS' ? { hill: [0x5d6b4a, 0x748457, 0x8c9a66], line: 0x3f4a32, rock: [0x3f3f46, 0x57534e] }
+      : { hill: [0x4d6b34, 0x5f7f3f, 0x749449], line: 0x324722, rock: [0x44403c, 0x57534e] };
+    // Crop fields (tall, block sight like woods)
+    (this.crops || []).forEach(c => {
+      const pts = this.rectCorners(c);
+      g.fillStyle(c.color || 0x8a8f2a, 0.55); g.fillPoints(pts, true);
+      g.lineStyle(1.2, 0x5b5e16, 0.75);
+      for (let yy = c.y + 6; yy < c.y + c.h; yy += 8) { const a = this.toWorld(c, c.x + 3, yy), b = this.toWorld(c, c.x + c.w - 3, yy); g.lineBetween(a.x, a.y, b.x, b.y); }
+      g.lineStyle(2, 0x3f4210, 0.8); g.strokePoints(pts, true);
+      this.addTerrainLabel(this.bCenter(c), `🌾 ${c.name || 'Tall crops'}`);
+    });
+    // Hills and ridges: stepped contours
+    (this.hills || []).forEach(h => {
+      g.fillStyle(0x0b120a, 0.25); g.fillPoints(this.ellipsePts({ ...h, x: h.x + 6, y: h.y + 7 }, 36, 0, 0.06), true);
+      [0, 1, 2].forEach(i => {
+        const k = 1 - i * 0.3, e = { ...h, rx: h.rx * k, ry: (h.ry || h.rx) * k };
+        if (e.rx < 6) return;
+        g.fillStyle(pal.hill[i], 0.95); g.fillPoints(this.ellipsePts(e, 36, 0, 0.06), true);
+        g.lineStyle(1.2, pal.line, 0.55); g.strokePoints(this.ellipsePts(e, 36, 0, 0.06), true);
+      });
+      if (h.kind === 'ridge') { const co = Math.cos(h.rot || 0), si = Math.sin(h.rot || 0); g.lineStyle(2, pal.line, 0.6); g.lineBetween(h.x - co * h.rx * 0.8, h.y - si * h.rx * 0.8, h.x + co * h.rx * 0.8, h.y + si * h.rx * 0.8); }
+      this.addTerrainLabel({ x: h.x, y: h.y }, `⛰️ ${h.name || (h.kind === 'ridge' ? 'Ridge' : 'Hill')}`);
+    });
+    // Craters
+    (this.craters || []).forEach(c => {
+      g.fillStyle(0x1c1917, 0.6); g.fillPoints(this.ellipsePts(c, 20, 0, 0.12), true);
+      g.lineStyle(3, 0x78716c, 0.7); g.strokePoints(this.ellipsePts(c, 20, 1, 0.12), true);
+      g.fillStyle(0x292524, 0.7); g.fillPoints(this.ellipsePts({ ...c, rx: c.rx * 0.5, ry: (c.ry || c.rx) * 0.5 }, 14), true);
+    });
+    // Impassable rock
+    (this.rocks || []).forEach(r => {
+      const cx = r.points.reduce((a, p) => a + p.x, 0) / r.points.length, cy = r.points.reduce((a, p) => a + p.y, 0) / r.points.length;
+      g.fillStyle(0x0a0a0a, 0.35); g.fillPoints(r.points.map(p => ({ x: p.x + 7, y: p.y + 8 })), true);
+      g.fillStyle(pal.rock[0], 1); g.fillPoints(r.points, true);
+      g.fillStyle(pal.rock[1], 1); g.fillPoints(r.points.map(p => ({ x: cx + (p.x - cx) * 0.72 - 3, y: cy + (p.y - cy) * 0.72 - 4 })), true);
+      g.lineStyle(1.5, 0x1c1917, 0.7);
+      r.points.forEach((p, i) => { if (i % 2) g.lineBetween(cx + (p.x - cx) * 0.25, cy + (p.y - cy) * 0.25, cx + (p.x - cx) * 0.8, cy + (p.y - cy) * 0.8); });
+      g.lineStyle(2.5, 0x1c1917, 0.85); g.strokePoints(r.points, true);
+      this.addTerrainLabel({ x: cx, y: cy }, `🪨 ${r.name || 'Impassable rock'}`);
+    });
+    // Trenches: dug line with sandbags either side
+    (this.trenches || []).forEach(t => {
+      const w = t.width || 14;
+      g.lineStyle(w + 8, 0x6b5a3a, 0.85); g.strokePoints(t.points, false);
+      g.lineStyle(w, 0x2a2015, 0.95); g.strokePoints(t.points, false);
+      t.points.forEach(p => { g.fillStyle(0x2a2015, 0.95); g.fillCircle(p.x, p.y, w / 2); });
+      g.fillStyle(0xa8936a, 0.95);
+      for (let i = 0; i < t.points.length - 1; i++) {
+        const a = t.points[i], b = t.points[i + 1], d = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y), ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
+        for (let s = 0; s < d; s += 9) { g.fillCircle(a.x + ux * s - uy * (w / 2 + 3), a.y + uy * s + ux * (w / 2 + 3), 2.6); g.fillCircle(a.x + ux * s + uy * (w / 2 + 3), a.y + uy * s - ux * (w / 2 + 3), 2.6); }
+      }
+      const m = t.points[Math.floor(t.points.length / 2)]; this.addTerrainLabel({ x: m.x, y: m.y - w }, `⛏️ ${t.name || 'Trench'}`);
+    });
+    // Minefields: hatched ground with warning stakes
+    (this.minefields || []).forEach(m => {
+      const pts = this.rectCorners(m);
+      g.fillStyle(0x3f1d1d, 0.35); g.fillPoints(pts, true);
+      g.lineStyle(1, 0x7f1d1d, 0.5);
+      for (let k = -m.h; k < m.w; k += 12) { const a = this.toWorld(m, m.x + Math.max(0, k), m.y + Math.max(0, -k)), b = this.toWorld(m, m.x + Math.min(m.w, k + m.h), m.y + Math.min(m.h, m.w - k)); g.lineBetween(a.x, a.y, b.x, b.y); }
+      g.lineStyle(2, 0xdc2626, 0.85); g.strokePoints(pts, true);
+      pts.forEach(p => { g.fillStyle(0xfacc15, 1); g.fillTriangle(p.x, p.y - 5, p.x - 4, p.y + 3, p.x + 4, p.y + 3); });
+      this.addTerrainLabel(this.bCenter(m), '☠️ MINEFIELD');
+    });
+  }
+  addTerrainLabel(p, text) {
+    const lbl = this.add.text(p.x, p.y, text, { fontSize: '9px', color: '#f8fafc', fontStyle: 'bold' }).setOrigin(0.5).setDepth(4);
+    this.terrainLabels.push(this.styleMapLabel(lbl));
+  }
+  // A winding river (polyline with width) with angled bridges {x1, y1, x2, y2, width}
+  drawWindingRiver(rv) {
+    const g = this.boardGfx, w = rv.width || 160, pts = rv.points;
+    const layer = (width, col, a) => { g.lineStyle(width, col, a); g.strokePoints(pts, false); pts.forEach(p => { g.fillStyle(col, a); g.fillCircle(p.x, p.y, width / 2); }); };
+    const lava = rv.kind === 'lava';
+    layer(w + 16, lava ? 0x292524 : 0x44403c, 0.85);
+    layer(w, lava ? 0x9a3412 : 0x0369a1, 0.95);
+    layer(w * 0.7, lava ? 0xea580c : 0x075985, 0.92);
+    layer(w * 0.35, lava ? 0xfbbf24 : 0x0c4a6e, 0.95);
+    const m = pts[Math.floor(pts.length / 2)];
+    this.addTerrainLabel({ x: m.x, y: m.y }, `${lava ? '🔥' : '🌊'} ${(rv.name || 'River').toUpperCase()}`);
+  }
+  drawSpanBridge(br) {
+    const g = this.boardGfx, w = br.width || 50;
+    g.lineStyle(w + 10, 0x020617, 0.45); g.lineBetween(br.x1 + 4, br.y1 + 5, br.x2 + 4, br.y2 + 5);
+    g.lineStyle(w + 6, 0x94a3b8, 1); g.lineBetween(br.x1, br.y1, br.x2, br.y2);
+    g.lineStyle(w - 4, 0x334155, 1); g.lineBetween(br.x1, br.y1, br.x2, br.y2);
+    const d = Phaser.Math.Distance.Between(br.x1, br.y1, br.x2, br.y2), ux = (br.x2 - br.x1) / d, uy = (br.y2 - br.y1) / d;
+    g.lineStyle(1.5, 0x64748b, 0.75);
+    for (let s = 8; s < d - 4; s += 12) g.lineBetween(br.x1 + ux * s - uy * (w / 2 - 4), br.y1 + uy * s + ux * (w / 2 - 4), br.x1 + ux * s + uy * (w / 2 - 4), br.y1 + uy * s - ux * (w / 2 - 4));
+    this.addTerrainLabel({ x: (br.x1 + br.x2) / 2, y: (br.y1 + br.y2) / 2 }, (br.name || 'Bridge').toUpperCase());
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -44757,7 +45004,7 @@ class NetEpicScene extends Phaser.Scene {
       if (Phaser.Math.Distance.Between(p2.x, p2.y, w.x, w.y) <= w.r) targetInWood = true;
     }
 
-    const baseCoverMod = targetBuilding ? -this.buildingCover(targetBuilding) : (targetInWood ? -1 : 0);
+    const baseCoverMod = targetBuilding ? -this.buildingCover(targetBuilding) : Math.min(targetInWood ? -1 : 0, -this.terrainCover(targetStand));
 
     // p. 34: Stealth units in cover can't be seen from more than 25 cm away (until they shoot or fight)
     const tDet = targetStand.detachment;
@@ -44774,14 +45021,20 @@ class NetEpicScene extends Phaser.Scene {
     // 1. Check Buildings (Block direct LoS unless the shooter or target is Garrisoned inside that specific building!)
     for (const b of this.buildings) {
       if (b === shooterBuilding || b === targetBuilding || b.collapsed) continue; // ruins are rough ground and don't block (core p. 24)
-      const rect = new Phaser.Geom.Rectangle(b.x, b.y, b.w, b.h);
-      if (Phaser.Geom.Intersects.LineToRectangle(line, rect)) {
+      if (this.lineHitsRect(b, p1.x, p1.y, p2.x, p2.y)) {
         if (canFireIndirect) {
           return { valid: true, indirect: true, reason: `Indirect over ${b.name}`, distCm, coverMod: baseCoverMod };
         }
         return { valid: false, reason: `Blocked by ${b.name}`, distCm, coverMod: 0, indirect: false };
       }
     }
+
+    // 1.2 Hills, ridges, impassable rock and tall crops
+    { const why = this.terrainLosBlock(p1, p2);
+      if (why) {
+        if (canFireIndirect) return { valid: true, indirect: true, reason: `Indirect (${why.replace(/^Blocked (by )?/, '')})`, distCm, coverMod: baseCoverMod };
+        return { valid: false, reason: why, distCm, coverMod: 0, indirect: false };
+      } }
 
     // 1.5 Check Persistent Artillery Smoke Screens (NetEpic Optional Rules p. 3: blocks direct LoS)
     if (this.smokeClouds && this.smokeClouds.length > 0) {
@@ -44856,8 +45109,9 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     // Flame weapons (Bjorn's heavy flamer, Hellhounds, bio-plasma spray) ignore cover! (Core Rules p. 30)
-    const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : ((targetInWood || woodPixels > 0) ? -1 : 0));
-    const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS'));
+    const tCov = this.terrainCover(targetStand), woodMod = (targetInWood || woodPixels > 0) ? -1 : 0;
+    const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : Math.min(woodMod, -tCov));
+    const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (tCov > -woodMod ? `${tCov === 2 ? 'Trench' : 'Crater/Crops'} Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS')));
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
 
@@ -45277,7 +45531,7 @@ class NetEpicScene extends Phaser.Scene {
         if (wpn.damagesBuildings && hits > 0) {
           this.buildings.forEach(b => {
             if (b.collapsed) return;
-            const inside = templateTargets.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
+            const inside = templateTargets.some(s => this.pointInRect(b, s.container.x, s.container.y));
             if (inside) {
               const bldgSave = Phaser.Math.Between(1, 6);
               const neededBSave = Math.min(6, (b.save || 4) - (barrageStats.tsm || 0));
@@ -45413,7 +45667,7 @@ class NetEpicScene extends Phaser.Scene {
         });
 
         if (wpn.damagesBuildings && hits > 0) {
-          targetBuilding = this.buildings.find(b => !b.collapsed && targetDet.stands.some(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h));
+          targetBuilding = this.buildings.find(b => !b.collapsed && targetDet.stands.some(s => this.pointInRect(b, s.container.x, s.container.y)));
           if (targetBuilding) {
             const bldgSave = Phaser.Math.Between(1, 6);
             const neededBSave = Math.min(6, (targetBuilding.save || 4) - (wpn.tsm || 0));
@@ -47476,6 +47730,8 @@ class NetEpicScene extends Phaser.Scene {
       det.stands.forEach(s => { dx += s.container.x - s.originX; dy += s.container.y - s.originY; });
       if (Math.hypot(dx, dy) > 10) det.facingRad = Math.atan2(dy, dx);
     }
+    if (didMove && !wasDeepStriking) this.resolveMinefields(det);
+    if (det.stands.length === 0) { det.moved = true; this.finishMovementActivation(); return; }
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     this.syncEmbarkedPassengers(det);
     det.moved = true;
@@ -48352,7 +48608,7 @@ class NetEpicScene extends Phaser.Scene {
         // Units garrisoned inside suffer -2 TSM crush save or die!
         this.detachments.forEach(d => {
           if (d.stands.length === 0) return;
-          const insideStands = d.stands.filter(s => s.container.x >= b.x && s.container.x <= b.x + b.w && s.container.y >= b.y && s.container.y <= b.y + b.h);
+          const insideStands = d.stands.filter(s => this.pointInRect(b, s.container.x, s.container.y));
           insideStands.forEach(s => {
             const saveRoll = Phaser.Math.Between(1, 6);
             const neededSave = d.save + 2; // -2 TSM penalty for collapse crush
@@ -48860,6 +49116,7 @@ class NetEpicScene extends Phaser.Scene {
     document.getElementById('engagement-alert').style.display = (this.phase === 'MOVEMENT' && !isEngageValid) ? 'block' : 'none';
     document.getElementById('fallback-alert').style.display = (this.phase === 'MOVEMENT' && !isFallBackValid) ? 'block' : 'none';
     document.getElementById('terrain-alert').style.display = ((this.phase === 'MOVEMENT' || this.phase === 'DEPLOYMENT') && !isTerrainValid) ? 'block' : 'none';
+    { const ta = document.getElementById('terrain-alert'); if (ta) ta.textContent = '⚠️ ' + (this._terrainWhy || 'Impassable: only infantry enter buildings; cross rivers at bridges or fords'); }
 
     // Coherency web (only for detachments that observe coherency)
     if (observesCoherency) {
@@ -49758,7 +50015,7 @@ class NetEpicScene extends Phaser.Scene {
       })),
       // The battlefield itself: random maps are different every time one is generated
       terrain: this.plainCopy({ roads: this.roads, rivers: this.rivers, bridges: this.bridges, woods: this.woods, fields: this.fields, dirtTracks: this.dirtTracks,
-        buildings: this.buildings, objectives: this.objectives }),
+        buildings: this.buildings, objectives: this.objectives, hills: this.hills, rocks: this.rocks, trenches: this.trenches, minefields: this.minefields, craters: this.craters, crops: this.crops }),
       extraState: { waaaghActive: Boolean(this.waaaghActive), waaaghUsed: Boolean(this.waaaghUsed), lastInitiativeLoser: this.lastInitiativeLoser || null,
         vortices: (this.vortices || []).map(v => ({ x: v.x, y: v.y, faction: v.faction })) },
       smokeClouds: this.smokeClouds ? JSON.parse(JSON.stringify(this.smokeClouds)) : [],
@@ -49802,7 +50059,7 @@ class NetEpicScene extends Phaser.Scene {
       // The saved battlefield goes back after the budget (changing the budget resizes the table and makes a new map)
       if (saveData.terrain && saveData.terrain.buildings) {
         const T = saveData.terrain;
-        ['roads', 'rivers', 'bridges', 'woods', 'fields', 'dirtTracks', 'buildings', 'objectives'].forEach(k => { if (T[k]) this[k] = JSON.parse(JSON.stringify(T[k])); });
+        ['roads', 'rivers', 'bridges', 'woods', 'fields', 'dirtTracks', 'buildings', 'objectives', 'hills', 'rocks', 'trenches', 'minefields', 'craters', 'crops'].forEach(k => { this[k] = T[k] ? JSON.parse(JSON.stringify(T[k])) : (['hills', 'rocks', 'trenches', 'minefields', 'craters', 'crops'].includes(k) ? [] : this[k]); });
         this.drawBattlefield();
         if (this.drawObjectives) this.drawObjectives();
       } else if (saveData.mapPreset) {
