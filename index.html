@@ -911,21 +911,37 @@
               <div style="font-size:1.3rem;">🏛️</div>
               <div style="font-weight:700; color:#f8fafc;">Ruined City</div>
             </div>
-            <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')" title="Sub-zero permafrost, frozen glacial chasm & snow-capped pines.">
+            <div id="map-card-SNOW" class="preset-card" onclick="window.setMapPreset('SNOW')" title="A glacial chasm winds across the tundra; ice bridges, ridges and pine groves.">
               <div style="font-size:1.3rem;">❄️</div>
               <div style="font-weight:700; color:#f8fafc;">Snowy Tundra</div>
             </div>
-            <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')" title="Arid dunes, sandstone rock spires, dry canyon wadi & refineries.">
+            <div id="map-card-DESERT" class="preset-card" onclick="window.setMapPreset('DESERT')" title="A dry wadi winds between mesas and dunes; causeways, a refinery and a sun temple.">
               <div style="font-size:1.3rem;">🏜️</div>
               <div style="font-weight:700; color:#f8fafc;">Desert Wastes</div>
             </div>
-            <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')" title="Dividing river with tactical stone bridges & swamp crossings.">
+            <div id="map-card-RIVER" class="preset-card" onclick="window.setMapPreset('RIVER')" title="A winding river crossed by two bridges and a ford, with high ground on both banks.">
               <div style="font-size:1.3rem;">🌊</div>
               <div style="font-weight:700; color:#f8fafc;">River Crossing</div>
             </div>
             <div id="map-card-FOREST" class="preset-card" onclick="window.setMapPreset('FOREST')" title="Woodland groves with speed-boosting paved highways.">
               <div style="font-size:1.3rem;">🌲</div>
               <div style="font-weight:700; color:#f8fafc;">Dense Woods</div>
+            </div>
+            <div id="map-card-PASS" class="preset-card" onclick="window.setMapPreset('PASS')" title="Rock walls funnel both armies into a winding pass road; high ground on either side.">
+              <div style="font-size:1.3rem;">⛰️</div>
+              <div style="font-weight:700; color:#f8fafc;">Mountain Pass</div>
+            </div>
+            <div id="map-card-HIGHWAY" class="preset-card" onclick="window.setMapPreset('HIGHWAY')" title="A highway cuts the desert on the diagonal between mesas, dunes and a refinery.">
+              <div style="font-size:1.3rem;">🛣️</div>
+              <div style="font-weight:700; color:#f8fafc;">Desert Highway</div>
+            </div>
+            <div id="map-card-FORTIFIED" class="preset-card" onclick="window.setMapPreset('FORTIFIED')" title="Zig-zag trenches, gate bunkers, minefields and a shell-torn no-man&#39;s land.">
+              <div style="font-size:1.3rem;">🪖</div>
+              <div style="font-weight:700; color:#f8fafc;">Fortified Line</div>
+            </div>
+            <div id="map-card-HIVE" class="preset-card" onclick="window.setMapPreset('HIVE')" title="Diagonal boulevards through turned hive blocks, with a fallen spire blocking one quarter.">
+              <div style="font-size:1.3rem;">🏙️</div>
+              <div style="font-weight:700; color:#f8fafc;">Hive Complex</div>
             </div>
             <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')" title="Procedurally generated terrain with mixed cover.">
               <div style="font-size:1.3rem;">🎲</div>
@@ -34417,7 +34433,7 @@ window.setCatalogFilter = function(side, filterType) {
 
 
 // --- ARMY BUILDER, FACTION SELECTOR, MAP PRESETS & SOLO AI STATE ---
-window.mapPreset = 'INDUSTRIAL'; // 'INDUSTRIAL' | 'RUINED_CITY' | 'SNOW' | 'DESERT' | 'RIVER' | 'FOREST' | 'RANDOM'
+window.mapPreset = 'INDUSTRIAL'; // see MAP_ORDER
 window.aiFaction = 'ORKS'; // 'ORKS' (North AI) | 'IMPERIUM' (South AI) | 'NONE'
 window.pointsBudget = 2000;
 window.sideFaction = {
@@ -34449,12 +34465,17 @@ const MAP_LABELS = {
   DESERT: '🏜️ Desert Wasteland',
   RIVER: '🌊 River Crossing',
   FOREST: '🌲 Dense Woods',
+  PASS: '⛰️ Mountain Pass',
+  HIGHWAY: '🛣️ Desert Highway',
+  FORTIFIED: '🪖 Fortified Line',
+  HIVE: '🏙️ Hive Complex',
   RANDOM: '🎲 Randomized'
 };
+const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'RANDOM'];
 
 window.setMapPreset = function(preset) {
   window.mapPreset = preset;
-  ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'RANDOM'].forEach(p => {
+  MAP_ORDER.forEach(p => {
     const b = document.getElementById(`map-preset-${p}`);
     if (b) b.className = (p === preset) ? 'btn-primary' : '';
     const card = document.getElementById(`map-card-${p}`);
@@ -34473,7 +34494,7 @@ window.setMapPreset = function(preset) {
 };
 
 window.cycleMapPreset = function() {
-  const order = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'RANDOM'];
+  const order = MAP_ORDER;
   const idx = order.indexOf(window.mapPreset);
   const next = order[(idx + 1) % order.length];
   window.setMapPreset(next);
@@ -37860,7 +37881,9 @@ class NetEpicScene extends Phaser.Scene {
     const sX = (v) => Math.round(v * scaleX);
     const sY = (v) => Math.round(v * scaleY);
 
-    if (preset === 'INDUSTRIAL') {
+    if (this.loadExtraMap(preset, scaleX, scaleY)) {
+      // new and rebuilt maps (rivers that wind, turned buildings, hills, rock...)
+    } else if (preset === 'INDUSTRIAL') {
       // Highway network + Manufactorum, Cathedral, Silos, Hab-Blocks & Bunkers spread across the map
       this.roads = [
         { x1: 925, y1: 0, x2: 925, y2: BOARD_H, width: 36, name: 'Imperial Highway (+5cm Move)' },
@@ -38289,6 +38312,7 @@ class NetEpicScene extends Phaser.Scene {
       ];
     }
 
+    this.degridMap(preset);
     // Initialize NetEpic Structural Integrity (SI) & Demolition properties (Core Rules pp. 28-30)
     this.buildings.forEach(b => {
       if (b.type === 'BUNKER') { b.siMax = 3; b.save = 2; }
@@ -38302,6 +38326,7 @@ class NetEpicScene extends Phaser.Scene {
   applyMapPreset(preset) {
     this.loadMapConfig(preset);
     this.drawBattlefield();
+    (this.detachments || []).forEach(d => this.nudgeOutOfTerrain(d));
     this.spawnObjectives();
     this.evaluateObjectives(false);
     if (this.phase === 'DEPLOYMENT') {
@@ -38341,11 +38366,11 @@ class NetEpicScene extends Phaser.Scene {
 
     // Dynamically update tabletop surface texture based on active map preset
     if (this.grassTile) {
-      if (window.mapPreset === 'RUINED_CITY') {
+      if (this.mapTheme() === 'RUINED_CITY') {
         this.grassTile.setTexture('city_canvas');
-      } else if (window.mapPreset === 'SNOW') {
+      } else if (this.mapTheme() === 'SNOW') {
         this.grassTile.setTexture('snow_canvas');
-      } else if (window.mapPreset === 'DESERT') {
+      } else if (this.mapTheme() === 'DESERT') {
         this.grassTile.setTexture('desert_canvas');
       } else {
         this.grassTile.setTexture('grass_canvas');
@@ -38358,13 +38383,13 @@ class NetEpicScene extends Phaser.Scene {
       const gy = ((i * 193 + 53) % (BOARD_H - 120)) + 60;
       const gr = 55 + (i % 6) * 28;
       let col, alpha;
-      if (window.mapPreset === 'RUINED_CITY') {
+      if (this.mapTheme() === 'RUINED_CITY') {
         col = i % 3 === 0 ? 0x1c1917 : (i % 3 === 1 ? 0x292524 : 0x44403c);
         alpha = i % 2 === 0 ? 0.28 : 0.20;
-      } else if (window.mapPreset === 'SNOW') {
+      } else if (this.mapTheme() === 'SNOW') {
         col = i % 3 === 0 ? 0xbae6fd : (i % 3 === 1 ? 0xe0f2fe : 0x94a3b8);
         alpha = i % 2 === 0 ? 0.22 : 0.16;
-      } else if (window.mapPreset === 'DESERT') {
+      } else if (this.mapTheme() === 'DESERT') {
         col = i % 3 === 0 ? 0xb45309 : (i % 3 === 1 ? 0xd97706 : 0x78350f);
         alpha = i % 2 === 0 ? 0.24 : 0.18;
       } else {
@@ -38383,11 +38408,11 @@ class NetEpicScene extends Phaser.Scene {
 
       if (f.boundary === 'WALL') {
         let wallCol1 = 0x57534e, wallCol2 = 0xa8a29e;
-        if (window.mapPreset === 'SNOW') {
+        if (this.mapTheme() === 'SNOW') {
           wallCol1 = 0x64748b; wallCol2 = 0xe2e8f0;
-        } else if (window.mapPreset === 'DESERT') {
+        } else if (this.mapTheme() === 'DESERT') {
           wallCol1 = 0x9a3412; wallCol2 = 0xd97706;
-        } else if (window.mapPreset === 'RUINED_CITY') {
+        } else if (this.mapTheme() === 'RUINED_CITY') {
           wallCol1 = 0x44403c; wallCol2 = 0x78716c;
         }
         this.boardGfx.lineStyle(4, wallCol1, 0.85);
@@ -38416,11 +38441,11 @@ class NetEpicScene extends Phaser.Scene {
       }
       if (f.name) {
         let fIcon = '🌾', bg = 'rgba(20, 83, 45, 0.7)', tc = '#fef08a';
-        if (window.mapPreset === 'RUINED_CITY') {
+        if (this.mapTheme() === 'RUINED_CITY') {
           fIcon = '🧱'; bg = 'rgba(28, 25, 23, 0.8)'; tc = '#e2e8f0';
-        } else if (window.mapPreset === 'SNOW') {
+        } else if (this.mapTheme() === 'SNOW') {
           fIcon = '❄️'; bg = 'rgba(15, 23, 42, 0.8)'; tc = '#bae6fd';
-        } else if (window.mapPreset === 'DESERT') {
+        } else if (this.mapTheme() === 'DESERT') {
           fIcon = '🏜️'; bg = 'rgba(120, 53, 15, 0.8)'; tc = '#fef08a';
         }
         const flbl = this.add.text(f.x + f.w / 2, f.y + 14, `${fIcon} ${f.name.toUpperCase()}`, {
@@ -38438,13 +38463,13 @@ class NetEpicScene extends Phaser.Scene {
 
       let bedCol = 0x5a4833, rutCol = 0x3d3020, medCol = 0x486b36;
       let dIcon = '🚜', dtBg = 'rgba(40, 30, 20, 0.75)', dtTc = '#fed7aa';
-      if (window.mapPreset === 'SNOW') {
+      if (this.mapTheme() === 'SNOW') {
         bedCol = 0xcbd5e1; rutCol = 0x94a3b8; medCol = 0x7dd3fc;
         dIcon = '❄️'; dtBg = 'rgba(15, 23, 42, 0.8)'; dtTc = '#bae6fd';
-      } else if (window.mapPreset === 'DESERT') {
+      } else if (this.mapTheme() === 'DESERT') {
         bedCol = 0xb45309; rutCol = 0x78350f; medCol = 0xd97706;
         dIcon = '🐪'; dtBg = 'rgba(69, 26, 3, 0.8)'; dtTc = '#fef08a';
-      } else if (window.mapPreset === 'RUINED_CITY') {
+      } else if (this.mapTheme() === 'RUINED_CITY') {
         bedCol = 0x292524; rutCol = 0x1c1917; medCol = 0x44403c;
         dIcon = '🚛'; dtBg = 'rgba(28, 25, 23, 0.8)'; dtTc = '#cbd5e1';
       }
@@ -38503,11 +38528,11 @@ class NetEpicScene extends Phaser.Scene {
 
     // 4. Subtle 10 cm Tactical Military Grid
     let gridCol = 0x1e361a, gridAlpha = 0.35;
-    if (window.mapPreset === 'RUINED_CITY') {
+    if (this.mapTheme() === 'RUINED_CITY') {
       gridCol = 0x475569; gridAlpha = 0.30;
-    } else if (window.mapPreset === 'SNOW') {
+    } else if (this.mapTheme() === 'SNOW') {
       gridCol = 0x64748b; gridAlpha = 0.25;
-    } else if (window.mapPreset === 'DESERT') {
+    } else if (this.mapTheme() === 'DESERT') {
       gridCol = 0x78350f; gridAlpha = 0.25;
     }
     this.boardGfx.lineStyle(1, gridCol, gridAlpha);
@@ -38525,7 +38550,7 @@ class NetEpicScene extends Phaser.Scene {
     // 5. Rivers, Glacial Chasms & Dry Canyon Wadis
     this.rivers.forEach(rv => {
       if (rv.points) { this.drawWindingRiver(rv); return; }
-      if (window.mapPreset === 'SNOW') {
+      if (this.mapTheme() === 'SNOW') {
         // Frozen Glacial Ice Chasm
         this.boardGfx.fillStyle(0x64748b, 0.85);
         this.boardGfx.fillRect(0, rv.y - 7, BOARD_W, rv.h + 14);
@@ -38548,7 +38573,7 @@ class NetEpicScene extends Phaser.Scene {
           fontSize: '10px', color: '#bae6fd', fontStyle: 'bold', backgroundColor: 'rgba(12, 74, 110, 0.85)', padding: { x: 4, y: 1 }
         }).setOrigin(0.5).setDepth(4);
         this.terrainLabels.push(this.styleMapLabel(lbl));
-      } else if (window.mapPreset === 'DESERT') {
+      } else if (this.mapTheme() === 'DESERT') {
         // Sunken Dry Canyon Wadi
         this.boardGfx.fillStyle(0x78350f, 0.90);
         this.boardGfx.fillRect(0, rv.y - 7, BOARD_W, rv.h + 14);
@@ -38603,15 +38628,15 @@ class NetEpicScene extends Phaser.Scene {
 
     // 6. Roads (+5cm Bonus Movement — gravel roadbed, paved stone/tarmac surface, curb stones & dashed yellow lane line)
     this.roads.forEach(rd => {
-      const rw = rd.width || 32;
+      const rw = rd.width || 32, A = rd.cap ? 1 : null;
       // Gravel shoulder bed
-      this.boardGfx.lineStyle(rw + 8, 0x44403c, 0.72);
+      this.boardGfx.lineStyle(rw + 8, A ? 0x3f3b37 : 0x44403c, A || 0.72);
       this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
       // Outer curb
-      this.boardGfx.lineStyle(rw + 2, 0x64748b, 0.85);
+      this.boardGfx.lineStyle(rw + 2, 0x64748b, A || 0.85);
       this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
       // Paved ferrocrete surface
-      this.boardGfx.lineStyle(rw - 4, 0x334155, 0.95);
+      this.boardGfx.lineStyle(rw - 4, 0x334155, A || 0.95);
       this.boardGfx.lineBetween(rd.x1, rd.y1, rd.x2, rd.y2);
       // Subtle wheel tracks
       this.boardGfx.lineStyle(rw * 0.45, 0x475569, 0.45);
@@ -38628,6 +38653,11 @@ class NetEpicScene extends Phaser.Scene {
           rd.x1 + (rd.x2 - rd.x1) * t2, rd.y1 + (rd.y2 - rd.y1) * t2
         );
       }
+      if (rd.cap) {
+        const inside = (x, y) => x > 4 && y > 4 && x < BOARD_W - 4 && y < BOARD_H - 4;
+        [[rw + 8, 0x3f3b37], [rw + 2, 0x64748b], [rw - 4, 0x334155]].forEach(([d, col]) => { this.boardGfx.fillStyle(col, 1); [[rd.x1, rd.y1], [rd.x2, rd.y2]].forEach(([x, y]) => { if (inside(x, y)) this.boardGfx.fillCircle(x, y, d / 2); }); });
+      }
+      if (rd.noLabel) return;
       const lx = (rd.x1 + rd.x2) / 2 + (rd.x1 === rd.x2 ? 64 : 0);
       const ly = (rd.y1 + rd.y2) / 2 + (rd.y1 === rd.y2 ? -24 : -180);
       const lbl = this.add.text(lx, Phaser.Math.Clamp(ly, 380, 860), '🛣️ ROAD (+5cm Move)', {
@@ -38685,7 +38715,7 @@ class NetEpicScene extends Phaser.Scene {
 
     // 8. Woods, Rock Spires, Arctic Pines & Shattered Courtyards
     this.woods.forEach(w => {
-      if (window.mapPreset === 'SNOW') {
+      if (this.mapTheme() === 'SNOW') {
         // --- ❄️ ARCTIC PINE GROVE (Snow-capped dark conifers) ---
         this.boardGfx.fillStyle(0x1e293b, 0.45);
         this.boardGfx.fillCircle(w.x + 4, w.y + 5, w.r + 4);
@@ -38732,7 +38762,7 @@ class NetEpicScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(4);
         this.terrainLabels.push(this.styleMapLabel(lbl));
 
-      } else if (window.mapPreset === 'DESERT') {
+      } else if (this.mapTheme() === 'DESERT') {
         // --- 🪨 ROCK SPIRES & BLUFFS (Towering Sandstone Monoliths) ---
         this.boardGfx.fillStyle(0x451a03, 0.55);
         this.boardGfx.fillCircle(w.x + 5, w.y + 6, w.r + 4);
@@ -38781,7 +38811,7 @@ class NetEpicScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(4);
         this.terrainLabels.push(this.styleMapLabel(lbl));
 
-      } else if (window.mapPreset === 'RUINED_CITY') {
+      } else if (this.mapTheme() === 'RUINED_CITY') {
         // --- 🏛️ SHATTERED COURTYARD & RUBBLE (Paved rubble with dead scorched trees) ---
         this.boardGfx.fillStyle(0x0f172a, 0.55);
         this.boardGfx.fillCircle(w.x + 4, w.y + 5, w.r + 4);
@@ -40307,7 +40337,7 @@ class NetEpicScene extends Phaser.Scene {
   // - Entering & Leaving Buildings: Costs 5 cm (50 px) of movement for Infantry & Light Artillery.
   // - Buildings are IMPASSABLE to Vehicles, Knights, Walkers, Titans & Praetorians! They must go around.
   // - Rivers are IMPASSABLE to Ground Units unless crossing via Bridges/Fords.
-  calculateStandMovePath(stand, rawTargetX, rawTargetY) {
+  calculateStandMovePathCore(stand, rawTargetX, rawTargetY) {
     const det = stand.detachment;
     const sx = stand.originX, sy = stand.originY;
     let tx = Phaser.Math.Clamp(rawTargetX, 15, BOARD_W - 15);
@@ -40520,6 +40550,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!det) return true;
     this._terrainWhy = null;
     if (this.phase === 'MOVEMENT') for (const s of det.stands) { const why = this.terrainMoveBlock(det, s); if (why) { this._terrainWhy = why; return false; } }
+    if (this.phase === 'DEPLOYMENT' && !(det.flyer || det.skimmer || det.jump || det.isFlyer)) for (const s of det.stands) { const r = this.rockAt(s.container.x, s.container.y); if (r) { this._terrainWhy = `${r.name || 'Rock'} is impassable`; return false; } }
     const isInfantry = det.pinningClass === 1;
     const isFlyerOrSkimmer = Boolean(det.flyer || det.skimmer || det.jump);
     const isTitan = Boolean(det.isTitan || det.superHeavy);
@@ -40531,7 +40562,8 @@ class NetEpicScene extends Phaser.Scene {
       }
       if (!isInfantry && !isFlyerOrSkimmer) {
         for (const b of (this.buildings || [])) {
-          if (this.lineHitsRect(b, s.originX, s.originY, x, y, 2)) {
+          const path = this.standPath(s);
+          if (path.some((p, i) => i > 0 && !b.collapsed && this.lineHitsRect(b, path[i - 1].x, path[i - 1].y, p.x, p.y, 2))) {
             return false; // Vehicles cannot pass through buildings
           }
         }
@@ -41761,6 +41793,7 @@ class NetEpicScene extends Phaser.Scene {
 
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
+    this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
 
     // Select first player-controlled detachment by default
     this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction)) || this.detachments[0] || null;
@@ -43481,7 +43514,8 @@ class NetEpicScene extends Phaser.Scene {
   terrainMoveBlock(det, s) {
     const air = Boolean(det.flyer || det.skimmer || det.jump || det.isFlyer);
     const x = s.container.x, y = s.container.y, ox = s.originX != null ? s.originX : x, oy = s.originY != null ? s.originY : y;
-    if (!air) for (const r of (this.rocks || [])) if (this.inPoly(r.points, x, y) || (Phaser.Math.Distance.Between(ox, oy, x, y) > 1 && this.lineHitsPoly(r.points, ox, oy, x, y))) return `${r.name || 'Rock'} is impassable`;
+    const path = this.standPath(s);
+    if (!air) for (const r of (this.rocks || [])) if (this.inPoly(r.points, x, y) || (Phaser.Math.Distance.Between(ox, oy, x, y) > 1 && path.some((p, i) => i > 0 && this.lineHitsPoly(r.points, path[i - 1].x, path[i - 1].y, p.x, p.y)))) return `${r.name || 'Rock'} is impassable`;
     const big = det.isTitan || det.superHeavy || (det.pinningClass || 1) >= 3;
     if (!air && !big && det.order === 'CHARGE' && Phaser.Math.Distance.Between(ox, oy, x, y) > 1) {
       for (const t of (this.trenches || [])) if (this.polylineCrossed(t.points, ox, oy, x, y) && this.distToPolyline(t.points, x, y) > (t.width || 14) / 2) return 'Units on Charge orders can enter a trench but not cross it';
@@ -43593,17 +43627,24 @@ class NetEpicScene extends Phaser.Scene {
   // A winding river (polyline with width) with angled bridges {x1, y1, x2, y2, width}
   drawWindingRiver(rv) {
     const g = this.boardGfx, w = rv.width || 160, pts = rv.points;
-    const layer = (width, col, a) => { g.lineStyle(width, col, a); g.strokePoints(pts, false); pts.forEach(p => { g.fillStyle(col, a); g.fillCircle(p.x, p.y, width / 2); }); };
-    const lava = rv.kind === 'lava';
-    layer(w + 16, lava ? 0x292524 : 0x44403c, 0.85);
-    layer(w, lava ? 0x9a3412 : 0x0369a1, 0.95);
-    layer(w * 0.7, lava ? 0xea580c : 0x075985, 0.92);
-    layer(w * 0.35, lava ? 0xfbbf24 : 0x0c4a6e, 0.95);
+    const layer = (width, col, a) => { g.lineStyle(width, col, 1); g.strokePoints(pts, false); pts.forEach((p, i) => { if (i > 0 && i < pts.length - 1) { g.fillStyle(col, 1); g.fillCircle(p.x, p.y, width / 2); } }); };
+    const C = ({ lava: [0x292524, 0x9a3412, 0xea580c, 0xfbbf24, '🔥'], ice: [0x64748b, 0x0284c7, 0x38bdf8, 0xa5f3fc, '🧊'], wadi: [0x451a03, 0x78350f, 0x9a3412, 0xb45309, '🏜️'] })[rv.kind] || [0x44403c, 0x0369a1, 0x075985, 0x0c4a6e, '🌊'];
+    layer(w + 16, C[0], 0.85);
+    layer(w, C[1], 0.95);
+    layer(w * 0.7, C[2], 0.92);
+    layer(w * 0.35, C[3], 0.95);
     const m = pts[Math.floor(pts.length / 2)];
-    this.addTerrainLabel({ x: m.x, y: m.y }, `${lava ? '🔥' : '🌊'} ${(rv.name || 'River').toUpperCase()}`);
+    this.addTerrainLabel({ x: m.x, y: m.y }, `${C[4]} ${(rv.name || 'River').toUpperCase()}`);
   }
   drawSpanBridge(br) {
     const g = this.boardGfx, w = br.width || 50;
+    if (br.isFord) { // shallow ford: stepping stones in pale water
+      const d = Phaser.Math.Distance.Between(br.x1, br.y1, br.x2, br.y2), ux = (br.x2 - br.x1) / d, uy = (br.y2 - br.y1) / d;
+      g.lineStyle(w, this.mapTheme() === 'DESERT' ? 0xd6a35c : (this.mapTheme() === 'SNOW' ? 0xe0f2fe : 0x7dd3fc), 0.5); g.lineBetween(br.x1, br.y1, br.x2, br.y2);
+      for (let k = 10; k < d - 6; k += 16) for (let o = -w / 2 + 10; o < w / 2 - 6; o += 18) { g.fillStyle(0x78716c, 0.9); g.fillCircle(br.x1 + ux * k - uy * o, br.y1 + uy * k + ux * o, 5); }
+      this.addTerrainLabel({ x: (br.x1 + br.x2) / 2, y: (br.y1 + br.y2) / 2 }, (br.name || 'Ford').toUpperCase());
+      return;
+    }
     g.lineStyle(w + 10, 0x020617, 0.45); g.lineBetween(br.x1 + 4, br.y1 + 5, br.x2 + 4, br.y2 + 5);
     g.lineStyle(w + 6, 0x94a3b8, 1); g.lineBetween(br.x1, br.y1, br.x2, br.y2);
     g.lineStyle(w - 4, 0x334155, 1); g.lineBetween(br.x1, br.y1, br.x2, br.y2);
@@ -43611,6 +43652,334 @@ class NetEpicScene extends Phaser.Scene {
     g.lineStyle(1.5, 0x64748b, 0.75);
     for (let s = 8; s < d - 4; s += 12) g.lineBetween(br.x1 + ux * s - uy * (w / 2 - 4), br.y1 + uy * s + ux * (w / 2 - 4), br.x1 + ux * s + uy * (w / 2 - 4), br.y1 + uy * s - ux * (w / 2 - 4));
     this.addTerrainLabel({ x: (br.x1 + br.x2) / 2, y: (br.y1 + br.y2) / 2 }, (br.name || 'Bridge').toUpperCase());
+  }
+
+  // ===== ROUTE FINDING around impassable rock and across rivers by their bridges =====
+  isGroundBlocked(det, x, y) {
+    if (det && (det.flyer || det.skimmer || det.jump || det.isFlyer)) return false;
+    if (this.rockAt(x, y)) return true;
+    const titan = det && (det.isTitan || det.superHeavy);
+    return !titan && (this.rivers || []).length > 0 && this.isPointInImpassableRiver(x, y);
+  }
+  segmentClear(det, a, b) {
+    for (const r of (this.rocks || [])) if (this.lineHitsPoly(r.points, a.x, a.y, b.x, b.y)) return false;
+    const titan = det && (det.isTitan || det.superHeavy);
+    if (!titan && (this.rivers || []).length) {
+      const d = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y), n = Math.max(1, Math.ceil(d / 12));
+      for (let i = 1; i < n; i++) { const t = i / n; if (this.isPointInImpassableRiver(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)) return false; }
+    }
+    return true;
+  }
+  navNodes(titan) {
+    const key = titan ? 't' : 'g';
+    const sig = JSON.stringify([(this.rocks || []).map(r => r.points), (this.bridges || []).map(b => [b.x1, b.y1, b.x, b.y]), (this.rivers || []).length, BOARD_W, BOARD_H]);
+    this._nav = this._nav || {};
+    if (this._nav[key] && this._nav[key].sig === sig) return this._nav[key];
+    const nodes = [], M = 34;
+    (this.rocks || []).forEach(r => {
+      const cx = r.points.reduce((a, p) => a + p.x, 0) / r.points.length, cy = r.points.reduce((a, p) => a + p.y, 0) / r.points.length;
+      r.points.forEach(p => { const d = Math.max(1, Phaser.Math.Distance.Between(cx, cy, p.x, p.y)); nodes.push({ x: p.x + (p.x - cx) / d * M, y: p.y + (p.y - cy) / d * M }); });
+    });
+    if (!titan) (this.bridges || []).forEach(br => {
+      let a, b;
+      if (br.x1 != null) { a = { x: br.x1, y: br.y1 }; b = { x: br.x2, y: br.y2 }; }
+      else { a = { x: br.x + br.w / 2, y: br.y - 4 }; b = { x: br.x + br.w / 2, y: br.y + br.h + 4 }; }
+      const d = Math.max(1, Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y)), ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
+      nodes.push({ x: a.x - ux * 14, y: a.y - uy * 14, bridge: true }, { x: b.x + ux * 14, y: b.y + uy * 14, bridge: true });
+    });
+    const fake = { isTitan: titan };
+    const ok = nodes.filter(n => n.x > 10 && n.y > 10 && n.x < BOARD_W - 10 && n.y < BOARD_H - 10 && !this.rockAt(n.x, n.y) && (titan || !(this.rivers || []).length || !this.isPointInImpassableRiver(n.x, n.y)));
+    const adj = ok.map((a, i) => ok.map((b, j) => (i !== j && this.segmentClear(fake, a, b)) ? Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y) : 0));
+    this._nav[key] = { sig, nodes: ok, adj };
+    return this._nav[key];
+  }
+  // Shortest walkable route from a to b as a list of points (excluding a), or null if there is none
+  findRoute(det, a, b) {
+    if (this.segmentClear(det, a, b)) return [b];
+    const titan = Boolean(det && (det.isTitan || det.superHeavy));
+    const { nodes, adj } = this.navNodes(titan), n = nodes.length;
+    if (!n) return null;
+    const dist = new Array(n + 1).fill(Infinity), prev = new Array(n + 1).fill(-1), done = new Array(n + 1).fill(false);
+    for (let i = 0; i < n; i++) if (this.segmentClear(det, a, nodes[i])) dist[i] = Phaser.Math.Distance.Between(a.x, a.y, nodes[i].x, nodes[i].y);
+    const toGoal = nodes.map(nd => this.segmentClear(det, nd, b) ? Phaser.Math.Distance.Between(nd.x, nd.y, b.x, b.y) : 0);
+    for (;;) {
+      let u = -1; for (let i = 0; i <= n; i++) if (!done[i] && dist[i] < Infinity && (u < 0 || dist[i] < dist[u])) u = i;
+      if (u < 0) return null;
+      if (u === n) break;
+      done[u] = true;
+      for (let v = 0; v < n; v++) if (adj[u][v] && dist[u] + adj[u][v] < dist[v]) { dist[v] = dist[u] + adj[u][v]; prev[v] = u; }
+      if (toGoal[u] && dist[u] + toGoal[u] < dist[n]) { dist[n] = dist[u] + toGoal[u]; prev[n] = u; }
+    }
+    const out = [b]; let c = prev[n];
+    while (c >= 0) { out.unshift({ x: nodes[c].x, y: nodes[c].y }); c = prev[c]; }
+    return out;
+  }
+  // The AI heads for the next corner of its route instead of walking into rock or a river
+  navNextWaypoint(det, from, goal) {
+    if (det.flyer || det.skimmer || det.jump || det.isFlyer) return null;
+    if (!(this.rocks || []).length && !(this.rivers || []).length) return null;
+    const r = this.findRoute(det, from, goal);
+    if (!r || r.length < 2) return null;
+    for (const p of r) if (Phaser.Math.Distance.Between(from.x, from.y, p.x, p.y) > 30) return p;
+    return null;
+  }
+  // The path a stand took this move: its drag route if it has one, else a straight line
+  standPath(s) {
+    const o = { x: s.originX, y: s.originY }, e = { x: s.container.x, y: s.container.y }, w = s.activeWaypoints;
+    if (w && w.length > 1 && Phaser.Math.Distance.Between(w[0].x, w[0].y, o.x, o.y) < 3) {
+      const p = w.map(q => ({ x: q.x, y: q.y })), last = p[p.length - 1];
+      if (Phaser.Math.Distance.Between(last.x, last.y, e.x, e.y) > 3) p.push(e);
+      return p;
+    }
+    return [o, e];
+  }
+  // Move a stand that was set up on impassable ground to the nearest clear spot
+  nudgeOutOfTerrain(det, yMin = 15, yMax = BOARD_H - 15) {
+    if (!det || det.embarkedOn || det.inReserve || !det.stands) return;
+    const inf = det.pinningClass === 1;
+    const bad = (x, y) => this.isGroundBlocked(det, x, y) || (!inf && this.getBuildingAt(x, y));
+    det.stands.forEach(s => {
+      const x0 = s.container.x, y0 = s.container.y;
+      if (!bad(x0, y0)) return;
+      for (let r = 20; r <= 400; r += 20) {
+        let found = null;
+        for (let k = 0; k < 16 && !found; k++) {
+          const a = k / 16 * Math.PI * 2, x = Phaser.Math.Clamp(x0 + Math.cos(a) * r, 20, BOARD_W - 20), y = Phaser.Math.Clamp(y0 + Math.sin(a) * r, yMin, yMax);
+          if (!bad(x, y) && !det.stands.some(o => o !== s && Phaser.Math.Distance.Between(o.container.x, o.container.y, x, y) < 16)) found = { x, y };
+        }
+        if (found) { s.container.x = s.originX = found.x; s.container.y = s.originY = found.y; break; }
+      }
+    });
+    this.syncEmbarkedPassengers(det);
+    if (this.updateDetachmentBadgePos) this.updateDetachmentBadgePos(det);
+  }
+  // Drag routes for ground units bend around rock
+  calculateStandMovePath(stand, rawTargetX, rawTargetY) {
+    const res = this.calculateStandMovePathCore(stand, rawTargetX, rawTargetY), det = stand.detachment;
+    if (!res || !(this.rocks || []).length || det.flyer || det.skimmer || det.jump || det.isFlyer) return res;
+    if (this.phase === 'DEPLOYMENT') {
+      if (this.rockAt(res.finalX, res.finalY)) return { ...res, finalX: stand.originX, finalY: stand.originY, waypoints: [{ x: stand.originX, y: stand.originY }] };
+      return res;
+    }
+    if (!res.valid) return res;
+    const w = res.waypoints || [], hitsRock = (a, b) => (this.rocks || []).some(r => this.lineHitsPoly(r.points, a.x, a.y, b.x, b.y));
+    let crosses = false; for (let i = 0; i < w.length - 1; i++) if (hitsRock(w[i], w[i + 1])) crosses = true;
+    if (!crosses) return res;
+    const s = { x: stand.originX, y: stand.originY };
+    let t = { x: rawTargetX, y: rawTargetY };
+    if (this.rockAt(t.x, t.y)) { // dragged onto the rock: aim for the near edge instead
+      const d = Phaser.Math.Distance.Between(s.x, s.y, t.x, t.y);
+      for (let k = d; k > 0; k -= 6) { const p = { x: s.x + (t.x - s.x) * k / d, y: s.y + (t.y - s.y) * k / d }; if (!this.rockAt(p.x, p.y)) { t = p; break; } }
+    }
+    const fake = { isTitan: true }; // route around rock only; rivers keep their own rule
+    const route = this.findRoute(fake, s, t) || [t];
+    const baseMoveCm = (this.phase === 'MOVEMENT' && det.order && !det.deepStrikeActive) ? this.getEffectiveMoveCm(det) * ORDER_INFO[det.order].mult : Infinity;
+    let left = (baseMoveCm < 9999 ? baseMoveCm * PX_PER_CM : Infinity) - (res.buildingPenaltyPx || 0);
+    const pts = [s]; let cur = s, used = 0;
+    for (const p of route) {
+      const d = Phaser.Math.Distance.Between(cur.x, cur.y, p.x, p.y);
+      if (hitsRock(cur, p)) break;
+      if (d <= left) { pts.push(p); left -= d; used += d; cur = p; continue; }
+      const q = { x: cur.x + (p.x - cur.x) * left / d, y: cur.y + (p.y - cur.y) * left / d }; pts.push(q); used += left; cur = q; break;
+    }
+    return { ...res, finalX: cur.x, finalY: cur.y, waypoints: pts, distPx: used + (res.buildingPenaltyPx || 0) };
+  }
+
+  // ===== MAPS =====
+  mapTheme() { const p = window.mapPreset; return ({ HIGHWAY: 'DESERT', HIVE: 'RUINED_CITY' })[p] || p; }
+  // Bridge across a winding river at x, square to the river
+  bridgeAt(rv, x, len, width, name, isFord = false) {
+    const P = rv.points; let i = 0; while (i < P.length - 2 && P[i + 1].x < x) i++;
+    const a = P[i], b = P[i + 1], t = (x - a.x) / ((b.x - a.x) || 1), y = a.y + (b.y - a.y) * t;
+    const d = Math.hypot(b.x - a.x, b.y - a.y), nx = -(b.y - a.y) / d, ny = (b.x - a.x) / d, s = ny < 0 ? -1 : 1;
+    return { x1: Math.round(x - nx * s * len / 2), y1: Math.round(y - ny * s * len / 2), x2: Math.round(x + nx * s * len / 2), y2: Math.round(y + ny * s * len / 2), width, name, isFord };
+  }
+  // Road through a list of points, drawn as joined segments with one label
+  roadPath(pts, width, name) { return pts.slice(0, -1).map((p, i) => ({ x1: p.x, y1: p.y, x2: pts[i + 1].x, y2: pts[i + 1].y, width, name, cap: true, noLabel: i !== Math.floor((pts.length - 1) / 2) })); }
+
+  loadExtraMap(preset, scaleX, scaleY) {
+    const MAPS = ['RIVER', 'SNOW', 'DESERT', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE'];
+    if (!MAPS.includes(preset)) return false;
+    const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) });
+    const Ps = arr => arr.map(([x, y]) => P(x, y));
+    const B = (type, name, cx, cy, w, h, rot = 0) => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h, rot, type, name });
+    const R = (rect) => ({ ...rect, x: X(rect.cx) - rect.w / 2, y: Y(rect.cy) - rect.h / 2 }); // centred rectangles (crops, minefields)
+    const E = (o) => ({ ...o, x: X(o.x), y: Y(o.y) });
+    const W = (x, y, r) => ({ x: X(x), y: Y(y), r });
+    const O = (id, name, x, y) => ({ id, name: `Obj #${id} (${name})`, x: X(x), y: Y(y), owner: 'NEUTRAL' });
+    const flank = (w, e) => { if (scaleX > 1.15) this.objectives.push(O(6, w, 120, 625), O(7, e, 1730, 625)); };
+    const rv = (pts, width, name, kind) => ({ points: Ps(pts), width, name, kind });
+    const bridgeRoad = (br, north, south, width, name) => {
+      const n = br.y1 < br.y2 ? { x: br.x1, y: br.y1 } : { x: br.x2, y: br.y2 }, s = br.y1 < br.y2 ? { x: br.x2, y: br.y2 } : { x: br.x1, y: br.y1 };
+      return [...this.roadPath([...Ps(north), n], width, name), ...this.roadPath([s, ...Ps(south)], width, name).map(r => ({ ...r, noLabel: true }))];
+    };
+    const mid = br => ({ x: Math.round((br.x1 + br.x2) / 2), y: Math.round((br.y1 + br.y2) / 2) });
+
+    if (preset === 'RIVER') {
+      // River Lethe winds across the middle; bridges sit square to the current
+      const river = rv([[0, 600], [260, 640], [520, 575], [780, 660], [1060, 610], [1330, 545], [1600, 630], [1850, 590]], 110, 'River Lethe (impassable except bridges / ford)');
+      this.rivers = [river];
+      const bW = this.bridgeAt(river, X(400), 190, 50, 'West Bastion Bridge'), bC = this.bridgeAt(river, X(930), 190, 56, 'Central Highway Bridge'), bE = this.bridgeAt(river, X(1470), 200, 70, 'East Shallow Ford', true);
+      this.bridges = [bW, bC, bE];
+      this.roads = [...bridgeRoad(bW, [[330, 0], [360, 300]], [[430, 900], [470, 1250]], 32, 'West Bridge Road (+5cm Move)'),
+        ...bridgeRoad(bC, [[1010, 0], [960, 330]], [[900, 900], [960, 1250]], 36, 'Central Expressway (+5cm Move)')];
+      const fe = bE.y1 < bE.y2 ? [{ x: bE.x1, y: bE.y1 }, { x: bE.x2, y: bE.y2 }] : [{ x: bE.x2, y: bE.y2 }, { x: bE.x1, y: bE.y1 }];
+      this.dirtTracks = [{ points: [P(1650, 120), P(1560, 300), fe[0]], width: 14, name: 'Ford Track' }, { points: [fe[1], P(1400, 900), P(1330, 1100)], width: 14, name: 'Ford Track' }];
+      this.buildings = [B('BUNKER', 'North Bastion', 520, 440, 120, 90, 0.2), B('BUNKER', 'South Redoubt', 1060, 790, 130, 95, -0.25),
+        B('SILO', 'Water Pumping Station', 1240, 395, 140, 100, 0.35), B('CATHEDRAL', 'Highland Monastery', 180, 230, 170, 120, -0.2),
+        B('HAB_BLOCK', 'Riverside Hab-Block', 1580, 800, 150, 105, 0.3), B('MANUFACTORUM', 'Munitions Depot', 640, 930, 160, 115, -0.15),
+        B('HAB_BLOCK', "Ferryman's Row", 1250, 230, 130, 95, 0.5), B('SILO', 'Grain Silos', 180, 860, 120, 100, -0.4)];
+      this.hills = [E({ x: 700, y: 300, rx: 150, ry: 70, rot: 0.2, name: 'Lookout Hill' }), E({ x: 1250, y: 980, rx: 190, ry: 45, rot: -0.25, kind: 'ridge', name: 'Lethe Ridge' })];
+      this.woods = [W(150, 770, 75), W(1680, 380, 85), W(300, 1070, 80), W(1730, 940, 85), W(800, 800, 62)];
+      this.crops = [R({ cx: 1520, cy: 1090, w: 200, h: 100, rot: -0.2, name: 'Wheat field' })];
+      this.craters = [E({ x: 1120, y: 700, rx: 24 }), E({ x: 640, y: 470, rx: 22 })];
+      this.objectives = [O(1, 'North Bastion', 520, 440), { ...O(2, 'Central Bridge', 0, 0), ...mid(bC) }, { ...O(3, 'East Ford', 0, 0), ...mid(bE) }, O(4, 'Highland Monastery', 180, 230), O(5, 'Riverside Hab', 1580, 800)];
+      flank('West River Reach', 'East River Reach');
+    } else if (preset === 'SNOW') {
+      const chasm = rv([[0, 450], [350, 520], [650, 640], [980, 600], [1300, 700], [1600, 780], [1850, 760]], 100, 'Glacial Ice Chasm (impassable except ice bridges)', 'ice');
+      this.rivers = [chasm];
+      const b1 = this.bridgeAt(chasm, X(420), 180, 50, 'West Frost Bridge'), b2 = this.bridgeAt(chasm, X(1150), 180, 56, 'Central Glacial Span'), b3 = this.bridgeAt(chasm, X(1720), 180, 70, 'East Pack-Ice Crossing', true);
+      this.bridges = [b1, b2, b3];
+      this.roads = [...bridgeRoad(b1, [[520, 0], [470, 300]], [[560, 900], [600, 1250]], 34, 'Arctic Supply Highway (+5cm Move)'),
+        ...bridgeRoad(b2, [[1250, 0], [1180, 400]], [[1100, 1000], [1150, 1250]], 36, 'Trans-Polar Expressway (+5cm Move)')];
+      this.dirtTracks = [{ points: [P(1700, 300), P(1760, 600)], width: 14, name: 'Sledge Trail' }];
+      this.buildings = [B('BUNKER', 'North Polar Bastion', 250, 330, 130, 95, 0.3), B('BUNKER', 'South Glacier Redoubt', 1350, 900, 130, 95, -0.2),
+        B('SILO', 'Frost Fuel Reservoir', 1500, 450, 140, 100, 0.4), B('CATHEDRAL', 'Mountain Shrine', 800, 230, 170, 120, -0.15),
+        B('HAB_BLOCK', 'Polar Research Station', 760, 900, 150, 105, 0.25), B('MANUFACTORUM', 'Thermal Plant', 1650, 1060, 160, 115, -0.3)];
+      this.hills = [E({ x: 1000, y: 430, rx: 150, ry: 48, rot: 0.05, kind: 'ridge', name: 'Frozen Ridge' }), E({ x: 300, y: 960, rx: 120, ry: 70, name: 'Ice Hill' })];
+      this.rocks = [{ name: 'Ice Spire', points: Ps([[1500, 590], [1580, 570], [1610, 640], [1530, 660]]) }];
+      this.woods = [W(150, 190, 80), W(1700, 220, 85), W(320, 760, 68), W(920, 1110, 80), W(1760, 520, 65)];
+      this.craters = [E({ x: 600, y: 420, rx: 22 }), E({ x: 1300, y: 560, rx: 24 })];
+      this.objectives = [O(1, 'North Polar Bastion', 250, 330), { ...O(2, 'West Frost Bridge', 0, 0), ...mid(b1) }, { ...O(3, 'Glacial Span', 0, 0), ...mid(b2) }, O(4, 'Mountain Shrine', 800, 230), O(5, 'Research Station', 760, 900)];
+      flank('West Glacier', 'East Glacier');
+    } else if (preset === 'DESERT') {
+      const wadi = rv([[0, 700], [300, 640], [560, 700], [850, 580], [1150, 620], [1400, 520], [1850, 560]], 100, 'Dry Canyon Wadi (impassable except causeways)', 'wadi');
+      this.rivers = [wadi];
+      const b1 = this.bridgeAt(wadi, X(250), 180, 50, 'West Sandstone Causeway'), b2 = this.bridgeAt(wadi, X(700), 180, 56, 'Basalt Arch Bridge'), b3 = this.bridgeAt(wadi, X(1300), 190, 70, 'East Sand Ramp', true);
+      this.bridges = [b1, b2, b3];
+      this.roads = [...bridgeRoad(b1, [[150, 0], [230, 350]], [[380, 950], [300, 1250]], 34, 'Trans-Desert Highway (+5cm Move)'),
+        ...bridgeRoad(b2, [[900, 0], [760, 350]], [[820, 1000], [1000, 1250]], 36, 'Great Dunes Expressway (+5cm Move)')];
+      const fe = b3.y1 < b3.y2 ? [{ x: b3.x1, y: b3.y1 }, { x: b3.x2, y: b3.y2 }] : [{ x: b3.x2, y: b3.y2 }, { x: b3.x1, y: b3.y1 }];
+      this.dirtTracks = [{ points: [P(1450, 150), P(1360, 380), fe[0]], width: 14, name: 'Caravan Route' }, { points: [fe[1], P(1250, 950), P(1300, 1200)], width: 14, name: 'Caravan Route' }];
+      this.buildings = [B('BUNKER', 'North Mesa Strongpoint', 450, 450, 130, 95, 0.25), B('BUNKER', 'South Oasis Redoubt', 1000, 820, 130, 95, -0.3),
+        B('SILO', 'Promethium Refinery', 1600, 370, 150, 115, 0.35), B('CATHEDRAL', 'Ancient Sun Temple', 600, 220, 170, 120, -0.2),
+        B('HAB_BLOCK', 'Nomad Hab-Enclave', 1530, 700, 150, 110, 0.3), B('MANUFACTORUM', 'Moisture Extraction Plant', 160, 890, 160, 115, -0.25)];
+      this.rocks = [{ name: 'Red Mesa', points: Ps([[1220, 230], [1350, 200], [1420, 290], [1360, 360], [1240, 340]]) }, { name: 'Sandstone Butte', points: Ps([[510, 840], [600, 830], [630, 900], [560, 940], [500, 910]]) }];
+      this.hills = [E({ x: 1030, y: 380, rx: 150, ry: 55, rot: -0.3, name: 'Great Dune' }), E({ x: 1500, y: 920, rx: 160, ry: 60, rot: 0.25, name: 'Long Dune' })];
+      this.woods = [W(1150, 1000, 75), W(1750, 1060, 70), W(1750, 190, 75)];
+      this.craters = [E({ x: 800, y: 470, rx: 22 }), E({ x: 360, y: 560, rx: 20 })];
+      this.objectives = [O(1, 'Mesa Strongpoint', 450, 450), { ...O(2, 'Basalt Arch', 0, 0), ...mid(b2) }, { ...O(3, 'Sand Ramp', 0, 0), ...mid(b3) }, O(4, 'Sun Temple', 600, 220), O(5, 'Hab-Enclave', 1530, 700)];
+      flank('West Wash', 'East Wash');
+    } else if (preset === 'PASS') {
+      // Mountain pass: rock walls funnel both armies into a winding road, with a goat track along the west edge
+      this.rocks = [
+        { name: 'Western Crags', points: Ps([[0, 380], [220, 340], [400, 420], [430, 520], [300, 590], [120, 600], [0, 570]]) },
+        { name: 'Lower Crags', points: Ps([[90, 710], [380, 670], [600, 740], [640, 860], [500, 930], [230, 940], [60, 880]]) },
+        { name: 'Hellblade Massif', points: Ps([[1240, 400], [1450, 330], [1700, 360], [1850, 340], [1850, 900], [1640, 920], [1420, 830], [1300, 690], [1320, 520]]) },
+        { name: 'Needle Rock', points: Ps([[880, 560], [990, 530], [1030, 610], [960, 670], [870, 640]]) },
+        { name: 'Raven Crag', points: Ps([[1560, 180], [1640, 160], [1680, 230], [1600, 260]]) }];
+      this.roads = this.roadPath(Ps([[950, 0], [830, 300], [760, 500], [790, 760], [990, 980], [940, 1250]]), 32, 'Pass Road (+5cm Move)');
+      this.buildings = [B('BUNKER', 'Pass Gatehouse', 1150, 620, 130, 95, 0.35), B('CATHEDRAL', 'Mountain Monastery', 1130, 220, 170, 120, -0.2),
+        B('HAB_BLOCK', 'Waystation', 640, 1060, 140, 100, 0.4), B('SILO', 'Mine Head', 300, 1080, 130, 100, -0.3), B('BUNKER', 'Watch Tower', 320, 200, 110, 85, 0.2)];
+      this.hills = [E({ x: 560, y: 250, rx: 130, ry: 60, rot: 0.15, name: 'Watch Hill' }), E({ x: 1450, y: 1060, rx: 140, ry: 60, rot: -0.2, name: 'Eagle Crag' }), E({ x: 1150, y: 830, rx: 100, ry: 32, rot: 0.6, kind: 'ridge', name: 'Saddle Ridge' })];
+      this.woods = [W(1760, 1110, 80), W(920, 380, 58), W(140, 1160, 60)];
+      this.craters = [E({ x: 900, y: 800, rx: 24 }), E({ x: 690, y: 640, rx: 20 })];
+      this.objectives = [O(1, 'Pass Gatehouse', 1150, 620), O(2, 'Pass Road', 780, 640), O(3, 'Watch Hill', 560, 250), O(4, 'Eagle Crag', 1450, 1060), O(5, 'Goat Track', 40, 650)];
+    } else if (preset === 'HIGHWAY') {
+      // A highway cuts the desert on the diagonal: convoy country between mesas and dunes
+      this.roads = [...this.roadPath(Ps([[0, 1080], [480, 820], [940, 650], [1400, 430], [1850, 160]]), 42, 'Promethium Highway (+5cm Move)'),
+        ...this.roadPath(Ps([[940, 650], [1080, 1250]]), 30, 'Depot Road (+5cm Move)')];
+      this.buildings = [B('BUNKER', 'Checkpoint Theta', 880, 560, 120, 85, -0.4), B('MANUFACTORUM', 'Refinery Complex', 1180, 420, 170, 120, -0.45),
+        B('SILO', 'Fuel Tanks', 1400, 580, 140, 100, -0.45), B('HAB_BLOCK', 'Truck Stop', 560, 920, 150, 105, -0.35),
+        B('SILO', 'Pumping Station', 1680, 420, 130, 95, 0.2), B('CATHEDRAL', 'Wayside Shrine', 300, 500, 160, 115, 0.15)];
+      this.rocks = [{ name: 'Red Mesa', points: Ps([[320, 240], [450, 210], [530, 290], [470, 370], [340, 350]]) },
+        { name: 'Broken Butte', points: Ps([[1430, 770], [1580, 750], [1650, 850], [1540, 920], [1420, 880]]) },
+        { name: 'Sand Spire', points: Ps([[970, 230], [1030, 215], [1050, 280], [990, 300]]) }];
+      this.hills = [E({ x: 680, y: 420, rx: 140, ry: 55, rot: -0.4, name: 'Dune Crest' }), E({ x: 1220, y: 870, rx: 160, ry: 55, rot: -0.4, name: 'Long Dune' }), E({ x: 230, y: 790, rx: 100, ry: 50, name: 'Sand Hill' })];
+      this.craters = [E({ x: 700, y: 760, rx: 22 }), E({ x: 1060, y: 590, rx: 20 }), E({ x: 1600, y: 310, rx: 22 }), E({ x: 300, y: 980, rx: 20 })];
+      this.woods = [W(1720, 1060, 75), W(150, 180, 70), W(800, 1110, 70)];
+      this.objectives = [O(1, 'Checkpoint Theta', 880, 560), O(2, 'Refinery', 1180, 420), O(3, 'Truck Stop', 560, 920), O(4, 'Fuel Tanks', 1400, 580), O(5, 'Wayside Shrine', 300, 500)];
+      flank('West Dunes', 'East Dunes');
+    } else if (preset === 'FORTIFIED') {
+      // A defended line: zig-zag trenches, bunkers at the gate, mines in front and a shell-torn no-man's land
+      this.trenches = [{ points: Ps([[60, 520], [240, 470], [380, 540], [560, 470], [720, 540], [860, 490]]), width: 14, name: 'West Trench Line' },
+        { points: Ps([[1020, 490], [1170, 440], [1320, 520], [1490, 450], [1640, 530], [1800, 480]]), width: 14, name: 'East Trench Line' },
+        { points: Ps([[380, 540], [430, 330]]), width: 12, name: 'Communication Trench' }, { points: Ps([[1320, 520], [1300, 330]]), width: 12, name: 'Communication Trench' }];
+      this.minefields = [R({ cx: 300, cy: 620, w: 220, h: 60, rot: -0.1 }), R({ cx: 680, cy: 630, w: 200, h: 60, rot: 0.12 }), R({ cx: 1200, cy: 610, w: 240, h: 60, rot: -0.08 }), R({ cx: 1580, cy: 620, w: 200, h: 60, rot: 0.12 })];
+      this.roads = this.roadPath(Ps([[930, 0], [940, 500], [990, 800], [910, 1250]]), 32, 'Supply Road (+5cm Move)');
+      this.buildings = [B('BUNKER', 'Gate Bastion West', 790, 400, 110, 85, 0.2), B('BUNKER', 'Gate Bastion East', 1090, 390, 110, 85, -0.2),
+        B('BUNKER', 'Strongpoint Alpha', 250, 370, 120, 90, 0.15), B('BUNKER', 'Strongpoint Omega', 1620, 370, 120, 90, -0.15),
+        B('MANUFACTORUM', 'Field Headquarters', 1350, 210, 160, 110, 0.1), B('HAB_BLOCK', 'Shelled Hab', 420, 920, 140, 100, 0.3),
+        B('MANUFACTORUM', 'Ruined Manufactory', 1350, 930, 160, 115, -0.25), B('SILO', 'Water Tower', 1700, 1110, 110, 90, 0.4)];
+      this.hills = [E({ x: 560, y: 210, rx: 150, ry: 65, rot: 0.1, name: 'Command Hill' })];
+      this.craters = [[150, 760, 26], [420, 720, 22], [600, 800, 30], [760, 700, 20], [850, 880, 24], [1100, 760, 28], [1250, 700, 20], [1480, 780, 26], [1700, 720, 22], [240, 1010, 20], [1080, 950, 24], [560, 640, 18]].map(([x, y, r]) => E({ x, y, rx: r }));
+      this.woods = [W(130, 900, 70), W(1760, 860, 70)];
+      this.objectives = [O(1, 'The Gate', 940, 470), O(2, 'Strongpoint Alpha', 250, 370), O(3, 'Strongpoint Omega', 1620, 370), O(4, 'Command Hill', 560, 210), O(5, 'Shell-Hole Crossroads', 990, 800)];
+      flank('West Wire', 'East Wire');
+    } else if (preset === 'HIVE') {
+      // Hive complex: two boulevards cross on the diagonal, blocks follow the street angles, a fallen spire blocks one quarter
+      this.roads = [...this.roadPath(Ps([[0, 330], [898, 646], [1850, 980]]), 44, 'Hive Spine Boulevard (+5cm Move)'),
+        ...this.roadPath(Ps([[560, 1250], [898, 646], [1260, 0]]), 38, 'Transit Way (+5cm Move)')];
+      const a = 0.34, c = 0.51;
+      this.buildings = [B('MANUFACTORUM', 'Manufactorum Primus', 250, 180, 180, 125, a), B('HAB_BLOCK', 'Hab-Stack Alpha', 560, 200, 150, 110, c),
+        B('CATHEDRAL', 'Ecclesiarchy Chapel', 850, 180, 170, 120, c), B('BUNKER', 'Spine Gate Bastion', 520, 370, 140, 100, a),
+        B('SILO', 'Power Silos', 780, 420, 130, 100, c), B('MANUFACTORUM', 'Manufactorum Secundus', 1450, 250, 180, 125, a),
+        B('CATHEDRAL', 'Archive Spire', 1700, 450, 170, 120, -0.15), B('HAB_BLOCK', 'Hab-Stack Beta', 1250, 480, 150, 110, a),
+        B('BUNKER', 'Aegis Redoubt', 1550, 680, 140, 100, a), B('HAB_BLOCK', 'Hab-Stack Gamma', 250, 700, 150, 110, a),
+        B('MANUFACTORUM', 'Munitorum Armoury', 200, 1010, 180, 125, c), B('BUNKER', 'Comms Relay', 500, 1060, 130, 95, c),
+        B('SILO', 'Promethium Silos', 1150, 960, 140, 105, a), B('MANUFACTORUM', 'Foundry Delta', 1500, 1120, 180, 125, a),
+        B('HAB_BLOCK', 'Hab-Stack Delta', 1000, 1150, 150, 110, c)];
+      this.rocks = [{ name: 'Fallen Spire (rubble)', points: Ps([[450, 720], [560, 690], [620, 760], [570, 830], [470, 820]]) }];
+      this.craters = [E({ x: 300, y: 560, rx: 24 }), E({ x: 1300, y: 620, rx: 22 }), E({ x: 800, y: 950, rx: 22 }), E({ x: 1020, y: 330, rx: 24 })];
+      this.objectives = [O(1, 'Spire Plaza', 898, 646), O(2, 'Manufactorum Primus', 250, 180), O(3, 'Manufactorum Secundus', 1450, 250), O(4, 'Foundry Delta', 1500, 1120), O(5, 'Munitorum Armoury', 200, 1010)];
+      flank('West Underhive', 'East Underhive');
+    }
+    return true;
+  }
+
+  // Break up the grid on the older maps: turn some buildings and angle some roads
+  degridMap(preset) {
+    const turn = (rots) => this.buildings.forEach(b => { if (rots[b.name] != null) b.rot = rots[b.name]; });
+    if (preset === 'INDUSTRIAL') {
+      turn({ 'Manufactorum Primus': 0.22, 'Promethium Depot': -0.35, 'Command Bunker Delta': 0.3, 'Hab-Block Tertius': -0.25, 'Munitorum Warehouse': 0.15 });
+      this.buildings.forEach(b => { if (b.name === 'Munitorum Warehouse') b.y = 840; });
+      this.roads = [
+        ...this.roadPath([{ x: 960, y: 0 }, { x: 925, y: 625 }, { x: 890, y: BOARD_H }], 36, 'Imperial Highway (+5cm Move)'),
+        ...this.roadPath([{ x: 100, y: 700 }, { x: 925, y: 625 }, { x: BOARD_W - 100, y: 600 }], 32, 'Sector Ring Road (+5cm Move)'),
+        { x1: 940, y1: 330, x2: 1650, y2: 200, width: 28, name: 'Factory Spur (+5cm Move)', cap: true },
+        ...this.roadPath([{ x: 200, y: 1080 }, { x: 600, y: 1060 }, { x: 905, y: 950 }], 28, 'Depot Spur (+5cm Move)')];
+    } else if (preset === 'RUINED_CITY') {
+      turn({ 'Manufactorum Primus Ruin': 0.1, 'Hab-Block Primus': -0.12, 'Sub-Sector Power Silos': 0.06, 'Ecclesiarchy Archive Ruins': -0.1, 'Manufactorum Secundus Ruin': 0.08,
+        'Emergency Fuel Depot': -0.06, 'Hab-Block Secundus': 0.12, 'Munitorum Armory Ruins': -0.08, 'Hab-Block Tertius': 0.15, 'Sector Promethium Silos': 0.2, 'Foundry Complex Delta': -0.1, 'Hab-Block Quartus': -0.15 });
+      this.roads = this.roads.map(r => r.name.startsWith('North Scriptorum') ? { ...r, y1: 335, y2: 375 } : r.name.startsWith('South Manufactory') ? { ...r, y1: 885, y2: 845 } : r);
+      this.craters = [{ x: 680, y: 830, rx: 22 }, { x: 1180, y: 410, rx: 24 }, { x: 330, y: 625, rx: 18 }];
+    } else if (preset === 'FOREST') {
+      turn({ 'Shrine of the Primarch': 0.2, 'North Auspex Bunker': -0.3, 'Promethium Wellhead': 0.4, 'South Bastion Outpost': 0.25, 'Old Timber Mill': -0.2, 'Hermit Chapel Ruins': 0.35 });
+      this.hills = [{ x: 1500, y: 560, rx: 120, ry: 55, rot: -0.3, name: 'Mossy Knoll' }];
+    } else if (preset === 'RANDOM') {
+      this.buildings.forEach(b => { if (Math.random() < 0.75) b.rot = Phaser.Math.FloatBetween(-0.55, 0.55); });
+      this.roads = this.roads.map(r => r.x1 === r.x2 ? { ...r, x1: r.x1 + Phaser.Math.Between(-120, 120), x2: r.x2 + Phaser.Math.Between(-120, 120) }
+        : (r.y1 === r.y2 && !(this.rivers || []).length) ? { ...r, y1: r.y1 + Phaser.Math.Between(-70, 70), y2: r.y2 + Phaser.Math.Between(-70, 70) } : r);
+      if (Math.random() < 0.6) this.hills = [{ x: Phaser.Math.Between(300, BOARD_W - 300), y: Phaser.Math.Between(420, 820), rx: Phaser.Math.Between(100, 160), ry: Phaser.Math.Between(45, 70), rot: Phaser.Math.FloatBetween(-0.6, 0.6), name: 'Hill' }];
+      if (Math.random() < 0.5) this.craters = Array.from({ length: Phaser.Math.Between(2, 5) }, () => ({ x: Phaser.Math.Between(150, BOARD_W - 150), y: Phaser.Math.Between(400, 850), rx: Phaser.Math.Between(18, 28) }));
+      this.settleBuildings();
+    }
+  }
+  // Push buildings off roads and out of each other (random maps)
+  settleBuildings() {
+    for (let pass = 0; pass < 8; pass++) {
+      let moved = false;
+      this.buildings.forEach(b => {
+        for (const r of this.roads) {
+          const half = (r.width || 30) / 2 + 6;
+          if (!this.lineHitsRect(b, r.x1, r.y1, r.x2, r.y2, -half)) continue;
+          const c = this.bCenter(b), dx = r.x2 - r.x1, dy = r.y2 - r.y1, L = Math.hypot(dx, dy) || 1;
+          let nx = -dy / L, ny = dx / L; if ((c.x - r.x1) * nx + (c.y - r.y1) * ny < 0) { nx = -nx; ny = -ny; }
+          b.x = Phaser.Math.Clamp(b.x + nx * 24, 20, BOARD_W - b.w - 20); b.y = Phaser.Math.Clamp(b.y + ny * 24, 20, BOARD_H - b.h - 20); moved = true;
+        }
+      });
+      if (!moved) break;
+    }
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -46820,6 +47189,7 @@ class NetEpicScene extends Phaser.Scene {
       });
       this.syncEmbarkedPassengers(det);
       this.updateDetachmentBadgePos(det);
+      this.nudgeOutOfTerrain(det, det.faction === 'ORKS' ? 15 : BOARD_H - DEPLOY_DEPTH_PX, det.faction === 'ORKS' ? DEPLOY_DEPTH_PX : BOARD_H - 15);
     });
 
     // Automatically embark slow AI infantry (e.g. Nobz/Boyz or Tactical Marines) into empty AI Dedicated Transports!
@@ -47245,6 +47615,7 @@ class NetEpicScene extends Phaser.Scene {
       goalY = ec.y;
     }
 
+    { const wp = this.navNextWaypoint(det, center, { x: goalX, y: goalY }); if (wp) { goalX = wp.x; goalY = wp.y; } }
     // Compute desired translation vector (dx, dy) toward (goalX, goalY)
     const distToGoal = Phaser.Math.Distance.Between(center.x, center.y, goalX, goalY);
     const moveDist = Math.min(maxMovePx, distToGoal);
