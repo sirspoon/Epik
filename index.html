@@ -779,6 +779,14 @@
         </div>
       </button>
 
+      <button class="title-btn" onclick="window.openCampaignModal()" style="background:#14532d; border-color:#15803d;">
+        <span style="font-size:1.35rem;">🗺️</span>
+        <div style="text-align:left;">
+          <div style="font-weight:800; font-size:1.02rem; letter-spacing:0.5px;">CAMPAIGN</div>
+          <div style="font-size:0.72rem; color:#bbf7d0; font-weight:500;">A chain of battles; your units gain experience</div>
+        </div>
+      </button>
+
       <button id="title-btn-resume" class="title-btn title-btn-resume" onclick="window.openSaveLoadModal()" style="display:none;">
         <span style="font-size:1.35rem;">📂</span>
         <div style="text-align:left;">
@@ -1273,6 +1281,7 @@
   <div id="battle-menu-dropdown" style="display:none;">
     <button onclick="window.toggleBattleMenu(); window.openSaveLoadModal()" style="background:#047857; border-color:#10b981;">💾 Save / Load</button>
     <button onclick="window.toggleBattleMenu(); window.gameScene && window.gameScene.showBattleReport()">📊 Battle report</button>
+    <button onclick="window.toggleBattleMenu(); window.renderCampaignModal()">🗺️ Campaign</button>
     <button onclick="window.toggleBattleMenu(); window.openOptionsModal()">⚙️ Options</button>
     <button onclick="window.toggleBattleMenu(); window.openArmyModal()">🛠️ Armies</button>
     <button id="btn-sfx-toggle" class="btn-primary" onclick="window.toggleSFX()">🔊 Sound</button>
@@ -34567,6 +34576,110 @@ window.setScenario = function(id) {
   if (window.updateBriefingCard) window.updateBriefingCard();
   if (window.renderArmyModal) window.renderArmyModal();
 };
+// ===== CAMPAIGN: a branching chain of scenario battles; your detachments gain experience =====
+// role: who you play in that battle (ATTACKER / DEFENDER / ANY = South)
+const CAMPAIGN_NODES = {
+  meet: { stage: 1, scn: 'MOONLIGHT', role: 'ANY', title: 'First Contact', text: 'Two columns blunder into each other on the highway at night.', win: 'river', lose: 'ambush' },
+  river: { stage: 2, scn: 'SULPHUR', role: 'ANY', title: 'The River Lethe', text: 'Push on to the river and take the crossings before the enemy can blow them.', win: 'pass', lose: 'highway' },
+  ambush: { stage: 2, scn: 'AMBUSH', role: 'DEFENDER', title: 'Ambushed on the Road', text: 'Falling back after the night battle, your column is caught on the highway.', win: 'highway', lose: 'pincer' },
+  pass: { stage: 3, scn: 'HELLBLADE', role: 'ATTACKER', title: 'Storm the Pass', text: 'The enemy has fallen back into the mountains. Force the Hellblade Pass.', win: 'assault', lose: 'highway' },
+  highway: { stage: 3, scn: 'HIGHWAY', role: 'DEFENDER', title: 'Hold the Highway', text: 'Your supply line runs along the Promethium Highway. Hold it at all costs.', win: 'pass', lose: 'pincer' },
+  pincer: { stage: 3, scn: 'PINCER', role: 'DEFENDER', title: 'Surrounded', text: 'The enemy closes in from both sides. Survive and break out.', win: 'pass', lose: 'laststand' },
+  assault: { stage: 4, scn: 'BREAKTHROUGH', role: 'ATTACKER', final: true, title: 'The Last Line', text: 'One fortified line stands between you and victory. Break it.', winText: 'Total victory! The enemy line is broken and the campaign is won.', loseText: 'The assault fails. The front settles into stalemate.' },
+  laststand: { stage: 4, scn: 'BREAKTHROUGH', role: 'DEFENDER', final: true, title: 'Last Stand', text: 'Your army falls back to its last fortified line. Hold it or lose the war.', winText: 'The line holds! The enemy offensive is spent: a hard-won stalemate.', loseText: 'The line is overrun. The campaign is lost.' }
+};
+const CAMPAIGN_MAX_BATTLES = 6;
+const XP_LEVELS = [
+  { name: 'Green', min: 0, icon: '🌱', morale: 1, caf: 0, text: '-1 morale' },
+  { name: 'Experienced', min: 1, icon: '★', morale: 0, caf: 0, text: 'no change' },
+  { name: 'Veteran', min: 4, icon: '★★', morale: -1, caf: 0, text: '+1 morale' },
+  { name: 'Crack', min: 9, icon: '★★★', morale: -1, caf: 1, text: '+1 morale, +1 CAF' },
+  { name: 'Elite', min: 15, icon: '★★★★', morale: -1, caf: 2, text: '+1 morale, +2 CAF' }
+];
+window.xpLevel = function(xp) { let l = XP_LEVELS[0]; XP_LEVELS.forEach(x => { if ((xp || 0) >= x.min) l = x; }); return l; };
+window.loadCampaign = function() { try { return JSON.parse(localStorage.getItem('epik_campaign') || 'null'); } catch (e) { return null; } };
+window.saveCampaign = function(c) { try { localStorage.setItem('epik_campaign', JSON.stringify(c)); } catch (e) { console.warn('campaign save failed', e); } };
+window.campaignCardName = function(key) { const k = key.replace(/^\d+_/, ''); const u = window.findCatalogUnit(k); return u ? (u.cardName || u.name) : k; };
+window.startCampaign = function() {
+  const pb = document.getElementById('camp-player-book'), eb = document.getElementById('camp-enemy-book');
+  const playerBook = pb ? pb.value : (window.sideFaction.IMPERIUM || 'IMPERIUM'), enemyBook = eb ? eb.value : (window.sideFaction.ORKS || 'ORKS');
+  const roster = (side, book) => (window.sideFaction[side] === book && window.armyRosters[side] && window.armyRosters[side].length) ? [...window.armyRosters[side]] : [...(DEFAULT_ROSTERS[book] || [])];
+  const playerRoster = roster('IMPERIUM', playerBook), enemyRoster = roster('ORKS', enemyBook);
+  const xp = {}; playerRoster.forEach((k, i) => { xp[`${i}_${k}`] = Phaser.Math.Between(1, 3) - 1; });
+  const c = { active: true, started: Date.now(), playerBook, enemyBook, playerRoster, enemyRoster, points: window.pointsBudget || 2000, node: 'meet', battle: 1, wins: 0, losses: 0, draws: 0, history: [], xp };
+  window.saveCampaign(c); window.renderCampaignModal();
+};
+window.abandonCampaign = function() {
+  if (!confirm('Abandon this campaign? Its progress and experience will be lost.')) return;
+  localStorage.removeItem('epik_campaign'); window.campaignBattle = null; window.renderCampaignModal();
+};
+window.openCampaignModal = function() {
+  const t = document.getElementById('title-screen'); if (t) t.style.display = 'none';
+  window.renderCampaignModal();
+};
+window.closeCampaignModal = function() {
+  const m = document.getElementById('campaign-modal'); if (m) m.style.display = 'none';
+  if (!window.gameScene || !window.gameScene.detachments || !window.gameScene.detachments.length) { const t = document.getElementById('title-screen'); if (t) t.style.display = 'flex'; }
+};
+window.fightCampaignBattle = function() {
+  const c = window.loadCampaign(); if (!c || !c.active || c.finished) return;
+  const n = CAMPAIGN_NODES[c.node], scn = SCENARIOS[n.scn], def = scn.defender || 'ORKS', att = def === 'ORKS' ? 'IMPERIUM' : 'ORKS';
+  const playerSide = n.role === 'DEFENDER' ? def : (n.role === 'ATTACKER' ? att : 'IMPERIUM'), enemySide = playerSide === 'ORKS' ? 'IMPERIUM' : 'ORKS';
+  window.sideFaction[playerSide] = c.playerBook; window.sideFaction[enemySide] = c.enemyBook;
+  window.armyRosters[playerSide] = [...c.playerRoster]; window.armyRosters[enemySide] = [...c.enemyRoster];
+  window.aiFaction = enemySide;
+  if (window.setPointsBudget) window.setPointsBudget(c.points);
+  window.setScenario(n.scn);
+  window.campaignBattle = { node: c.node, battle: c.battle, playerSide, recorded: false };
+  window._campaignStarting = true;
+  const m = document.getElementById('campaign-modal'); if (m) m.style.display = 'none';
+  const t = document.getElementById('title-screen'); if (t) t.style.display = 'none';
+  if (window.updateAIModeLabels) window.updateAIModeLabels();
+  window.startBattleFromBuilder(true);
+};
+window.renderCampaignModal = function() {
+  let m = document.getElementById('campaign-modal');
+  if (!m) { m = document.createElement('div'); m.id = 'campaign-modal'; document.body.appendChild(m); }
+  m.style.cssText = 'position:fixed;inset:0;z-index:440;background:rgba(2,6,23,0.92);display:flex;align-items:center;justify-content:center;padding:10px;';
+  const c = window.loadCampaign(), btn = (id, txt, bg, extra = '') => `<button id="${id}" style="padding:9px 12px;border-radius:9px;border:1px solid #334155;background:${bg};color:#f8fafc;font-weight:800;${extra}">${txt}</button>`;
+  const books = FACTION_KEYS.map(k => `<option value="${k}">${(FACTION_META[k] && FACTION_META[k].fullTitle) || k}</option>`).join('');
+  let body;
+  if (!c || !c.active) {
+    body = `<div style="font-size:0.8rem;line-height:1.45;color:#cbd5e1">A campaign is a chain of up to ${CAMPAIGN_MAX_BATTLES} scenario battles against the computer. Win or lose, the result decides the next battle. Your detachments gain experience (fought, held an objective, made kills, destroyed a war engine, fought in close combat; broken units lose some), which makes them steadier and harder hitting. Losses are made good between battles, but a card that is wiped out comes back Green.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:0.78rem">
+        <label>Your army<br><select id="camp-player-book" style="width:100%;padding:6px;border-radius:7px;background:#0f172a;color:#f8fafc;border:1px solid #334155">${books}</select></label>
+        <label>Enemy<br><select id="camp-enemy-book" style="width:100%;padding:6px;border-radius:7px;background:#0f172a;color:#f8fafc;border:1px solid #334155">${books}</select></label>
+      </div>
+      <div style="font-size:0.7rem;color:#94a3b8;margin-top:6px">Uses the armies you last built in setup (South = yours, North = the enemy) when the army books match, otherwise the default army. Points: ${window.pointsBudget || 2000} (change them in setup).</div>
+      <div style="display:flex;gap:8px;margin-top:12px">${btn('camp-start', '🗺️ Start campaign', '#1d4ed8', 'flex:1')}${btn('camp-close', 'Close', '#1f2937')}</div>`;
+  } else {
+    const n = CAMPAIGN_NODES[c.node], scn = SCENARIOS[n.scn];
+    const visited = new Set(c.history.map(h => h.node));
+    const stage = s => Object.entries(CAMPAIGN_NODES).filter(([, v]) => v.stage === s).map(([k, v]) => {
+      const h = c.history.filter(x => x.node === k).map(x => x.result === 'win' ? '✅' : (x.result === 'draw' ? '🤝' : '❌')).join('');
+      const cur = k === c.node && !c.finished;
+      return `<div style="padding:5px 7px;border-radius:8px;border:${cur ? '2px solid #fde047' : '1px solid #334155'};background:${visited.has(k) ? '#1e293b' : '#0f172a'};font-size:0.68rem;opacity:${visited.has(k) || cur ? 1 : 0.6}"><b>${SCENARIOS[v.scn].icon} ${v.title}</b> ${h}</div>`;
+    }).join('');
+    const tree = [1, 2, 3, 4].map(s => `<div style="display:flex;flex-direction:column;gap:4px;flex:1">${stage(s)}</div>`).join('<div style="align-self:center;color:#64748b">›</div>');
+    const roleTxt = n.role === 'ATTACKER' ? 'you attack' : (n.role === 'DEFENDER' ? 'you defend' : 'meeting engagement');
+    const units = c.playerRoster.map((k, i) => { const key = `${i}_${k}`, xp = c.xp[key] || 0, l = window.xpLevel(xp); return `<tr><td style="padding:2px 4px">${window.campaignCardName(key)}</td><td style="padding:2px 4px;white-space:nowrap">${l.icon} ${l.name}</td><td style="text-align:right;padding:2px 4px">${xp}</td><td style="padding:2px 4px;color:#94a3b8">${l.text}</td></tr>`; }).join('');
+    const hist = c.history.map((h, i) => `<div>${i + 1}. ${CAMPAIGN_NODES[h.node].title}: <b style="color:${h.result === 'win' ? '#4ade80' : (h.result === 'draw' ? '#fde047' : '#f87171')}">${h.result}</b> (${h.vpFor}-${h.vpAgainst} VP)</div>`).join('') || '<div style="color:#64748b">No battles yet.</div>';
+    body = `<div style="font-size:0.78rem;color:#cbd5e1">${(FACTION_META[c.playerBook] || {}).fullTitle || c.playerBook} v ${(FACTION_META[c.enemyBook] || {}).fullTitle || c.enemyBook} · ${c.points} pts · wins ${c.wins} · losses ${c.losses}${c.draws ? ` · draws ${c.draws}` : ''}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:stretch">${tree}</div>
+      ${c.finished ? `<div style="margin-top:10px;padding:9px;border-radius:9px;background:#422006;border:1px solid #a16207;font-weight:800">🏁 ${c.resultText}</div>`
+        : `<div style="margin-top:10px;padding:9px;border-radius:9px;background:#0f172a;border:1px solid #334155;font-size:0.78rem;line-height:1.4"><b>Battle ${c.battle}: ${scn.icon} ${n.title}</b> (${scn.name}, ${roleTxt})<br>${n.text}<br><span style="color:#94a3b8">${scn.brief}</span></div>`}
+      <div style="margin-top:10px;font-weight:800;font-size:0.8rem">Your detachments</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.7rem">${units}</table>
+      <div style="margin-top:8px;font-weight:800;font-size:0.8rem">Battles</div><div style="font-size:0.72rem;line-height:1.5">${hist}</div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">${c.finished ? '' : btn('camp-fight', '⚔️ Fight battle ' + c.battle, '#15803d', 'flex:1')}${btn('camp-abandon', c.finished ? 'New campaign' : 'Abandon', '#7f1d1d')}${btn('camp-close', 'Close', '#1f2937')}</div>`;
+  }
+  m.innerHTML = `<div style="width:min(560px,100%);max-height:92vh;overflow:auto;background:#111827;border:1px solid #334155;border-radius:14px;padding:12px 14px;color:#f8fafc;font-family:system-ui,sans-serif"><div style="font-weight:900;font-size:1.05rem;margin-bottom:6px">🗺️ Campaign</div>${body}</div>`;
+  const on = (id, f) => { const e = m.querySelector('#' + id); if (e) e.onclick = f; };
+  on('camp-start', window.startCampaign); on('camp-fight', window.fightCampaignBattle); on('camp-close', window.closeCampaignModal);
+  on('camp-abandon', () => { if (c && c.finished) { localStorage.removeItem('epik_campaign'); window.renderCampaignModal(); } else window.abandonCampaign(); });
+  const pb = m.querySelector('#camp-player-book'), eb = m.querySelector('#camp-enemy-book');
+  if (pb) pb.value = window.sideFaction.IMPERIUM || 'IMPERIUM'; if (eb) eb.value = window.sideFaction.ORKS || 'ORKS';
+};
 const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'RANDOM'];
 
 window.setMapPreset = function(preset, fromScenario = false) {
@@ -41906,6 +42019,9 @@ class NetEpicScene extends Phaser.Scene {
     this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
     this.scnState = {}; this._surpriseLogged = false; this._reportShown = false;
     if (this.customZones()) ['IMPERIUM', 'ORKS'].forEach(f => this.scenarioPlaceSide(f));
+    if (!window._campaignStarting) window.campaignBattle = null;
+    window._campaignStarting = false;
+    this.applyCampaignXp();
 
     // Select first player-controlled detachment by default
     this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction)) || this.detachments[0] || null;
@@ -43485,6 +43601,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!k || k.faction === det.faction) return;
     k.bstats = k.bstats || { kills: 0, pts: 0, vp: 0 };
     k.bstats.kills++; k.bstats.pts += v;
+    if (det.isTitan || det.superHeavy) k.bstats.we = true;
     (det.killedBy = det.killedBy || {})[k.id] = ((det.killedBy || {})[k.id] || 0) + v;
   }
   // Victory points for breaking a unit go to the units that did the damage, in proportion
@@ -43495,7 +43612,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!tot) return;
     Object.entries(share).forEach(([id, v]) => { const k = this.detachments.find(d => d.id === id); if (k) { k.bstats = k.bstats || { kills: 0, pts: 0, vp: 0 }; k.bstats.vp += vp * v / tot; } });
   }
-  showBattleReport(resultText) {
+  showBattleReportCore(resultText) {
     let m = document.getElementById('battle-report-modal');
     if (!m) { m = document.createElement('div'); m.id = 'battle-report-modal'; document.body.appendChild(m); }
     m.style.cssText = 'position:fixed;inset:0;z-index:430;background:rgba(2,6,23,0.72);display:flex;align-items:center;justify-content:center;padding:10px;';
@@ -44275,6 +44392,74 @@ class NetEpicScene extends Phaser.Scene {
         else if (z.kind === 'away') { g.fillStyle(meta.phaserColor, 0.06); g.fillRect(0, 0, BOARD_W, BOARD_H); g.lineStyle(z.r * 2, 0x0f172a, 0.35); z.roads.forEach(r => g.lineBetween(r.x1, r.y1, r.x2, r.y2)); }
       });
     });
+  }
+
+  // ===== CAMPAIGN: experience at the start of a battle, results and experience at the end =====
+  campKey(det) { return String(det.id || '').replace(/_trans$/, '').replace(/_sub_\d+$/, '').replace(/^(imp|ork)_/, ''); }
+  applyCampaignXp() {
+    const cb = window.campaignBattle, c = cb && window.loadCampaign ? window.loadCampaign() : null;
+    if (!cb || !c || !c.active) return;
+    this.detachments.filter(d => d.faction === cb.playerSide).forEach(d => {
+      const key = this.campKey(d), l = window.xpLevel(c.xp[key] || 0);
+      d._campKey = key;
+      if (l.morale) { d.morale = Phaser.Math.Clamp((d.morale || 4) + l.morale, 2, 6); if (d.companyMorale) d.companyMorale = Phaser.Math.Clamp(d.companyMorale + l.morale, 2, 6); }
+      if (l.caf) d.caf = (d.caf || 0) + l.caf;
+      if (!/[★🌱]/.test(d.name)) d.name = `${d.name} ${l.icon}`;
+      this.updateDetachmentBadge(d);
+    });
+    const n = CAMPAIGN_NODES[cb.node];
+    this.log(`🗺️ <b>Campaign battle ${cb.battle}: ${n.title}.</b> ${n.text} Experienced detachments are marked ★ (🌱 = green).`);
+  }
+  // Called once when the battle is decided. winFaction null = draw
+  campaignRecord(winFaction) {
+    const cb = window.campaignBattle; if (!cb || cb.recorded) return;
+    const c = window.loadCampaign(); if (!c || !c.active || c.node !== cb.node) return;
+    cb.recorded = true;
+    const me = cb.playerSide, foe = me === 'ORKS' ? 'IMPERIUM' : 'ORKS';
+    const result = winFaction == null ? 'draw' : (winFaction === me ? 'win' : 'loss');
+    // Experience per card
+    const groups = {};
+    this.detachments.filter(d => d.faction === me && d._campKey).forEach(d => { (groups[d._campKey] = groups[d._campKey] || []).push(d); });
+    const notes = [];
+    Object.entries(groups).forEach(([key, dets]) => {
+      let gain = 1; const why = ['fought'];
+      const alive = dets.filter(d => d.stands.length && !d.embarkedOn);
+      if (this.objectives.some(o => o.owner === me && alive.some(d => d.stands.some(s => Phaser.Math.Distance.Between(s.container.x, s.container.y, o.x, o.y) <= OBJ_RADIUS_PX)))) { gain++; why.push('held an objective'); }
+      if (dets.some(d => d.bstats && d.bstats.kills > 0)) { gain++; why.push('made kills'); }
+      if (dets.some(d => d.bstats && d.bstats.we)) { gain++; why.push('destroyed a war engine'); }
+      if (dets.some(d => d._inCC)) { gain++; why.push('close combat'); }
+      if (dets.some(d => d.exited)) { gain++; why.push('broke through'); }
+      if (dets.some(d => d.broken || d.companyBroken)) { gain -= 2; why.push('broken (-2)'); }
+      const wiped = dets.every(d => !d.stands.length && !d.exited && !(d.downed && d.downed.length));
+      const before = c.xp[key] || 0;
+      c.xp[key] = wiped ? 0 : Math.max(0, before + gain);
+      const l0 = window.xpLevel(before), l1 = window.xpLevel(c.xp[key]);
+      notes.push(`${window.campaignCardName(key)}: ${wiped ? 'wiped out, comes back Green' : `${gain >= 0 ? '+' : ''}${gain} XP (${why.join(', ')})`}${l1.name !== l0.name ? ` → <b>${l1.name}</b>` : ''}`);
+    });
+    c.history.push({ node: c.node, scn: CAMPAIGN_NODES[c.node].scn, result, vpFor: this.getTotalVP(me), vpAgainst: this.getTotalVP(foe), turn: this.turn });
+    if (result === 'win') c.wins++; else if (result === 'loss') c.losses++; else c.draws = (c.draws || 0) + 1;
+    const n = CAMPAIGN_NODES[c.node];
+    if (n.final) { c.finished = true; c.resultText = result === 'win' ? n.winText : n.loseText; }
+    else {
+      let next = result === 'win' ? n.win : n.lose;
+      if (c.battle + 1 >= CAMPAIGN_MAX_BATTLES) next = c.wins >= c.losses ? 'assault' : 'laststand';
+      c.node = next; c.battle++;
+    }
+    window.saveCampaign(c);
+    this._campNotes = notes;
+    this.log(`🗺️ <b>Campaign: ${result.toUpperCase()}.</b> ${c.finished ? c.resultText : `Next: ${CAMPAIGN_NODES[c.node].title}.`}`);
+    notes.forEach(t => this.log(`🎖️ ${t}`));
+  }
+  showBattleReport(resultText) {
+    this.showBattleReportCore(resultText);
+    const cb = window.campaignBattle, m = document.getElementById('battle-report-modal');
+    if (!cb || !cb.recorded || !m) return;
+    const box = m.firstElementChild, c = window.loadCampaign();
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-top:10px;padding:8px;border-radius:9px;background:#0f172a;border:1px solid #334155;font-size:0.72rem;line-height:1.45';
+    div.innerHTML = `<b>🗺️ Campaign</b> — ${c && c.finished ? c.resultText : `next battle: ${c ? CAMPAIGN_NODES[c.node].title : ''}`}<br>${(this._campNotes || []).map(t => '🎖️ ' + t).join('<br>')}<div style="margin-top:8px"><button id="br-camp" style="padding:7px 12px;border-radius:8px;background:#1d4ed8;color:#fff;border:0;font-weight:800">🗺️ Back to the campaign</button></div>`;
+    box.appendChild(div);
+    div.querySelector('#br-camp').onclick = () => { m.style.display = 'none'; window.campaignBattle = null; window.renderCampaignModal(); };
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -48805,6 +48990,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   resolveNextCloseCombatBout(isAuto = false) {
+    this.detachments.forEach(d => { if (d.stands.some(s => this.isStandEngaged(s))) d._inCC = true; });
     if (this.phase !== 'COMBAT_CC') return;
     if (this._ccResolving) return;
 
@@ -49428,16 +49614,18 @@ class NetEpicScene extends Phaser.Scene {
     const southName = this.getSideName('IMPERIUM');
     const northName = this.getSideName('ORKS');
 
-    let winner = null;
+    let winner = null, winFaction, decided = false;
     const impIn = impAlive || this.detachments.some(d => d.faction === 'IMPERIUM' && d.exited), orkIn = orkAlive || this.detachments.some(d => d.faction === 'ORKS' && d.exited);
-    if (!orkIn && impIn) winner = `${southName} (Total Annihilation)`;
-    else if (!impIn && orkIn) winner = `${northName} (Total Annihilation)`;
+    if (!orkIn && impIn) { winner = `${southName} (Total Annihilation)`; winFaction = 'IMPERIUM'; }
+    else if (!impIn && orkIn) { winner = `${northName} (Total Annihilation)`; winFaction = 'ORKS'; }
     else if (this.scn()) {
-      if (!this._scnOver) { const r = this.scenarioEndCheck(); if (r) { this._scnOver = true; winner = r.winner ? r.text : null; if (!r.winner) { this.log(`🤝 <b>${r.text}</b>`); document.getElementById('victory-alert').style.display = 'block'; document.getElementById('victory-alert').innerText = `🤝 ${r.text}`; if (!this._reportShown) { this._reportShown = true; this.time.delayedCall(900, () => this.showBattleReport(r.text)); } } } }
+      if (!this._scnOver) { const r = this.scenarioEndCheck(); if (r) { this._scnOver = true; winner = r.winner ? r.text : null; winFaction = r.winner || null; decided = true; if (!r.winner) { this.log(`🤝 <b>${r.text}</b>`); document.getElementById('victory-alert').style.display = 'block'; document.getElementById('victory-alert').innerText = `🤝 ${r.text}`; if (!this._reportShown) { this._reportShown = true; this.time.delayedCall(900, () => this.showBattleReport(r.text)); } } } }
     }
     else if ((impTot >= vpTarget || orkTot >= vpTarget) && impTot !== orkTot) {
       winner = impTot > orkTot ? `${southName} (${impTot} vs ${orkTot} VP, Goal: ${vpTarget})` : `${northName} (${orkTot} vs ${impTot} VP, Goal: ${vpTarget})`;
+      winFaction = impTot > orkTot ? 'IMPERIUM' : 'ORKS';
     }
+    if ((winner || decided) && window.campaignBattle) this.campaignRecord(winFaction || null);
 
     const vicBanner = document.getElementById('victory-alert');
     if (winner) {
@@ -49942,7 +50130,7 @@ class NetEpicScene extends Phaser.Scene {
     const sShort = this.getSideShort('IMPERIUM');
     const nShort = this.getSideShort('ORKS');
     const sCol = this.getSideMeta('IMPERIUM').colorHex, nCol = this.getSideMeta('ORKS').colorHex;
-    vpScore.innerHTML = `<b style="color:${sCol}">${impTot}</b>–<b style="color:${nCol}">${orkTot}</b> <span style="color:#94a3b8;font-weight:600;">${this.scn() ? ` T${this.turn}/${this.scn().turns}` : '/' + this.getVictoryVpTarget()}</span>`;
+    vpScore.innerHTML = `<b style="color:${sCol}">${impTot}</b>–<b style="color:${nCol}">${orkTot}</b> <span style="color:#94a3b8;font-weight:600;">${this.scn() ? ` T${Math.min(this.turn, this.scn().turns)}/${this.scn().turns}` : '/' + this.getVictoryVpTarget()}</span>`;
     vpScore.title = `Victory points: ${sShort} ${impTot} (objectives ${this.objVp.IMPERIUM}), ${nShort} ${orkTot} (objectives ${this.objVp.ORKS}). First to ${this.getVictoryVpTarget()} wins.`;
 
     // Live Next Unit tracker badge update
@@ -50663,7 +50851,7 @@ class NetEpicScene extends Phaser.Scene {
       tableSize: window.tableSize || 'STANDARD_6X4',
       groupMoveMode: Boolean(this.groupMoveMode),
       mapPreset: window.mapPreset || 'INDUSTRIAL',
-      scenarioId: window.scenarioId || 'OPEN', scnState: this.scnState || {}, scnOver: Boolean(this._scnOver),
+      scenarioId: window.scenarioId || 'OPEN', scnState: this.scnState || {}, scnOver: Boolean(this._scnOver), campaignBattle: window.campaignBattle || null,
       aiFaction: window.aiFaction || 'NONE',
       aiCamFollow: Boolean(window.aiCamFollow),
       sideFaction: { ...window.sideFaction },
@@ -50727,6 +50915,7 @@ class NetEpicScene extends Phaser.Scene {
       // 3. Restore globals and map
       if (saveData.mapPreset) window.mapPreset = saveData.mapPreset;
       window.scenarioId = saveData.scenarioId || 'OPEN'; this.scnState = saveData.scnState || {}; this._scnOver = Boolean(saveData.scnOver);
+      window.campaignBattle = saveData.campaignBattle || null;
 
       window.aiFaction = saveData.aiFaction !== undefined ? saveData.aiFaction : 'NONE';
       window.aiCamFollow = saveData.aiCamFollow !== undefined ? saveData.aiCamFollow : true;
