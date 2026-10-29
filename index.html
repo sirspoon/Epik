@@ -1054,6 +1054,9 @@
             </div>
             <span id="imp-pts-badge" class="vp-box builder-pts-badge">1750 / 2000 pts</span>
           </div>
+          <div id="imp-chapter-row" style="display:none; margin-top:4px;">
+            <select id="imp-chapter-select" onchange="window.setSideChapter('IMPERIUM', this.value)" class="builder-faction-select" title="Space Marine chapter: adds that chapter's own cards"></select>
+          </div>
 
           <!-- Points Budget Progress Bar -->
           <div class="builder-progress-wrap">
@@ -1120,6 +1123,9 @@
               <select id="ork-faction-select" onchange="window.setSideFaction('ORKS', this.value)" class="builder-faction-select" style="border-color:#22c55e;" title="Choose Faction Army Book for North Force"></select>
             </div>
             <span id="ork-pts-badge" class="vp-box builder-pts-badge">1525 / 2000 pts</span>
+          </div>
+          <div id="ork-chapter-row" style="display:none; margin-top:4px;">
+            <select id="ork-chapter-select" onchange="window.setSideChapter('ORKS', this.value)" class="builder-faction-select" title="Space Marine chapter: adds that chapter's own cards"></select>
           </div>
 
           <!-- Points Budget Progress Bar -->
@@ -3346,7 +3352,8 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 14427686,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "chapter": "BLOOD_ANGELS"
     },
     {
       "key": "card_sm_landraider",
@@ -3426,6 +3433,10 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "sm_lrc_mm"
         }
+      ],
+      "chapter": [
+        "BLACK_TEMPLARS",
+        "WHITE_SCARS"
       ]
     },
     {
@@ -3935,7 +3946,8 @@ const UNIT_CATALOG = {
       "baseH": 40,
       "specialAbilities": [
         "PD10"
-      ]
+      ],
+      "chapter": "RAPTOR_LEGION"
     },
     {
       "key": "card_sm_calgar",
@@ -4244,7 +4256,8 @@ const UNIT_CATALOG = {
       },
       "color": 4674921,
       "baseW": 24,
-      "baseH": 24
+      "baseH": 24,
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_drop_pods",
@@ -4477,7 +4490,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Elite",
         "PD1"
-      ]
+      ],
+      "chapter": "BLOOD_ANGELS"
     },
     {
       "key": "card_sm_dread_venerable",
@@ -4533,7 +4547,8 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 14251782,
       "baseW": 24,
-      "baseH": 24
+      "baseH": 24,
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_scatolo_heavy",
@@ -4686,7 +4701,8 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1409085,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "chapter": "SALAMANDERS"
     },
     {
       "key": "card_sm_pred_jaghatai",
@@ -4735,7 +4751,8 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 14870768,
       "baseW": 24,
-      "baseH": 32
+      "baseH": 32,
+      "chapter": "WHITE_SCARS"
     },
     {
       "key": "card_sm_molemortar",
@@ -5197,7 +5214,8 @@ const UNIT_CATALOG = {
         "baseW": 22,
         "baseH": 30
       },
-      "fixedSave": 6
+      "fixedSave": 6,
+      "chapter": "BLACK_TEMPLARS"
     },
     {
       "key": "card_sm_iron_father",
@@ -5255,7 +5273,8 @@ const UNIT_CATALOG = {
         "baseW": 22,
         "baseH": 30
       },
-      "fixedSave": 6
+      "fixedSave": 6,
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_warhound_squadron",
@@ -5747,7 +5766,8 @@ const UNIT_CATALOG = {
           "tsm": -1,
           "id": "sm_ss_1"
         }
-      ]
+      ],
+      "chapter": "RAPTOR_LEGION"
     },
     {
       "key": "card_sm_bt_scouts",
@@ -5778,7 +5798,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Infiltration"
       ],
-      "deepStrike": false
+      "deepStrike": false,
+      "chapter": "BLACK_TEMPLARS"
     },
     {
       "key": "card_sm_bt_crusade_term",
@@ -5854,7 +5875,8 @@ const UNIT_CATALOG = {
             "id": "sm_lrc_bt_term_1"
           }
         ]
-      }
+      },
+      "chapter": "BLACK_TEMPLARS"
     },
     {
       "key": "card_sm_ba_vet_assault",
@@ -5909,7 +5931,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "BLOOD_ANGELS"
     },
     {
       "key": "card_sm_ba_sanguinary",
@@ -5969,7 +5992,8 @@ const UNIT_CATALOG = {
         "standsCount": 1,
         "baseW": 22,
         "baseH": 26
-      }
+      },
+      "chapter": "BLOOD_ANGELS"
     },
     {
       "key": "card_sm_cs_ashigaru",
@@ -6020,7 +6044,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "CRIMSON_SUNS"
     },
     {
       "key": "card_sm_da_deathwing",
@@ -6079,7 +6104,8 @@ const UNIT_CATALOG = {
         "specialAbilities": [
           "PD1"
         ]
-      }
+      },
+      "chapter": "DARK_ANGELS"
     },
     {
       "key": "card_sm_da_deathwing_ca",
@@ -6138,7 +6164,8 @@ const UNIT_CATALOG = {
         "specialAbilities": [
           "PD1"
         ]
-      }
+      },
+      "chapter": "DARK_ANGELS"
     },
     {
       "key": "card_sm_fe_assault",
@@ -6190,7 +6217,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "FLESH_EATERS"
     },
     {
       "key": "card_sm_ih_bombard",
@@ -6221,7 +6249,8 @@ const UNIT_CATALOG = {
       "standsCount": 3,
       "color": 1920728,
       "baseW": 24,
-      "baseH": 30
+      "baseH": 30,
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ih_clan_assault",
@@ -6273,7 +6302,8 @@ const UNIT_CATALOG = {
         "standsCount": 4,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ih_clan_dev",
@@ -6324,7 +6354,8 @@ const UNIT_CATALOG = {
         "standsCount": 4,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ih_clan_tac",
@@ -6376,7 +6407,8 @@ const UNIT_CATALOG = {
         "standsCount": 4,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ih_hw_term",
@@ -6434,7 +6466,8 @@ const UNIT_CATALOG = {
         "specialAbilities": [
           "PD1"
         ]
-      }
+      },
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ih_vet_dev",
@@ -6488,7 +6521,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "IRON_HANDS"
     },
     {
       "key": "card_sm_ml_tutor",
@@ -6543,7 +6577,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "MENTOR_LEGION"
     },
     {
       "key": "card_sm_ml_elite_cadre",
@@ -6575,7 +6610,8 @@ const UNIT_CATALOG = {
         "Command",
         "Elite",
         "HQ"
-      ]
+      ],
+      "chapter": "MENTOR_LEGION"
     },
     {
       "key": "card_sm_sal_assault_flamer",
@@ -6629,7 +6665,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "SALAMANDERS"
     },
     {
       "key": "card_sm_sal_flame_dev",
@@ -6681,7 +6718,8 @@ const UNIT_CATALOG = {
         "standsCount": 3,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "SALAMANDERS"
     },
     {
       "key": "card_sm_sw_grey_hunters",
@@ -6733,7 +6771,8 @@ const UNIT_CATALOG = {
         "standsCount": 5,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_exterminator",
@@ -6782,7 +6821,8 @@ const UNIT_CATALOG = {
           "tsm": -1,
           "id": "sm_lrex_1"
         }
-      ]
+      ],
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_long_fangs",
@@ -6833,7 +6873,8 @@ const UNIT_CATALOG = {
         "standsCount": 2,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_scouts",
@@ -6864,7 +6905,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Infiltration"
       ],
-      "deepStrike": false
+      "deepStrike": false,
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_blood_claws",
@@ -6895,7 +6937,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Fear"
       ],
-      "jump": true
+      "jump": true,
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_bc_bikes",
@@ -6925,7 +6968,8 @@ const UNIT_CATALOG = {
       "baseH": 26,
       "specialAbilities": [
         "Fear"
-      ]
+      ],
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_bc_speeders",
@@ -6956,7 +7000,8 @@ const UNIT_CATALOG = {
       "skimmer": true,
       "specialAbilities": [
         "Fear"
-      ]
+      ],
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_rune_priest",
@@ -7021,7 +7066,8 @@ const UNIT_CATALOG = {
         "standsCount": 1,
         "baseW": 22,
         "baseH": 26
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_wolf_priest",
@@ -7085,7 +7131,8 @@ const UNIT_CATALOG = {
         "standsCount": 1,
         "baseW": 22,
         "baseH": 26
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_wolf_guard",
@@ -7141,7 +7188,8 @@ const UNIT_CATALOG = {
         "standsCount": 2,
         "baseW": 22,
         "baseH": 30
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_sw_wg_term",
@@ -7201,7 +7249,8 @@ const UNIT_CATALOG = {
         "specialAbilities": [
           "PD1"
         ]
-      }
+      },
+      "chapter": "SPACE_WOLVES"
     },
     {
       "key": "card_sm_ws_scout_bikes",
@@ -7231,7 +7280,8 @@ const UNIT_CATALOG = {
       "baseH": 26,
       "specialAbilities": [
         "Infiltration"
-      ]
+      ],
+      "chapter": "WHITE_SCARS"
     },
     {
       "key": "card_sm_ws_vet_bikes",
@@ -7262,7 +7312,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Elite",
         "Hit & Run"
-      ]
+      ],
+      "chapter": "WHITE_SCARS"
     },
     {
       "key": "card_sm_ws_attack_bikes",
@@ -7292,7 +7343,8 @@ const UNIT_CATALOG = {
       "baseH": 26,
       "specialAbilities": [
         "Hit & Run"
-      ]
+      ],
+      "chapter": "WHITE_SCARS"
     },
     {
       "key": "card_sm_ws_term",
@@ -7368,7 +7420,3888 @@ const UNIT_CATALOG = {
             "id": "sm_lrc_ws_term_1"
           }
         ]
-      }
+      },
+      "chapter": "WHITE_SCARS"
+    },
+    {
+      "key": "card_sm_bt_crusade_det",
+      "cardType": "SUPPORT",
+      "cardName": "Crusade Detachment",
+      "armyBook": "IMPERIUM",
+      "name": "Crusade Detachment",
+      "composition": "6 Tactical & 2 Neophyte stands & 4 Rhinos (Black Templars)",
+      "points": 300,
+      "breakPoint": 6,
+      "morale": 2,
+      "vpValue": 3,
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 8,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "dedicatedTransport": {
+        "key": "sm_rhino_bt_crusade",
+        "armyBook": "IMPERIUM",
+        "name": "Tactical Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 2,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 4,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "jump": false,
+      "chapter": "BLACK_TEMPLARS"
+    },
+    {
+      "key": "card_sm_bt_bikes",
+      "cardType": "SUPPORT",
+      "cardName": "Black Templar Bike Squad",
+      "armyBook": "IMPERIUM",
+      "name": "Black Templar Bike Squad",
+      "composition": "4 Attack Bikes & 2 Imperial Bikes (Black Templars)",
+      "points": 150,
+      "breakPoint": 3,
+      "morale": 2,
+      "vpValue": 2,
+      "moveCm": 30,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Heavy Bolters",
+        "rangeCm": 25,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 6,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "BLACK_TEMPLARS"
+    },
+    {
+      "key": "card_sm_bt_crusade_co",
+      "cardType": "COMPANY",
+      "cardName": "Crusade Company",
+      "armyBook": "IMPERIUM",
+      "name": "Crusade Company",
+      "composition": "Marine HQ & Command Rhino, 3 Crusade Detachments (25 stands & 13 Rhinos)",
+      "points": 900,
+      "breakPoint": 19,
+      "morale": 2,
+      "vpValue": 9,
+      "standsCount": 25,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "BLACK_TEMPLARS",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "jump": false,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_bt_crusade_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Tactical Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 7,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 13,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Crusade Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Crusade Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "3rd Crusade Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_bt_crusade_term_co",
+      "cardType": "COMPANY",
+      "cardName": "Crusade Terminator Company",
+      "armyBook": "IMPERIUM",
+      "name": "Crusade Terminator Company",
+      "composition": "Terminator HQ & Command Land Raider Crusader, 3 Crusade Terminator Detachments (13 stands & 7 Crusaders)",
+      "points": 1000,
+      "breakPoint": 10,
+      "morale": 1,
+      "vpValue": 10,
+      "standsCount": 13,
+      "color": 9684477,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "BLACK_TEMPLARS",
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 6,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Storm Bolter",
+        "rangeCm": 35,
+        "dice": 2,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "specialAbilities": [
+        "Elite"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_bt_crusade_term_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Land Raider Crusaders",
+        "moveCm": 25,
+        "save": 3,
+        "caf": 3,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Assault Cannon & Multi-Melta",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1
+        },
+        "breakPoint": 4,
+        "vpValue": 0,
+        "color": 1920728,
+        "standsCount": 7,
+        "baseW": 26,
+        "baseH": 34,
+        "specialAbilities": [
+          "PD4"
+        ],
+        "salvos": [
+          {
+            "name": "Assault Cannon",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -1,
+            "id": "sm_lrc_bt_term_0"
+          },
+          {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -2,
+            "id": "sm_lrc_bt_term_1"
+          }
+        ]
+      },
+      "subDetachments": [
+        {
+          "name": "Terminator HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 7,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Crusade Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Crusade Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Crusade Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_bt_battle_co",
+      "cardType": "COMPANY",
+      "cardName": "Crusade Battle Company",
+      "armyBook": "IMPERIUM",
+      "name": "Crusade Battle Company",
+      "composition": "Marine HQ & Command Rhino, 1 Crusade & 2 Assault Detachments (21 stands & 11 Rhinos)",
+      "points": 800,
+      "breakPoint": 13,
+      "morale": 2,
+      "vpValue": 8,
+      "standsCount": 21,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "BLACK_TEMPLARS",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "jump": false,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_bt_battle_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Tactical Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 6,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 11,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "Crusade Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "1st Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_lrc_co",
+      "cardType": "COMPANY",
+      "cardName": "Land Raider Crusader Company",
+      "armyBook": "IMPERIUM",
+      "name": "Land Raider Crusader Company",
+      "composition": "Command Land Raider Crusader & 3 Crusader Squadrons (10 Crusaders)",
+      "points": 900,
+      "breakPoint": 5,
+      "morale": 2,
+      "vpValue": 9,
+      "standsCount": 10,
+      "color": 3223169,
+      "baseW": 26,
+      "baseH": 34,
+      "chapter": [
+        "BLACK_TEMPLARS",
+        "WHITE_SCARS"
+      ],
+      "moveCm": 25,
+      "save": 3,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Assault Cannon & Multi-Melta",
+        "rangeCm": 50,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": -1
+      },
+      "salvos": [
+        {
+          "name": "Assault Cannon",
+          "rangeCm": 50,
+          "dice": 1,
+          "toHit": 5,
+          "tsm": -1,
+          "id": "sm_lrc_ac"
+        },
+        {
+          "name": "Multi-Melta",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 3,
+          "tsm": -2,
+          "id": "sm_lrc_mm"
+        }
+      ],
+      "specialAbilities": [
+        "PD4"
+      ],
+      "transportCapacity": 2,
+      "jump": false,
+      "skimmer": false,
+      "subDetachments": [
+        {
+          "name": "Command Crusader",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Assault Cannon & Multi-Melta",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "salvos": [
+            {
+              "name": "Assault Cannon",
+              "rangeCm": 50,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -1,
+              "id": "sm_lrc_ac"
+            },
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "sm_lrc_mm"
+            }
+          ],
+          "specialAbilities": [
+            "Command",
+            "PD4"
+          ],
+          "transportCapacity": 2,
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Crusader Squadron",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Assault Cannon & Multi-Melta",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "salvos": [
+            {
+              "name": "Assault Cannon",
+              "rangeCm": 50,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -1,
+              "id": "sm_lrc_ac"
+            },
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "sm_lrc_mm"
+            }
+          ],
+          "specialAbilities": [
+            "PD4"
+          ],
+          "transportCapacity": 2,
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Crusader Squadron",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Assault Cannon & Multi-Melta",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "salvos": [
+            {
+              "name": "Assault Cannon",
+              "rangeCm": 50,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -1,
+              "id": "sm_lrc_ac"
+            },
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "sm_lrc_mm"
+            }
+          ],
+          "specialAbilities": [
+            "PD4"
+          ],
+          "transportCapacity": 2,
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Crusader Squadron",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Assault Cannon & Multi-Melta",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "salvos": [
+            {
+              "name": "Assault Cannon",
+              "rangeCm": 50,
+              "dice": 1,
+              "toHit": 5,
+              "tsm": -1,
+              "id": "sm_lrc_ac"
+            },
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "sm_lrc_mm"
+            }
+          ],
+          "specialAbilities": [
+            "PD4"
+          ],
+          "transportCapacity": 2,
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ba_vet_assault_co",
+      "cardType": "COMPANY",
+      "cardName": "Veteran Assault Company",
+      "armyBook": "IMPERIUM",
+      "name": "Veteran Assault Company",
+      "composition": "Assault HQ & Command Rhino, 3 Veteran Assault Detachments (19 stands & 10 Rhinos)",
+      "points": 900,
+      "breakPoint": 15,
+      "morale": 1,
+      "vpValue": 9,
+      "standsCount": 19,
+      "color": 6333946,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "BLOOD_ANGELS",
+      "moveCm": 15,
+      "save": 5,
+      "caf": 5,
+      "pinningClass": 1,
+      "jump": true,
+      "weapon": {
+        "name": "Bolt Pistol & Sword",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "specialAbilities": [
+        "Elite"
+      ],
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_ba_vet_assault_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Assault HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 4,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Veteran Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "skimmer": false
+        },
+        {
+          "name": "2nd Veteran Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "skimmer": false
+        },
+        {
+          "name": "3rd Veteran Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_cf_first_co",
+      "cardType": "COMPANY",
+      "cardName": "Crimson Fists First Company",
+      "armyBook": "IMPERIUM",
+      "name": "Crimson Fists First Company",
+      "composition": "Chapter Master, Terminator HQ & 4 Terminator Detachments (18 stands & 10 Land Raiders)",
+      "points": 1400,
+      "breakPoint": 14,
+      "morale": 1,
+      "vpValue": 14,
+      "standsCount": 18,
+      "color": 9684477,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "CRIMSON_FISTS",
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 6,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Storm Bolter",
+        "rangeCm": 35,
+        "dice": 2,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "specialAbilities": [
+        "Elite"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_cf_first_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Terminator Land Raiders",
+        "moveCm": 20,
+        "save": 2,
+        "caf": 3,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 1920728,
+        "standsCount": 10,
+        "baseW": 26,
+        "baseH": 34,
+        "specialAbilities": [
+          "PD1"
+        ]
+      },
+      "subDetachments": [
+        {
+          "name": "Chapter Master",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 5,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Master-Crafted Bolter & Relic Blade",
+            "rangeCm": 50,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "Terminator HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 7,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "4th Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_cs_hatamoto_co",
+      "cardType": "COMPANY",
+      "cardName": "Hatamoto Company",
+      "armyBook": "IMPERIUM",
+      "name": "Hatamoto Company",
+      "composition": "Close-Assault Terminator HQ & Command Land Raider, 3 Close-Assault Terminator Detachments (13 stands & 7 Land Raiders)",
+      "points": 850,
+      "breakPoint": 14,
+      "morale": 1,
+      "vpValue": 13,
+      "standsCount": 13,
+      "color": 12573694,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "CRIMSON_SUNS",
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 8,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Close combat weapons",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "specialAbilities": [
+        "Elite"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_cs_hatamoto_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Assault Land Raiders",
+        "moveCm": 20,
+        "save": 2,
+        "caf": 3,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2
+        },
+        "breakPoint": 4,
+        "vpValue": 0,
+        "color": 1920728,
+        "standsCount": 7,
+        "baseW": 26,
+        "baseH": 34,
+        "specialAbilities": [
+          "PD1"
+        ]
+      },
+      "subDetachments": [
+        {
+          "name": "Terminator HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 9,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Close combat weapons",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Close-Assault Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 8,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Close combat weapons",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Close-Assault Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 8,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Close combat weapons",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Close-Assault Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 8,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Close combat weapons",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_cs_ashigaru_co",
+      "cardType": "COMPANY",
+      "cardName": "Ashigaru Company",
+      "armyBook": "IMPERIUM",
+      "name": "Ashigaru Company",
+      "composition": "Marine HQ & Command Rhino, 3 Ashigaru Detachments (19 stands & 10 Rhinos)",
+      "points": 900,
+      "breakPoint": 10,
+      "morale": 3,
+      "vpValue": 9,
+      "standsCount": 19,
+      "color": 9741240,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "CRIMSON_SUNS",
+      "moveCm": 10,
+      "save": 6,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Heavy Weapons",
+        "rangeCm": 75,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": -1
+      },
+      "jump": false,
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_cs_ashigaru_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Ashigaru Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Ashigaru Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "3rd Ashigaru Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 10,
+          "save": 6,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_da_deathwing_co",
+      "cardType": "COMPANY",
+      "cardName": "Deathwing Company",
+      "armyBook": "IMPERIUM",
+      "name": "Deathwing Company",
+      "composition": "Terminator HQ & Command Land Raider, 3 Deathwing Detachments (13 stands & 7 Land Raiders)",
+      "points": 1000,
+      "breakPoint": 10,
+      "morale": 1,
+      "vpValue": 10,
+      "standsCount": 13,
+      "color": 9684477,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "DARK_ANGELS",
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 6,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Storm Bolter",
+        "rangeCm": 35,
+        "dice": 2,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "specialAbilities": [
+        "Elite",
+        "Fearless"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_da_deathwing_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Land Raiders",
+        "moveCm": 20,
+        "save": 2,
+        "caf": 3,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Lascannon",
+          "rangeCm": 75,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -2
+        },
+        "breakPoint": 4,
+        "vpValue": 0,
+        "color": 1920728,
+        "standsCount": 7,
+        "baseW": 26,
+        "baseH": 34,
+        "specialAbilities": [
+          "PD1"
+        ]
+      },
+      "subDetachments": [
+        {
+          "name": "Deathwing HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 7,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "Fearless",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Deathwing Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite",
+            "Fearless"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Deathwing Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite",
+            "Fearless"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Deathwing Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite",
+            "Fearless"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_da_vet_speeders",
+      "cardType": "SUPPORT",
+      "cardName": "Veteran Land Speeder Squadron",
+      "armyBook": "IMPERIUM",
+      "name": "Veteran Land Speeder Squadron",
+      "composition": "4 Veteran Land Speeders (Dark Angels, Ravenwing)",
+      "points": 200,
+      "breakPoint": 2,
+      "morale": 1,
+      "vpValue": 2,
+      "moveCm": 30,
+      "save": 6,
+      "caf": 4,
+      "pinningClass": 2,
+      "skimmer": true,
+      "weapon": {
+        "name": "Multi-Melta",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 3,
+        "tsm": -2
+      },
+      "standsCount": 4,
+      "color": 959977,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "DARK_ANGELS",
+      "specialAbilities": [
+        "Elite"
+      ]
+    },
+    {
+      "key": "card_sm_da_ravenwing_co",
+      "cardType": "COMPANY",
+      "cardName": "Ravenwing Company",
+      "armyBook": "IMPERIUM",
+      "name": "Ravenwing Company",
+      "composition": "Master of the Ravenwing, 1 Attack Bike & 2 Land Speeder Detachments (16 stands)",
+      "points": 500,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 5,
+      "standsCount": 16,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "DARK_ANGELS",
+      "moveCm": 30,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Heavy Bolters",
+        "rangeCm": 25,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "jump": false,
+      "skimmer": false,
+      "specialAbilities": [],
+      "subDetachments": [
+        {
+          "name": "Master of the Ravenwing",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 5,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader"
+          ]
+        },
+        {
+          "name": "Attack Bike Detachment",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "1st Land Speeder Detachment",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "skimmer": true,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -2
+          },
+          "jump": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Land Speeder Detachment",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "skimmer": true,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -2
+          },
+          "jump": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_dl_11th_co",
+      "cardType": "COMPANY",
+      "cardName": "Desert Lions 11th Company",
+      "armyBook": "IMPERIUM",
+      "name": "Desert Lions 11th Company",
+      "composition": "Marine HQ & Command Rhino, 3 Robot Detachments (13 stands & 1 Rhino)",
+      "points": 300,
+      "breakPoint": 9,
+      "morale": 1,
+      "vpValue": 3,
+      "standsCount": 13,
+      "color": 1920728,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "DESERT_LIONS",
+      "moveCm": 10,
+      "save": 4,
+      "caf": 2,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Lascannon",
+        "rangeCm": 75,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": -1
+      },
+      "specialAbilities": [
+        "Quickdraw",
+        "Robot"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_dl_11th_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Tactical Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Robot Detachment",
+          "stands": 4,
+          "transport": 0,
+          "moveCm": 10,
+          "save": 4,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Lascannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Quickdraw",
+            "Robot"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Robot Detachment",
+          "stands": 4,
+          "transport": 0,
+          "moveCm": 10,
+          "save": 4,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Lascannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Quickdraw",
+            "Robot"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Robot Detachment",
+          "stands": 4,
+          "transport": 0,
+          "moveCm": 10,
+          "save": 4,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Lascannon",
+            "rangeCm": 75,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Quickdraw",
+            "Robot"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_fe_co",
+      "cardType": "COMPANY",
+      "cardName": "Jaws of Doom Company",
+      "armyBook": "IMPERIUM",
+      "name": "8th \"Jaws of Doom\" Company",
+      "composition": "Assault HQ & Command Rhino, 3 Flesh Eater Assault Detachments (19 stands & 10 Rhinos)",
+      "points": 750,
+      "breakPoint": 15,
+      "morale": 2,
+      "vpValue": 8,
+      "standsCount": 19,
+      "color": 6333946,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "FLESH_EATERS",
+      "moveCm": 15,
+      "save": 5,
+      "caf": 5,
+      "pinningClass": 1,
+      "jump": true,
+      "weapon": {
+        "name": "Power Gloves",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_fe_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Assault HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 4,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Flesh Eater Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Power Gloves",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Flesh Eater Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Power Gloves",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "3rd Flesh Eater Assault Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 5,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Power Gloves",
+            "rangeCm": 0,
+            "dice": 0,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ih_clan_co",
+      "cardType": "COMPANY",
+      "cardName": "Clan Company",
+      "armyBook": "IMPERIUM",
+      "name": "Iron Hands Clan Company",
+      "composition": "Marine HQ & Command Rhino, 1 Clan Devastator & 2 Clan Tactical Detachments (25 stands & 13 Rhinos)",
+      "points": 1100,
+      "breakPoint": 19,
+      "morale": 2,
+      "vpValue": 16,
+      "standsCount": 25,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "IRON_HANDS",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 2,
+      "pinningClass": 1,
+      "jump": false,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_ih_clan_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 7,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 13,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "Clan Devastator Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "1st Clan Tactical Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Clan Tactical Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ih_clan_assault_co",
+      "cardType": "COMPANY",
+      "cardName": "Clan Assault Company",
+      "armyBook": "IMPERIUM",
+      "name": "Iron Hands Clan Assault Company",
+      "composition": "Assault HQ & Command Rhino, 1 Flamer & 2 Clan Assault Detachments (23 stands & 12 Rhinos)",
+      "points": 900,
+      "breakPoint": 18,
+      "morale": 2,
+      "vpValue": 13,
+      "standsCount": 23,
+      "color": 6333946,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "IRON_HANDS",
+      "moveCm": 15,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "jump": true,
+      "weapon": {
+        "name": "Bolt Pistol & Sword",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_ih_clan_assault_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 6,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 12,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Assault HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 4,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "Flamer Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Flamer",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "ignoresCover": true,
+            "isFlame": true
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "1st Clan Assault Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Clan Assault Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ih_siege_co",
+      "cardType": "COMPANY",
+      "cardName": "Clan Siege Company",
+      "armyBook": "IMPERIUM",
+      "name": "Iron Hands Clan Siege Company",
+      "composition": "Marine HQ & Command Rhino, Veteran Devastator & Clan Devastator Detachments, Bombard Battery (18 stands & 8 Rhinos)",
+      "points": 900,
+      "breakPoint": 13,
+      "morale": 2,
+      "vpValue": 13,
+      "standsCount": 18,
+      "color": 1920728,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "IRON_HANDS",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 1,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Heavy Weapons",
+        "rangeCm": 75,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": -1
+      },
+      "jump": false,
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_ih_siege_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 4,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 8,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "Veteran Devastator Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "Clan Devastator Detachment",
+          "stands": 8,
+          "transport": 4,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 1,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Heavy Weapons",
+            "rangeCm": 75,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": -1
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "Bombard Battery",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 0,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Siege Mortar",
+            "rangeCm": 150,
+            "dice": 3,
+            "toHit": 4,
+            "tsm": -3,
+            "barrage": true,
+            "barrageBp": 3,
+            "indirect": true,
+            "damagesBuildings": true
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_sal_firedrakes_co",
+      "cardType": "COMPANY",
+      "cardName": "Firedrakes Company",
+      "armyBook": "IMPERIUM",
+      "name": "8th \"Firedrakes\" Company",
+      "composition": "Assault HQ & Command Rhino, 3 Assault Flamer Detachments (19 stands & 10 Rhinos)",
+      "points": 750,
+      "breakPoint": 15,
+      "morale": 2,
+      "vpValue": 8,
+      "standsCount": 19,
+      "color": 16347926,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "SALAMANDERS",
+      "moveCm": 15,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "jump": true,
+      "weapon": {
+        "name": "Flamer",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0,
+        "isFlame": true,
+        "ignoresCover": true
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_sal_firedrakes_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Assault HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 4,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ]
+        },
+        {
+          "name": "1st Assault Flamer Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Flamer",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "isFlame": true,
+            "ignoresCover": true
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Assault Flamer Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Flamer",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "isFlame": true,
+            "ignoresCover": true
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "3rd Assault Flamer Detachment",
+          "stands": 6,
+          "transport": 3,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Flamer",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": 0,
+            "isFlame": true,
+            "ignoresCover": true
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_rl_4th_co",
+      "cardType": "COMPANY",
+      "cardName": "Raptor 4th Company",
+      "armyBook": "IMPERIUM",
+      "name": "Raptor Legion 4th Company",
+      "composition": "Command Attack Bike & 3 Attack Bike Squads (16 Attack Bikes)",
+      "points": 500,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 5,
+      "standsCount": 16,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "RAPTOR_LEGION",
+      "moveCm": 30,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Heavy Bolters",
+        "rangeCm": 25,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "jump": false,
+      "skimmer": false,
+      "specialAbilities": [],
+      "subDetachments": [
+        {
+          "name": "Command Attack Bike",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader"
+          ]
+        },
+        {
+          "name": "1st Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "3rd Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_sw_great_co",
+      "cardType": "COMPANY",
+      "cardName": "Great Company",
+      "armyBook": "IMPERIUM",
+      "name": "Space Wolves Great Company",
+      "composition": "Wolf Guard Detachment & 2 Grey Hunter Packs (24 stands & 12 Rhinos)",
+      "points": 800,
+      "breakPoint": 18,
+      "morale": 2,
+      "vpValue": 8,
+      "standsCount": 24,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "SPACE_WOLVES",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "jump": false,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_sw_great_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 6,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 12,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Wolf Guard",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 4,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Grey Hunter Pack",
+          "stands": 10,
+          "transport": 5,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Grey Hunter Pack",
+          "stands": 10,
+          "transport": 5,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_sw_great_term_co",
+      "cardType": "COMPANY",
+      "cardName": "Great Company with Terminators",
+      "armyBook": "IMPERIUM",
+      "name": "Space Wolves Great Company (Terminators)",
+      "composition": "Wolf Guard Terminator Detachment & 2 Grey Hunter Packs (24 stands, 2 Land Raiders & 10 Rhinos)",
+      "points": 950,
+      "breakPoint": 18,
+      "morale": 2,
+      "vpValue": 10,
+      "standsCount": 24,
+      "color": 2450411,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "SPACE_WOLVES",
+      "moveCm": 10,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "jump": false,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "skimmer": false,
+      "specialAbilities": [],
+      "dedicatedTransport": {
+        "key": "card_sm_sw_great_term_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Rhino APC Squadron",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 2,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolters",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 5,
+        "vpValue": 0,
+        "color": 3718648,
+        "standsCount": 10,
+        "baseW": 22,
+        "baseH": 30
+      },
+      "subDetachments": [
+        {
+          "name": "Wolf Guard Terminators",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false,
+          "dedicatedTransport": {
+            "key": "sm_lr_sw_great_term",
+            "armyBook": "IMPERIUM",
+            "name": "Land Raiders",
+            "moveCm": 20,
+            "save": 2,
+            "caf": 3,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+              "name": "Lascannon",
+              "rangeCm": 75,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": -2
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 1920728,
+            "standsCount": 2,
+            "baseW": 26,
+            "baseH": 34,
+            "specialAbilities": [
+              "PD1"
+            ]
+          }
+        },
+        {
+          "name": "1st Grey Hunter Pack",
+          "stands": 10,
+          "transport": 5,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Grey Hunter Pack",
+          "stands": 10,
+          "transport": 5,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_vet_bike_co",
+      "cardType": "COMPANY",
+      "cardName": "Veteran Bike Company",
+      "armyBook": "IMPERIUM",
+      "name": "White Scars Veteran Bike Company",
+      "composition": "Veteran Attack Bike HQ & 3 Veteran Bike Squads (16 bikes)",
+      "points": 650,
+      "breakPoint": 8,
+      "morale": 1,
+      "vpValue": 7,
+      "standsCount": 16,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 30,
+      "save": 6,
+      "caf": 4,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Heavy Bolters",
+        "rangeCm": 25,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "specialAbilities": [
+        "Elite",
+        "Hit & Run"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "subDetachments": [
+        {
+          "name": "Veteran Attack Bike HQ",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 5,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader",
+            "Elite",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Veteran Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Veteran Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Veteran Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_term_co",
+      "cardType": "COMPANY",
+      "cardName": "White Scars Terminator Company",
+      "armyBook": "IMPERIUM",
+      "name": "White Scars Terminator Company",
+      "composition": "Terminator HQ & Command Land Raider Crusader, 3 White Scars Terminator Detachments (13 stands & 7 Crusaders)",
+      "points": 1000,
+      "breakPoint": 10,
+      "morale": 1,
+      "vpValue": 10,
+      "standsCount": 13,
+      "color": 9684477,
+      "baseW": 22,
+      "baseH": 22,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 10,
+      "save": 4,
+      "fixedSave": 6,
+      "caf": 6,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Storm Bolter",
+        "rangeCm": 35,
+        "dice": 2,
+        "toHit": 4,
+        "tsm": -1
+      },
+      "specialAbilities": [
+        "Elite"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "dedicatedTransport": {
+        "key": "card_sm_ws_term_co_tr",
+        "armyBook": "IMPERIUM",
+        "name": "Land Raider Crusaders",
+        "moveCm": 25,
+        "save": 3,
+        "caf": 3,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Assault Cannon & Multi-Melta",
+          "rangeCm": 50,
+          "dice": 2,
+          "toHit": 5,
+          "tsm": -1
+        },
+        "breakPoint": 4,
+        "vpValue": 0,
+        "color": 1920728,
+        "standsCount": 7,
+        "baseW": 26,
+        "baseH": 34,
+        "specialAbilities": [
+          "PD4"
+        ],
+        "salvos": [
+          {
+            "name": "Assault Cannon",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -1,
+            "id": "sm_lrc_ws_term_0"
+          },
+          {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 3,
+            "tsm": -2,
+            "id": "sm_lrc_ws_term_1"
+          }
+        ]
+      },
+      "subDetachments": [
+        {
+          "name": "Terminator HQ",
+          "stands": 1,
+          "transport": 1,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 7,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st White Scars Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd White Scars Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd White Scars Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_bike_co",
+      "cardType": "COMPANY",
+      "cardName": "White Scars Bike Company",
+      "armyBook": "IMPERIUM",
+      "name": "White Scars Bike Company",
+      "composition": "Command Attack Bike & 3 White Scars Attack Bike Squads (16 bikes)",
+      "points": 600,
+      "breakPoint": 8,
+      "morale": 2,
+      "vpValue": 6,
+      "standsCount": 16,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 30,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Multi-Melta",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": -2
+      },
+      "specialAbilities": [
+        "Hit & Run"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "subDetachments": [
+        {
+          "name": "Command Attack Bike",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st White Scars Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd White Scars Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd White Scars Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_battle_co",
+      "cardType": "COMPANY",
+      "cardName": "White Scars Battle Company",
+      "armyBook": "IMPERIUM",
+      "name": "White Scars Battle Company",
+      "composition": "Command Attack Bike, Veteran Bike Squad, White Scars Attack Bike Squad & White Scars Terminator Detachment (15 stands & 2 Crusaders)",
+      "points": 750,
+      "breakPoint": 8,
+      "morale": 1,
+      "vpValue": 8,
+      "standsCount": 15,
+      "color": 3718648,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 30,
+      "save": 6,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Multi-Melta",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": -2
+      },
+      "specialAbilities": [
+        "Hit & Run"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "subDetachments": [
+        {
+          "name": "Command Attack Bike",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "Veteran Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 4,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Heavy Bolters",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Elite",
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "White Scars Attack Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 6,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Melta",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": -2
+          },
+          "specialAbilities": [
+            "Hit & Run"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "White Scars Terminator Detachment",
+          "stands": 4,
+          "transport": 2,
+          "moveCm": 10,
+          "save": 4,
+          "fixedSave": 6,
+          "caf": 6,
+          "pinningClass": 1,
+          "weapon": {
+            "name": "Storm Bolter",
+            "rangeCm": 35,
+            "dice": 2,
+            "toHit": 4,
+            "tsm": -1
+          },
+          "specialAbilities": [
+            "Elite"
+          ],
+          "jump": false,
+          "skimmer": false,
+          "dedicatedTransport": {
+            "key": "sm_lrc_ws_battle",
+            "armyBook": "IMPERIUM",
+            "name": "Land Raider Crusaders",
+            "moveCm": 25,
+            "save": 3,
+            "caf": 3,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+              "name": "Assault Cannon & Multi-Melta",
+              "rangeCm": 50,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": -1
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 1920728,
+            "standsCount": 2,
+            "baseW": 26,
+            "baseH": 34,
+            "specialAbilities": [
+              "PD4"
+            ],
+            "salvos": [
+              {
+                "name": "Assault Cannon",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1,
+                "id": "sm_lrc_ws_term_0"
+              },
+              {
+                "name": "Multi-Melta",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 3,
+                "tsm": -2,
+                "id": "sm_lrc_ws_term_1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_9th_co",
+      "cardType": "COMPANY",
+      "cardName": "Fist of Khan Company",
+      "armyBook": "IMPERIUM",
+      "name": "9th \"Fist of Khan\" Company",
+      "composition": "Command Predator Jaghatai Khan, 6 Tactical stands & 6 Razorbacks, 2 Jaghatai Khan Squadrons (13 stands & 6 Razorbacks)",
+      "points": 650,
+      "breakPoint": 10,
+      "morale": 2,
+      "vpValue": 7,
+      "standsCount": 13,
+      "color": 14870768,
+      "baseW": 24,
+      "baseH": 32,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 25,
+      "save": 3,
+      "caf": 3,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Multi-Meltas & Heavy Flamer",
+        "rangeCm": 25,
+        "dice": 3,
+        "toHit": 3,
+        "tsm": -2
+      },
+      "salvos": [
+        {
+          "name": "Multi-Melta",
+          "rangeCm": 25,
+          "dice": 2,
+          "toHit": 3,
+          "tsm": -2,
+          "id": "jaghatai_melta",
+          "mount": "Sponsons"
+        },
+        {
+          "name": "Heavy Flamer",
+          "rangeCm": 25,
+          "dice": 1,
+          "toHit": 4,
+          "tsm": 0,
+          "id": "jaghatai_flamer",
+          "mount": "Turret",
+          "isFlame": true,
+          "ignoresCover": true
+        }
+      ],
+      "jump": false,
+      "skimmer": false,
+      "specialAbilities": [],
+      "subDetachments": [
+        {
+          "name": "Command Predator",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Meltas & Heavy Flamer",
+            "rangeCm": 25,
+            "dice": 3,
+            "toHit": 3,
+            "tsm": -2
+          },
+          "salvos": [
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "jaghatai_melta",
+              "mount": "Sponsons"
+            },
+            {
+              "name": "Heavy Flamer",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 4,
+              "tsm": 0,
+              "id": "jaghatai_flamer",
+              "mount": "Turret",
+              "isFlame": true,
+              "ignoresCover": true
+            }
+          ],
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": [
+            "Command"
+          ]
+        },
+        {
+          "name": "Tactical Detachment",
+          "stands": 6,
+          "transport": 6,
+          "moveCm": 10,
+          "save": 5,
+          "caf": 2,
+          "pinningClass": 1,
+          "jump": false,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "skimmer": false,
+          "specialAbilities": [],
+          "dedicatedTransport": {
+            "armyBook": "IMPERIUM",
+            "name": "Razorback Fire Support Squadron",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 2,
+            "pinningClass": 2,
+            "transportCapacity": 1,
+            "weapon": {
+              "name": "Twin Lascannons & Plasma Guns",
+              "rangeCm": 75,
+              "dice": 2,
+              "toHit": 5,
+              "tsm": -1
+            },
+            "salvos": [
+              {
+                "name": "Lascannon",
+                "rangeCm": 75,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1,
+                "id": "sm_rzb_las",
+                "mount": "Turret"
+              },
+              {
+                "name": "Plasma Gun",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": -1,
+                "id": "sm_rzb_pg",
+                "mount": "Turret"
+              }
+            ],
+            "color": 2450411,
+            "baseW": 22,
+            "baseH": 30,
+            "key": "sm_razorback_ws9",
+            "vpValue": 0,
+            "standsCount": 6,
+            "breakPoint": 3
+          }
+        },
+        {
+          "name": "1st Jaghatai Khan Squadron",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Meltas & Heavy Flamer",
+            "rangeCm": 25,
+            "dice": 3,
+            "toHit": 3,
+            "tsm": -2
+          },
+          "salvos": [
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "jaghatai_melta",
+              "mount": "Sponsons"
+            },
+            {
+              "name": "Heavy Flamer",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 4,
+              "tsm": 0,
+              "id": "jaghatai_flamer",
+              "mount": "Turret",
+              "isFlame": true,
+              "ignoresCover": true
+            }
+          ],
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        },
+        {
+          "name": "2nd Jaghatai Khan Squadron",
+          "stands": 3,
+          "transport": 0,
+          "moveCm": 25,
+          "save": 3,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Multi-Meltas & Heavy Flamer",
+            "rangeCm": 25,
+            "dice": 3,
+            "toHit": 3,
+            "tsm": -2
+          },
+          "salvos": [
+            {
+              "name": "Multi-Melta",
+              "rangeCm": 25,
+              "dice": 2,
+              "toHit": 3,
+              "tsm": -2,
+              "id": "jaghatai_melta",
+              "mount": "Sponsons"
+            },
+            {
+              "name": "Heavy Flamer",
+              "rangeCm": 25,
+              "dice": 1,
+              "toHit": 4,
+              "tsm": 0,
+              "id": "jaghatai_flamer",
+              "mount": "Turret",
+              "isFlame": true,
+              "ignoresCover": true
+            }
+          ],
+          "jump": false,
+          "skimmer": false,
+          "specialAbilities": []
+        }
+      ]
+    },
+    {
+      "key": "card_sm_ws_10th_co",
+      "cardType": "COMPANY",
+      "cardName": "White Scars 10th Company",
+      "armyBook": "IMPERIUM",
+      "name": "White Scars 10th Company",
+      "composition": "Command Scout Bike & 3 Scout Bike Squads (16 bikes)",
+      "points": 450,
+      "breakPoint": 8,
+      "morale": 3,
+      "vpValue": 5,
+      "standsCount": 16,
+      "color": 6333946,
+      "baseW": 22,
+      "baseH": 26,
+      "chapter": "WHITE_SCARS",
+      "moveCm": 30,
+      "save": 7,
+      "caf": 2,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "Bolter",
+        "rangeCm": 15,
+        "dice": 1,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "specialAbilities": [
+        "Infiltration"
+      ],
+      "jump": false,
+      "skimmer": false,
+      "subDetachments": [
+        {
+          "name": "Command Scout Bike",
+          "stands": 1,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 7,
+          "caf": 3,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Command",
+            "HQ",
+            "CombatLeader",
+            "Infiltration"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "1st Scout Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 7,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Infiltration"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "2nd Scout Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 7,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Infiltration"
+          ],
+          "jump": false,
+          "skimmer": false
+        },
+        {
+          "name": "3rd Scout Bike Squad",
+          "stands": 5,
+          "transport": 0,
+          "moveCm": 30,
+          "save": 7,
+          "caf": 2,
+          "pinningClass": 2,
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 15,
+            "dice": 1,
+            "toHit": 6,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Infiltration"
+          ],
+          "jump": false,
+          "skimmer": false
+        }
+      ]
     }
   ],
   "ORKS": [
@@ -34605,7 +38538,8 @@ window.startCampaign = function() {
   const roster = (side, book) => (window.sideFaction[side] === book && window.armyRosters[side] && window.armyRosters[side].length) ? [...window.armyRosters[side]] : [...(DEFAULT_ROSTERS[book] || [])];
   const playerRoster = roster('IMPERIUM', playerBook), enemyRoster = roster('ORKS', enemyBook);
   const xp = {}; playerRoster.forEach((k, i) => { xp[`${i}_${k}`] = Phaser.Math.Between(1, 3) - 1; });
-  const c = { active: true, started: Date.now(), playerBook, enemyBook, playerRoster, enemyRoster, points: window.pointsBudget || 2000, node: 'meet', battle: 1, wins: 0, losses: 0, draws: 0, history: [], xp };
+  const ch = (side, book) => (window.sideFaction[side] === book && window.sideChapter) ? (window.sideChapter[side] || 'CODEX') : 'CODEX';
+  const c = { active: true, started: Date.now(), playerBook, enemyBook, playerRoster, enemyRoster, playerChapter: ch('IMPERIUM', playerBook), enemyChapter: ch('ORKS', enemyBook), points: window.pointsBudget || 2000, node: 'meet', battle: 1, wins: 0, losses: 0, draws: 0, history: [], xp };
   window.saveCampaign(c); window.renderCampaignModal();
 };
 window.abandonCampaign = function() {
@@ -34627,6 +38561,7 @@ window.fightCampaignBattle = function() {
   const playerSide = n.role === 'DEFENDER' ? def : (n.role === 'ATTACKER' ? att : 'IMPERIUM'), enemySide = playerSide === 'ORKS' ? 'IMPERIUM' : 'ORKS';
   window.sideFaction[playerSide] = c.playerBook; window.sideFaction[enemySide] = c.enemyBook;
   window.armyRosters[playerSide] = [...c.playerRoster]; window.armyRosters[enemySide] = [...c.enemyRoster];
+  window.sideChapter[playerSide] = c.playerChapter || 'CODEX'; window.sideChapter[enemySide] = c.enemyChapter || 'CODEX';
   window.aiFaction = enemySide;
   if (window.setPointsBudget) window.setPointsBudget(c.points);
   window.setScenario(n.scn);
@@ -34760,9 +38695,41 @@ window.cycleAIMode = function() {
   window.setAIMode(next);
 };
 
+// ===== Space Marine chapters (Astartes book p. 5): one named chapter's cards plus the standard list =====
+const SM_CHAPTERS = [
+  ['CODEX', 'Codex (standard list)'], ['BLOOD_ANGELS', 'Blood Angels'], ['DARK_ANGELS', 'Dark Angels'], ['SPACE_WOLVES', 'Space Wolves'],
+  ['BLACK_TEMPLARS', 'Black Templars *'], ['CRIMSON_FISTS', 'Crimson Fists *'], ['CRIMSON_SUNS', 'Crimson Suns *'], ['DESERT_LIONS', 'Desert Lions *'],
+  ['FLESH_EATERS', 'Flesh Eaters *'], ['IRON_HANDS', 'Iron Hands *'], ['MENTOR_LEGION', 'Mentor Legion *'], ['RAPTOR_LEGION', 'Raptor Legion *'],
+  ['SALAMANDERS', 'Salamanders *'], ['WHITE_SCARS', 'White Scars *']];
+// Space Wolves replace these standard cards with their own
+const SW_PROHIBITED = new Set(['card_sm_tac_co', 'card_sm_battle_co', 'card_sm_dev_co', 'card_sm_assault_co', 'card_sm_term_co', 'card_sm_scout_co', 'card_sm_vet_co', 'card_sm_bike_co',
+  'card_sm_tac', 'card_sm_dev', 'card_sm_assault', 'card_sm_flamer', 'card_sm_term', 'card_sm_term_assault', 'card_sm_scout', 'card_sm_vet', 'card_sm_bikes', 'card_sm_bike_squad',
+  'card_sm_speeders', 'card_sm_ls_tornado', 'card_sm_ls_typhoon', 'card_sm_apothecary', 'card_sm_chaplain', 'card_sm_librarian']);
+window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
+window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
+window.cardAllowed = function(side, u) {
+  if (!u || (window.sideFaction[side] || side) !== 'IMPERIUM') return true;
+  const ch = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
+  if (u.chapter && ![].concat(u.chapter).includes(ch)) return false;
+  if (ch === 'SPACE_WOLVES' && SW_PROHIBITED.has(window.titanBaseKey ? window.titanBaseKey(u.key) : u.key)) return false;
+  return true;
+};
+window.setSideChapter = function(side, ch) {
+  window.sideChapter[side] = ch || 'CODEX';
+  const r = (window.armyRosters[side] || []).filter(k => window.cardAllowed(side, window.findCatalogUnit(k)));
+  if (!r.some(k => (window.findCatalogUnit(k) || {}).cardType === 'COMPANY')) {
+    const co = UNIT_CATALOG.IMPERIUM.filter(u => u.cardType === 'COMPANY' && window.cardAllowed(side, u)).sort((a, b) => Boolean(b.chapter) - Boolean(a.chapter))[0];
+    if (co) r.unshift(co.key);
+  }
+  window.armyRosters[side] = r;
+  window.renderArmyModal();
+  if (window.updateBriefingCard) window.updateBriefingCard();
+};
+
 window.setSideFaction = function(side, factionKey) {
   if (!FACTION_META[factionKey]) return;
   window.sideFaction[side] = factionKey;
+  window.sideChapter[side] = 'CODEX';
   window.armyRosters[side] = [...(DEFAULT_ROSTERS[factionKey] || [])];
   window.updateAIModeLabels();
   window.renderArmyModal();
@@ -34914,6 +38881,8 @@ window.getRosterBreakdown = function(side) {
   if (totalPts > window.sideBudget(side)) {
     errors.push(`Points Budget exceeded: ${totalPts}/${window.sideBudget(side)} pts.`);
   }
+  const notAllowed = roster.map(k => window.findCatalogUnit(k)).filter(u => u && !window.cardAllowed(side, u));
+  if (notAllowed.length) errors.push(`Not allowed in a ${window.chapterName(window.sideChapter[side] || 'CODEX')} army: ${[...new Set(notAllowed.map(u => u.cardName || u.name))].join(', ')}.`);
 
   return {
     totalPts,
@@ -34957,7 +38926,7 @@ window.clearRoster = function(side) {
 
 // A random legal army that uses (nearly) all the points; each tap gives a different one
 window.randomizeRoster = function(side) {
-  const book = window.sideFaction[side] || side, pool = (UNIT_CATALOG[book] || []).filter(u => u.points > 0);
+  const book = window.sideFaction[side] || side, pool = (UNIT_CATALOG[book] || []).filter(u => u.points > 0 && window.cardAllowed(side, u));
   const budget = window.sideBudget(side), keep = window.armyRosters[side];
   const valid = r => { window.armyRosters[side] = r; return window.getRosterBreakdown(side).valid; };
   const pts = r => r.reduce((a, k) => a + (window.findCatalogUnit(k) || { points: 0 }).points, 0);
@@ -35075,6 +39044,15 @@ window.renderArmyModal = function() {
       selectEl.value = activeBook;
       selectEl.style.borderColor = meta.borderHex;
     }
+    // Space Marines only: which chapter
+    const chRow = document.getElementById(`${prefix}-chapter-row`), chSel = document.getElementById(`${prefix}-chapter-select`);
+    if (chRow && chSel) {
+      chRow.style.display = activeBook === 'IMPERIUM' ? 'block' : 'none';
+      if (!chSel.options.length) SM_CHAPTERS.forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = `🛡️ Chapter: ${n}`; chSel.appendChild(o); });
+      chSel.value = window.sideChapter[side] || 'CODEX';
+      chSel.style.borderColor = meta.borderHex;
+      chSel.title = '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
+    }
 
     // Render Compact Card Filter Pills (All, 🏢 Co, 🛡️ Sup, ⚔️ Spc)
     const filtersEl = document.getElementById(`${prefix}-card-filters`);
@@ -35174,7 +39152,8 @@ window.renderArmyModal = function() {
     if (catEl) {
       catEl.innerHTML = '';
       const activeFilter = (window.catalogFilter && window.catalogFilter[side]) || 'ALL';
-      const availableCards = UNIT_CATALOG[activeBook].filter(u => activeFilter === 'ALL' || u.cardType === activeFilter);
+      const availableCards = UNIT_CATALOG[activeBook].filter(u => (activeFilter === 'ALL' || u.cardType === activeFilter) && window.cardAllowed(side, u));
+      { const ord = { COMPANY: 0, SUPPORT: 1, SPECIAL: 2 }; availableCards.sort((x, y) => ((ord[x.cardType] ?? 1) - (ord[y.cardType] ?? 1)) || (Boolean(y.chapter) - Boolean(x.chapter))); } // a chapter's own cards come first in each group
       
       availableCards.forEach(u => {
         const type = (u.cardType || 'SUPPORT').toUpperCase();
@@ -42044,8 +46023,9 @@ class NetEpicScene extends Phaser.Scene {
           if (mainDet && mainDet.titanState) this.spawnCorvusTerminators(mainDet);
 
           // Automatically spawn and embark dedicated transports for this sub-detachment
-          if (template.dedicatedTransport && (subCfg.transportStands > 0 || (!splitCard && template.dedicatedTransport.standsCount > 0))) {
-            const tCfg = template.dedicatedTransport;
+          const ownTr = (splitCard && subCfg.dedicatedTransport) || template.dedicatedTransport;
+          if (ownTr && (subCfg.transportStands > 0 || (!splitCard && ownTr.standsCount > 0))) {
+            const tCfg = ownTr;
             const tCount = splitCard ? subCfg.transportStands : tCfg.standsCount;
             if (tCount > 0) {
               const transDet = this.createDetachment({
@@ -51251,7 +55231,7 @@ class NetEpicScene extends Phaser.Scene {
       scenarioId: window.scenarioId || 'OPEN', scnState: this.scnState || {}, scnOver: Boolean(this._scnOver), campaignBattle: window.campaignBattle || null,
       aiFaction: window.aiFaction || 'NONE',
       aiCamFollow: Boolean(window.aiCamFollow),
-      sideFaction: { ...window.sideFaction },
+      sideFaction: { ...window.sideFaction }, sideChapter: { ...(window.sideChapter || {}) },
       armyRosters: {
         IMPERIUM: window.armyRosters.IMPERIUM ? [...window.armyRosters.IMPERIUM] : [],
         ORKS: window.armyRosters.ORKS ? [...window.armyRosters.ORKS] : []
@@ -51340,6 +55320,7 @@ class NetEpicScene extends Phaser.Scene {
         this.spawnObjectives();
       }
       if (saveData.sideFaction) window.sideFaction = { ...saveData.sideFaction };
+      window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX', ...(saveData.sideChapter || {}) };
       if (saveData.armyRosters) window.armyRosters = { ...saveData.armyRosters };
 
       // Update AI button label in menu
