@@ -6244,7 +6244,8 @@ const UNIT_CATALOG = {
         "barrage": true,
         "barrageBp": 3,
         "indirect": true,
-        "damagesBuildings": true
+        "minRangeCm": 50,
+        "destroysBuildings": true
       },
       "standsCount": 3,
       "color": 1920728,
@@ -6578,7 +6579,8 @@ const UNIT_CATALOG = {
         "baseW": 22,
         "baseH": 30
       },
-      "chapter": "MENTOR_LEGION"
+      "chapter": "MENTOR_LEGION",
+      "camoCloak": true
     },
     {
       "key": "card_sm_ml_elite_cadre",
@@ -6609,9 +6611,12 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Command",
         "Elite",
-        "HQ"
+        "HQ",
+        "Independent",
+        "HardToHit"
       ],
-      "chapter": "MENTOR_LEGION"
+      "chapter": "MENTOR_LEGION",
+      "tripleCharge": true
     },
     {
       "key": "card_sm_sal_assault_flamer",
@@ -6938,7 +6943,8 @@ const UNIT_CATALOG = {
         "Fear"
       ],
       "jump": true,
-      "chapter": "SPACE_WOLVES"
+      "chapter": "SPACE_WOLVES",
+      "fearOnCharge": true
     },
     {
       "key": "card_sm_sw_bc_bikes",
@@ -6969,7 +6975,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Fear"
       ],
-      "chapter": "SPACE_WOLVES"
+      "chapter": "SPACE_WOLVES",
+      "fearOnCharge": true
     },
     {
       "key": "card_sm_sw_bc_speeders",
@@ -7001,7 +7008,8 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Fear"
       ],
-      "chapter": "SPACE_WOLVES"
+      "chapter": "SPACE_WOLVES",
+      "fearOnCharge": true
     },
     {
       "key": "card_sm_sw_rune_priest",
@@ -7474,7 +7482,89 @@ const UNIT_CATALOG = {
         "baseH": 30
       },
       "jump": false,
-      "chapter": "BLACK_TEMPLARS"
+      "chapter": "BLACK_TEMPLARS",
+      "standConfigs": [
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Tactical",
+          "weapon": {
+            "name": "Bolter",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Neophyte",
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "label": "Neophyte",
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        }
+      ]
     },
     {
       "key": "card_sm_bt_bikes",
@@ -7600,7 +7690,89 @@ const UNIT_CATALOG = {
             "tsm": 0
           },
           "skimmer": false,
-          "specialAbilities": []
+          "specialAbilities": [],
+          "standConfigs": [
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            }
+          ]
         },
         {
           "name": "2nd Crusade Detachment",
@@ -7619,7 +7791,89 @@ const UNIT_CATALOG = {
             "tsm": 0
           },
           "skimmer": false,
-          "specialAbilities": []
+          "specialAbilities": [],
+          "standConfigs": [
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            }
+          ]
         },
         {
           "name": "3rd Crusade Detachment",
@@ -7638,7 +7892,89 @@ const UNIT_CATALOG = {
             "tsm": 0
           },
           "skimmer": false,
-          "specialAbilities": []
+          "specialAbilities": [],
+          "standConfigs": [
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            }
+          ]
         }
       ]
     },
@@ -7910,7 +8246,89 @@ const UNIT_CATALOG = {
             "tsm": 0
           },
           "skimmer": false,
-          "specialAbilities": []
+          "specialAbilities": [],
+          "standConfigs": [
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Tactical",
+              "weapon": {
+                "name": "Bolter",
+                "rangeCm": 50,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            },
+            {
+              "label": "Neophyte",
+              "weapon": {
+                "name": "Bolt Pistol",
+                "rangeCm": 25,
+                "dice": 1,
+                "toHit": 5,
+                "tsm": 0
+              }
+            }
+          ]
         },
         {
           "name": "1st Assault Detachment",
@@ -8322,7 +8740,7 @@ const UNIT_CATALOG = {
       "cardName": "Crimson Fists First Company",
       "armyBook": "IMPERIUM",
       "name": "Crimson Fists First Company",
-      "composition": "Chapter Master, Terminator HQ & 4 Terminator Detachments (18 stands & 10 Land Raiders)",
+      "composition": "Chapter Master & Command Rhino, Terminator HQ & Command Land Raider, 4 Terminator Detachments (18 stands, 9 Land Raiders & 1 Rhino)",
       "points": 1400,
       "breakPoint": 14,
       "morale": 1,
@@ -8369,7 +8787,7 @@ const UNIT_CATALOG = {
         "breakPoint": 5,
         "vpValue": 0,
         "color": 1920728,
-        "standsCount": 10,
+        "standsCount": 9,
         "baseW": 26,
         "baseH": 34,
         "specialAbilities": [
@@ -8400,7 +8818,31 @@ const UNIT_CATALOG = {
             "Inspirational"
           ],
           "jump": false,
-          "skimmer": false
+          "skimmer": false,
+          "dedicatedTransport": {
+            "key": "sm_rhino_cf_cm",
+            "armyBook": "IMPERIUM",
+            "name": "Command Rhino",
+            "moveCm": 25,
+            "save": 4,
+            "caf": 0,
+            "morale": 1,
+            "pinningClass": 2,
+            "transportCapacity": 2,
+            "weapon": {
+              "name": "Storm Bolter",
+              "rangeCm": 15,
+              "dice": 1,
+              "toHit": 6,
+              "tsm": 0
+            },
+            "breakPoint": 1,
+            "vpValue": 0,
+            "color": 2450411,
+            "standsCount": 1,
+            "baseW": 22,
+            "baseH": 26
+          }
         },
         {
           "name": "Terminator HQ",
@@ -8998,7 +9440,8 @@ const UNIT_CATALOG = {
       "chapter": "DARK_ANGELS",
       "specialAbilities": [
         "Elite"
-      ]
+      ],
+      "fixedSave": 6
     },
     {
       "key": "card_sm_da_ravenwing_co",
@@ -9036,23 +9479,26 @@ const UNIT_CATALOG = {
           "stands": 1,
           "transport": 0,
           "moveCm": 30,
-          "save": 6,
-          "caf": 5,
+          "save": 4,
+          "caf": 3,
           "pinningClass": 2,
           "weapon": {
-            "name": "Heavy Bolters",
+            "name": "Twin Heavy Bolters",
             "rangeCm": 25,
             "dice": 2,
-            "toHit": 5,
+            "toHit": 4,
             "tsm": 0
           },
           "jump": false,
           "skimmer": false,
           "specialAbilities": [
             "Command",
+            "Elite",
             "HQ",
-            "CombatLeader"
-          ]
+            "Inspirational"
+          ],
+          "fixedSave": 6,
+          "masterOfRavenwing": true
         },
         {
           "name": "Attack Bike Detachment",
@@ -11302,6 +11748,304 @@ const UNIT_CATALOG = {
           "skimmer": false
         }
       ]
+    },
+    {
+      "key": "card_sm_ba_death_co",
+      "cardType": "SPECIAL",
+      "cardName": "Death Company",
+      "armyBook": "IMPERIUM",
+      "name": "Death Company",
+      "composition": "Death Company Chaplain + one stand from every other infantry detachment, with Rhinos (Blood Angels)",
+      "points": 100,
+      "breakPoint": 1,
+      "morale": 1,
+      "vpValue": 1,
+      "moveCm": 10,
+      "save": 5,
+      "fixedSave": 6,
+      "caf": 4,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "Pistols & Others",
+        "rangeCm": 25,
+        "dice": 2,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "standsCount": 1,
+      "color": 1118481,
+      "baseW": 20,
+      "baseH": 20,
+      "specialAbilities": [
+        "Command",
+        "Elite",
+        "HQ",
+        "Fearless"
+      ],
+      "deathCompany": true,
+      "chapter": "BLOOD_ANGELS",
+      "dedicatedTransport": {
+        "key": "sm_rhino_ba_dc",
+        "armyBook": "IMPERIUM",
+        "name": "Death Company Rhinos",
+        "moveCm": 25,
+        "save": 4,
+        "caf": 0,
+        "morale": 1,
+        "pinningClass": 2,
+        "transportCapacity": 2,
+        "weapon": {
+          "name": "Storm Bolter",
+          "rangeCm": 15,
+          "dice": 1,
+          "toHit": 6,
+          "tsm": 0
+        },
+        "breakPoint": 1,
+        "vpValue": 0,
+        "color": 2450411,
+        "standsCount": 1,
+        "baseW": 22,
+        "baseH": 26
+      }
+    },
+    {
+      "key": "card_sm_ss_2nd_co",
+      "cardType": "COMPANY",
+      "cardName": "Silver Skulls 2nd Company",
+      "armyBook": "IMPERIUM",
+      "name": "Silver Skulls 2nd Company",
+      "composition": "Assault HQ & 3 Assault Detachments with 4 Thunderhawk Gunships (19 stands)",
+      "points": 1000,
+      "breakPoint": 12,
+      "morale": 2,
+      "vpValue": 10,
+      "standsCount": 19,
+      "color": 6333946,
+      "baseW": 20,
+      "baseH": 20,
+      "chapter": "SILVER_SKULLS",
+      "moveCm": 15,
+      "save": 5,
+      "caf": 3,
+      "pinningClass": 1,
+      "jump": true,
+      "weapon": {
+        "name": "Bolt Pistol & Sword",
+        "rangeCm": 25,
+        "dice": 1,
+        "toHit": 5,
+        "tsm": 0
+      },
+      "dedicatedTransport": {
+        "armyBook": "IMPERIUM",
+        "name": "Silver Skulls Thunderhawks",
+        "moveCm": 100,
+        "save": 4,
+        "caf": 1,
+        "morale": 2,
+        "pinningClass": 3,
+        "transportCapacity": 6,
+        "weapon": {
+          "name": "Dorsal Turbo-Laser & Heavy Bolters",
+          "rangeCm": 50,
+          "dice": 3,
+          "toHit": 5,
+          "tsm": -2,
+          "damagesBuildings": true
+        },
+        "salvos": [
+          {
+            "name": "Battlecannon",
+            "rangeCm": 50,
+            "dice": 1,
+            "toHit": 4,
+            "tsm": -2,
+            "id": "thawk_bc",
+            "mount": "Nose"
+          },
+          {
+            "name": "Rockets",
+            "rangeCm": 50,
+            "dice": 6,
+            "toHit": 4,
+            "tsm": -2,
+            "id": "thawk_rockets",
+            "mount": "Wings",
+            "barrage": true,
+            "barrageBp": 6
+          }
+        ],
+        "color": 1982639,
+        "baseW": 34,
+        "baseH": 40,
+        "specialAbilities": [
+          "Flier",
+          "PD3"
+        ],
+        "isFlyer": true,
+        "key": "sm_thawk_ss2",
+        "standsCount": 4,
+        "breakPoint": 2,
+        "vpValue": 0
+      },
+      "subDetachments": [
+        {
+          "name": "HQ",
+          "stands": 1,
+          "transport": 1,
+          "caf": 4,
+          "weapon": {
+            "name": "Bolt Pistol",
+            "rangeCm": 25,
+            "dice": 2,
+            "toHit": 5,
+            "tsm": 0
+          },
+          "specialAbilities": [
+            "Command",
+            "Elite",
+            "HQ",
+            "Inspirational"
+          ],
+          "moveCm": 15,
+          "jump": true
+        },
+        {
+          "name": "1st Assault Detachment",
+          "stands": 6,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "name": "2nd Assault Detachment",
+          "stands": 6,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        },
+        {
+          "name": "3rd Assault Detachment",
+          "stands": 6,
+          "transport": 1,
+          "moveCm": 15,
+          "save": 5,
+          "caf": 3,
+          "pinningClass": 1,
+          "jump": true,
+          "weapon": {
+            "name": "Bolt Pistol & Sword",
+            "rangeCm": 25,
+            "dice": 1,
+            "toHit": 5,
+            "tsm": 0
+          }
+        }
+      ]
+    },
+    {
+      "key": "card_sm_rl_company_transport",
+      "cardType": "SPECIAL",
+      "cardName": "Company Transport (Deep Strike)",
+      "armyBook": "IMPERIUM",
+      "name": "Company Transport (Deep Strike)",
+      "composition": "Your Terminator or Veteran 1st Company drops from orbit: it gains Deep Strike and leaves its transports behind (Raptor Legion)",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "-",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "standsCount": 0,
+      "chapter": "RAPTOR_LEGION",
+      "effectOnly": "raptorDrop"
+    },
+    {
+      "key": "card_sm_sw_razorbacks",
+      "cardType": "SPECIAL",
+      "cardName": "Razorback Transport Detachment",
+      "armyBook": "IMPERIUM",
+      "name": "Razorback Transport Detachment",
+      "composition": "Up to two Great Companies swap their Rhinos for Razorbacks (2 detachments of 10, Space Wolves)",
+      "points": 1000,
+      "breakPoint": 10,
+      "morale": 2,
+      "vpValue": 10,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 2,
+      "weapon": {
+        "name": "-",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "standsCount": 0,
+      "chapter": "SPACE_WOLVES",
+      "effectOnly": "swRazorbacks"
+    },
+    {
+      "key": "card_sm_sw_drop_pods",
+      "cardType": "SPECIAL",
+      "cardName": "Space Wolf Drop Pods",
+      "armyBook": "IMPERIUM",
+      "name": "Space Wolf Drop Pods",
+      "composition": "12 Assault, 3 Deathwind & 3 Support Pods (Space Wolves)",
+      "points": 300,
+      "breakPoint": 3,
+      "morale": 2,
+      "vpValue": 3,
+      "moveCm": 0,
+      "save": 4,
+      "caf": 0,
+      "pinningClass": 1,
+      "deepStrike": true,
+      "weapon": {
+        "name": "Deathwind Missile System",
+        "rangeCm": 50,
+        "dice": 1,
+        "toHit": 4,
+        "tsm": 0,
+        "barrage": true,
+        "barrageBp": 6
+      },
+      "standsCount": 6,
+      "color": 3718648,
+      "baseW": 24,
+      "baseH": 24,
+      "chapter": "SPACE_WOLVES"
     }
   ],
   "ORKS": [
@@ -38700,18 +39444,34 @@ const SM_CHAPTERS = [
   ['CODEX', 'Codex (standard list)'], ['BLOOD_ANGELS', 'Blood Angels'], ['DARK_ANGELS', 'Dark Angels'], ['SPACE_WOLVES', 'Space Wolves'],
   ['BLACK_TEMPLARS', 'Black Templars *'], ['CRIMSON_FISTS', 'Crimson Fists *'], ['CRIMSON_SUNS', 'Crimson Suns *'], ['DESERT_LIONS', 'Desert Lions *'],
   ['FLESH_EATERS', 'Flesh Eaters *'], ['IRON_HANDS', 'Iron Hands *'], ['MENTOR_LEGION', 'Mentor Legion *'], ['RAPTOR_LEGION', 'Raptor Legion *'],
-  ['SALAMANDERS', 'Salamanders *'], ['WHITE_SCARS', 'White Scars *']];
+  ['SALAMANDERS', 'Salamanders *'], ['SILVER_SKULLS', 'Silver Skulls *'], ['WHITE_SCARS', 'White Scars *']];
 // Space Wolves replace these standard cards with their own
 const SW_PROHIBITED = new Set(['card_sm_tac_co', 'card_sm_battle_co', 'card_sm_dev_co', 'card_sm_assault_co', 'card_sm_term_co', 'card_sm_scout_co', 'card_sm_vet_co', 'card_sm_bike_co',
   'card_sm_tac', 'card_sm_dev', 'card_sm_assault', 'card_sm_flamer', 'card_sm_term', 'card_sm_term_assault', 'card_sm_scout', 'card_sm_vet', 'card_sm_bikes', 'card_sm_bike_squad',
   'card_sm_speeders', 'card_sm_ls_tornado', 'card_sm_ls_typhoon', 'card_sm_apothecary', 'card_sm_chaplain', 'card_sm_librarian']);
+// Each chapter's "Prohibited Army Cards" (Astartes book pp. 7-21)
+const VETS = ['card_sm_vet_co', 'card_sm_vet'];
+const CHAPTER_PROHIBITED = {
+  SPACE_WOLVES: SW_PROHIBITED,
+  BLACK_TEMPLARS: new Set(['card_sm_bikes', 'card_sm_battle_co', 'card_sm_landraider_co', 'card_sm_librarian', 'card_sm_bike_co', 'card_sm_bike_squad', 'card_sm_scout_co', 'card_sm_scout', 'card_sm_tac_co', 'card_sm_tac', ...VETS]),
+  BLOOD_ANGELS: new Set(['card_sm_scatolo_assault', ...VETS]),
+  CRIMSON_FISTS: new Set(['card_sm_term_co', 'card_sm_vet_co']),
+  CRIMSON_SUNS: new Set(['card_sm_battle_co', 'card_sm_dev_co', 'card_sm_dev', 'card_sm_scout_co', 'card_sm_scout', 'card_sm_term_co', 'card_sm_term', ...VETS]),
+  DARK_ANGELS: new Set(VETS),
+  IRON_HANDS: new Set(['card_sm_assault_co', 'card_sm_chaplain', 'card_sm_dev_co', 'card_sm_tac_co', 'card_sm_term_co', 'card_sm_term', ...VETS]),
+  MENTOR_LEGION: new Set(VETS),
+  SALAMANDERS: new Set(['card_sm_assault_co', 'card_sm_bike_co']),
+  WHITE_SCARS: new Set(['card_sm_battle_co', 'card_sm_dev_co', 'card_sm_dev', 'card_sm_landraider_co', 'card_sm_landraider', 'card_sm_librarian', 'card_sm_molemortar', 'card_sm_pred', 'card_sm_rapier', 'card_sm_robots',
+    'card_sm_scatolo_heavy', 'card_sm_scatolo_support', 'card_sm_scatolo_assault', 'card_sm_thudd', 'card_sm_tarantula', 'card_sm_term_co', 'card_sm_term', ...VETS])
+};
+SW_PROHIBITED.add('card_sm_drop_pods'); // the Wolves have their own pods
 window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
 window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
 window.cardAllowed = function(side, u) {
   if (!u || (window.sideFaction[side] || side) !== 'IMPERIUM') return true;
   const ch = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
   if (u.chapter && ![].concat(u.chapter).includes(ch)) return false;
-  if (ch === 'SPACE_WOLVES' && SW_PROHIBITED.has(window.titanBaseKey ? window.titanBaseKey(u.key) : u.key)) return false;
+  if (CHAPTER_PROHIBITED[ch] && CHAPTER_PROHIBITED[ch].has(u.key)) return false;
   return true;
 };
 window.setSideChapter = function(side, ch) {
@@ -38882,6 +39642,7 @@ window.getRosterBreakdown = function(side) {
     errors.push(`Points Budget exceeded: ${totalPts}/${window.sideBudget(side)} pts.`);
   }
   const notAllowed = roster.map(k => window.findCatalogUnit(k)).filter(u => u && !window.cardAllowed(side, u));
+  if (window.gameScene && window.gameScene.chapterRosterErrors) errors.push(...window.gameScene.chapterRosterErrors(side, roster));
   if (notAllowed.length) errors.push(`Not allowed in a ${window.chapterName(window.sideChapter[side] || 'CODEX')} army: ${[...new Set(notAllowed.map(u => u.cardName || u.name))].join(', ')}.`);
 
   return {
@@ -39985,6 +40746,13 @@ window.addEventListener('keydown', (e) => {
 
 // --- NETEPIC HEROIC SPECIAL CHARACTERS & PSYCHIC POWERS (02a_netepic_optional_rules_v5 pp. 10-15) ---
 const PSYCHIC_POWERS = {
+  quickening: { key: 'quickening', name: 'Quickening', icon: '⚡', difficulty: 0, rangeCm: 25, targetType: 'FRIENDLY', chapter: true, desc: 'Blood Angels. One friendly infantry, cavalry or walker unit within 25 cm (select it first) gains +3 CAF until the End Phase.' },
+  weaken_resolve: { key: 'weaken_resolve', name: 'Weaken Resolve', icon: '😨', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'Dark Angels. One enemy detachment within 25 cm (no line of sight needed) tests morale at -1 or falls back.' },
+  fury_salamander: { key: 'fury_salamander', name: 'Fury of the Salamander', icon: '🐉', difficulty: 0, rangeCm: 60, targetType: 'ENEMY', chapter: true, desc: 'Salamanders. A spectral salamander charges 3D6 cm towards the target: every model in its path (friend or foe) is hit on 4+ at 0 TSM; units that lose models test morale.' },
+  storm_caller: { key: 'storm_caller', name: 'Storm Caller', icon: '🌩️', difficulty: 0, rangeCm: 75, targetType: 'ENEMY', chapter: true, desc: 'White Scars. A 6 cm storm within 75 cm blocks line of sight until the End Phase (barrages can still fire over it).' },
+  courage_russ: { key: 'courage_russ', name: 'Courage of Russ', icon: '🐺', difficulty: 0, rangeCm: 15, targetType: 'FRIENDLY', chapter: true, desc: 'Space Wolves. One friendly detachment within 15 cm (select it first) is Fearless until the End Phase.' },
+  wolf_howl: { key: 'wolf_howl', name: 'Wolf Howl', icon: '🐺', difficulty: 0, rangeCm: 0, targetType: 'SELF', chapter: true, desc: 'Space Wolves. The Rune Priest causes Terror until the End Phase.' },
+  fangs_fenris: { key: 'fangs_fenris', name: 'Fangs of Fenris', icon: '🐺', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'Space Wolves. Spectral wolves fight one round of close combat at +5 CAF against an enemy within 25 cm; a psychic save makes them vanish.' },
   mind_blast: {
     key: 'mind_blast',
     name: 'Mind Blast',
@@ -44324,7 +45092,7 @@ class NetEpicScene extends Phaser.Scene {
       const healed = [], dead = [];
       det.downed.forEach(st => {
         const rolls = Array.from({ length: st.downedWounds || 1 }, () => Phaser.Math.Between(1, 6));
-        (rolls.every(r => r >= 4) ? healed : dead).push({ st, rolls });
+        (rolls.every(r => r >= (det.regenNeed || 4)) ? healed : dead).push({ st, rolls });
       });
       det.downed = [];
       healed.forEach(({ st }) => {
@@ -44483,6 +45251,11 @@ class NetEpicScene extends Phaser.Scene {
       if (obj.owner === 'ORKS') orkCount += obj.vp || 5;
     });
 
+    if (this.honourQuest) {
+      const q = this.objectives.find(o => o.id === this.honourQuest.id), me = this.honourQuest.side;
+      if (q && q.owner === me) { if (me === 'IMPERIUM') impCount += q.vp || 5; else orkCount += q.vp || 5; }
+      else if (q && q.owner !== 'NEUTRAL') { if (me === 'IMPERIUM') impCount -= 5; else orkCount -= 5; }
+    }
     this.objVp.IMPERIUM = impCount;
     this.objVp.ORKS = orkCount;
     this.drawObjectives();
@@ -44537,6 +45310,7 @@ class NetEpicScene extends Phaser.Scene {
     if (ts && (ts.legsDamaged || this.titanCond(det, 'halfMove'))) mv = Math.floor(mv / 2);
     if (ts && ts.moveMinus) mv = Math.max(0, mv - ts.moveMinus);
     if (ts && this.titanHasFitting(det, 'Deathstrike Cannon')) mv = Math.ceil(mv / 2);
+    if (det.tripleCharge && det.order === 'CHARGE') mv = mv * 1.5; // x3 instead of x2
     return mv;
   }
 
@@ -45972,7 +46746,8 @@ class NetEpicScene extends Phaser.Scene {
       const sidePrefix = isImp ? 'imp' : 'ork';
 
       keys.forEach((key, cardIdx) => {
-        const template = window.findCatalogUnit(key);
+        let template = window.findCatalogUnit(key);
+        if (template) template = this.cardEffectTemplate(template, side, keys);
         if (!template) return;
 
         const spanX = Math.min(BOARD_W - 350, Math.max(400, (cardCount - 1) * 250));
@@ -46047,8 +46822,10 @@ class NetEpicScene extends Phaser.Scene {
       });
     };
 
+    this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
+    this.applyChapterRulesAtSpawn();
     this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
     this.scnState = {}; this._surpriseLogged = false; this._reportShown = false;
     if (this.customZones()) ['IMPERIUM', 'ORKS'].forEach(f => this.scenarioPlaceSide(f));
@@ -48870,6 +49647,201 @@ class NetEpicScene extends Phaser.Scene {
     g.lineStyle(3, frac >= 0.99 ? 0xef4444 : 0xf97316, 0.85); g.strokeRect(b.x - 2, b.y - 2, b.w + 4, b.h + 4);
   }
 
+  // ===== SPACE MARINE CHAPTER RULES (Astartes army book pp. 7-21) =====
+  chapterOf(det) { return det && det.armyBook === 'IMPERIUM' && window.sideChapter ? (window.sideChapter[det.faction] || 'CODEX') : null; }
+  isInfantry(det) { return det && (det.pinningClass || 1) === 1 && !det.isTitan && !det.superHeavy; }
+  // Cards that change other cards when they are set up (Raptor drop, Space Wolf Razorbacks); returns null for cards with no models
+  cardEffectTemplate(template, side, keys) {
+    if (template.effectOnly) return null;
+    const has = k => keys.some(x => (window.findCatalogUnit(x) || {}).effectOnly === k);
+    this._fx = this._fx || {};
+    if (has('raptorDrop') && ['card_sm_term_co', 'card_sm_vet_co'].includes(template.key) && !this._fx[side + 'raptor']) {
+      this._fx[side + 'raptor'] = true;
+      const t = JSON.parse(JSON.stringify(template)); delete t.dedicatedTransport; t.deepStrike = true;
+      (t.subDetachments || []).forEach(sd => { sd.transport = 0; delete sd.dedicatedTransport; });
+      t.composition = (t.composition || '') + ' — dropping from orbit (Deep Strike)';
+      return t;
+    }
+    if (has('swRazorbacks') && ['card_sm_sw_great_co', 'card_sm_sw_great_term_co'].includes(template.key) && (this._fx[side + 'rzb'] || 0) < 2) {
+      this._fx[side + 'rzb'] = (this._fx[side + 'rzb'] || 0) + 1;
+      const t = JSON.parse(JSON.stringify(template)), rz = window.findCatalogUnit('card_sm_razorback');
+      if (t.dedicatedTransport && rz) Object.assign(t.dedicatedTransport, { name: 'Razorbacks', weapon: JSON.parse(JSON.stringify(rz.weapon)), salvos: JSON.parse(JSON.stringify(rz.salvos || [])), save: rz.save, caf: rz.caf, key: t.dedicatedTransport.key + '_rzb', baseW: rz.baseW, baseH: rz.baseH });
+      return t;
+    }
+    return template;
+  }
+  applyChapterRulesAtSpawn() {
+    this.honourQuest = null;
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      if ((window.sideFaction[side] || side) !== 'IMPERIUM') return;
+      const ch = (window.sideChapter && window.sideChapter[side]) || 'CODEX', mine = this.detachments.filter(d => d.faction === side && d.stands.length);
+      if (ch === 'CODEX') return;
+      const notes = [];
+      if (ch === 'DARK_ANGELS') mine.forEach(d => { if (/terminator|deathwing/i.test(d.name) && this.isInfantry(d) && !this.hasAbility(d, 'Fearless')) { d.specialAbilities = [...(d.specialAbilities || []), 'Fearless']; } }), notes.push('all Terminators are Fearless Deathwing');
+      if (ch === 'IRON_HANDS') { mine.forEach(d => { if (this.isInfantry(d) && (this.hasAbility(d, 'Elite') || d.isCharacter || d.standsCount === 1)) { d.regeneration = true; d.regenNeed = 5; } }); notes.push('bionics: Elite infantry and characters regenerate on 5+', 'siege specialists: no fortification bonus against them in close combat', '+1 VP for every enemy detachment wiped out'); }
+      if (ch === 'DESERT_LIONS') mine.forEach(d => { if (/chapter master/i.test(d.name)) { d.characterRules = { ...(d.characterRules || {}), mechanic: true }; notes.push('the Chapter Master is also a Mechanic'); } });
+      if (ch === 'BLOOD_ANGELS') { this.formDeathCompany(side); notes.push('Black Rage: +1 CAF when charging into combat; each turn a detachment may be seized by the rage (1 on a D6) and must Charge'); }
+      if (ch === 'BLACK_TEMPLARS') notes.push('Zeal: broken infantry that fail morale charge the nearest enemy instead of falling back');
+      if (ch === 'SALAMANDERS') notes.push('Never Give Up: no -2 CAF when falling back');
+      if (ch === 'CRIMSON_SUNS') { notes.push('Death Before Dishonour: one failed morale test a turn is re-rolled; the enemy scores 2 VP for each unit falling back in the End Phase'); this.pickHonourQuest(side); }
+      // Chapter psychic powers
+      const power = { BLOOD_ANGELS: 'quickening', DARK_ANGELS: 'weaken_resolve', SALAMANDERS: 'fury_salamander', WHITE_SCARS: 'storm_caller' }[ch];
+      mine.forEach(d => {
+        if (!d.isPsyker) return;
+        if (/rune priest/i.test(d.name)) d.characterRules = { ...(d.characterRules || {}), spells: ['courage_russ', 'wolf_howl', 'fangs_fenris'] };
+        else if (power) { const sp = ((d.characterRules && d.characterRules.spells) || ['mind_blast']).map(k => k === 'mind_blast' ? power : k); d.characterRules = { ...(d.characterRules || {}), spells: sp }; }
+      });
+      this.log(`🛡️ <b>${this.getSideName(side)}: ${window.chapterName(ch)}</b>${notes.length ? ' — ' + notes.join('; ') : ''}.`);
+    });
+  }
+  // Blood Angels: one stand from every other infantry detachment joins the Death Company
+  formDeathCompany(side) {
+    const chap = this.detachments.find(d => d.faction === side && d.deathCompany && d.stands.length);
+    if (!chap) return;
+    const donors = this.detachments.filter(d => d.faction === side && d !== chap && d.stands.length > 1 && this.isInfantry(d) && !d.isCharacter && !d.deathCompany && !d.transportCapacity && !d.embarkedOn);
+    if (!donors.length) return;
+    const c = this.getDetachmentCenter(chap);
+    donors.forEach(d => {
+      const s = d.stands[d.stands.length - 1];
+      d.stands.splice(d.stands.length - 1, 1); s.container.destroy(); d.casualties = (d.casualties || 0) + 1;
+      this.updateDetachmentBadge(d);
+    });
+    const n = donors.length;
+    const dcm = this.createDetachment({
+      key: 'card_sm_ba_death_co_marines', cardName: 'Death Company', name: 'Death Company Marines', armyBook: 'IMPERIUM', faction: side, id: `${chap.id}_marines`,
+      cardType: 'SPECIAL', standsCount: n, breakPoint: n, morale: 1, vpValue: 0, moveCm: 10, save: 5, caf: 6, pinningClass: 1,
+      weapon: { name: 'CC Weapons', rangeCm: 25, dice: 1, toHit: 5, tsm: 0 }, specialAbilities: ['Fearless'], deathCompany: true, color: 1118481, baseW: 20, baseH: 20,
+      startX: Math.round(c.x + 40), startY: Math.round(c.y)
+    });
+    if (dcm) {
+      dcm.stands.forEach((s, i) => { s.container.x = s.originX = c.x + 40 + (i % 3) * 30; s.container.y = s.originY = c.y + Math.floor(i / 3) * 30 * (side === 'IMPERIUM' ? 1 : -1); });
+      const rt = chap.dedicatedTransport;
+      if (rt) { // enough Rhinos for everyone, at no extra cost
+        const rh = this.createDetachment({ ...rt, standsCount: Math.ceil(n / 2), faction: side, armyBook: 'IMPERIUM', id: `${dcm.id}_trans`, name: 'Death Company Rhinos', startX: Math.round(c.x + 40), startY: Math.round(c.y + (side === 'IMPERIUM' ? 70 : -70)) });
+        if (rh) rh.stands.forEach((s, i) => { s.container.x = s.originX = c.x + 40 + i * 34; s.container.y = s.originY = c.y + (side === 'IMPERIUM' ? 80 : -80); });
+      }
+      this.updateDetachmentBadgePos(dcm);
+      this.log(`💀 <b>Death Company:</b> ${n} Blood Angels are lost to the Black Rage and join the Chaplain (one stand from each infantry detachment, counted as losses for their break points).`);
+    }
+  }
+  // Crimson Suns Honour Quest: the objective nearest the enemy's edge
+  pickHonourQuest(side) {
+    if (!this.objectives || !this.objectives.length) return;
+    const far = side === 'IMPERIUM' ? (o => -o.y) : (o => o.y);
+    const o = this.objectives.slice().sort((a, b) => far(a) - far(b))[0];
+    this.honourQuest = { side, id: o.id };
+    this.log(`🎌 <b>Honour Quest:</b> ${o.name} — worth double to the Crimson Suns, but they lose 5 VP while the enemy holds it.`);
+  }
+  // Close combat modifiers from chapter rules
+  chapterCafMods(det, foe, stand, foeStand) {
+    let mod = 0; const tags = [], ch = this.chapterOf(det);
+    if (ch === 'BLOOD_ANGELS' && this.isInfantry(det) && det.order === 'CHARGE' && det.moved) {
+      this._ccFirst = this._ccFirst || {}; const k = det.id + '|' + foe.id;
+      if (this._ccFirst[k] == null) this._ccFirst[k] = this.turn;
+      if (this._ccFirst[k] === this.turn) { mod += 1; tags.push('🩸 +1 Black Rage'); }
+    }
+    if (det.quickened && det.quickened.turn === this.turn) { mod += 3; tags.push('⚡ +3 Quickening'); }
+    if (det.zealous) { mod -= 2; tags.push('🏳️ -2 Zeal (falling back)'); }
+    if (this.chapterOf(foe) === 'IRON_HANDS') { const g = this.standCover(stand); if (g > 0) { mod -= g; tags.push('🔩 no cover vs Iron Hands'); } }
+    if (ch === 'SALAMANDERS' && det.order === 'FALL_BACK') { mod += 2; tags.push('🐉 Never Give Up'); }
+    return { mod, tag: tags.map(t => ` <span class="log-save">[${t}]</span>`).join('') };
+  }
+  // Blood Angels Black Rage: after initiative, a 1 sends a detachment into a charge
+  applyBlackRage() {
+    this.detachments.forEach(d => {
+      if (!d.stands.length || d.embarkedOn || d.inReserve || this.chapterOf(d) !== 'BLOOD_ANGELS' || !this.isInfantry(d) || d.deathCompany || d.isCharacter || d.order === 'FALL_BACK' || d.order === 'CHARGE') return;
+      const r = Phaser.Math.Between(1, 6);
+      if (r === 1) { d.order = 'CHARGE'; d.orderRevealed = true; this.updateDetachmentBadge(d); this.log(`🩸 <b>BLACK RAGE!</b> ${d.name} is overcome (rolled 1) and must <b>Charge</b> the nearest enemy.`); }
+    });
+  }
+  // Chapter psychic powers
+  castChapterPower(det, key) {
+    const c = this.getDetachmentCenter(det), inR = (o, cm) => { const oc = this.getDetachmentCenter(o); return Phaser.Math.Distance.Between(c.x, c.y, oc.x, oc.y) <= cm * PX_PER_CM; };
+    const sel = this.selectedDetachment && this.selectedDetachment !== det ? this.selectedDetachment : null, tgt = this.targetDetachment;
+    const nearestEnemy = cm => this.detachments.filter(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve && inR(o, cm)).sort((a, b) => Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(a).x, this.getDetachmentCenter(a).y) - Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(b).x, this.getDetachmentCenter(b).y))[0];
+    const friend = cm => (sel && sel.faction === det.faction && inR(sel, cm)) ? sel : det;
+    det.psychicPowerUsed = true; window.sfx.playPsychic();
+    if (key === 'quickening') {
+      const t = (sel && sel.faction === det.faction && inR(sel, 25) && (sel.pinningClass || 1) <= 2) ? sel : det;
+      t.quickened = { turn: this.turn }; this.spawnFloatingText(this.getDetachmentCenter(t).x, this.getDetachmentCenter(t).y - 16, '⚡ QUICKENING +3 CAF', '#c084fc', '12px');
+      this.log(`⚡ <b>Quickening:</b> ${t.name} gains +3 CAF until the End Phase.`);
+    } else if (key === 'weaken_resolve') {
+      const t = (tgt && tgt.faction !== det.faction && inR(tgt, 25)) ? tgt : nearestEnemy(25);
+      if (!t) { this.log('🔮 Weaken Resolve: no enemy within 25 cm.'); det.psychicPowerUsed = false; return; }
+      const m = t.morale; t.morale = Math.min(7, (t.morale || 4) + 1); const ok = this.testMorale(t, 'Weaken Resolve (-1)'); t.morale = m;
+      if (!ok) { this.failMorale(t); this.log(`😨 <b>Weaken Resolve:</b> ${t.name} breaks and falls back!`); } else this.log(`🧠 <b>Weaken Resolve:</b> ${t.name} holds firm.`);
+    } else if (key === 'fury_salamander') {
+      const t = (tgt && tgt.faction !== det.faction) ? tgt : nearestEnemy(60);
+      const tc = t ? this.getDetachmentCenter(t) : { x: c.x, y: c.y + (det.faction === 'IMPERIUM' ? -1 : 1) };
+      const len = (Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6)) * PX_PER_CM, ang = Math.atan2(tc.y - c.y, tc.x - c.x);
+      const ex = c.x + Math.cos(ang) * len, ey = c.y + Math.sin(ang) * len; let n = 0;
+      this.spawnPsychicFX(c.x, c.y, ex, ey);
+      this.detachments.slice().forEach(o => { if (o === det || !o.stands.length || o.embarkedOn) return; let lost = 0;
+        o.stands.slice().forEach(s => { if (this.distToPolyline([{ x: c.x, y: c.y }, { x: ex, y: ey }], s.container.x, s.container.y) <= 12 && Phaser.Math.Between(1, 6) >= 4) { this.blastHitStand(o, s, 0, c); lost++; n++; } });
+        if (lost && o.stands.length && !this.testMorale(o, 'Fury of the Salamander')) this.failMorale(o); });
+      this.log(`🐉 <b>Fury of the Salamander:</b> a spectral salamander charges ${Math.round(len / PX_PER_CM)} cm and strikes ${n} model(s).`);
+    } else if (key === 'storm_caller') {
+      const t = (tgt && tgt.faction !== det.faction && inR(tgt, 75)) ? tgt : nearestEnemy(75);
+      const p = t ? this.getDetachmentCenter(t) : { x: c.x, y: c.y + (det.faction === 'IMPERIUM' ? -300 : 300) };
+      (this.smokeClouds = this.smokeClouds || []).push({ x: p.x, y: p.y, r: BARRAGE_RADIUS_PX });
+      if (this.drawSmokeClouds) this.drawSmokeClouds();
+      this.log(`🌩️ <b>Storm Caller:</b> a storm blocks sight around ${t ? t.name : 'the target point'} until the End Phase.`);
+    } else if (key === 'courage_russ') {
+      const t = friend(15); t.courageOfRuss = { turn: this.turn };
+      this.log(`🐺 <b>Courage of Russ:</b> ${t.name} is Fearless until the End Phase.`);
+    } else if (key === 'wolf_howl') {
+      det.wolfHowl = { turn: this.turn }; this.log(`🐺 <b>Wolf Howl:</b> ${det.name} causes Terror until the End Phase.`);
+    } else if (key === 'fangs_fenris') {
+      const t = (tgt && tgt.faction !== det.faction && inR(tgt, 25)) ? tgt : nearestEnemy(25);
+      if (!t) { this.log('🔮 Fangs of Fenris: no enemy within 25 cm.'); det.psychicPowerUsed = false; return; }
+      const s = t.stands[0], ps = t.psychicSave;
+      if (ps && Phaser.Math.Between(1, 6) >= ps) { this.log(`🛡️ <b>Fangs of Fenris:</b> ${t.name} makes its psychic save and the wolves vanish.`); }
+      else { const a = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + 5, b = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + (t.caf || 0);
+        if (a > b) { this.removeCasualty(t, s, 0, false); this.log(`🐺 <b>Fangs of Fenris:</b> the wolves of Fenris tear a stand of ${t.name} apart (${a} v ${b}).`); }
+        else this.log(`🐺 <b>Fangs of Fenris:</b> ${t.name} fights off the spectral wolves (${b} v ${a}).`); }
+    }
+    this.updateUI(); this.drawOverlays();
+  }
+  // Roster checks for the chapter (book pp. 7-21)
+  chapterRosterErrors(side, roster) {
+    const ch = (window.sideChapter && window.sideChapter[side]) || 'CODEX', errs = [];
+    if ((window.sideFaction[side] || side) !== 'IMPERIUM' || ch === 'CODEX') return errs;
+    const keys = roster.map(k => (window.titanBaseKey ? window.titanBaseKey(k) : k)), cnt = k => keys.filter(x => x === k).length, has = k => keys.includes(k);
+    const units = roster.map(k => window.findCatalogUnit(k)).filter(Boolean), companies = units.filter(u => u.cardType === 'COMPANY');
+    if (ch === 'BLOOD_ANGELS' && !has('card_sm_ba_death_co')) errs.push('Blood Angels must take the Death Company.');
+    if (ch === 'BLACK_TEMPLARS' && !has('card_sm_emperors_champion')) errs.push("Black Templars must take the Emperor's Champion.");
+    if (ch === 'CRIMSON_FISTS' && !has('card_sm_cf_first_co')) errs.push('Crimson Fists must take the First Company.');
+    if (ch === 'IRON_HANDS') {
+      if (cnt('card_sm_ih_siege_co') > cnt('card_sm_ih_clan_co')) errs.push('Iron Hands need a Clan Company for each Siege Company.');
+      const sup = units.filter(u => u.cardType === 'SUPPORT').length;
+      if (sup < companies.length * 2) errs.push(`Iron Hands need at least two Support cards per Company (${sup}/${companies.length * 2}).`);
+    }
+    if (ch === 'MENTOR_LEGION') {
+      const t = cnt('card_sm_ml_tutor'), e = cnt('card_sm_ml_elite_cadre');
+      if (t && e) errs.push('Mentor Legion: Tutors and the Elite Cadre may not be taken together.');
+      if (t + e > 3) errs.push('Mentor Legion: no more than three Mentor detachments.');
+    }
+    if (ch === 'SALAMANDERS') {
+      const lim = ['card_sm_assault', 'card_sm_sal_assault_flamer', 'card_sm_bike_squad', 'card_sm_bikes', 'card_sm_speeders', 'card_sm_ls_tornado', 'card_sm_ls_typhoon'];
+      const n = keys.filter(k => lim.includes(k)).length;
+      if (n > companies.length) errs.push(`Salamanders: one Assault, bike or Land Speeder Support card per Company (${n}/${companies.length}).`);
+    }
+    if (ch === 'WHITE_SCARS') {
+      if (cnt('card_sm_ws_9th_co') > 1) errs.push('White Scars: only one Fist of Khan Company.');
+      const fast = companies.filter(u => ['card_sm_ws_bike_co', 'card_sm_ws_battle_co'].includes(u.key)).length, other = companies.length - fast;
+      const slow = units.filter(u => u.cardType === 'SUPPORT' && (u.moveCm || 0) < 25).length;
+      if (fast && slow > other * 5) errs.push('White Scars Bike and Battle Companies may only take Support cards that move 25 cm or more.');
+    }
+    if (ch === 'RAPTOR_LEGION') {
+      if ((has('card_sm_baneblade') || has('card_sm_shadowsword')) && !has('card_sm_rl_4th_co')) errs.push('Raptor Legion: a Baneblade or Shadowsword needs the 4th Company.');
+      if (cnt('card_sm_baneblade') + cnt('card_sm_shadowsword') > 1) errs.push('Raptor Legion: one Baneblade or Shadowsword only.');
+      if (has('card_sm_rl_company_transport') && !has('card_sm_term_co') && !has('card_sm_vet_co')) errs.push('Raptor Legion: the Company Transport needs a Terminator or Veteran 1st Company.');
+    }
+    if (ch === 'SPACE_WOLVES' && has('card_sm_sw_razorbacks') && !has('card_sm_sw_great_co') && !has('card_sm_sw_great_term_co')) errs.push('Space Wolves: the Razorback Transport Detachment needs a Great Company.');
+    if (ch === 'SILVER_SKULLS' && !has('card_sm_ss_2nd_co')) errs.push('Silver Skulls: take the 2nd Company to use this chapter.');
+    return errs;
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -49029,7 +50001,7 @@ class NetEpicScene extends Phaser.Scene {
       if (!p) return;
       const card = document.createElement('div');
       card.className = 'power-card';
-      const diffTag = p.difficulty > 0 ? `Difficulty: ${p.difficulty}+` : 'Psychic Duel (2D6 vs 1D6)';
+      const diffTag = p.chapter ? 'Chapter power' : (p.difficulty > 0 ? `Difficulty: ${p.difficulty}+` : 'Psychic Duel (2D6 vs 1D6)');
       card.innerHTML = `
         <div class="power-card-header">
           <span class="power-card-title">${p.icon} ${p.name}</span>
@@ -49052,6 +50024,16 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   castPsychicPower(powerKey) {
+    const pw = PSYCHIC_POWERS[powerKey];
+    if (pw && pw.chapter) {
+      this.closePsykerModal();
+      const det = this.activatingDetachment || this.selectedDetachment;
+      if (!det || !det.isPsyker || det.stands.length === 0 || det.psychicPowerUsed) return;
+      this.castChapterPower(det, powerKey); return;
+    }
+    return this.castPsychicPowerCore(powerKey);
+  }
+  castPsychicPowerCore(powerKey) {
     this.closePsykerModal();
     const det = this.activatingDetachment || this.selectedDetachment;
     if (!det || !det.isPsyker || det.stands.length === 0 || det.psychicPowerUsed) return;
@@ -50222,6 +51204,7 @@ class NetEpicScene extends Phaser.Scene {
     if (distCm > wpn.rangeCm) {
       return { valid: false, reason: 'Out of Range', distCm, coverMod: 0, indirect: false };
     }
+    if (wpn.minRangeCm && distCm < wpn.minRangeCm) return { valid: false, reason: `Too close: minimum range ${wpn.minRangeCm} cm`, distCm, coverMod: 0, indirect: false };
     if (distCm > 15 && this.scenarioNight() === 'dark') return { valid: false, reason: 'Out of Range in the dark (15 cm at night)', distCm, coverMod: 0, indirect: false };
 
     // Skimmer Pop-Up Attack (NetEpic p. 22) or Towering Class 4 Titans ignore intervening ground terrain blocks!
@@ -50354,6 +51337,7 @@ class NetEpicScene extends Phaser.Scene {
     const tCov = this.terrainCover(targetStand), woodMod = (targetInWood || woodPixels > 0) ? -1 : 0;
     const coverMod = (wpn.isFlame || wpn.template) ? 0 : (targetBuilding ? -this.buildingCover(targetBuilding) : Math.min(woodMod, -tCov));
     const coverTag = (wpn.isFlame || wpn.template) ? '🔥 Flame Ignores Cover' : (targetBuilding ? `Building Cover (${coverMod} Hit)` : (tCov > -woodMod ? `${tCov === 2 ? 'Trench' : 'Crater/Crops'} Cover (${coverMod} Hit)` : (coverMod === -1 ? 'Woods Cover (-1 Hit)' : 'Clear LoS')));
+    if (targetStand.detachment.camoCloak && targetStand.detachment.order === 'FIRST_FIRE' && coverMod < 0) return { valid: true, indirect: false, reason: coverTag + ' · camouflage -1', distCm, coverMod: coverMod - 1 };
     if (distCm > 15 && this.scenarioNight() === 'dusk') return { valid: true, indirect: false, reason: coverTag + ' · dusk -1', distCm, coverMod: coverMod - 1 };
     return { valid: true, indirect: false, reason: coverTag, distCm, coverMod };
   }
@@ -51055,6 +52039,10 @@ class NetEpicScene extends Phaser.Scene {
     this.creditKill(det, victim);
     victim.container.destroy();
     det.casualties++;
+    if (det.stands.length === 0 && !det._wipeScored && !(det.downed && det.downed.length)) {
+      det._wipeScored = true; const foe = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      if (this.detachments.some(d => d.faction === foe && d.armyBook === 'IMPERIUM') && (window.sideChapter || {})[foe] === 'IRON_HANDS' && (window.sideFaction[foe] || foe) === 'IMPERIUM') { this.vp[foe] += 1; this.log(`🔩 Iron Hands ruthlessness: <b>${det.name}</b> wiped out, <b>+1 VP</b>.`); }
+    }
 
     // NetEpic Transport Bail-Out Rule (Core Rules p. 38):
     // 4+ save modified by weapon's TSM (or natural save if better). No bail-out if destroyed by Titan Meltdown!
@@ -52102,7 +53090,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(det => {
       if (det.faction !== window.aiFaction || det.stands.length === 0) return;
-      if (det.order === 'FALL_BACK' || this.isCommandUnit(det) || det.instinct) return;
+      if (det.order === 'FALL_BACK' || det.zealous || (this.isCommandUnit(det) && !det.deathCompany) || det.instinct) return;
       if (det.embarkedOn) {
         det.order = 'ADVANCE';
         det.orderRevealed = false;
@@ -52161,6 +53149,7 @@ class NetEpicScene extends Phaser.Scene {
       }
 
       { const sc = this.scn(); if (sc && sc.exit && det.faction === sc.exit.faction && chosenOrder === 'FIRST_FIRE' && !det.weapon.indirect && this.turn > 1) chosenOrder = 'ADVANCE'; }
+      if (det.deathCompany && chosenOrder === 'FIRST_FIRE') chosenOrder = closestEnemyDist <= chargeReachPx + 25 ? 'CHARGE' : 'ADVANCE';
       if (!det.order) assignedCount++;
       det.order = chosenOrder;
       det.orderRevealed = false;
@@ -52727,8 +53716,9 @@ class NetEpicScene extends Phaser.Scene {
   assignOrder(orderKey) {
     if (!this.selectedDetachment || this.phase !== 'ORDERS' || this._awaitingInitChoice) return;
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
-    if (this.selectedDetachment.order === 'FALL_BACK') return;
-    if (this.isCommandUnit(this.selectedDetachment)) return; // Command units take no orders
+    if (this.selectedDetachment.order === 'FALL_BACK' || this.selectedDetachment.zealous) return;
+    if (this.selectedDetachment.deathCompany && orderKey === 'FIRST_FIRE') { this.log(`💀 The <b>Death Company</b> is too frenzied to hold back: Advance or Charge only.`); return; }
+    if (this.isCommandUnit(this.selectedDetachment) && !this.selectedDetachment.deathCompany) return; // Command units take no orders
     if (this.selectedDetachment.instinct) { this.log(`🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
@@ -52787,6 +53777,7 @@ class NetEpicScene extends Phaser.Scene {
     this.initiativeWinner = tieWinner || (impTotal > orkTotal ? 'IMPERIUM' : 'ORKS');
     this.lastInitiativeLoser = this.initiativeWinner === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
     this.activePlayer = this.initiativeWinner;
+    this.applyBlackRage();
     this.phase = 'MOVEMENT';
     this.selectedDetachment = null;
 
@@ -53560,8 +54551,9 @@ class NetEpicScene extends Phaser.Scene {
     const halfCaf = d => d.damageState === 'HEAVY' || this.titanCond(d, 'cafHalved');
     const impBaseCaf = halfCaf(impDet) ? Math.ceil(impDet.caf / 2) : impDet.caf;
     const orkBaseCaf = halfCaf(orkDet) ? Math.ceil(orkDet.caf / 2) : orkDet.caf;
-    const impModCaf = impCC.caf + impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
-    const orkModCaf = orkCC.caf + orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
+    const impCh = this.chapterCafMods(impDet, orkDet, impStand, orkStand), orkCh = this.chapterCafMods(orkDet, impDet, orkStand, impStand);
+    const impModCaf = impCh.mod + impCC.caf + impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
+    const orkModCaf = orkCh.mod + orkCC.caf + orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
     const impTotal = impSum + impModCaf;
     const orkTotal = orkSum + orkModCaf;
 
@@ -53575,7 +54567,7 @@ class NetEpicScene extends Phaser.Scene {
       (impLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (impDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (orkDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      impRerollNote + impCC.tag;
+      impRerollNote + impCC.tag + impCh.tag;
 
     const gangTagOrk =
       (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : (orkWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${orkDiceCount}D6!]</span>` : '') +
@@ -53587,7 +54579,7 @@ class NetEpicScene extends Phaser.Scene {
       (orkLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (orkDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (impDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      orkRerollNote + orkCC.tag;
+      orkRerollNote + orkCC.tag + orkCh.tag;
 
     const midX = (impStand.container.x + orkStand.container.x) / 2;
     const midY = (impStand.container.y + orkStand.container.y) / 2;
@@ -53896,6 +54888,7 @@ class NetEpicScene extends Phaser.Scene {
       d.guided = false;
       d.doomed = false;
       d.transfixed = false;
+      d.quickened = null; d.courageOfRuss = null; d.wolfHowl = null;
     });
 
     // 1. Recharge downed Titan Void Shields, Ork Power Fields & Tyranid Chitin Bio-Shields (4+ per downed shield) and drop Popped-Up Skimmers!
@@ -53932,7 +54925,8 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     // 2. Roll Rally Checks for all detachments currently on FALL_BACK orders (NetEpic p. 42)
-    const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && d.order === 'FALL_BACK');
+    this.detachments.forEach(d => { if (d.stands.length && d.order === 'FALL_BACK' && this.chapterOf(d) === 'CRIMSON_SUNS') { const foe = d.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM'; this.vp[foe] += 2; this.log(`🎌 ${d.name} is falling back in dishonour: <b>+2 VP</b> to ${this.getSideName(foe)}.`); } });
+    const fallBackUnits = this.detachments.filter(d => d.stands.length > 0 && (d.order === 'FALL_BACK' || d.zealous));
     fallBackUnits.forEach(d => {
       // Core Rules p. 41: a unit must spend a whole turn falling back before it may try to rally
       if (d.fallBackTurn === this.turn) {
@@ -53949,7 +54943,7 @@ class NetEpicScene extends Phaser.Scene {
       );
       const neededMorale = hasMoraleAura ? Math.max(1, d.morale - 1) : d.morale;
       if (inSynapse || roll >= neededMorale) {
-        d.order = null;
+        d.order = null; d.zealous = false;
         d.orderRevealed = false;
         this.updateDetachmentBadge(d);
         window.sfx.playHorn();
@@ -53957,7 +54951,7 @@ class NetEpicScene extends Phaser.Scene {
         this.log(`🎺 <b>RALLY! ${d.name}</b> ${inSynapse ? 'automatically Rallies via <b>Hive Mind Synapse</b>' : (hasMoraleAura ? `rallied under the inspiring presence of an Allied Hero (Roll <b>${roll}</b> vs Morale <b>${neededMorale}+</b>)` : `rolled <b>${roll}</b> (needed ${d.morale}+) and Rallied`)} from Fall Back!`);
       } else {
         // Failed Rally: remains on FALL_BACK and makes a compulsory 1x Move withdrawal toward home edge
-        const retreatPx = d.moveCm * PX_PER_CM;
+        const retreatPx = d.zealous ? 0 : d.moveCm * PX_PER_CM;
         const dirY = d.faction === 'IMPERIUM' ? 1 : -1;
         d.stands.forEach(s => {
           s.container.y = Phaser.Math.Clamp(s.container.y + dirY * retreatPx, 20, BOARD_H - 20);
@@ -54015,8 +55009,8 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(d => {
       if (d.stands.length === 0) return;
-      if (d.order !== 'FALL_BACK') d.order = (d.embarkedOn ? 'ADVANCE' : null);
-      d.orderRevealed = (d.order === 'FALL_BACK');
+      if (d.order !== 'FALL_BACK' && !d.zealous) d.order = (d.embarkedOn ? 'ADVANCE' : null);
+      d.orderRevealed = (d.order === 'FALL_BACK' || Boolean(d.zealous));
       d.moved = false;
       d.fired = false;
       d.deepStrikeActive = false;
@@ -54984,7 +55978,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   isFearlessUnit(det) {
-    return this.hasAbility(det, 'Fearless') || this.hasAbility(det, 'Robot') || this.hasSynapseAura(det);
+    return this.hasAbility(det, 'Fearless') || this.hasAbility(det, 'Robot') || this.hasSynapseAura(det) || Boolean(det.courageOfRuss && det.courageOfRuss.turn === this.turn);
   }
 
   // Any friendly unit with the given ability that has a model within cm of this detachment
@@ -54999,6 +55993,15 @@ class NetEpicScene extends Phaser.Scene {
 
   // Roll a morale test: D6 >= Morale (+1 within 10 cm of an Inspirational unit). Fearless units always pass.
   testMorale(det, reason = '') {
+    const ok = this.testMoraleCore(det, reason);
+    if (!ok && det && det.stands.length && this.chapterOf(det) === 'CRIMSON_SUNS' && (this._csReroll || {})[det.faction] !== this.turn) {
+      (this._csReroll = this._csReroll || {})[det.faction] = this.turn;
+      this.log(`🎌 <b>Death Before Dishonour:</b> ${det.name} re-rolls the morale test.`);
+      return this.testMoraleCore(det, (reason ? reason + ', ' : '') + 're-roll');
+    }
+    return ok;
+  }
+  testMoraleCore(det, reason = '') {
     if (!det || det.stands.length === 0) return true;
     if (det.armyBook === 'TYRANIDS') return true; // Tyranids never take morale tests
     if (this.isFearlessUnit(det)) {
@@ -55020,9 +56023,14 @@ class NetEpicScene extends Phaser.Scene {
   // A failed morale test puts a unit on Fall Back; a unit already falling back (or an Independent one) routs.
   failMorale(det) {
     if (!det || det.stands.length === 0) return;
-    if (det.order === 'FALL_BACK' || this.hasAbility(det, 'Independent') || det.independent) {
+    if (det.order === 'FALL_BACK' || det.zealous || this.hasAbility(det, 'Independent') || det.independent) {
       this.routDetachment(det);
       return;
+    }
+    if (this.chapterOf(det) === 'BLACK_TEMPLARS' && this.isInfantry(det)) { // Zeal: they charge instead
+      det.order = 'CHARGE'; det.zealous = true; det.orderRevealed = true; det.fallBackTurn = this.turn;
+      this.log(`✝️ <b>ZEAL!</b> ${det.name} hurls itself at the enemy instead of falling back (counts as falling back: -2 CAF, must rally).`);
+      this.updateDetachmentBadge(det); return;
     }
     det.order = 'FALL_BACK';
     det.orderRevealed = true;
@@ -55042,7 +56050,7 @@ class NetEpicScene extends Phaser.Scene {
   // Core Rules p. 42: Fear/Terror makes the opponent test morale on the first turn of combat; a failure costs -2 CAF.
   // Only works if the frightening unit can pin its opponent; Fearless and Daemon Hunter units are immune.
   fearPenalty(victimDet, scaryDet) {
-    const scary = scaryDet.daemonicTerror || this.hasAbility(scaryDet, 'Fear') || this.hasAbility(scaryDet, 'Terror');
+    const scary = (scaryDet.daemonicTerror || this.hasAbility(scaryDet, 'Fear') || this.hasAbility(scaryDet, 'Terror') || (scaryDet.wolfHowl && scaryDet.wolfHowl.turn === this.turn)) && !(scaryDet.fearOnCharge && scaryDet.order !== 'CHARGE');
     if (!scary || victimDet.daemonHunter || this.hasAbility(victimDet, 'Daemonhunter') || this.isFearlessUnit(victimDet)) return 0;
     if ((scaryDet.pinningClass || 1) < (victimDet.pinningClass || 1)) return 0;
     if (!this.fearTests) this.fearTests = {};
