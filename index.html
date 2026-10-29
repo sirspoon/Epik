@@ -38092,7 +38092,9 @@ class NetEpicScene extends Phaser.Scene {
     const sX = (v) => Math.round(v * scaleX);
     const sY = (v) => Math.round(v * scaleY);
 
-    if (this.loadExtraMap(preset, scaleX, scaleY)) {
+    if (this.loadCityMap(preset, scaleX, scaleY)) {
+      // city maps built from districts
+    } else if (this.loadExtraMap(preset, scaleX, scaleY)) {
       // new and rebuilt maps (rivers that wind, turned buildings, hills, rock...)
     } else if (preset === 'INDUSTRIAL') {
       // Highway network + Manufactorum, Cathedral, Silos, Hab-Blocks & Bunkers spread across the map
@@ -38378,7 +38380,7 @@ class NetEpicScene extends Phaser.Scene {
         { x1: 700, y1: 850, x2: 925, y2: 625, width: 32, name: 'Jungle Highway (+5cm Move)' },
         { x1: 925, y1: 625, x2: 1240, y2: 400, width: 32, name: 'Jungle Highway (+5cm Move)' },
         { x1: 1240, y1: 400, x2: 1500, y2: 0, width: 32, name: 'Jungle Highway (+5cm Move)' },
-        { x1: 925, y1: 625, x2: 1560, y2: 860, width: 28, name: 'Timber Spur (+5cm Move)' }
+        { x1: 925, y1: 625, x2: 1850, y2: 790, width: 28, name: 'Timber Spur (+5cm Move)', cap: true }
       ];
       this.dirtTracks = [
         { points: [{ x: 700, y: 850 }, { x: 480, y: 680 }, { x: 290, y: 490 }, { x: 230, y: 310 }], width: 14, name: 'Pilgrim Trail' },
@@ -38390,10 +38392,10 @@ class NetEpicScene extends Phaser.Scene {
         { x: 140, y: 730, w: 220, h: 160, boundary: 'HEDGE', color: 0x355e2c, alpha: 0.2, name: 'West Glade' }
       ];
       this.buildings = [
-        { x: 830, y: 540, w: 190, h: 140, type: 'CATHEDRAL', name: 'Shrine of the Primarch' },
+        { x: 640, y: 465, w: 190, h: 140, type: 'CATHEDRAL', name: 'Shrine of the Primarch' },
         { x: 570, y: 220, w: 130, h: 95, type: 'BUNKER', name: 'North Auspex Bunker' },
         { x: 1350, y: 310, w: 140, h: 105, type: 'SILO', name: 'Promethium Wellhead' },
-        { x: 600, y: 910, w: 140, h: 100, type: 'BUNKER', name: 'South Bastion Outpost' },
+        { x: 720, y: 960, w: 140, h: 100, type: 'BUNKER', name: 'South Bastion Outpost' },
         { x: 1470, y: 830, w: 160, h: 115, type: 'MANUFACTORUM', name: 'Old Timber Mill' },
         { x: 210, y: 430, w: 130, h: 105, type: 'CATHEDRAL', name: 'Hermit Chapel Ruins' }
       ];
@@ -38403,16 +38405,16 @@ class NetEpicScene extends Phaser.Scene {
         { x: 170, y: 950, r: 90 },
         { x: 1100, y: 230, r: 100 },
         { x: 1650, y: 250, r: 110 },
-        { x: 610, y: 570, r: 95 },
+        { x: 500, y: 560, r: 85 },
         { x: 1250, y: 630, r: 105 },
         { x: 1040, y: 930, r: 95 }
       ];
       this.objectives = [
         { id: 1, name: 'Obj #1 (North Auspex)', x: sX(635), y: sY(267), owner: 'NEUTRAL' },
-        { id: 2, name: 'Obj #2 (Shrine Ruins)', x: sX(925), y: sY(610), owner: 'NEUTRAL' },
+        { id: 2, name: 'Obj #2 (Shrine Ruins)', x: sX(735), y: sY(535), owner: 'NEUTRAL' },
         { id: 3, name: 'Obj #3 (Timber Mill)', x: sX(1550), y: sY(887), owner: 'NEUTRAL' },
         { id: 4, name: 'Obj #4 (Hermit Chapel)', x: sX(275), y: sY(482), owner: 'NEUTRAL' },
-        { id: 5, name: 'Obj #5 (South Bastion)', x: sX(670), y: sY(960), owner: 'NEUTRAL' }
+        { id: 5, name: 'Obj #5 (South Bastion)', x: sX(790), y: sY(1010), owner: 'NEUTRAL' }
       ];
       if (scaleX > 1.15) {
         this.objectives.push(
@@ -44030,7 +44032,7 @@ class NetEpicScene extends Phaser.Scene {
   roadPath(pts, width, name) { return pts.slice(0, -1).map((p, i) => ({ x1: p.x, y1: p.y, x2: pts[i + 1].x, y2: pts[i + 1].y, width, name, cap: true, noLabel: i !== Math.floor((pts.length - 1) / 2) })); }
 
   loadExtraMap(preset, scaleX, scaleY) {
-    const MAPS = ['RIVER', 'SNOW', 'DESERT', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE'];
+    const MAPS = ['RIVER', 'SNOW', 'DESERT', 'PASS', 'HIGHWAY', 'FORTIFIED'];
     if (!MAPS.includes(preset)) return false;
     const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) });
     const Ps = arr => arr.map(([x, y]) => P(x, y));
@@ -44148,54 +44150,17 @@ class NetEpicScene extends Phaser.Scene {
       this.woods = [W(130, 900, 70), W(1760, 860, 70)];
       this.objectives = [O(1, 'The Gate', 940, 470), O(2, 'Strongpoint Alpha', 250, 370), O(3, 'Strongpoint Omega', 1620, 370), O(4, 'Command Hill', 560, 210), O(5, 'Shell-Hole Crossroads', 990, 800)];
       flank('West Wire', 'East Wire');
-    } else if (preset === 'HIVE') {
-      // Hive complex: two boulevards cross on the diagonal, blocks follow the street angles, a fallen spire blocks one quarter
-      this.roads = [...this.roadPath(Ps([[0, 330], [898, 646], [1850, 980]]), 44, 'Hive Spine Boulevard (+5cm Move)'),
-        ...this.roadPath(Ps([[560, 1250], [898, 646], [1260, 0]]), 38, 'Transit Way (+5cm Move)')];
-      const a = 0.34, c = 0.51;
-      this.buildings = [B('MANUFACTORUM', 'Manufactorum Primus', 250, 180, 180, 125, a), B('HAB_BLOCK', 'Hab-Stack Alpha', 560, 200, 150, 110, c),
-        B('CATHEDRAL', 'Ecclesiarchy Chapel', 850, 180, 170, 120, c), B('BUNKER', 'Spine Gate Bastion', 520, 370, 140, 100, a),
-        B('SILO', 'Power Silos', 780, 420, 130, 100, c), B('MANUFACTORUM', 'Manufactorum Secundus', 1450, 250, 180, 125, a),
-        B('CATHEDRAL', 'Archive Spire', 1700, 450, 170, 120, -0.15), B('HAB_BLOCK', 'Hab-Stack Beta', 1250, 480, 150, 110, a),
-        B('BUNKER', 'Aegis Redoubt', 1550, 680, 140, 100, a), B('HAB_BLOCK', 'Hab-Stack Gamma', 250, 700, 150, 110, a),
-        B('MANUFACTORUM', 'Munitorum Armoury', 200, 1010, 180, 125, c), B('BUNKER', 'Comms Relay', 500, 1060, 130, 95, c),
-        B('SILO', 'Promethium Silos', 1150, 960, 140, 105, a), B('MANUFACTORUM', 'Foundry Delta', 1500, 1120, 180, 125, a),
-        B('HAB_BLOCK', 'Hab-Stack Delta', 1000, 1150, 150, 110, c)];
-      this.rocks = [{ name: 'Fallen Spire (rubble)', points: Ps([[450, 720], [560, 690], [620, 760], [570, 830], [470, 820]]) }];
-      this.craters = [E({ x: 300, y: 560, rx: 24 }), E({ x: 1300, y: 620, rx: 22 }), E({ x: 800, y: 950, rx: 22 }), E({ x: 1020, y: 330, rx: 24 })];
-      this.objectives = [O(1, 'Spire Plaza', 898, 646), O(2, 'Manufactorum Primus', 250, 180), O(3, 'Manufactorum Secundus', 1450, 250), O(4, 'Foundry Delta', 1500, 1120), O(5, 'Munitorum Armoury', 200, 1010)];
-      flank('West Underhive', 'East Underhive');
     }
     return true;
   }
 
   // Break up the grid on the older maps: turn some buildings and angle some roads
   degridMap(preset) {
-    const turn = (rots) => this.buildings.forEach(b => { if (rots[b.name] != null) b.rot = rots[b.name]; });
-    if (preset === 'INDUSTRIAL') {
-      turn({ 'Manufactorum Primus': 0.22, 'Promethium Depot': -0.35, 'Command Bunker Delta': 0.3, 'Hab-Block Tertius': -0.25, 'Munitorum Warehouse': 0.15 });
-      this.buildings.forEach(b => { if (b.name === 'Munitorum Warehouse') b.y = 840; });
-      this.roads = [
-        ...this.roadPath([{ x: 960, y: 0 }, { x: 925, y: 625 }, { x: 890, y: BOARD_H }], 36, 'Imperial Highway (+5cm Move)'),
-        ...this.roadPath([{ x: 100, y: 700 }, { x: 925, y: 625 }, { x: BOARD_W - 100, y: 600 }], 32, 'Sector Ring Road (+5cm Move)'),
-        { x1: 940, y1: 330, x2: 1650, y2: 200, width: 28, name: 'Factory Spur (+5cm Move)', cap: true },
-        ...this.roadPath([{ x: 200, y: 1080 }, { x: 600, y: 1060 }, { x: 905, y: 950 }], 28, 'Depot Spur (+5cm Move)')];
-    } else if (preset === 'RUINED_CITY') {
-      turn({ 'Manufactorum Primus Ruin': 0.1, 'Hab-Block Primus': -0.12, 'Sub-Sector Power Silos': 0.06, 'Ecclesiarchy Archive Ruins': -0.1, 'Manufactorum Secundus Ruin': 0.08,
-        'Emergency Fuel Depot': -0.06, 'Hab-Block Secundus': 0.12, 'Munitorum Armory Ruins': -0.08, 'Hab-Block Tertius': 0.15, 'Sector Promethium Silos': 0.2, 'Foundry Complex Delta': -0.1, 'Hab-Block Quartus': -0.15 });
-      this.roads = this.roads.map(r => r.name.startsWith('North Scriptorum') ? { ...r, y1: 335, y2: 375 } : r.name.startsWith('South Manufactory') ? { ...r, y1: 885, y2: 845 } : r);
-      this.craters = [{ x: 680, y: 830, rx: 22 }, { x: 1180, y: 410, rx: 24 }, { x: 330, y: 625, rx: 18 }];
-    } else if (preset === 'FOREST') {
-      turn({ 'Shrine of the Primarch': 0.2, 'North Auspex Bunker': -0.3, 'Promethium Wellhead': 0.4, 'South Bastion Outpost': 0.25, 'Old Timber Mill': -0.2, 'Hermit Chapel Ruins': 0.35 });
+    if (preset === 'FOREST') {
       this.hills = [{ x: 1500, y: 560, rx: 120, ry: 55, rot: -0.3, name: 'Mossy Knoll' }];
-    } else if (preset === 'RANDOM') {
-      this.buildings.forEach(b => { if (Math.random() < 0.75) b.rot = Phaser.Math.FloatBetween(-0.55, 0.55); });
-      this.roads = this.roads.map(r => r.x1 === r.x2 ? { ...r, x1: r.x1 + Phaser.Math.Between(-120, 120), x2: r.x2 + Phaser.Math.Between(-120, 120) }
-        : (r.y1 === r.y2 && !(this.rivers || []).length) ? { ...r, y1: r.y1 + Phaser.Math.Between(-70, 70), y2: r.y2 + Phaser.Math.Between(-70, 70) } : r);
-      if (Math.random() < 0.6) this.hills = [{ x: Phaser.Math.Between(300, BOARD_W - 300), y: Phaser.Math.Between(420, 820), rx: Phaser.Math.Between(100, 160), ry: Phaser.Math.Between(45, 70), rot: Phaser.Math.FloatBetween(-0.6, 0.6), name: 'Hill' }];
-      if (Math.random() < 0.5) this.craters = Array.from({ length: Phaser.Math.Between(2, 5) }, () => ({ x: Phaser.Math.Between(150, BOARD_W - 150), y: Phaser.Math.Between(400, 850), rx: Phaser.Math.Between(18, 28) }));
-      this.settleBuildings();
     }
+    this.tidyRoadNetwork();
+    if (!['RUINED_CITY', 'HIVE', 'INDUSTRIAL', 'RANDOM'].includes(preset)) this.alignBuildingsToRoads();
   }
   // Push buildings off roads and out of each other (random maps)
   settleBuildings() {
@@ -44209,9 +44174,19 @@ class NetEpicScene extends Phaser.Scene {
           let nx = -dy / L, ny = dx / L; if ((c.x - r.x1) * nx + (c.y - r.y1) * ny < 0) { nx = -nx; ny = -ny; }
           b.x = Phaser.Math.Clamp(b.x + nx * 24, 20, BOARD_W - b.w - 20); b.y = Phaser.Math.Clamp(b.y + ny * 24, 20, BOARD_H - b.h - 20); moved = true;
         }
+        // keep buildings out of a straight river band
+        (this.rivers || []).forEach(rv => {
+          if (rv.points) return;
+          const ys = this.rectCorners(b).map(p => p.y), top = Math.min(...ys), bot = Math.max(...ys);
+          if (bot < rv.y - 12 || top > rv.y + rv.h + 12) return;
+          const c = this.bCenter(b), up = c.y < rv.y + rv.h / 2;
+          b.y += up ? (rv.y - 20 - bot) : (rv.y + rv.h + 20 - top); moved = true;
+        });
       });
       if (!moved) break;
     }
+    // objectives that ended up in the river move to the nearer bank
+    (this.rivers || []).forEach(rv => { if (rv.points) return; this.objectives.forEach(o => { if (this.isPointInImpassableRiver(o.x, o.y)) o.y = o.y < rv.y + rv.h / 2 ? rv.y - 40 : rv.y + rv.h + 40; }); });
   }
 
   // ===== SCENARIOS: zones, objectives, special rules and how the game ends =====
@@ -44460,6 +44435,269 @@ class NetEpicScene extends Phaser.Scene {
     div.innerHTML = `<b>🗺️ Campaign</b> — ${c && c.finished ? c.resultText : `next battle: ${c ? CAMPAIGN_NODES[c.node].title : ''}`}<br>${(this._campNotes || []).map(t => '🎖️ ' + t).join('<br>')}<div style="margin-top:8px"><button id="br-camp" style="padding:7px 12px;border-radius:8px;background:#1d4ed8;color:#fff;border:0;font-weight:800">🗺️ Back to the campaign</button></div>`;
     box.appendChild(div);
     div.querySelector('#br-camp').onclick = () => { m.style.display = 'none'; window.campaignBattle = null; window.renderCampaignModal(); };
+  }
+
+  // ===== CITY DISTRICTS: blocks of buildings on a shared grid angle, with streets that run between main roads =====
+  seededRand(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  // Pieces of the infinite line through o (direction d) that lie inside the polygon
+  clipLineToPoly(o, d, poly) {
+    const ts = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], ex = b.x - a.x, ey = b.y - a.y, den = d.x * ey - d.y * ex;
+      if (Math.abs(den) < 1e-9) continue;
+      const t = ((a.x - o.x) * ey - (a.y - o.y) * ex) / den, u = ((a.x - o.x) * d.y - (a.y - o.y) * d.x) / den;
+      if (u >= -1e-6 && u <= 1 + 1e-6) ts.push(t);
+    }
+    ts.sort((p, q) => p - q);
+    const out = [];
+    for (let i = 0; i < ts.length - 1; i++) {
+      if (ts[i + 1] - ts[i] < 1) continue;
+      const m = (ts[i] + ts[i + 1]) / 2;
+      if (this.inPoly(poly, o.x + d.x * m, o.y + d.y * m)) out.push([{ x: o.x + d.x * ts[i], y: o.y + d.y * ts[i] }, { x: o.x + d.x * ts[i + 1], y: o.y + d.y * ts[i + 1] }]);
+    }
+    return out;
+  }
+  distToPolyEdge(poly, x, y) { return this.distToPolyline([...poly, poly[0]], x, y); }
+  // spec: { poly:[{x,y}], origin:{x,y}, rot, pitch:[px,py], street, fill, names:[], types:[], seed, maxW, maxH, parks }
+  buildDistrict(spec) {
+    const rnd = this.seededRand(spec.seed || 1), r = spec.rot, ux = Math.cos(r), uy = Math.sin(r), vx = -uy, vy = ux;
+    const [px, py] = spec.pitch, poly = spec.poly, o = spec.origin, st = spec.street || 24;
+    const proj = (p, ax, ay) => (p.x - o.x) * ax + (p.y - o.y) * ay;
+    const uMin = Math.min(...poly.map(p => proj(p, ux, uy))), uMax = Math.max(...poly.map(p => proj(p, ux, uy)));
+    const vMin = Math.min(...poly.map(p => proj(p, vx, vy))), vMax = Math.max(...poly.map(p => proj(p, vx, vy)));
+    const i0 = Math.floor(uMin / px), i1 = Math.ceil(uMax / px), j0 = Math.floor(vMin / py), j1 = Math.ceil(vMax / py);
+    const streets = [];
+    const addLine = (base, dir) => this.clipLineToPoly(base, dir, poly).forEach(([a, b]) => {
+      const len = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y), m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (len < 90 || this.distToPolyEdge(poly, m.x, m.y) < 60) return; // too short, or hugging a main road
+      if ((this.rocks || []).some(rk => this.lineHitsPoly(rk.points, a.x, a.y, b.x, b.y))) return; // not through rubble
+      streets.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, width: st, name: spec.streetName || 'Street (+5cm Move)', cap: true, noLabel: true });
+    });
+    for (let i = i0; i <= i1; i++) addLine({ x: o.x + ux * i * px, y: o.y + uy * i * px }, { x: vx, y: vy });
+    for (let j = j0; j <= j1; j++) addLine({ x: o.x + vx * j * py, y: o.y + vy * j * py }, { x: ux, y: uy });
+    const blds = [], empty = [], m = spec.margin || 18;
+    const w0 = Math.min(spec.maxW || 190, px - st - 2 * m), h0 = Math.min(spec.maxH || 135, py - st - 2 * m);
+    let k = 0;
+    for (let i = i0; i < i1; i++) for (let j = j0; j < j1; j++) {
+      const c = { x: o.x + ux * (i + 0.5) * px + vx * (j + 0.5) * py, y: o.y + uy * (i + 0.5) * px + vy * (j + 0.5) * py };
+      const jw = 0.85 + rnd() * 0.15, jh = 0.85 + rnd() * 0.15;
+      let b = null, corners = null;
+      for (const k2 of [1, 0.8, 0.64]) { // blocks cut by a main road get a smaller building
+        const w = Math.round(w0 * jw * k2), h = Math.round(h0 * jh * k2);
+        if (w < 90 || h < 70) break;
+        const cand = { x: c.x - w / 2, y: c.y - h / 2, w, h, rot: r }, cs = this.rectCorners(cand);
+        if (cs.every(p => this.inPoly(poly, p.x, p.y) && this.distToPolyEdge(poly, p.x, p.y) >= (spec.edgeGap || 34) && p.x > 15 && p.y > 15 && p.x < BOARD_W - 15 && p.y < BOARD_H - 15)) { b = cand; corners = cs; break; }
+      }
+      if (!b) continue;
+      const clash = (this.rocks || []).some(rk => corners.some(p => this.inPoly(rk.points, p.x, p.y)) || this.inPoly(rk.points, c.x, c.y)) ||
+        this.buildings.some(ob => corners.some(p => this.pointInRect(ob, p.x, p.y, 10)) || this.pointInRect(ob, c.x, c.y, 10)) ||
+        streets.some(sr => this.lineHitsRect(b, sr.x1, sr.y1, sr.x2, sr.y2, -st / 2));
+      if (clash) continue;
+      if (rnd() > (spec.fill || 0.75)) { empty.push(c); continue; }
+      const type = spec.types[k % spec.types.length], name = spec.names[k % spec.names.length]; k++;
+      blds.push({ ...b, type, name });
+    }
+    this.roads.push(...streets);
+    this.buildings.push(...blds);
+    // empty blocks become little parks or rubble
+    empty.forEach((c, i) => { if (i % 3 === 0 && (spec.parks !== false)) this.woods.push({ x: Math.round(c.x), y: Math.round(c.y), r: 42 }); else if (i % 3 === 1) (this.craters = this.craters || []).push({ x: Math.round(c.x), y: Math.round(c.y), rx: 20 }); });
+    return blds;
+  }
+  nearestBuildingTo(x, y) { return this.buildings.reduce((best, b) => { const c = this.bCenter(b), d = Phaser.Math.Distance.Between(x, y, c.x, c.y); return !best || d < best.d ? { b, d } : best; }, null).b; }
+
+  // ===== Random map: a joined-up road network first, then buildings facing the roads on clear ground =====
+  loadRandomMap(scaleX, scaleY) {
+    const R = (a, b) => Phaser.Math.Between(a, b), F = (a, b) => Phaser.Math.FloatBetween(a, b);
+    const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) });
+    this.roads = []; this.rivers = []; this.bridges = []; this.dirtTracks = []; this.buildings = []; this.woods = []; this.fields = [];
+    if (Math.random() < 0.4) {
+      const ry = R(560, 640), pts = [P(0, ry + R(-40, 40)), P(R(350, 500), ry + R(-50, 50)), P(R(800, 1050), ry + R(-50, 50)), P(R(1350, 1500), ry + R(-50, 50)), P(1850, ry + R(-40, 40))];
+      const river = { points: pts, width: 100, name: 'Slag River (impassable except bridges)' };
+      this.rivers = [river];
+      const bx1 = X(R(380, 620)), bx2 = X(R(1200, 1450)), b1 = this.bridgeAt(river, bx1, 180, 52, 'West Crossing'), b2 = this.bridgeAt(river, bx2, 180, 52, 'East Crossing');
+      const bf = this.bridgeAt(river, X(R(860, 990)), 190, 70, 'Central Ford', true);
+      this.bridges = [b1, b2, bf];
+      const ends = br => br.y1 < br.y2 ? [{ x: br.x1, y: br.y1 }, { x: br.x2, y: br.y2 }] : [{ x: br.x2, y: br.y2 }, { x: br.x1, y: br.y1 }];
+      [[b1, 'West Sector Road (+5cm Move)'], [b2, 'East Sector Road (+5cm Move)']].forEach(([br, name]) => {
+        const [n, s] = ends(br);
+        this.roads.push(...this.roadPath([{ x: n.x + X(R(-120, 120)), y: 0 }, { x: n.x + X(R(-50, 50)), y: n.y - Y(R(120, 200)) }, n], 32, name),
+          ...this.roadPath([s, { x: s.x + X(R(-50, 50)), y: s.y + Y(R(120, 200)) }, { x: s.x + X(R(-120, 120)), y: BOARD_H }], 32, name).map(r => ({ ...r, noLabel: true })));
+      });
+      const [fn, fs] = ends(bf);
+      this.dirtTracks.push({ points: [{ x: fn.x + X(R(-80, 80)), y: 0 }, fn], width: 14, name: 'Ford Track' }, { points: [fs, { x: fs.x + X(R(-80, 80)), y: BOARD_H }], width: 14, name: 'Ford Track' });
+      const ly = ry - R(170, 230);
+      this.roads.push(...this.roadPath([P(0, ly + R(-40, 40)), P(925, ly + R(-30, 30)), P(1850, ly + R(-40, 40))], 28, 'North Bank Road (+5cm Move)'));
+    } else {
+      const hx = R(820, 1030), wy = R(560, 690);
+      this.roads.push(...this.roadPath([P(hx + R(-150, 150), 0), P(hx, wy), P(hx + R(-150, 150), 1250)], 34, 'Sector Highway (+5cm Move)'),
+        ...this.roadPath([P(0, wy + R(-90, 90)), P(hx, wy), P(1850, wy + R(-90, 90))], 32, 'Trans-Sector Road (+5cm Move)'));
+      // a spur from the highway to a side edge
+      const t = F(0.2, 0.35), north = Math.random() < 0.5, a = north ? P(hx + R(-150, 150), 0) : P(hx, wy), seg = this.roads[north ? 0 : 1];
+      const j = { x: Math.round(seg.x1 + (seg.x2 - seg.x1) * (north ? 1 - t : t)), y: Math.round(seg.y1 + (seg.y2 - seg.y1) * (north ? 1 - t : t)) };
+      const east = Math.random() < 0.5;
+      this.roads.push(...this.roadPath([j, { x: east ? BOARD_W : 0, y: j.y + Y(R(-140, 140)) }], 26, north ? 'North Lateral Spur (+5cm Move)' : 'South Lateral Spur (+5cm Move)'));
+      void a;
+    }
+    const roadNear = (x, y) => { let best = null; this.roads.forEach(r => { const d = this.distToPolyline([{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }], x, y); if (!best || d < best.d) best = { d, r }; }); return best; };
+    const wet = (x, y) => this.rivers.some(rv => this.distToPolyline(rv.points, x, y) <= rv.width / 2 + 20);
+    const T = [
+      { name: "St. Katherine's Basilica", type: 'CATHEDRAL', w: 200, h: 145 }, { name: 'Manufactorum Primus', type: 'MANUFACTORUM', w: 170, h: 125 },
+      { name: 'Command Bunker Delta', type: 'BUNKER', w: 140, h: 100 }, { name: 'Promethium Storage Vats', type: 'SILO', w: 150, h: 115 },
+      { name: 'Hab-Block Tertius', type: 'HAB_BLOCK', w: 150, h: 110 }, { name: 'Munitorum Armoury', type: 'MANUFACTORUM', w: 160, h: 115 },
+      { name: 'Forward Bastion Redoubt', type: 'BUNKER', w: 140, h: 100 }];
+    const sectors = [[180, 160, 640, 380], [1210, 160, 1670, 380], [560, 440, 1290, 820], [140, 440, 560, 820], [1290, 440, 1710, 820], [180, 870, 640, 1090], [1210, 870, 1670, 1090]];
+    sectors.forEach((sec, i) => {
+      const t = T[i % T.length];
+      for (let k = 0; k < 250; k++) {
+        const c = { x: X(R(sec[0], sec[2])), y: Y(R(sec[1], sec[3])) }, n = roadNear(c.x, c.y);
+        let rot = F(-0.3, 0.3);
+        if (n && n.d < 260) { let a = Math.atan2(n.r.y2 - n.r.y1, n.r.x2 - n.r.x1) % (Math.PI / 2); if (a > Math.PI / 4) a -= Math.PI / 2; if (a < -Math.PI / 4) a += Math.PI / 2; rot = a; }
+        const b = { x: c.x - t.w / 2, y: c.y - t.h / 2, w: t.w, h: t.h, rot, type: t.type, name: t.name }, cs = this.rectCorners(b, 20);
+        if (cs.some(p => p.x < 20 || p.y < 20 || p.x > BOARD_W - 20 || p.y > BOARD_H - 20 || wet(p.x, p.y))) continue;
+        if (this.roads.some(r => this.lineHitsRect(b, r.x1, r.y1, r.x2, r.y2, -((r.width || 30) / 2 + 18)))) continue;
+        if (this.dirtTracks.some(tk => tk.points.some((p, q) => q > 0 && this.lineHitsRect(b, tk.points[q - 1].x, tk.points[q - 1].y, p.x, p.y, -16)))) continue;
+        if (this.buildings.some(o => this.rectCorners(o, 30).some(p => this.pointInRect(b, p.x, p.y)) || cs.some(p => this.pointInRect(o, p.x, p.y, 30)))) continue;
+        if (n && n.d < 200 && Math.random() < 0.5) continue; // not every building hugs a road
+        this.buildings.push(b); break;
+      }
+    });
+    // tracks from the nearest road to two of the buildings
+    this.buildings.filter((b, i) => i === 0 || i === 3).forEach(b => {
+      const c = this.bCenter(b), n = roadNear(c.x, c.y); if (!n || n.d < 140) return;
+      const r = n.r, l2 = Phaser.Math.Distance.Squared(r.x1, r.y1, r.x2, r.y2) || 1, tt = Phaser.Math.Clamp(((c.x - r.x1) * (r.x2 - r.x1) + (c.y - r.y1) * (r.y2 - r.y1)) / l2, 0, 1);
+      const s = { x: Math.round(r.x1 + tt * (r.x2 - r.x1)), y: Math.round(r.y1 + tt * (r.y2 - r.y1)) }, d = Phaser.Math.Distance.Between(s.x, s.y, c.x, c.y), k = Math.min(b.w, b.h) / 2;
+      const e = { x: Math.round(c.x + (s.x - c.x) / d * k), y: Math.round(c.y + (s.y - c.y) / d * k) };
+      if (this.buildings.some(o => o !== b && this.lineHitsRect(o, s.x, s.y, e.x, e.y, -10)) || (this.rivers.length && this.rivers.some(rv => this.polylineCrossed(rv.points, s.x, s.y, e.x, e.y)))) return;
+      this.dirtTracks.push({ points: [s, { x: Math.round((s.x + e.x) / 2 + R(-25, 25)), y: Math.round((s.y + e.y) / 2 + R(-25, 25)) }, e], width: 14, name: 'Farm Track' });
+    });
+    // woods and fields on open ground
+    const clearOf = (x, y, r) => !wet(x, y) && x > r && y > r && x < BOARD_W - r && y < BOARD_H - r && this.roads.every(rd => this.distToPolyline([{ x: rd.x1, y: rd.y1 }, { x: rd.x2, y: rd.y2 }], x, y) > r + (rd.width || 30) / 2 + 10) &&
+      this.buildings.every(b => this.distToRect(b, x, y) > r + 20) && this.woods.every(w => Phaser.Math.Distance.Between(w.x, w.y, x, y) > w.r + r + 40) && this.dirtTracks.every(tk => this.distToPolyline(tk.points, x, y) > r + 12);
+    for (let k = 0, n = R(5, 7); k < 300 && this.woods.length < n; k++) { const r = R(70, 95), x = R(r, BOARD_W - r), y = R(r, BOARD_H - r); if (clearOf(x, y, r)) this.woods.push({ x, y, r }); }
+    for (let k = 0; k < 200 && this.fields.length < 3; k++) {
+      const w = R(200, 280), h = R(140, 180), x = R(40, BOARD_W - w - 40), y = R(40, BOARD_H - h - 40), c = { x: x + w / 2, y: y + h / 2 };
+      if (!clearOf(c.x, c.y, Math.hypot(w, h) / 2 - 20)) continue;
+      this.fields.push({ x, y, w, h, boundary: this.fields.length % 2 ? 'HEDGE' : 'WALL', color: [0x3d6830, 0x487635, 0x527d3b][this.fields.length], alpha: 0.22, name: ['Pasture', 'Paddock', 'Enclosure'][this.fields.length] });
+    }
+    if (Math.random() < 0.6) for (let k = 0; k < 80; k++) { const h = { x: R(300, BOARD_W - 300), y: R(420, 820), rx: R(100, 150), ry: R(45, 65), rot: F(-0.6, 0.6), name: 'Hill' }; if (clearOf(h.x, h.y, h.rx)) { this.hills = [h]; break; } }
+    if (Math.random() < 0.5) this.craters = Array.from({ length: R(2, 5) }, () => ({ x: R(150, BOARD_W - 150), y: R(400, 850), rx: R(18, 28) })).filter(c => clearOf(c.x, c.y, c.rx));
+    const labels = ['North-West Sector', 'North-East Sector', 'Central Objective', 'West Flank Sector', 'East Flank Sector', 'South-West Sector', 'South-East Sector'];
+    const picks = [2, 0, 1, 6, 3].map(i => this.buildings.find(b => b.name === T[i].name)).filter(Boolean);
+    this.objectives = picks.map((b, i) => { const c = this.bCenter(b); return { id: i + 1, name: `Obj #${i + 1} (${labels[T.findIndex(t => t.name === b.name)]})`, x: Math.round(c.x), y: Math.round(c.y), owner: 'NEUTRAL' }; });
+    return true;
+  }
+
+  // ===== Hand-made city maps =====
+  loadCityMap(preset, scaleX, scaleY) {
+    if (preset === 'RANDOM') return this.loadRandomMap(scaleX, scaleY);
+    const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) }), Ps = a => a.map(([x, y]) => P(x, y));
+    const objAt = (id, b, label) => { const c = this.bCenter(b); return { id, name: `Obj #${id} (${label || b.name})`, x: Math.round(c.x), y: Math.round(c.y), owner: 'NEUTRAL' }; };
+    const flank = (w, e) => { if (scaleX > 1.15) this.objectives.push({ id: 6, name: `Obj #6 (${w})`, x: X(120), y: Y(625), owner: 'NEUTRAL' }, { id: 7, name: `Obj #7 (${e})`, x: X(1730), y: Y(625), owner: 'NEUTRAL' }); };
+    if (preset === 'RUINED_CITY') {
+      // Two boulevards cross at the Basilica plaza; each quarter of the city has its own street grid
+      const ring = Ps([[735, 470], [1115, 470], [1115, 780], [735, 780]]);
+      this.roads = [
+        ...this.roadPath(Ps([[880, 0], [915, 470]]), 42, 'Imperial Boulevard (+5cm Move)'),
+        ...this.roadPath(Ps([[935, 780], [980, 1250]]), 42, 'Imperial Boulevard (+5cm Move)').map(r => ({ ...r, noLabel: true })),
+        ...this.roadPath(Ps([[0, 660], [735, 632]]), 36, 'Trans-Sector Avenue (+5cm Move)'),
+        ...this.roadPath(Ps([[1115, 618], [1850, 560]]), 36, 'Trans-Sector Avenue (+5cm Move)').map(r => ({ ...r, noLabel: true })),
+        ...this.roadPath([...ring, ring[0]], 30, 'Basilica Plaza (+5cm Move)').map((r, i) => ({ ...r, noLabel: i !== 0 }))];
+      const c = this.bCenter({ x: ring[0].x, y: ring[0].y, w: ring[1].x - ring[0].x, h: ring[2].y - ring[1].y });
+      const basilica = { x: c.x - 135, y: c.y - 110, w: 270, h: 220, rot: 0, type: 'CATHEDRAL', name: "St. Katherine's Basilica" };
+      this.buildings = [basilica];
+      const D = (poly, origin, rot, seed, names, types) => this.buildDistrict({ poly: Ps(poly), origin: P(...origin), rot, pitch: [275, 200], street: 24, fill: 0.88, seed, names, types, maxW: 205, maxH: 140 });
+      D([[0, 0], [880, 0], [915, 470], [735, 470], [735, 632], [0, 660]], [400, 330], -0.08, 11, ['Scriptorum Archive', 'Hab-Block Primus', 'Citadel Gate Bastion', 'Power Silos', 'Administratum Annex', 'Hab-Block Secundus', 'Librarium Ruins', 'Tithe Hall'], ['MANUFACTORUM', 'HAB_BLOCK', 'BUNKER', 'SILO', 'HAB_BLOCK', 'HAB_BLOCK', 'CATHEDRAL', 'HAB_BLOCK']);
+      D([[880, 0], [1850, 0], [1850, 560], [1115, 618], [1115, 470], [915, 470]], [1400, 280], 0.32, 23, ['Ecclesiarchy Archive', 'Manufactorum Secundus', 'Fuel Depot', 'Aegis Redoubt', 'Hab-Block Tertius', 'Pilgrim Hostel', 'Signal Tower', 'Hab-Block Quartus'], ['CATHEDRAL', 'MANUFACTORUM', 'SILO', 'BUNKER', 'HAB_BLOCK', 'HAB_BLOCK', 'BUNKER', 'HAB_BLOCK']);
+      D([[0, 660], [735, 632], [735, 780], [935, 780], [980, 1250], [0, 1250]], [420, 950], 0.22, 37, ['Munitorum Armoury', 'Hab-Block Quintus', 'Comms Relay', 'Water Works', 'Hab-Block Sextus', 'Guard Barracks', 'Ration Store', 'Hab-Block Septimus'], ['MANUFACTORUM', 'HAB_BLOCK', 'BUNKER', 'SILO', 'HAB_BLOCK', 'BUNKER', 'MANUFACTORUM', 'HAB_BLOCK']);
+      D([[1115, 618], [1850, 560], [1850, 1250], [980, 1250], [935, 780], [1115, 780]], [1420, 920], -0.15, 41, ['Foundry Complex', 'Promethium Silos', 'Hab-Block Octavus', 'Highway Redoubt', 'Forge Shrine', 'Hab-Block Nonus', 'Transit Depot', 'Cooling Towers'], ['MANUFACTORUM', 'SILO', 'HAB_BLOCK', 'BUNKER', 'CATHEDRAL', 'HAB_BLOCK', 'MANUFACTORUM', 'SILO']);
+      this.objectives = [objAt(1, this.nearestBuildingTo(X(290), Y(250))), objAt(2, basilica, 'Central Basilica'), objAt(3, this.nearestBuildingTo(X(1300), Y(250))), objAt(4, this.nearestBuildingTo(X(1570), Y(1000))), objAt(5, this.nearestBuildingTo(X(290), Y(1000)))];
+      flank('West Avenue', 'East Avenue');
+      return true;
+    }
+    if (preset === 'HIVE') {
+      // Two boulevards cross on the diagonal; each quarter's blocks follow the boulevard beside them
+      this.roads = [...this.roadPath(Ps([[0, 330], [898, 646], [1850, 980]]), 44, 'Hive Spine Boulevard (+5cm Move)'),
+        ...this.roadPath(Ps([[560, 1250], [898, 646], [1260, 0]]), 38, 'Transit Way (+5cm Move)')];
+      this.rocks = [{ name: 'Fallen Spire (rubble)', points: Ps([[450, 720], [560, 690], [620, 760], [570, 830], [470, 820]]) }];
+      this.buildings = [];
+      const spine = Math.atan2(Y(646) - Y(330), X(898)), transit = Math.atan2(Y(0) - Y(646), X(1260) - X(898)) + Math.PI / 2;
+      const D = (poly, origin, rot, seed, names, types) => this.buildDistrict({ poly: Ps(poly), origin: P(...origin), rot, pitch: [235, 180], street: 24, fill: 0.8, seed, names, types, parks: false });
+      D([[0, 0], [1260, 0], [898, 646], [0, 330]], [450, 220], spine, 5, ['Manufactorum Primus', 'Hab-Stack Alpha', 'Ecclesiarchy Chapel', 'Spine Gate Bastion', 'Power Silos', 'Hab-Stack Alpha-II'], ['MANUFACTORUM', 'HAB_BLOCK', 'CATHEDRAL', 'BUNKER', 'SILO', 'HAB_BLOCK']);
+      D([[1260, 0], [1850, 0], [1850, 980], [898, 646]], [1450, 350], transit, 9, ['Manufactorum Secundus', 'Archive Spire', 'Hab-Stack Beta', 'Aegis Redoubt', 'Coolant Plant', 'Hab-Stack Beta-II'], ['MANUFACTORUM', 'CATHEDRAL', 'HAB_BLOCK', 'BUNKER', 'SILO', 'HAB_BLOCK']);
+      D([[898, 646], [1850, 980], [1850, 1250], [560, 1250]], [1350, 1060], spine, 13, ['Foundry Delta', 'Promethium Silos', 'Hab-Stack Delta', 'Underhive Gate', 'Hab-Stack Delta-II'], ['MANUFACTORUM', 'SILO', 'HAB_BLOCK', 'BUNKER', 'HAB_BLOCK']);
+      D([[0, 330], [898, 646], [560, 1250], [0, 1250]], [330, 860], transit, 17, ['Munitorum Armoury', 'Hab-Stack Gamma', 'Comms Relay', 'Water Reclamation', 'Hab-Stack Gamma-II'], ['MANUFACTORUM', 'HAB_BLOCK', 'BUNKER', 'SILO', 'HAB_BLOCK']);
+      this.craters = [...(this.craters || []), { x: X(1300), y: Y(620), rx: 22 }, { x: X(1020), y: Y(330), rx: 24 }];
+      this.objectives = [{ id: 1, name: 'Obj #1 (Spire Plaza)', x: X(898), y: Y(646), owner: 'NEUTRAL' }, objAt(2, this.nearestBuildingTo(X(250), Y(180))), objAt(3, this.nearestBuildingTo(X(1450), Y(250))), objAt(4, this.nearestBuildingTo(X(1500), Y(1120))), objAt(5, this.nearestBuildingTo(X(200), Y(1010)))];
+      flank('West Underhive', 'East Underhive');
+      return true;
+    }
+    if (preset === 'INDUSTRIAL') {
+      // Farmland in the west, a factory estate in the north-east, all roads joined up
+      this.roads = [
+        ...this.roadPath(Ps([[960, 0], [925, 625], [890, 1250]]), 36, 'Imperial Highway (+5cm Move)'),
+        ...this.roadPath(Ps([[0, 700], [925, 625], [1850, 600]]), 32, 'Sector Ring Road (+5cm Move)'),
+        ...this.roadPath(Ps([[940, 330], [1850, 180]]), 28, 'Factory Spur (+5cm Move)'),
+        ...this.roadPath(Ps([[0, 1080], [600, 1060], [906, 950]]), 28, 'Depot Spur (+5cm Move)')];
+      const ring = Math.atan2(Y(600) - Y(625), X(1850) - X(925)), ringW = Math.atan2(Y(625) - Y(700), X(925)), spur = Math.atan2(Y(180) - Y(330), X(1850) - X(940)), depot = Math.atan2(Y(950) - Y(1060), X(906) - X(600));
+      const B = (type, name, cx, cy, w, h, rot) => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h, rot, type, name });
+      this.buildings = [B('CATHEDRAL', "St. Katherine's Basilica", 690, 525, 220, 150, ringW), B('BUNKER', 'Command Bunker Delta', 300, 560, 140, 100, ringW),
+        B('HAB_BLOCK', 'Hab-Block Tertius', 330, 270, 150, 110, -0.25), B('MANUFACTORUM', 'Munitorum Warehouse', 700, 900, 160, 110, depot),
+        B('SILO', 'Promethium Depot', 1500, 880, 150, 115, ring)];
+      this.buildDistrict({ poly: Ps([[940, 330], [1850, 180], [1850, 600], [925, 625]]), origin: P(1350, 420), rot: spur, pitch: [250, 175], street: 24, fill: 1, seed: 3, parks: false, maxW: 200,
+        names: ['Manufactorum Primus', 'Smelting Works', 'Fuel Silos', 'Assembly Hall', 'Plasma Works', 'Coolant Tanks'], types: ['MANUFACTORUM', 'MANUFACTORUM', 'SILO', 'MANUFACTORUM', 'MANUFACTORUM', 'SILO'] });
+      this.dirtTracks = [{ points: Ps([[380, 669], [300, 520], [330, 330]]), width: 14, name: 'Farmstead Trail' }, { points: Ps([[908, 950], [1220, 920], [1430, 900]]), width: 14, name: 'Pipeline Track' }];
+      this.fields = [
+        { x: X(60), y: Y(130), w: 200, h: 150, boundary: 'WALL', color: 0x3d6830, alpha: 0.22, name: 'North Paddock' },
+        { x: X(150), y: Y(760), w: 290, h: 180, boundary: 'HEDGE', color: 0x487635, alpha: 0.24, name: 'Agri-Pasture' },
+        { x: X(1080), y: Y(760), w: 280, h: 160, boundary: 'HEDGE', color: 0x527d3b, alpha: 0.22, name: 'South Meadow' }];
+      this.woods = [{ x: X(1240), y: Y(110), r: 70 }, { x: X(490), y: Y(840), r: 85 }, { x: X(150), y: Y(560), r: 70 }, { x: X(1680), y: Y(760), r: 85 }, { x: X(560), y: Y(330), r: 75 }, { x: X(1180), y: Y(1060), r: 80 }];
+      const fac = this.nearestBuildingTo(X(1350), Y(470));
+      this.objectives = [objAt(1, this.buildings[2], 'NW Hab-Block'), objAt(2, this.buildings[0], 'Basilica'), objAt(3, fac, 'Factory Estate'), objAt(4, this.buildings[4], 'Promethium Depot'), objAt(5, this.buildings[1], 'Bunker Delta')];
+      flank('West Flank Terminal', 'East Flank Bunker');
+      return true;
+    }
+    return false;
+  }
+
+  // ===== Road network tidy-up: no road or track just stops in the open =====
+  tidyRoadNetwork() {
+    const onEdge = p => p.x <= 8 || p.y <= 8 || p.x >= BOARD_W - 8 || p.y >= BOARD_H - 8;
+    const nearBridge = p => (this.bridges || []).some(br => br.x1 != null ? Math.min(Phaser.Math.Distance.Between(p.x, p.y, br.x1, br.y1), Phaser.Math.Distance.Between(p.x, p.y, br.x2, br.y2)) <= 30 : (p.x >= br.x - 20 && p.x <= br.x + br.w + 20 && p.y >= br.y - 20 && p.y <= br.y + br.h + 20));
+    const nearBuilding = (p, d = 28) => this.buildings.some(b => this.distToRect(b, p.x, p.y) <= d);
+    const segs = () => this.roads.map(r => ({ r, pts: [{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }] }));
+    const onRoad = (p, self) => segs().some(s => s.r !== self && this.distToPolyline(s.pts, p.x, p.y) <= (s.r.width || 30) / 2 + 4);
+    const nearestRoadPt = (p, self) => { let best = null; segs().forEach(s => { if (s.r === self) return; const a = s.pts[0], b = s.pts[1], l2 = Phaser.Math.Distance.Squared(a.x, a.y, b.x, b.y) || 1, t = Phaser.Math.Clamp(((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / l2, 0, 1), q = { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) }, d = Phaser.Math.Distance.Between(p.x, p.y, q.x, q.y); if (!best || d < best.d) best = { q, d }; }); return best; };
+    const toEdge = (from, p) => { const dx = p.x - from.x, dy = p.y - from.y, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L; let t = Infinity; if (ux > 1e-6) t = Math.min(t, (BOARD_W - p.x) / ux); if (ux < -1e-6) t = Math.min(t, -p.x / ux); if (uy > 1e-6) t = Math.min(t, (BOARD_H - p.y) / uy); if (uy < -1e-6) t = Math.min(t, -p.y / uy); return { x: Math.round(p.x + ux * t), y: Math.round(p.y + uy * t) }; };
+    this.roads.forEach(r => {
+      [['x1', 'y1', 'x2', 'y2'], ['x2', 'y2', 'x1', 'y1']].forEach(([xk, yk, ox, oy]) => {
+        const p = { x: r[xk], y: r[yk] };
+        if (onEdge(p) || nearBridge(p) || onRoad(p, r) || nearBuilding(p, 45)) return;
+        const n = nearestRoadPt(p, r);
+        const q = (n && n.d <= 200) ? n.q : toEdge({ x: r[ox], y: r[oy] }, p);
+        r[xk] = Math.round(q.x); r[yk] = Math.round(q.y); r.cap = true;
+      });
+    });
+    (this.dirtTracks || []).forEach(t => {
+      [0, t.points.length - 1].forEach(i => {
+        const p = t.points[i], other = t.points[i === 0 ? 1 : t.points.length - 2];
+        if (onEdge(p) || nearBridge(p) || onRoad(p, null) || nearBuilding(p, 40)) return;
+        const n = nearestRoadPt(p, null);
+        if (n && n.d <= 280) { t.points[i] = { x: Math.round(n.q.x), y: Math.round(n.q.y) }; return; }
+        const nb = this.buildings.length ? this.nearestBuildingTo(p.x, p.y) : null;
+        if (nb && this.distToRect(nb, p.x, p.y) <= 260) { const c = this.bCenter(nb), d = Phaser.Math.Distance.Between(p.x, p.y, c.x, c.y) || 1, k = Math.min(nb.w, nb.h) / 2; t.points[i] = { x: Math.round(c.x + (p.x - c.x) / d * k), y: Math.round(c.y + (p.y - c.y) / d * k) }; return; }
+        t.points[i] = toEdge(other, p);
+      });
+    });
+  }
+  // Country buildings face the road beside them
+  alignBuildingsToRoads() {
+    this.buildings.forEach(b => {
+      const c = this.bCenter(b); let best = null;
+      this.roads.forEach(r => { const d = this.distToPolyline([{ x: r.x1, y: r.y1 }, { x: r.x2, y: r.y2 }], c.x, c.y); if (d <= 240 && (!best || d < best.d)) best = { d, a: Math.atan2(r.y2 - r.y1, r.x2 - r.x1) }; });
+      if (!best) return;
+      let a = best.a % (Math.PI / 2); if (a > Math.PI / 4) a -= Math.PI / 2; if (a < -Math.PI / 4) a += Math.PI / 2;
+      b.rot = Math.round(a * 100) / 100;
+    });
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
