@@ -39517,10 +39517,11 @@ class NetEpicScene extends Phaser.Scene {
       });
     }
 
+    this.drawBuildingDamage(b);
     // Building Garrison & Structural Integrity Label
     const icon = b.type === 'CATHEDRAL' ? '🏰' : (b.type === 'MANUFACTORUM' ? '🏭' : (b.type === 'BUNKER' ? '🛡️' : (b.type === 'SILO' ? '🛢️' : '🏢')));
     const siRemaining = Math.max(0, (b.siMax || 1) - (b.siDamage || 0));
-    const siTag = b.siDamage > 0 ? `⚠️ Structure ${siRemaining}/${b.siMax}` : `Structure ${b.siMax}/${b.siMax}`;
+    const siTag = b.siDamage > 0 ? `💥 Damaged ${b.siDamage}/${b.siMax}` : `Structure ${b.siMax}/${b.siMax}`; void siRemaining;
     const lbl = this.add.text(b.x + b.w / 2, b.y + b.h / 2, `${icon} ${b.name}\n${siTag}`, {
       fontSize: '9.5px', color: b.siDamage > 0 ? '#fde047' : '#f8fafc', align: 'center', fontStyle: 'bold',
       backgroundColor: b.siDamage > 0 ? 'rgba(120, 53, 15, 0.88)' : 'rgba(15, 23, 42, 0.85)', padding: { x: 4, y: 2 }
@@ -44750,6 +44751,145 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
 
+  // ===== BUILDINGS AS TARGETS (core p. 30-31): aimed shots hit automatically; only artillery and
+  // "Damages Buildings" weapons force an armour save; each failed save is one point of damage =====
+  buildingInfoText(b) {
+    const kind = b.type === 'BUNKER' ? 'Fortification' : ((b.type === 'CATHEDRAL' || b.type === 'MANUFACTORUM') ? 'Standard building' : 'Light building');
+    const cov = this.buildingCover(b), dmg = b.siDamage || 0, max = b.siMax || 1;
+    if (b.collapsed) return `🏚️ ${b.name}: ruins (rough ground, no cover, doesn't block sight)`;
+    const state = dmg === 0 ? 'undamaged' : `damage ${dmg}/${max} — collapses in the End Phase on a D6 of ${dmg === 1 ? '1' : '1-' + Math.min(dmg, 6)}${dmg >= max ? ' (certain)' : ''}`;
+    return `${b.type === 'BUNKER' ? '🛡️' : '🏢'} ${b.name}: ${kind}, save ${b.save || 4}+, infantry inside get -${cov} to be hit / +${cov} CAF · ${state}`;
+  }
+  showBuildingInfo(b) {
+    let el = document.getElementById('bld-info');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'bld-info';
+      el.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:190px;z-index:300;max-width:min(92vw,460px);background:rgba(15,23,42,0.95);border:1px solid #475569;border-radius:10px;padding:8px 11px;color:#f8fafc;font:600 0.76rem/1.4 system-ui,sans-serif;pointer-events:none;';
+      document.body.appendChild(el);
+    }
+    el.innerText = this.buildingInfoText(b);
+    el.style.display = 'block';
+    clearTimeout(this._bldInfoT); this._bldInfoT = setTimeout(() => { el.style.display = 'none'; }, 4500);
+  }
+  // The weapon a detachment would use against a building, if it can hurt one
+  buildingWeapon(det) {
+    if (!det) return null;
+    const w = this.isSalvoFirer(det) ? this.getSalvoWeapon(det, det.salvosFired || 0) : det.weapon;
+    return w && (w.barrage || w.indirect || w.artillery || w.damagesBuildings || w.destroysBuildings) ? w : null;
+  }
+  buildingNearestPoint(b, x, y) { const p = this.toLocal(b, x, y); return this.toWorld(b, Phaser.Math.Clamp(p.x, b.x, b.x + b.w), Phaser.Math.Clamp(p.y, b.y, b.y + b.h)); }
+  // Stands of det that can shoot at building b: in range, in arc and in sight (artillery on First Fire may fire indirect)
+  buildingShooters(det, b) {
+    const w = this.buildingWeapon(det); if (!w) return { shooters: [], why: 'its weapons can\'t damage buildings (artillery or "Damages Buildings" only)' };
+    const indirect = Boolean(w.indirect && det.order === 'FIRST_FIRE');
+    let why = 'out of range';
+    const shooters = det.stands.filter(s => {
+      if (det.standsFired && det.standsFired.has(s.id) && !this.isSalvoFirer(det)) return false;
+      if (this.isStandEngaged(s)) { why = 'locked in close combat'; return false; }
+      const p = this.buildingNearestPoint(b, s.container.x, s.container.y);
+      if (Phaser.Math.Distance.Between(s.container.x, s.container.y, p.x, p.y) / PX_PER_CM > w.rangeCm) return false;
+      if (!this.isInFireArc(s, p.x, p.y)) { why = 'outside its firing arc'; return false; }
+      if (indirect) return true;
+      const from = { x: s.container.x, y: s.container.y };
+      const blocked = this.buildings.some(o => o !== b && !o.collapsed && !this.pointInRect(o, from.x, from.y) && this.lineHitsRect(o, from.x, from.y, p.x, p.y)) || this.terrainLosBlock(from, p);
+      if (blocked) { why = 'no line of sight'; return false; }
+      return true;
+    });
+    return { shooters, why, w, indirect };
+  }
+  toggleTargetBuildingMode() {
+    const det = this.activatingDetachment;
+    if (this.targetBuildingMode && this.targetBuildingObj && det) { this.fireAtBuilding(det, this.targetBuildingObj); return; }
+    this.targetBuildingMode = !this.targetBuildingMode;
+    this.targetBuildingObj = null;
+    this.log(this.targetBuildingMode
+      ? '🏚️ <b>Aim at a building:</b> tap the building to target. Shots hit automatically; the building must save against each one, and every failed save is a point of damage.'
+      : '🏚️ Building targeting cancelled.');
+    this.refreshBuildingButton(); this.drawOverlays(); this.updateUI();
+  }
+  refreshBuildingButton() {
+    const btn = document.getElementById('btn-target-building'); if (!btn) return;
+    const b = this.targetBuildingObj;
+    btn.className = this.targetBuildingMode ? 'btn-fire' : 'btn-warn';
+    btn.innerText = !this.targetBuildingMode ? '🏚️ Building' : (b ? `🔥 Fire at ${this.shortName(b.name, 18)}` : '🎯 Tap a building…');
+  }
+  selectTargetBuilding(b) {
+    const det = this.activatingDetachment; if (!det) return;
+    if (b.collapsed) { this.showBuildingInfo(b); return; }
+    const r = this.buildingShooters(det, b);
+    if (!r.shooters.length) { this.targetBuildingObj = null; this.log(`🏚️ <b>${det.name}</b> can't fire at <b>${b.name}</b>: ${r.why}.`); this.spawnFloatingText(this.bCenter(b).x, this.bCenter(b).y, `🚫 ${r.why}`, '#f87171', '11px'); }
+    else { this.targetBuildingObj = b; this.log(`🎯 <b>${det.name}</b> aims at <b>${b.name}</b> with ${r.shooters.length} stand${r.shooters.length > 1 ? 's' : ''} (${r.w.name}${r.indirect ? ', indirect' : ''}). Tap 🔥 Fire to shoot.`); }
+    this.showBuildingInfo(b);
+    this.refreshBuildingButton(); this.drawOverlays(); this.updateUI();
+  }
+  fireAtBuilding(det, b) {
+    const r = this.buildingShooters(det, b);
+    if (!r.shooters.length) { this.log(`🏚️ Can't fire at ${b.name}: ${r.why}.`); return; }
+    const w = r.w, tsm = w.tsm || 0;
+    const per = w.barrage ? 1 : (w.dice || 1); // each artillery piece is one hit; direct weapons hit once per die
+    const shots = r.shooters.length * per, need = (b.save || 4) - tsm;
+    const rolls = Array.from({ length: shots }, () => Phaser.Math.Between(1, 6)), fails = rolls.filter(v => need > 6 || v < need).length;
+    const c = this.bCenter(b);
+    window.sfx.playExplosion(true);
+    for (let i = 0; i < Math.min(shots, 6); i++) this.time.delayedCall(i * 90, () => this.spawnExplosionFX(c.x + Phaser.Math.Between(-b.w / 3, b.w / 3), c.y + Phaser.Math.Between(-b.h / 3, b.h / 3), 14, false));
+    this.log(`🏚️ <b>${det.name}</b> pounds <b>${b.name}</b> with ${shots} ${w.barrage ? 'artillery hit' + (shots > 1 ? 's' : '') : 'shot' + (shots > 1 ? 's' : '')} (${w.name}). Building saves ${need > 6 ? 'impossible' : need + '+'}: [${rolls.join(', ')}] → <b>${fails} failed</b>.`);
+    if (fails > 0 && w.destroysBuildings) { this.collapseBuilding(b, `destroyed by ${w.name}`); }
+    else if (fails > 0) {
+      b.siDamage = (b.siDamage || 0) + fails;
+      if (b.siDamage >= (b.siMax || 1)) this.collapseBuilding(b, `${b.siDamage}/${b.siMax} damage`);
+      else { this.spawnFloatingText(c.x, c.y, `🏚️ DAMAGE ${b.siDamage}/${b.siMax}`, '#f97316', '13px'); this.drawDetailedBuilding(b); this.log(`🏚️ <b>${b.name}</b> now has <b>${b.siDamage}/${b.siMax}</b> damage: in the End Phase it collapses on a D6 of ${b.siDamage === 1 ? '1' : '1-' + b.siDamage}.`); }
+    } else this.spawnFloatingText(c.x, c.y, '🛡️ STRUCTURE HOLDS', '#38bdf8', '12px');
+    this.markFirerAfterShot(det, r.shooters.map(s => ({ shooter: s })), false, 1);
+    this.targetBuildingMode = false; this.targetBuildingObj = null; this.refreshBuildingButton();
+    if (det.fired || det.stands.length === 0 || (this.isSalvoFirer(det) && (det.salvosFired || 0) >= (det.maxSalvos || 1))) this.finishCombatActivation();
+    else { this.drawOverlays(); this.updateUI(); }
+  }
+  // A building falls down: everyone inside is destroyed, no save (core p. 27)
+  collapseBuilding(b, why) {
+    if (b.collapsed) return;
+    b.collapsed = true;
+    window.sfx.playMeltdown();
+    const c = this.bCenter(b);
+    this.spawnExplosionFX(c.x, c.y, Math.max(b.w, b.h) / 2, true);
+    this.spawnFloatingText(c.x, c.y, '💥 COLLAPSED INTO RUBBLE!', '#ef4444', '14px');
+    this.log(`💥 <b>${b.name}</b> collapses into rubble${why ? ` (${why})` : ''}!`);
+    this.detachments.forEach(d => {
+      if (!d.stands.length || d.embarkedOn) return;
+      const inside = d.stands.filter(s => this.pointInRect(b, s.container.x, s.container.y));
+      if (!inside.length) return;
+      inside.forEach(s => this.removeCasualty(d, s, 0, true));
+      this.log(`💀 <b>${d.name}</b>: ${inside.length} stand${inside.length > 1 ? 's' : ''} buried in the rubble.`);
+      this.checkBreakPoint(d);
+    });
+    this.drawDetailedBuilding(b);
+  }
+  // Taps on the board: aim at a building in targeting mode, otherwise show what a building is like
+  handleBoardTap(x, y) {
+    const b = this.getBuildingAt(x, y); if (!b) return;
+    const det = this.activatingDetachment;
+    if (this.targetBuildingMode && det && !this.isFactionAI(det.faction) && /^COMBAT_(FIRST|ADVANCE)/.test(this.phase)) { this.selectTargetBuilding(b); return; }
+    this.showBuildingInfo(b);
+  }
+  // Cracks, scorch marks and fallen masonry on a damaged building
+  drawBuildingDamage(b) {
+    const d = b.siDamage || 0; if (!d || b.collapsed) return;
+    const g = this.boardGfx, rnd = this.seededRand(Math.round(b.w * 31 + b.h * 17 + d * 7 + (b.name || '').length * 101));
+    const frac = Math.min(1, d / (b.siMax || 1));
+    for (let i = 0; i < 2 + d * 2; i++) {
+      const sx = b.x + b.w * (0.15 + rnd() * 0.7), sy = b.y + b.h * (0.15 + rnd() * 0.7);
+      g.fillStyle(0x0c0a09, 0.45 + frac * 0.3); g.fillCircle(sx, sy, 9 + rnd() * 12 * frac + 4);
+    }
+    g.lineStyle(2.6, 0x0c0a09, 0.95);
+    for (let i = 0; i < 3 + d * 2; i++) {
+      let x = b.x + b.w * rnd(), y = b.y + b.h * rnd(); const pts = [{ x, y }];
+      for (let k = 0; k < 4; k++) { x = Phaser.Math.Clamp(x + (rnd() - 0.5) * 30, b.x + 2, b.x + b.w - 2); y = Phaser.Math.Clamp(y + (rnd() - 0.5) * 30, b.y + 2, b.y + b.h - 2); pts.push({ x, y }); }
+      g.strokePoints(pts, false);
+    }
+    g.fillStyle(0x57534e, 0.95);
+    for (let i = 0; i < d * 3; i++) g.fillRect(b.x + rnd() * b.w - 3, b.y + (rnd() < 0.5 ? -4 : b.h - 2) + rnd() * 6, 4 + rnd() * 5, 3 + rnd() * 4);
+    g.lineStyle(3, frac >= 0.99 ? 0xef4444 : 0xf97316, 0.85); g.strokeRect(b.x - 2, b.y - 2, b.w + 4, b.h + 4);
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -45140,22 +45280,6 @@ class NetEpicScene extends Phaser.Scene {
     this.log(`💨 <b>${det.name}</b> deploys a <b>6cm Artillery Smoke Screen</b> template! Direct Line of Sight is completely blocked until End Phase.`);
 
     this.drawBattlefield();
-    this.drawOverlays();
-    this.updateUI();
-  }
-
-  // Toggle heavy weapon building demolition mode
-  toggleTargetBuildingMode() {
-    this.targetBuildingMode = !this.targetBuildingMode;
-    const btn = document.getElementById('btn-target-building');
-    if (btn) {
-      btn.className = this.targetBuildingMode ? 'btn-fire' : 'btn-warn';
-      btn.innerText = this.targetBuildingMode ? '🎯 Target Building: ACTIVE' : '🏚️ Target Building (Siege)';
-    }
-    this.log(this.targetBuildingMode
-      ? '🏚️ <b>Building Siege Mode ACTIVE:</b> Heavy artillery and siege weapons will directly pound the building structure to inflict Structural Integrity (SI) collapse damage!'
-      : '🏚️ Building Siege Mode deactivated.'
-    );
     this.drawOverlays();
     this.updateUI();
   }
@@ -46667,7 +46791,7 @@ class NetEpicScene extends Phaser.Scene {
           }
         });
 
-        if (wpn.damagesBuildings && hits > 0) {
+        if ((wpn.damagesBuildings || activeWpn.barrage) && templateTargets.length > 0) {
           this.buildings.forEach(b => {
             if (b.collapsed) return;
             const inside = templateTargets.some(s => this.pointInRect(b, s.container.x, s.container.y));
@@ -47733,8 +47857,9 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     // Allow clicking/tapping any open spot on the battlefield during Deep Strike mode to position the Drop Zone!
-    this.input.on('pointerup', (pointer) => {
+    this.input.on('pointerup', (pointer, currentlyOver) => {
       this.cancelHoldRotateTimer();
+      if ((!currentlyOver || currentlyOver.length === 0) && pointer.getDistance() < 10 && pointer.getDuration() < 600) this.handleBoardTap(pointer.worldX, pointer.worldY);
     });
 
     this.input.on('pointerdown', (pointer, currentlyOver) => {
@@ -49746,31 +49871,7 @@ class NetEpicScene extends Phaser.Scene {
       const collapseRoll = Phaser.Math.Between(1, 6);
       const collapses = (collapseRoll <= b.siDamage) || (b.siDamage >= (b.siMax || 1));
       if (collapses) {
-        b.collapsed = true;
-        window.sfx.playMeltdown();
-        this.spawnExplosionFX(b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h) / 2, true);
-        this.spawnFloatingText(b.x + b.w / 2, b.y + b.h / 2, '💥 COLLAPSED INTO RUBBLE!', '#ef4444', '14px');
-        this.log(`💥 <b>CATASTROPHIC BUILDING COLLAPSE:</b> <b>${b.name}</b> suffered total structural collapse! (Roll ${collapseRoll} <= SI ${b.siDamage})`);
-
-        // Units garrisoned inside suffer -2 TSM crush save or die!
-        this.detachments.forEach(d => {
-          if (d.stands.length === 0) return;
-          const insideStands = d.stands.filter(s => this.pointInRect(b, s.container.x, s.container.y));
-          insideStands.forEach(s => {
-            const saveRoll = Phaser.Math.Between(1, 6);
-            const neededSave = d.save + 2; // -2 TSM penalty for collapse crush
-            if (saveRoll >= neededSave && neededSave <= 6) {
-              this.spawnFloatingText(s.container.x, s.container.y, `🏃 SURVIVED COLLAPSE (${saveRoll})`, '#38bdf8', '11px');
-              this.log(`🛡️ <b>${d.name} (${s.label})</b> scrambled free from the collapsing ${b.name}! (Saved ${saveRoll} vs ${neededSave}+)`);
-            } else {
-              this.log(`💀 <b>${d.name} (${s.label})</b> was crushed beneath falling rubble! (Failed Save ${saveRoll} vs ${neededSave}+)`);
-              this.removeCasualty(d, s);
-            }
-          });
-          this.checkBreakPoint(d);
-        });
-
-        this.drawDetailedBuilding(b);
+        this.collapseBuilding(b, `End Phase roll ${collapseRoll} against ${b.siDamage} damage`);
       } else {
         this.log(`🏚️ <b>${b.name}</b> holds against collapse (Roll ${collapseRoll} > SI ${b.siDamage}).`);
       }
@@ -49984,6 +50085,11 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   drawOverlays() {
+    this.drawOverlaysCore();
+    const b = this.targetBuildingMode && this.targetBuildingObj;
+    if (b && this.overlayGfx) { const g = this.overlayGfx; g.lineStyle(4, 0xef4444, 0.95); g.strokePoints(this.rectCorners(b, 6), true); g.lineStyle(1.5, 0xfde047, 0.9); g.strokePoints(this.rectCorners(b, 11), true); }
+  }
+  drawOverlaysCore() {
     this.overlayGfx.clear();
     this.losGfx.clear();
 
@@ -50703,7 +50809,10 @@ class NetEpicScene extends Phaser.Scene {
 
         const btnBldg = document.getElementById('btn-target-building');
         if (btnBldg) {
-          btnBldg.style.display = (this.activatingDetachment && this.activatingDetachment.weapon && (this.activatingDetachment.weapon.damagesBuildings || this.activatingDetachment.weapon.barrage) && !this.activatingDetachment.fired) ? 'block' : 'none';
+          const canBldg = Boolean(this.activatingDetachment && !this.activatingDetachment.fired && !this.isFactionAI(this.activatingDetachment.faction) && this.buildingWeapon(this.activatingDetachment) && this.buildings.some(b => !b.collapsed));
+          btnBldg.style.display = canBldg ? 'block' : 'none';
+          if (!canBldg && this.targetBuildingMode) { this.targetBuildingMode = false; this.targetBuildingObj = null; }
+          this.refreshBuildingButton();
         }
 
         if (this.activatingDetachment && this.targetDetachment) {
