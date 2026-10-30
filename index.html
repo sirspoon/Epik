@@ -40746,6 +40746,17 @@ window.addEventListener('keydown', (e) => {
 
 // --- NETEPIC HEROIC SPECIAL CHARACTERS & PSYCHIC POWERS (02a_netepic_optional_rules_v5 pp. 10-15) ---
 const PSYCHIC_POWERS = {
+  eld_mind_blast: { key: 'eld_mind_blast', name: 'Mind Blast', icon: '⚡', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, tag: 'Ethereal · 25 cm', desc: 'One enemy model within 25 cm and line of sight is hit on a 4+ and destroyed with no armour save (psychic saves allowed). A titan takes damage to its head. Tap an enemy first to choose; otherwise the most valuable target is picked.' },
+  eld_precog: { key: 'eld_precog', name: 'Precognitive Direction', icon: '🔮', difficulty: 0, rangeCm: 10, targetType: 'FRIENDLY', chapter: true, tag: 'Automatic · 10 cm', desc: 'One Eldar detachment within 10 cm that has yet to move shifts its orders one step: Charge ↔ Advance ↔ First Fire. Select the detachment first, or the nearest is chosen.' },
+  eld_coercion: { key: 'eld_coercion', name: 'Coercion', icon: '🌀', difficulty: 0, rangeCm: 50, targetType: 'ENEMY', chapter: true, tag: 'D6 + morale ≥ 6 · 50 cm', desc: 'An enemy detachment within 50 cm that has yet to move: roll a D6 and add its morale value (0 if it never tests morale). On 6+ you shift its orders one step (Charge ↔ Advance ↔ First Fire). Ethereal: psychic saves allowed.' },
+  eld_guide: { key: 'eld_guide', name: 'Guide', icon: '🎯', difficulty: 0, rangeCm: 25, targetType: 'FRIENDLY', chapter: true, tag: 'Automatic · 25 cm', desc: 'One Eldar infantry detachment within 25 cm gets +1 to hit this turn (optional book power).' },
+  eld_lock: { key: 'eld_lock', name: 'Psychic Lock', icon: '🔒', difficulty: 0, rangeCm: 75, targetType: 'ENEMY', chapter: true, tag: '4+ · 75 cm', desc: 'One enemy model within 75 cm and line of sight is held on a 4+: it can\'t move or fire and gets no dice in close combat. It breaks free on a 4+ in each End Phase, or as soon as the Warlock moves, fires or uses another power.' },
+  eld_storm: { key: 'eld_storm', name: 'Eldritch Storm', icon: '🌪️', difficulty: 0, rangeCm: 50, targetType: 'ENEMY', chapter: true, tag: 'Automatic · 50 cm', desc: 'A 6 cm storm lands within 50 cm: every model under it is flung to its edge and can do nothing for the rest of the turn. Titans lose a shield, or take a -2 hit on their legs. It blocks line of sight until the End Phase.' },
+  eld_doom: { key: 'eld_doom', name: 'Doom', icon: '💀', difficulty: 0, rangeCm: 50, targetType: 'ENEMY', chapter: true, tag: 'Warlock Titan · 50 cm', desc: 'One enemy within 50 cm and line of sight: all shots at it hit on 3+, and its CAF is halved in close combat, until the Titan uses another power. Shields give a 4+ save each turn; psychic saves allowed.' },
+  eld_witch_sight: { key: 'eld_witch_sight', name: 'Witch Sight', icon: '👁️', difficulty: 0, rangeCm: 0, targetType: 'SELF', chapter: true, tag: 'Warlock Titan · self', desc: 'Until the End Phase, enemies firing at the Titan are -1 to hit, and titans and vehicles fighting it in close combat use one less die. Not if immobilised.' },
+  eld_mind_shout: { key: 'eld_mind_shout', name: 'Mind Shout', icon: '📢', difficulty: 0, rangeCm: 25, targetType: 'SELF', chapter: true, tag: 'Warlock Titan · 25 cm', desc: 'Every enemy detachment within 25 cm tests morale or falls back. Friendly detachments within 25 cm that are falling back may try to rally at once.' },
+  eld_turmoil: { key: 'eld_turmoil', name: 'Turmoil', icon: '🌀', difficulty: 0, rangeCm: 0, targetType: 'SELF', chapter: true, tag: 'Base contact', desc: 'Enemy infantry, cavalry and walkers in base contact with the Shadowseer must make an armour save or be flung D6 cm away, unable to act for the rest of the turn.' },
+  eld_veil: { key: 'eld_veil', name: 'Veil of Tears', icon: '🎭', difficulty: 0, rangeCm: 50, targetType: 'FRIENDLY', chapter: true, tag: 'Automatic · 50 cm', desc: 'One Harlequin infantry detachment within 50 cm gets a 4+ fixed save until the end of the turn.' },
   quickening: { key: 'quickening', name: 'Quickening', icon: '⚡', difficulty: 0, rangeCm: 25, targetType: 'FRIENDLY', chapter: true, desc: 'Blood Angels. One friendly infantry, cavalry or walker unit within 25 cm (select it first) gains +3 CAF until the End Phase.' },
   weaken_resolve: { key: 'weaken_resolve', name: 'Weaken Resolve', icon: '😨', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'Dark Angels. One enemy detachment within 25 cm (no line of sight needed) tests morale at -1 or falls back.' },
   fury_salamander: { key: 'fury_salamander', name: 'Fury of the Salamander', icon: '🐉', difficulty: 0, rangeCm: 60, targetType: 'ENEMY', chapter: true, desc: 'Salamanders. A spectral salamander charges 3D6 cm towards the target: every model in its path (friend or foe) is hit on 4+ at 0 TSM; units that lose models test morale.' },
@@ -45006,16 +45017,16 @@ class NetEpicScene extends Phaser.Scene {
     const next = () => {
       const det = movers.shift();
       if (!det) { done(); return; }
-      const enemies = [];
-      this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
+      const enemies = det.instinct === 'WAYSTONE' ? this.eldLivingStands(det) : [];
+      if (det.instinct !== 'WAYSTONE') this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
       det.moved = true;
       if (!enemies.length) { this.updateDetachmentBadge(det); next(); return; }
-      const allowance = this.getEffectiveMoveCm(det) * (det.instinct === 'RAMPAGE' ? 2 : 1) * PX_PER_CM;
+      const allowance = this.getEffectiveMoveCm(det) * (det.instinct === 'RAMPAGE' || det.instinct === 'WAYSTONE' ? 2 : 1) * PX_PER_CM;
       const dests = det.stands.map(st => {
         const sx = st.container.x, sy = st.container.y;
         const tgt = enemies.reduce((a, b) => Phaser.Math.Distance.Between(sx, sy, b.container.x, b.container.y) < Phaser.Math.Distance.Between(sx, sy, a.container.x, a.container.y) ? b : a);
         const d = Phaser.Math.Distance.Between(sx, sy, tgt.container.x, tgt.container.y);
-        const stopAt = (st.baseRadius || 10) + (tgt.baseRadius || 10) - 2; // base-to-base contact
+        const stopAt = (st.baseRadius || 10) + (tgt.baseRadius || 10) - 2 + (det.instinct === 'WAYSTONE' ? 5 * PX_PER_CM : 0); // base-to-base contact (spirits stop near their kin)
         const ang = Math.atan2(tgt.container.y - sy, tgt.container.x - sx);
         let k = Math.max(0, Math.min(allowance, d - stopAt));
         while (k > 0 && this.getBuildingAt(sx + Math.cos(ang) * k, sy + Math.sin(ang) * k)) k -= 4; // stop short of buildings
@@ -45024,7 +45035,7 @@ class NetEpicScene extends Phaser.Scene {
       });
       const dc = this.getDetachmentCenter(det);
       this.panCameraTo(dc.x, dc.y, 400);
-      this.spawnFloatingText(dc.x, dc.y - 22, det.instinct === 'RAMPAGE' ? '🧠 RAMPAGE!' : '🧠 HUNTING', '#f0abfc', '11px');
+      this.spawnFloatingText(dc.x, dc.y - 22, det.instinct === 'AVATAR' ? '🔥 THE AVATAR STRIDES' : det.instinct === 'WAYSTONE' ? '👻 SPIRITS RETURN' : det.instinct === 'RAMPAGE' ? '🧠 RAMPAGE!' : '🧠 HUNTING', '#f0abfc', '11px');
       const from = dests.map(d => ({ x: d.st.container.x, y: d.st.container.y }));
       const anim = { p: 0 };
       this.tweens.add({ targets: anim, p: 1, delay: 350, duration: 650, ease: 'Sine.easeInOut', onUpdate: () => {
@@ -45033,7 +45044,7 @@ class NetEpicScene extends Phaser.Scene {
       }, onComplete: () => {
         dests.forEach(d => { d.st.originX = d.x; d.st.originY = d.y; d.st.facingRad = d.ang; });
         this.applyStandFacing(det);
-        this.log(`🧠 <b>${det.name}</b> acts on instinct: <b>${det.instinct === 'RAMPAGE' ? 'Rampage' : 'Hunt'}</b>.`);
+        this.log(det.instinct === 'AVATAR' ? `🔥 <b>${det.name}</b> strides 15 cm towards the nearest enemy.` : det.instinct === 'WAYSTONE' ? `👻 <b>${det.name}</b> charges back towards the living Eldar.` : `🧠 <b>${det.name}</b> acts on instinct: <b>${det.instinct === 'RAMPAGE' ? 'Rampage' : 'Hunt'}</b>.`);
         this.updateDetachmentBadge(det); this.drawOverlays();
         next();
       } });
@@ -46854,6 +46865,7 @@ class NetEpicScene extends Phaser.Scene {
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
     this.applyChapterRulesAtSpawn();
+    this.applyEldarSetup();
     this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
     this.scnState = {}; this._surpriseLogged = false; this._reportShown = false;
     if (this.customZones()) ['IMPERIUM', 'ORKS'].forEach(f => this.scenarioPlaceSide(f));
@@ -47974,6 +47986,7 @@ class NetEpicScene extends Phaser.Scene {
       if (r && r.destroyed) S.kills++;
       return;
     }
+    if (o.noSave && vDet.avatar && this.avatarSaves(vDet, stand)) { S.saves++; return; }
     if (o.noSave) { S.kills++; S.casualties.push(stand); this.spawnFloatingText(vx, vy - 10, '💀 NO SAVE', '#ef4444', '10px'); return; }
     let ns = o.unmodifiedSave ? vDet.save : (this.isStandGarrisoned(stand) ? Math.min(vDet.save, 4) : vDet.save) - (o.tsm || 0);
     const facTsm = o.unmodifiedSave ? 0 : this.facingArmourTsm(vDet, stand, S.from);
@@ -49859,6 +49872,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   // Chapter psychic powers
   castChapterPower(det, key) {
+    if (/^eld_/.test(key)) { this.castEldarPower(det, key); return; }
     const c = this.getDetachmentCenter(det), inR = (o, cm) => { const oc = this.getDetachmentCenter(o); return Phaser.Math.Distance.Between(c.x, c.y, oc.x, oc.y) <= cm * PX_PER_CM; };
     const sel = this.selectedDetachment && this.selectedDetachment !== det ? this.selectedDetachment : null, tgt = this.targetDetachment;
     const nearestEnemy = cm => this.detachments.filter(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve && inR(o, cm)).sort((a, b) => Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(a).x, this.getDetachmentCenter(a).y) - Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(b).x, this.getDetachmentCenter(b).y))[0];
@@ -50040,6 +50054,510 @@ class NetEpicScene extends Phaser.Scene {
     el.querySelectorAll('button[data-r]').forEach(b => b.onclick = () => { (this.titanAim = this.titanAim || {})[t.id] = { r: +b.dataset.r, c: +b.dataset.c, facing }; this.renderTitanAimPanel(); });
   }
 
+  // ===== ELDAR (NetEpic Eldar book): psykers, Warlock orders, Waystone spirits, the Avatar and close combat specials =====
+  isEldar(d) { return Boolean(d && d.armyBook === 'ELDAR'); }
+  eldName(d) { return ((d && d.name) || '') + ' ' + ((d && d.cardName) || ''); }
+  eldIsTransport(d) { return Boolean(d && !d.isTitan && (d.transportCapacity || /falcon|venom|serpent|rhino|transport|wave/i.test(d.name || ''))); }
+  isWarlockTitan(d) { return Boolean(d && (d.titanClass === 'ELD_WARLOCK' || (d.isTitan && this.isEldar(d) && /warlock/i.test(this.eldName(d))))); }
+  isEldWarlock(d) { return this.isEldar(d) && !d.isTitan && !this.eldIsTransport(d) && /warlock/i.test(this.eldName(d)); }
+  isEldSpiritseer(d) { return this.isEldar(d) && !this.eldIsTransport(d) && /spiritseer/i.test(this.eldName(d)); }
+  isWaystone(d) { return this.isEldar(d) && (this.hasAbility(d, 'WaystoneSpirit') || /wraith ?guard|wraith ?lord|ghost warrior/i.test(this.eldName(d))); }
+  isHarlequin(d) { return this.isEldar(d) && (this.hasAbility(d, 'MeleeReroll') || (/harlequin|troupe|death jester|mime|solitaire|shadowseer/i.test(this.eldName(d)) && (d.pinningClass || 1) === 1)); }
+  isGreaterDaemon(d) { return Boolean(d && d.armyBook === 'CHAOS' && !d.isTitan && /greater daemon|bloodthirster|great unclean|keeper of secrets|lord of change|primarch/i.test(this.eldName(d) + ' ' + (d.composition || ''))); }
+  isVehicleClass(d) { return Boolean(d && (d.isTitan || d.superHeavy || (d.pinningClass || 1) >= 3 || ((d.pinningClass || 1) === 2 && !/bike|rider|cavalry|horse|steed|wolves|wolf|beast|dragoon|lethosaur|raptor|saur|spear/i.test(this.eldName(d))))); }
+  // Living Eldar (not spirits, not the Avatar) that a Waystone spirit can follow
+  eldLiving(det) { return this.detachments.filter(o => o.faction === det.faction && this.isEldar(o) && o.stands.length && !o.embarkedOn && !o.inReserve && !this.isWaystone(o) && !o.avatar); }
+  eldNear(a, b, cm) { const R = cm * PX_PER_CM; return a.stands.some(s => b.stands.some(t => Phaser.Math.Distance.Between(s.container.x, s.container.y, t.container.x, t.container.y) <= R)); }
+  eldStandDist(s, t) { return Phaser.Math.Distance.Between(s.container.x, s.container.y, t.container.x, t.container.y); }
+
+  // Set up the Eldar units for battle (also after loading a save)
+  applyEldarSetup() {
+    this.detachments.forEach(d => {
+      if (!this.isEldar(d) || d._eldSetup) return;
+      d._eldSetup = true;
+      if (this.eldIsTransport(d)) return;
+      const n = this.eldName(d), spells = s => { d.isPsyker = true; d.characterRules = { ...(d.characterRules || {}), spells: s }; };
+      if (this.isWarlockTitan(d)) spells(['eld_doom', 'eld_witch_sight', 'eld_mind_shout']);
+      else if (/eldrad/i.test(n)) spells(['eld_mind_blast', 'eld_precog', 'eld_coercion', 'eld_guide', 'purge_psyker']);
+      else if (/farseer/i.test(n)) spells(['eld_mind_blast', 'eld_precog', 'eld_coercion', 'eld_guide']);
+      else if (/spiritseer/i.test(n)) spells(['eld_mind_blast', 'eld_coercion']);
+      else if (/shadowseer/i.test(n)) spells(['eld_turmoil', 'eld_veil']);
+      else if (/warlock/i.test(n)) spells(['eld_mind_blast', 'eld_lock', 'eld_storm']);
+      if (/avatar/i.test(n)) {
+        d.avatar = true; d.superHeavy = false; d.fixedSave = 2; d.instinct = 'AVATAR'; d.salvos = null; d.maxSalvos = 1;
+        d.stands.forEach(s => { s.label = 'Avatar'; });
+        d.specialAbilities = [...new Set([...(d.specialAbilities || []), 'Command', 'Fear', 'Fearless', 'HardToHit'])];
+      }
+    });
+  }
+
+  // ---------- psychic powers ----------
+  eldPsySave(t, label) {
+    const ps = this.psychicSaveOf(t);
+    if (!ps || ps > 6) return false;
+    const r = Phaser.Math.Between(1, 6);
+    if (r >= ps) { this.log(`🧠 <b>${t.name}</b> resists the ${label} with its psychic save (${r} v ${ps}+).`); const c = this.getDetachmentCenter(t); this.spawnFloatingText(c.x, c.y - 14, `🧠 Psychic save (${r})`, '#c084fc', '11px'); return true; }
+    return false;
+  }
+  // The Avatar's fixed 2+ save works against everything
+  avatarSaves(det, stand) {
+    if (!det || !det.avatar) return false;
+    const r = Phaser.Math.Between(1, 6);
+    const ok = r >= 2;
+    this.log(`🔥 <b>${det.name}</b> ${ok ? 'shrugs off the blow' : 'is struck down'}: fixed save ${r} v 2+.`);
+    if (stand) this.spawnFloatingText(stand.container.x, stand.container.y - 14, ok ? `🔥 2+ SAVE (${r})` : `💀 SAVE FAILED (1)`, ok ? '#fb923c' : '#ef4444', '11px');
+    return ok;
+  }
+  // Destroyed with no armour save (the Avatar still gets its 2+)
+  eldKill(det, stand) {
+    if (!det.stands.includes(stand)) return false;
+    if (this.avatarSaves(det, stand)) return false;
+    this.removeCasualty(det, stand, 0, false);
+    return true;
+  }
+  eldEnemies(det) { return this.detachments.filter(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve); }
+  // Enemy models within range and line of sight of the caster: [{ d, s, dist }]
+  eldTargets(det, cm, needLos = true) {
+    const out = [], R = cm * PX_PER_CM;
+    this.eldEnemies(det).forEach(o => o.stands.forEach(s => {
+      let best = Infinity, ok = false;
+      det.stands.forEach(c => { const dd = this.eldStandDist(c, s); if (dd <= R + (s.baseRadius || 10) && (!needLos || this.checkStandLoS(c, s, false, { name: 'Psychic power', rangeCm: cm, dice: 1, toHit: 4, tsm: 0 }).valid)) { ok = true; best = Math.min(best, dd); } });
+      if (ok) out.push({ d: o, s, dist: best });
+    }));
+    return out;
+  }
+  eldValue(o) { return (o.isTitan ? 100 : 0) + (o.superHeavy ? 40 : 0) + (o.isPsyker ? 25 : 0) + (this.hasAbility(o, 'HQ') ? 20 : 0) + (this.hasAbility(o, 'Elite') ? 8 : 0) + ((o.points || 100) / Math.max(1, o.initialCount || o.stands.length)) / 10; }
+  // Pick the model to aim at: the chosen enemy detachment if it's in reach, otherwise the most valuable one
+  eldPickModel(det, cm, prefer, filter = () => true) {
+    const c = this.eldTargets(det, cm).filter(x => filter(x.d, x.s));
+    if (!c.length) return null;
+    const mine = prefer ? c.filter(x => x.d === prefer) : [];
+    const pool = mine.length ? mine : c;
+    return pool.sort((a, b) => (this.eldValue(b.d) - this.eldValue(a.d)) || (a.dist - b.dist))[0];
+  }
+  eldShift(order, dir) { const L = ['FIRST_FIRE', 'ADVANCE', 'CHARGE'], i = L.indexOf(order); if (i < 0) return null; const j = i + dir; return j >= 0 && j < L.length ? L[j] : null; }
+  eldOrderName(o) { return (ORDER_INFO[o] || { label: o }).label; }
+  // A little pop-up to choose between options (player only)
+  eldChoose(title, options) {
+    let m = document.getElementById('eld-choice');
+    if (!m) { m = document.createElement('div'); m.id = 'eld-choice'; document.body.appendChild(m); }
+    m.style.cssText = 'position:fixed;inset:0;z-index:430;background:rgba(2,6,23,0.55);display:flex;align-items:flex-end;justify-content:center;';
+    m.innerHTML = `<div style="width:min(420px,100vw);background:#111827;border:1px solid #334155;border-radius:14px 14px 0 0;padding:14px 16px 16px;color:#f8fafc;font-family:system-ui,sans-serif">
+      <div style="font-weight:800;font-size:0.95rem;margin-bottom:10px">${title}</div><div style="display:flex;gap:8px;flex-wrap:wrap" id="eld-choice-btns"></div></div>`;
+    const box = m.querySelector('#eld-choice-btns');
+    options.forEach(o => { const b = document.createElement('button'); b.innerText = o.label; b.style.cssText = 'flex:1;min-width:30%;padding:11px;border-radius:9px;background:#7e22ce;color:#fff;border:0;font-weight:800'; b.onclick = () => { m.style.display = 'none'; o.fn(); }; box.appendChild(b); });
+  }
+  // Ending the Warlock's hold, Doom, etc. when the caster does something else
+  eldReleaseLock(det, why) {
+    const L = det && det.eldLock; if (!L) return;
+    det.eldLock = null;
+    this.detachments.forEach(o => o.stands.forEach(s => { if (s.psyLock && s.psyLock.by === det.id) s.psyLock = null; }));
+    this.log(`🔓 <b>${det.name}</b> ${why || 'lets go'}: the Psychic Lock ends.`);
+  }
+  eldEndDoom(det) {
+    if (!det || !det.eldDoomTarget) return;
+    const t = this.detachments.find(o => o.id === det.eldDoomTarget);
+    if (t && t.eldDoomBy === det.id) { t.eldDoomBy = null; this.updateDetachmentBadge(t); }
+    det.eldDoomTarget = null;
+  }
+  eldDoomActive(t) { if (!t || !t.eldDoomBy) return false; const c = this.detachments.find(o => o.id === t.eldDoomBy); return Boolean(c && c.stands.length && c.eldDoomTarget === t.id); }
+
+  castEldarPower(det, key, opt = {}) {
+    if (!det || !det.stands.length) return false;
+    const P = PSYCHIC_POWERS[key], ai = this.isFactionAI(det.faction), c = this.getDetachmentCenter(det);
+    const tgt = opt.target || (this.targetDetachment && this.targetDetachment.faction !== det.faction ? this.targetDetachment : null);
+    const sel = opt.friend || (this.selectedDetachment && this.selectedDetachment.faction === det.faction && this.selectedDetachment !== det ? this.selectedDetachment : null);
+    const fail = msg => { this.log(`🔮 <b>${P.name}:</b> ${msg}`); return false; };
+    const begin = (x, y) => {
+      if (det.eldLock && key !== 'eld_lock') this.eldReleaseLock(det, 'turns to another power');
+      if (det.eldDoomTarget) this.eldEndDoom(det);
+      det.psychicPowerUsed = true; this._attacker = det;
+      window.sfx.playPsychic(); if (x != null) this.spawnPsychicFX(c.x, c.y, x, y);
+    };
+    const done = () => { this.drawOverlays(); this.updateUI(); return true; };
+
+    if (key === 'eld_mind_blast') {
+      const pick = opt.model || this.eldPickModel(det, 25, tgt);
+      if (!pick) return fail('no enemy model within 25 cm and line of sight.');
+      const { d: t, s } = pick; begin(s.container.x, s.container.y);
+      const r = Phaser.Math.Between(1, 6), hit = r >= 4;
+      this.showDiceRollTray(`⚡ Mind Blast (4+)`, [{ label: t.name, dice: [{ val: r, cls: hit ? 'die-pass' : 'die-fail', tip: 'Needed 4+' }] }]);
+      if (!hit) { this.log(`⚡ <b>${det.name}</b> hurls a Mind Blast at <b>${t.name}</b>: rolled ${r}, needed 4+ — it misses.`); return done(); }
+      if (this.eldPsySave(t, 'Mind Blast')) return done();
+      if (this.hasHitLocations(t)) {
+        this.log(`⚡ <b>Mind Blast!</b> ${det.name} strikes at the mind of <b>${t.name}</b>: damage to the head (rolled ${r}).`);
+        this.applyTitanHit(t, s, { location: 'head', noSave: true, ignoreHolo: true, from: { x: c.x, y: c.y } });
+      } else {
+        const killed = this.eldKill(t, s);
+        this.log(`⚡ <b>Mind Blast!</b> ${det.name} rolls ${r}: ${killed ? `a stand of <b>${t.name}</b> is destroyed, no save` : `${t.name} survives`}.`);
+        if (killed) this.spawnFloatingText(s.container.x, s.container.y - 14, '⚡ MIND BLAST', '#c084fc', '12px');
+      }
+      this.checkBreakPoint(t);
+      return done();
+    }
+    if (key === 'eld_precog' || key === 'eld_coercion') {
+      const friendly = key === 'eld_precog', range = friendly ? 10 : 50;
+      const ok = o => !o.moved && o.order && o.order !== 'FALL_BACK' && !o.instinct && (friendly ? (o.faction === det.faction && this.isEldar(o) && !this.isWaystone(o)) : o.faction !== det.faction) && o.stands.length && !o.embarkedOn && this.eldNear(det, o, range);
+      const prefer = friendly ? sel : tgt;
+      let t = prefer && ok(prefer) ? prefer : null;
+      if (!t) t = this.detachments.filter(ok).sort((a, b) => (friendly ? 0 : this.eldValue(b) - this.eldValue(a)) || (Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(a).x, this.getDetachmentCenter(a).y) - Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(b).x, this.getDetachmentCenter(b).y)))[0];
+      if (!t) return fail(friendly ? 'no Eldar detachment within 10 cm that has yet to move.' : 'no enemy detachment within 50 cm that has yet to move.');
+      const tc = this.getDetachmentCenter(t); begin(tc.x, tc.y);
+      if (!friendly) {
+        const mv = this.isFearlessUnit(t) || t.armyBook === 'TYRANIDS' ? 0 : (t.morale || 0), r = Phaser.Math.Between(1, 6), pass = r + mv >= 6;
+        this.showDiceRollTray(`🌀 Coercion (6+)`, [{ label: t.name, dice: [{ val: r, cls: pass ? 'die-pass' : 'die-fail', tip: `+${mv} morale value` }], summary: `= ${r + mv}` }]);
+        if (!pass) { this.log(`🌀 <b>Coercion:</b> ${det.name} reaches into the minds of <b>${t.name}</b> (${r} + ${mv} morale = ${r + mv}, needs 6) — they shake it off.`); return done(); }
+        if (this.eldPsySave(t, 'Coercion')) return done();
+      }
+      const opts = [-1, 1].map(dir => ({ dir, to: this.eldShift(t.order, dir) })).filter(o => o.to);
+      const apply = to => { const from = t.order; t.order = to; t.orderRevealed = true; this.updateDetachmentBadge(t); this.log(`${friendly ? '🔮 <b>Precognitive Direction:</b>' : '🌀 <b>Coercion!</b>'} <b>${t.name}</b>'s orders change from ${this.eldOrderName(from)} to <b>${this.eldOrderName(to)}</b>.`); this.spawnFloatingText(tc.x, tc.y - 16, `🔮 ${this.eldOrderName(to)}`, '#c084fc', '12px'); this.drawOverlays(); this.updateUI(); };
+      if (ai || opts.length === 1) apply(friendly ? (opts.find(o => o.dir > 0) || opts[0]).to : (opts.find(o => o.dir < 0) || opts[0]).to);
+      else this.eldChoose(`${P.icon} ${t.name} is on ${this.eldOrderName(t.order)} — change it to:`, opts.map(o => ({ label: this.eldOrderName(o.to), fn: () => apply(o.to) })));
+      return done();
+    }
+    if (key === 'eld_guide') {
+      const ok = o => o.faction === det.faction && this.isEldar(o) && this.isInfantry(o) && o.stands.length && !o.fired && this.eldNear(det, o, 25);
+      const t = (sel && ok(sel)) ? sel : (this.detachments.filter(o => o !== det && ok(o)).sort((a, b) => b.stands.length - a.stands.length)[0] || (ok(det) ? det : null));
+      if (!t) return fail('no Eldar infantry within 25 cm that has yet to fire.');
+      const tc = this.getDetachmentCenter(t); begin(tc.x, tc.y);
+      t.eldGuide = this.turn; this.updateDetachmentBadge(t);
+      this.spawnFloatingText(tc.x, tc.y - 16, '🎯 GUIDED +1 TO HIT', '#fde047', '12px');
+      this.log(`🎯 <b>Guide:</b> ${det.name} guides the aim of <b>${t.name}</b>: +1 to hit this turn.`);
+      return done();
+    }
+    if (key === 'eld_lock') {
+      const pick = opt.model || this.eldPickModel(det, 75, tgt, (o, s) => !s.psyLock);
+      if (!pick) return fail('no enemy model within 75 cm and line of sight.');
+      const { d: t, s } = pick; begin(s.container.x, s.container.y);
+      const r = Phaser.Math.Between(1, 6), hit = r >= 4;
+      this.showDiceRollTray(`🔒 Psychic Lock (4+)`, [{ label: t.name, dice: [{ val: r, cls: hit ? 'die-pass' : 'die-fail', tip: 'Needed 4+' }] }]);
+      if (!hit) { this.log(`🔒 <b>${det.name}</b>'s Psychic Lock misses <b>${t.name}</b> (${r}, needed 4+).`); return done(); }
+      if (this.eldPsySave(t, 'Psychic Lock')) return done();
+      if (det.eldLock) this.eldReleaseLock(det, 'locks a new target');
+      s.psyLock = { by: det.id }; det.eldLock = { detId: t.id, standId: s.id };
+      this.spawnFloatingText(s.container.x, s.container.y - 14, '🔒 PSYCHIC LOCK', '#a855f7', '12px');
+      this.log(`🔒 <b>Psychic Lock!</b> ${t.name} ${s.label || ''} is held fast: it can't move or fire, and gets no dice in close combat. It breaks free on a 4+ in the End Phase, or when ${det.name} moves, fires or uses another power.`);
+      return done();
+    }
+    if (key === 'eld_storm') {
+      let p = opt.point;
+      if (!p) {
+        const cands = this.eldEnemies(det).filter(o => this.eldNear(det, o, 50));
+        const pref = tgt && cands.includes(tgt) ? [tgt] : cands;
+        const score = pt => this.detachments.reduce((a, o) => a + o.stands.filter(s => !o.embarkedOn && Phaser.Math.Distance.Between(pt.x, pt.y, s.container.x, s.container.y) <= BARRAGE_RADIUS_PX + 4).length * (o.faction === det.faction ? -3 : 1), 0);
+        let best = null;
+        pref.forEach(o => o.stands.forEach(s => { const pt = { x: s.container.x, y: s.container.y }, sc = score(pt); if (!best || sc > best.sc) best = { pt, sc }; }));
+        if (!best || best.sc <= 0) return fail('no enemy within 50 cm to hit.');
+        p = best.pt;
+      }
+      begin(p.x, p.y);
+      const R = BARRAGE_RADIUS_PX, hitList = [];
+      this.detachments.forEach(o => { if (!o.stands.length || o.embarkedOn || o.inReserve || o === det) return; o.stands.forEach(s => { if (Phaser.Math.Distance.Between(p.x, p.y, s.container.x, s.container.y) <= R + 2) hitList.push({ o, s }); }); });
+      const notes = [];
+      hitList.forEach(({ o, s }) => {
+        if (this.hasHitLocations(o)) {
+          if (o.shields > 0) { o.shields--; notes.push(`${o.name} loses a shield`); this.updateDetachmentBadge(o); }
+          else { notes.push(`${o.name} is buffeted`); this.applyTitanHit(o, s, { location: 'legs', tsm: -2, from: p }); }
+          return;
+        }
+        const a = Math.random() * Math.PI * 2, k = R + (s.baseRadius || 10) + 2;
+        s.container.x = Phaser.Math.Clamp(p.x + Math.cos(a) * k, 12, BOARD_W - 12); s.container.y = Phaser.Math.Clamp(p.y + Math.sin(a) * k, 12, BOARD_H - 12);
+        s.originX = s.container.x; s.originY = s.container.y; s.stunned = this.turn;
+        this.updateDetachmentBadgePos(o);
+      });
+      const flung = hitList.filter(x => !this.hasHitLocations(x.o)).length;
+      (this.smokeClouds = this.smokeClouds || []).push({ x: p.x, y: p.y, r: R, storm: true });
+      if (this.drawSmokeClouds) this.drawSmokeClouds();
+      this.spawnFloatingText(p.x, p.y - 18, '🌪️ ELDRITCH STORM', '#a855f7', '13px');
+      this.log(`🌪️ <b>Eldritch Storm!</b> ${det.name} hurls a psychic tempest: ${flung} model(s) flung to its edge and stunned for the rest of the turn${notes.length ? '; ' + notes.join(', ') : ''}. The storm blocks sight until the End Phase.`);
+      return done();
+    }
+    if (key === 'eld_doom') {
+      const pick = opt.model || this.eldPickModel(det, 50, tgt);
+      if (!pick) return fail('no enemy within 50 cm and line of sight.');
+      const t = pick.d; begin(pick.s.container.x, pick.s.container.y);
+      if ((t.shields > 0 || this.getHoloFieldSave(t) !== null) && Phaser.Math.Between(1, 6) >= 4) { this.log(`💀 <b>Doom:</b> ${t.name}'s shields turn the curse aside (4+).`); return done(); }
+      if (this.eldPsySave(t, 'Doom')) return done();
+      t.eldDoomBy = det.id; det.eldDoomTarget = t.id; this.updateDetachmentBadge(t);
+      const tc = this.getDetachmentCenter(t); this.spawnFloatingText(tc.x, tc.y - 16, '💀 DOOMED', '#ef4444', '13px');
+      this.log(`💀 <b>Doom!</b> ${det.name} curses <b>${t.name}</b>: every shot at it hits on 3+, and its CAF is halved in close combat, until the Warlock uses another power.`);
+      return done();
+    }
+    if (key === 'eld_witch_sight') {
+      if (det.titanState && (det.titanState.immobile || det.titanState.reactor)) return fail(`${det.name} is immobilised and can't use Witch Sight.`);
+      begin(); det.witchSight = this.turn; this.updateDetachmentBadge(det);
+      this.spawnFloatingText(c.x, c.y - 20, '👁️ WITCH SIGHT', '#c084fc', '13px');
+      this.log(`👁️ <b>Witch Sight:</b> enemies firing at ${det.name} are -1 to hit, and titans and vehicles fighting it use one less die, until the End Phase.`);
+      return done();
+    }
+    if (key === 'eld_mind_shout') {
+      begin(); this.spawnFloatingText(c.x, c.y - 20, '📢 MIND SHOUT', '#c084fc', '14px');
+      const foes = this.eldEnemies(det).filter(o => o.order !== 'FALL_BACK' && this.eldNear(det, o, 25));
+      const friends = this.detachments.filter(o => o.faction === det.faction && o.stands.length && o.order === 'FALL_BACK' && this.eldNear(det, o, 25));
+      this.log(`📢 <b>Mind Shout!</b> ${det.name} unleashes a psychic scream: ${foes.length} enemy detachment(s) test morale, ${friends.length} friendly one(s) may rally.`);
+      foes.forEach(o => { if (!this.testMorale(o, 'Mind Shout')) this.failMorale(o); });
+      friends.forEach(o => {
+        const r = Phaser.Math.Between(1, 6), ok = r >= (o.morale || 4);
+        if (ok) { o.order = 'FIRST_FIRE'; o.zealous = false; o.orderRevealed = true; this.updateDetachmentBadge(o); }
+        this.log(`${ok ? '🎺' : '🏳️'} <b>${o.name}</b> ${ok ? 'rallies' : 'fails to rally'} (${r} v ${o.morale || 4}+)${ok ? ' and holds its ground on First Fire' : ''}.`);
+      });
+      return done();
+    }
+    if (key === 'eld_turmoil') {
+      const list = [];
+      this.eldEnemies(det).forEach(o => { if ((o.pinningClass || 1) > 2 && !/walker|dread/i.test(this.eldName(o))) return; o.stands.forEach(s => { if (det.stands.some(m => this.eldStandDist(m, s) <= (m.baseRadius || 10) + (s.baseRadius || 10) + 4)) list.push({ o, s }); }); });
+      if (!list.length) return fail('no enemy in base contact.');
+      begin();
+      let n = 0;
+      list.forEach(({ o, s }) => {
+        const sv = Math.min(o.save || 7, o.fixedSave || 7), r = Phaser.Math.Between(1, 6);
+        if (sv <= 6 && r >= sv) return;
+        const a = Math.random() * Math.PI * 2, k = Phaser.Math.Between(1, 6) * PX_PER_CM + 12;
+        s.container.x = Phaser.Math.Clamp(s.container.x + Math.cos(a) * k, 12, BOARD_W - 12); s.container.y = Phaser.Math.Clamp(s.container.y + Math.sin(a) * k, 12, BOARD_H - 12);
+        s.originX = s.container.x; s.originY = s.container.y; s.stunned = this.turn; n++; this.updateDetachmentBadgePos(o);
+      });
+      this.log(`🌀 <b>Turmoil:</b> reality ripples around ${det.name}: ${n} of ${list.length} enemy model(s) fail their save and are flung away, stunned for the turn.`);
+      return done();
+    }
+    if (key === 'eld_veil') {
+      const ok = o => o.faction === det.faction && this.isHarlequin(o) && this.isInfantry(o) && o.stands.length && this.eldNear(det, o, 50);
+      const t = (sel && ok(sel)) ? sel : (ok(det) ? det : this.detachments.filter(ok)[0]);
+      if (!t) return fail('no Harlequin infantry within 50 cm.');
+      const tc = this.getDetachmentCenter(t); begin(tc.x, tc.y);
+      if (t.veilTurn !== this.turn) { t._veilPrevFixed = t.fixedSave || null; t.fixedSave = Math.min(t.fixedSave || 7, 4); }
+      t.veilTurn = this.turn; this.updateDetachmentBadge(t);
+      this.log(`🎭 <b>Veil of Tears:</b> ${t.name} slips from the enemy's minds: a 4+ fixed save until the end of the turn.`);
+      return done();
+    }
+    return false;
+  }
+
+  // Modifiers to hit: Guide (+1), Witch Sight (-1), Doom (hits on 3+)
+  eldToHit(firer, target, need) {
+    if (firer && firer.eldGuide === this.turn) need -= 1;
+    if (target && target.witchSight === this.turn) need += 1;
+    if (this.eldDoomActive(target)) need = Math.min(need, 3);
+    return need;
+  }
+
+  // ---------- the computer's psykers ----------
+  aiEldarPsychics(side) {
+    this.detachments.filter(d => d.faction === side && this.isFactionAI(side) && this.isEldar(d) && d.isPsyker && d.stands.length && !d.psychicPowerUsed && !d.embarkedOn && !d.inReserve).forEach(d => {
+      const sp = (d.characterRules && d.characterRules.spells) || [];
+      const tryP = (k, o) => sp.includes(k) && !d.psychicPowerUsed && this.castEldarPower(d, k, o || {});
+      if (this.isWarlockTitan(d)) {
+        const foes = this.eldEnemies(d).filter(o => this.eldNear(d, o, 25) && !this.isFearlessUnit(o) && o.armyBook !== 'TYRANIDS' && o.order !== 'FALL_BACK' && !o.isTitan);
+        if (foes.length && tryP('eld_mind_shout')) return;
+        const big = this.eldPickModel(d, 50, null, o => o.isTitan || o.superHeavy || o.stands.length >= 4);
+        if (big && !this.eldDoomActive(big.d) && tryP('eld_doom', { model: big })) return;
+        if (this.eldEnemies(d).some(o => this.eldNear(d, o, 75)) && tryP('eld_witch_sight')) return;
+        return;
+      }
+      if (sp.includes('eld_mind_blast')) { const m = this.eldPickModel(d, 25, null); if (m && tryP('eld_mind_blast', { model: m })) return; }
+      if (sp.includes('eld_lock')) { const m = this.eldPickModel(d, 75, null, (o, s) => !s.psyLock && (o.isTitan || o.superHeavy || this.eldValue(o) >= 30)); if (m && tryP('eld_lock', { model: m })) return; }
+      if (sp.includes('eld_storm') && tryP('eld_storm')) return;
+      if (sp.includes('eld_guide') && tryP('eld_guide')) return;
+      if (sp.includes('eld_turmoil') && tryP('eld_turmoil')) return;
+      if (sp.includes('eld_veil')) tryP('eld_veil');
+    });
+  }
+
+  // ---------- orders: Warlocks, the Warlock Titan and Waystone spirits ----------
+  applyEldarOrders() {
+    const warlocks = this.detachments.filter(d => this.isEldWarlock(d) && d.stands.length && !d.embarkedOn);
+    const seers = this.detachments.filter(d => this.isEldSpiritseer(d) && d.stands.length && !d.embarkedOn);
+    this.detachments.forEach(d => {
+      if (!this.isEldar(d) || !d.stands.length) return;
+      if (d.avatar) { d.instinct = 'AVATAR'; d.order = 'FIRST_FIRE'; d.orderRevealed = true; this.updateDetachmentBadge(d); return; }
+      d.eldFlex = false;
+      if (d.embarkedOn || d.inReserve || d.order === 'FALL_BACK') return;
+      if (this.isWarlockTitan(d)) { d.eldFlex = true; return; }
+      const nearLock = warlocks.some(w => w.faction === d.faction && (w === d || this.eldNear(w, d, 10)));
+      if (!this.isWaystone(d)) { if (nearLock) d.eldFlex = true; return; }
+      // Waystone spirits
+      const node = seers.some(s => s.faction === d.faction && this.eldNear(s, d, 25));
+      if (nearLock || node) return; // free to take any orders
+      const living = this.eldLiving(d).filter(o => this.eldNear(o, d, 10) && o.order && o.order !== 'FALL_BACK');
+      if (living.length) {
+        const lead = living[0];
+        if (d.order !== lead.order) { d.order = lead.order; d.orderRevealed = true; this.log(`👻 <b>${d.name}</b> (Waystone spirits) mirrors the orders of ${lead.name}: <b>${this.eldOrderName(lead.order)}</b>.`); }
+        this.updateDetachmentBadge(d);
+        return;
+      }
+      if (this.eldLiving(d).length) {
+        d.instinct = 'WAYSTONE'; d.order = 'CHARGE'; d.orderRevealed = true;
+        this.log(`👻 <b>${d.name}</b> has strayed more than 10 cm from the living Eldar: its spirits charge back towards them.`);
+        this.updateDetachmentBadge(d);
+      }
+    });
+  }
+  eldLivingStands(det) { const out = []; this.eldLiving(det).forEach(o => o.stands.forEach(s => out.push(s))); return out; }
+  eldFlexMovable(det) {
+    if (!det || !det.eldFlex || this.phase !== 'MOVEMENT' || det.moved || det.faction !== this.activePlayer || this.isFactionAI(det.faction) || det.order === 'FALL_BACK') return false;
+    if (this.activatingDetachment === det && det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1)) return false;
+    return true;
+  }
+  setEldFlexOrder(k) {
+    const det = this.activatingDetachment || this.selectedDetachment;
+    if (!this.eldFlexMovable(det) || det.order === k) return;
+    const from = det.order; det.order = k; det.orderRevealed = true;
+    this.log(`🔮 <b>${det.name}</b> ${this.isWarlockTitan(det) ? 'acts on the Warlock Titan\'s foresight' : 'heeds the Warlock\'s foresight'}: orders change from ${from ? this.eldOrderName(from) : 'none'} to <b>${this.eldOrderName(k)}</b>.`);
+    this.updateDetachmentBadge(det); this.drawOverlays(); this.updateUI();
+  }
+  renderEldFlex() {
+    let row = document.getElementById('eld-flex-row');
+    const det = this.activatingDetachment || this.selectedDetachment, show = this.eldFlexMovable(det);
+    if (!show) { if (row) row.style.display = 'none'; return; }
+    if (!row) {
+      const mc = document.getElementById('movement-controls'); if (!mc) return;
+      row = document.createElement('div'); row.id = 'eld-flex-row'; row.className = 'btn-row'; row.style.marginTop = '6px';
+      mc.parentNode.insertBefore(row, mc.nextSibling);
+    }
+    const b = (k, cls, lab) => `<button class="${cls}" style="${det.order === k ? 'outline:2px solid #fde047;' : 'opacity:0.75;'}" onclick="window.gameScene.setEldFlexOrder('${k}')">${lab}</button>`;
+    row.innerHTML = `<span style="align-self:center;font-size:0.68rem;font-weight:800;color:#d8b4fe;margin-right:4px">🔮 Foresight:</span>${b('FIRST_FIRE', 'btn-ff', 'First Fire')}${b('ADVANCE', 'btn-adv', 'Advance')}${b('CHARGE', 'btn-chg', 'Charge')}`;
+    row.style.display = 'flex';
+  }
+
+  // ---------- close combat ----------
+  // Before the dice: Banshee scream, Laser Lances, Shining Spears, Eldar Knight Psychic Lances. Returns true if a model fell.
+  eldarPreStrike(impStand, orkStand) {
+    this._eldBout = new Map();
+    if (!this._eldPre || this._eldPre.turn !== this.turn) this._eldPre = { turn: this.turn, done: new Set() };
+    let fell = false;
+    const one = (aS, dS) => {
+      const a = aS.detachment, d = dS.detachment;
+      if (!this.isEldar(a) || aS.chargedTurn !== this.turn || this._eldPre.done.has(aS)) return;
+      const name = this.eldName(a), noArmour = (d.save || 7) >= 7 && !this.hasHitLocations(d);
+      const kind = (a.bansheeMask || /banshee/i.test(name)) ? 'banshee' : this.hasAbility(a, 'LaserLance') ? 'laser' : /shining spear/i.test(name) ? 'spear' : this.hasAbility(a, 'PsychicLance') ? 'psylance' : null;
+      if (!kind) return;
+      this._eldPre.done.add(aS);
+      const r = Phaser.Math.Between(1, 6);
+      if (kind === 'banshee' || kind === 'laser') {
+        const label = kind === 'banshee' ? '🔊 Banshee scream' : '⚡ Laser Lance';
+        if (!noArmour) { this.log(`${label}: ${d.name} has an armour save, so it has no effect.`); return; }
+        if (r >= 5 && this.eldKill(d, dS)) { fell = true; this.log(`${label}! <b>${a.name}</b> rolls ${r}: ${d.name} ${dS.label || ''} is destroyed before the fight.`); }
+        else this.log(`${label}: rolled ${r} (needs 5+) — ${d.name} fights on.`);
+        return;
+      }
+      if (kind === 'spear') {
+        if (r < 5) { this.log(`🗡️ Shining Spear charge: rolled ${r} (needs 5+) — no hit.`); return; }
+        if (this.hasHitLocations(d)) { const res = this.applyTitanHit(d, dS, { tsm: 0, from: { x: aS.container.x, y: aS.container.y } }); if (res && res.destroyed) fell = true; this.log(`🗡️ <b>${a.name}</b>'s lances strike ${d.name} before the fight.`); return; }
+        const sv = Math.min(d.save || 7, d.fixedSave || 7), sr = Phaser.Math.Between(1, 6);
+        if (sv <= 6 && sr >= sv) { this.log(`🗡️ Shining Spear charge hits ${d.name} (${r}), but it saves (${sr} v ${sv}+).`); return; }
+        if (d.superHeavy) { this.applySuperHeavyDamage(d, dS, true); this.log(`🗡️ Shining Spear charge damages ${d.name}.`); return; }
+        if (this.eldKill(d, dS)) { fell = true; this.log(`🗡️ <b>Shining Spear charge!</b> ${d.name} ${dS.label || ''} is struck down before the fight (hit ${r}, save ${sr} v ${sv}+).`); }
+        return;
+      }
+      // Eldar Knight Psychic Lance
+      if (this.isGreaterDaemon(d)) {
+        // -1 to the save for each Knight beyond the first that adds its lance this turn
+        if (!this._eldLanceCount || this._eldLanceCount.turn !== this.turn) this._eldLanceCount = { turn: this.turn, m: new Map() };
+        const mod = this._eldLanceCount.m.get(dS) || 0; this._eldLanceCount.m.set(dS, mod + 1);
+        const sv = (d.save || 7) + mod, sr = Phaser.Math.Between(1, 6);
+        if (sv > 6 || sr < sv) { if (this.eldKill(d, dS)) { fell = true; this.log(`🔮 <b>Psychic Lance!</b> ${d.name} is banished (save ${sr} v ${sv}+).`); } }
+        else this.log(`🔮 Psychic Lance: ${d.name} withstands the lance (save ${sr} v ${sv}+).`);
+        return;
+      }
+      const tmpl = this.hasHitLocations(d);
+      if (r <= 3) { this.log(`🔮 Psychic Lance: rolled ${r} — no effect.`); return; }
+      if (r <= 5) {
+        const fx = tmpl ? { cafMinus: Phaser.Math.Between(1, 6) } : { cafZero: true };
+        this._eldBout.set(dS, fx);
+        this.log(`🔮 <b>Psychic Lance</b> (${r}): ${d.name}'s CAF ${tmpl ? `drops by ${fx.cafMinus}` : 'falls to 0'} this round.`);
+        return;
+      }
+      if (tmpl) { this._eldBout.set(dS, { cafHalf: true }); this.log(`🔮 <b>Psychic Lance</b> (6): ${d.name}'s CAF is halved this round.`); return; }
+      const sv = Math.min(d.save || 7, d.fixedSave || 7), sr = Phaser.Math.Between(1, 6);
+      if (sv <= 6 && sr >= sv) { this.log(`🔮 Psychic Lance (6) hits ${d.name}, but it saves (${sr} v ${sv}+).`); return; }
+      if (d.superHeavy) { this.applySuperHeavyDamage(d, dS, true); this.log(`🔮 Psychic Lance (6) damages ${d.name}.`); return; }
+      if (this.eldKill(d, dS)) { fell = true; this.log(`🔮 <b>Psychic Lance</b> (6)! ${d.name} ${dS.label || ''} is destroyed before the fight.`); }
+    };
+    one(impStand, orkStand); one(orkStand, impStand);
+    return fell;
+  }
+  // Dice and CAF changes for one side of a bout: { dice, caf, zero, tag }
+  eldarCC(me, myStand, foe, foeStand) {
+    let dice = 0, caf = 0, zero = false; const tags = [];
+    const name = this.eldName(me);
+    if (this.isEldar(me) && /striking scorpion/i.test(name)) {
+      if (this.isVehicleClass(foe)) { dice -= 1; tags.push('🦂 1D6 vs armour'); } else { dice += 1; tags.push('🦂 Mandiblasters 3D6'); }
+    }
+    if (foe.witchSight === this.turn && (me.isTitan || this.isVehicleClass(me))) { dice -= 1; tags.push('👁️ Witch Sight -1D6'); }
+    if (myStand.psyLock || myStand.stunned === this.turn) { zero = true; tags.push(myStand.psyLock ? '🔒 Locked: no dice' : '🌪️ Stunned: no dice'); }
+    const base = me.caf || 0;
+    if (this.eldDoomActive(me)) { caf -= Math.floor(base / 2); tags.push('💀 Doom: CAF halved'); }
+    const fx = this._eldBout && this._eldBout.get(myStand);
+    if (fx && fx.cafZero) { caf -= base; tags.push('🔮 Lance: CAF 0'); }
+    if (fx && fx.cafMinus) { caf -= fx.cafMinus; tags.push(`🔮 Lance: -${fx.cafMinus} CAF`); }
+    if (fx && fx.cafHalf) { caf -= Math.floor(base / 2); tags.push('🔮 Lance: CAF halved'); }
+    return { dice, caf, zero, tag: tags.length ? ` <span class="log-hit">[${tags.join(', ')}]</span>` : '' };
+  }
+  // Harlequins re-roll their close combat dice once per fight when losing or tied
+  eldarCCReroll(me, rolls, myTotal, foeTotal) {
+    if (!this.isHarlequin(me) || !rolls.length || myTotal > foeTotal) return '';
+    const old = rolls.slice();
+    for (let i = 0; i < rolls.length; i++) rolls[i] = Phaser.Math.Between(1, 6);
+    return ` <span class="log-save">[🎭 Blessed re-roll ${old.join(',')}→${rolls.join(',')}]</span>`;
+  }
+
+  // ---------- End Phase ----------
+  eldarEndPhase() {
+    this.detachments.forEach(d => {
+      d.psychicPowerUsed = false;
+      if (d.instinct === 'WAYSTONE') { d.instinct = null; d.order = null; d.orderRevealed = false; }
+      d.eldFlex = false;
+      if (d.veilTurn != null) { d.fixedSave = d._veilPrevFixed || null; if (!d.fixedSave) delete d.fixedSave; d.veilTurn = null; }
+      // Doom on a shielded target: a fresh 4+ save every turn
+      if (d.eldDoomBy && this.eldDoomActive(d) && (d.shields > 0 || this.getHoloFieldSave(d) !== null) && Phaser.Math.Between(1, 6) >= 4) {
+        const c = this.detachments.find(o => o.id === d.eldDoomBy); this.log(`💀 <b>${d.name}</b>'s shields shake off the Doom (4+).`); this.eldEndDoom(c);
+      }
+      d.stands.forEach(s => {
+        if (!s.psyLock) return;
+        const w = this.detachments.find(o => o.id === s.psyLock.by);
+        if (!w || !w.stands.length || !w.eldLock) { s.psyLock = null; return; }
+        const r = Phaser.Math.Between(1, 6);
+        if (r >= 4) { s.psyLock = null; w.eldLock = null; this.log(`🔓 <b>${d.name}</b> ${s.label || ''} breaks the Psychic Lock (${r}).`); }
+        else this.log(`🔒 <b>${d.name}</b> ${s.label || ''} stays locked (${r}, needs 4+).`);
+      });
+    });
+  }
+
+  // ---------- wrappers ----------
+  confirmDetachmentMove() {
+    const det = this.activatingDetachment;
+    if (det) {
+      det.stands.forEach(s => { if ((s.psyLock || s.stunned === this.turn) && s.originX != null) { s.container.x = s.originX; s.container.y = s.originY; } });
+      det._eldMovedNow = det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1);
+    }
+    const r = this.confirmDetachmentMoveCore();
+    if (det && det.moved) {
+      if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
+      if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
+    }
+    return r;
+  }
+  checkCoherency(det) {
+    const off = det && det.stands.filter(s => s.psyLock || s.stunned === this.turn);
+    if (!off || !off.length || off.length >= det.stands.length) return this.checkCoherencyCore(det);
+    const all = det.stands; det.stands = all.filter(s => !off.includes(s));
+    try { return this.checkCoherencyCore(det); } finally { det.stands = all; }
+  }
+  evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
+    const off = firerDet && firerDet.stands.filter(s => s.psyLock || s.stunned === this.turn);
+    if (!off || !off.length) return this.evaluateFireSolutionCore(firerDet, targetDet, isSnapFire);
+    if (off.length >= firerDet.stands.length) return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
+    const all = firerDet.stands; firerDet.stands = all.filter(s => !off.includes(s));
+    try { return this.evaluateFireSolutionCore(firerDet, targetDet, isSnapFire); } finally { firerDet.stands = all; }
+  }
+  markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
+    if (firerDet && firerDet.eldLock) this.eldReleaseLock(firerDet, 'opens fire');
+    return this.markFirerAfterShotCore(firerDet, pairs, split, salvosUsed);
+  }
+  startCombatSegment(segment) {
+    if (segment === 'COMBAT_FIRST') ['IMPERIUM', 'ORKS'].forEach(f => { try { this.aiEldarPsychics(f); } catch (e) { console.error(e); } });
+    return this.startCombatSegmentCore(segment);
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -50199,7 +50717,7 @@ class NetEpicScene extends Phaser.Scene {
       if (!p) return;
       const card = document.createElement('div');
       card.className = 'power-card';
-      const diffTag = p.chapter ? 'Chapter power' : (p.difficulty > 0 ? `Difficulty: ${p.difficulty}+` : 'Psychic Duel (2D6 vs 1D6)');
+      const diffTag = p.tag || (p.chapter ? 'Chapter power' : (p.difficulty > 0 ? `Difficulty: ${p.difficulty}+` : 'Psychic Duel (2D6 vs 1D6)'));
       card.innerHTML = `
         <div class="power-card-header">
           <span class="power-card-title">${p.icon} ${p.name}</span>
@@ -51626,7 +52144,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
-  evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
+  evaluateFireSolutionCore(firerDet, targetDet, isSnapFire = false) {
     if (firerDet && firerDet.salvos && firerDet.salvos.some(sv => sv.modes || sv.rangeRoll)) this.prepareSalvoModes(firerDet, targetDet);
     if (!firerDet || !targetDet || firerDet.embarkedOn || targetDet.embarkedOn || firerDet.inReserve || targetDet.inReserve) {
       return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet && firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
@@ -51866,7 +52384,7 @@ class NetEpicScene extends Phaser.Scene {
           const inWood = this.woods.some(w => Phaser.Math.Distance.Between(vx, vy, w.x, w.y) <= w.r);
           const coverMod = garrisoned ? -this.standCover(victimStand) : (inWood ? -1 : 0);
           const waaaghMod = (this.waaaghActive && vDet.armyBook === 'ORKS') ? 1 : 0;
-          const neededToHit = barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod;
+          const neededToHit = this.eldToHit(firerDet, vDet, barrageStats.toHit - snapMod - indirectMod - coverMod + waaaghMod);
 
           totalDice++;
           let roll = Phaser.Math.Between(1, 6);
@@ -51981,7 +52499,7 @@ class NetEpicScene extends Phaser.Scene {
           const coverMod = pair.res.coverMod;
           const waaaghMod = (this.waaaghActive && targetDet.armyBook === 'ORKS') ? 1 : 0;
           const hardMod = (this.hasAbility(targetDet, 'HardToHit') || (this.hasAbility(targetDet, 'HardToHitOnCharge') && targetDet.order === 'CHARGE')) ? 1 : 0;
-          const neededToHit = curWpn.toHit - snapMod - coverMod + waaaghMod + hardMod;
+          const neededToHit = this.eldToHit(firerDet, targetDet, curWpn.toHit - snapMod - coverMod + waaaghMod + hardMod);
 
           for (let d = 0; d < curDice; d++) {
             totalDice++;
@@ -52183,7 +52701,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // After a shot: track which stands / Titan weapon salvos have fired. Detachment is "fired" once everything has been used.
-  markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
+  markFirerAfterShotCore(firerDet, pairs, split, salvosUsed = 1) {
     firerDet.stealthBroken = true; // p. 34: Stealth is lost until the End Phase after a ranged attack
     if (!firerDet.standsFired) firerDet.standsFired = new Set();
     if (this.isSalvoFirer(firerDet)) {
@@ -53933,7 +54451,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.selectedDetachment.order === 'FALL_BACK' || this.selectedDetachment.zealous) return;
     if (this.selectedDetachment.deathCompany && orderKey === 'FIRST_FIRE') { this.log(`💀 The <b>Death Company</b> is too frenzied to hold back: Advance or Charge only.`); return; }
     if (this.isCommandUnit(this.selectedDetachment) && !this.selectedDetachment.deathCompany) return; // Command units take no orders
-    if (this.selectedDetachment.instinct) { this.log(`🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
+    if (this.selectedDetachment.instinct) { this.log(this.selectedDetachment.instinct === 'WAYSTONE' ? `👻 <b>${this.selectedDetachment.name}</b> has strayed from the living Eldar and must return to them this turn.` : `🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     // If this is a Transport carrying embarked passengers, automatically set the passenger's order to ADVANCE
@@ -53965,6 +54483,7 @@ class NetEpicScene extends Phaser.Scene {
       }
     });
     this.applyTitanOrderEffects();
+    this.applyEldarOrders();
 
     // Check for Army Initiative Bonuses (e.g. Marneus Calgar Chapter Master: +1 Army Initiative)
     let southInitMod = 0;
@@ -54131,7 +54650,7 @@ class NetEpicScene extends Phaser.Scene {
     this.drawOverlays();
   }
 
-  confirmDetachmentMove() {
+  confirmDetachmentMoveCore() {
     const det = this.activatingDetachment;
     if (!det) return;
     if (this.isRotatingGizmo) this.closeRotationGizmo();
@@ -54391,7 +54910,7 @@ class NetEpicScene extends Phaser.Scene {
     return false;
   }
 
-  startCombatSegment(segment) {
+  startCombatSegmentCore(segment) {
     this.phase = segment;
     this.activePlayer = this.initiativeWinner;
     this.selectedDetachment = null;
@@ -54636,6 +55155,13 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
 
+    // Eldar strikes before the dice: Banshee scream, Laser Lances, Shining Spears, Knight Psychic Lances
+    if (this.eldarPreStrike(impStand, orkStand)) {
+      [impDet, orkDet].forEach(d => this.checkBreakPoint(d));
+      this.focusCloseCombatBout(bout, 350); this.drawOverlays(); this.updateUI();
+      if (!this.cleanCloseCombatBouts()) { this.log(`✅ All Close Combat bouts resolved!`); this.startCombatSegment('COMBAT_ADVANCE'); }
+      return;
+    }
     // Strikes before the dice: Laser Burner, Wrecker, Chaos Energy Whip
     const impPreCaf = impDet.titanState ? this.titanPreCombat(impDet, impStand, orkDet, orkStand) : 0;
     const orkPreCaf = orkDet.titanState ? this.titanPreCombat(orkDet, orkStand, impDet, impStand) : 0;
@@ -54661,14 +55187,15 @@ class NetEpicScene extends Phaser.Scene {
     // Extra dice go to the second, third... attacker of a stand; none against a stand immune to ganging up
     const impExtraDice = (orkFought > 0 && impFought === 0 && !orkImmuneGang) ? orkFought : 0;
     const orkExtraDice = (impFought > 0 && orkFought === 0 && !impImmuneGang) ? impFought : 0;
-    const impBansheeBonus = (impDet.bansheeMask && orkDet.pinningClass === 1) ? 1 : 0;
-    const orkBansheeBonus = (orkDet.bansheeMask && impDet.pinningClass === 1) ? 1 : 0;
+    const impBansheeBonus = 0; // the Banshee scream strikes before the fight instead (eldarPreStrike)
+    const orkBansheeBonus = 0;
     const impWaaaghBonus = (this.waaaghActive && impDet.armyBook === 'ORKS') ? 1 : 0;
     const orkWaaaghBonus = (this.waaaghActive && orkDet.armyBook === 'ORKS') ? 1 : 0;
 
     const immob = d => Boolean(d.titanState && (d.titanState.reactor || d.titanState.immobile));
-    const impDiceCount = (immob(impDet) ? 0 : 2) + impExtraDice + impBansheeBonus + impWaaaghBonus;
-    const orkDiceCount = (immob(orkDet) ? 0 : 2) + orkExtraDice + orkBansheeBonus + orkWaaaghBonus;
+    const eldI = this.eldarCC(impDet, impStand, orkDet, orkStand), eldO = this.eldarCC(orkDet, orkStand, impDet, impStand);
+    const impDiceCount = eldI.zero ? 0 : Math.max(0, (immob(impDet) ? 0 : 2 + eldI.dice) + impExtraDice + impBansheeBonus + impWaaaghBonus);
+    const orkDiceCount = eldO.zero ? 0 : Math.max(0, (immob(orkDet) ? 0 : 2 + eldO.dice) + orkExtraDice + orkBansheeBonus + orkWaaaghBonus);
 
     this.defenderFoughtCounts.set(impStand, impFought + 1);
     this.defenderFoughtCounts.set(orkStand, orkFought + 1);
@@ -54741,8 +55268,8 @@ class NetEpicScene extends Phaser.Scene {
       return { caf, tag: parts ? ` <span class="log-hit">[🦾 ${parts}${k.names.length ? ' ' + k.names.join(', ') : ''}]</span>` : '' };
     };
     const impCC = ccBonus(impDet, impRolls, orkDet, impPreCaf), orkCC = ccBonus(orkDet, orkRolls, impDet, orkPreCaf);
-    const impSum = impRolls.reduce((a, b) => a + b, 0);
-    const orkSum = orkRolls.reduce((a, b) => a + b, 0);
+    let impSum = impRolls.reduce((a, b) => a + b, 0);
+    let orkSum = orkRolls.reduce((a, b) => a + b, 0);
     const impGarrisonBonus = this.standCover(impStand);
     const orkGarrisonBonus = this.standCover(orkStand);
     const impSynapseBonus = 0, orkSynapseBonus = 0; // the book gives synapse no close combat bonus
@@ -54766,13 +55293,19 @@ class NetEpicScene extends Phaser.Scene {
     const impBaseCaf = halfCaf(impDet) ? Math.ceil(impDet.caf / 2) : impDet.caf;
     const orkBaseCaf = halfCaf(orkDet) ? Math.ceil(orkDet.caf / 2) : orkDet.caf;
     const impCh = this.chapterCafMods(impDet, orkDet, impStand, orkStand), orkCh = this.chapterCafMods(orkDet, impDet, orkStand, impStand);
-    const impModCaf = impCh.mod + impCC.caf + impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader;
-    const orkModCaf = orkCh.mod + orkCC.caf + orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader;
-    const impTotal = impSum + impModCaf;
-    const orkTotal = orkSum + orkModCaf;
+    const impModCaf = impCh.mod + impCC.caf + impBaseCaf + impGarrisonBonus + impSynapseBonus + impTerrorPen + impDeathrolla + orkDaemonHunterPen + impFbPen + impLeader + eldI.caf;
+    const orkModCaf = orkCh.mod + orkCC.caf + orkBaseCaf + orkGarrisonBonus + orkSynapseBonus + orkTerrorPen + orkDeathrolla + impDaemonHunterPen + orkFbPen + orkLeader + eldO.caf;
+    let impTotal = impSum + impModCaf;
+    let orkTotal = orkSum + orkModCaf;
+    { // Harlequins: Blessed re-roll when losing or tied
+      const a = this.eldarCCReroll(impDet, impRolls, impTotal, orkTotal);
+      if (a) { impRerollNote += a; impSum = impRolls.reduce((x, y) => x + y, 0); impTotal = impSum + impModCaf; }
+      const b = this.eldarCCReroll(orkDet, orkRolls, orkTotal, impTotal);
+      if (b) { orkRerollNote += b; orkSum = orkRolls.reduce((x, y) => x + y, 0); orkTotal = orkSum + orkModCaf; }
+    }
 
     const gangTagImp =
-      (impDiceCount > 2 ? ` <span class="log-hit">[${impBansheeBonus ? '🔊 Banshee ' : (impWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${impDiceCount}D6!]</span>` : '') +
+      (impExtraDice + impWaaaghBonus > 0 ? ` <span class="log-hit">[${impWaaaghBonus && !impExtraDice ? '🟢 WAAAGH! ' : 'Gang-Up '}${impDiceCount}D6!]</span>` : '') +
       (impImmuneGang ? ` <span class="log-save">[${impDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
       (impGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +${impGarrisonBonus} CAF]</span>` : '') +
       (impSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
@@ -54781,10 +55314,10 @@ class NetEpicScene extends Phaser.Scene {
       (impLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (impDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (orkDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      impRerollNote + impCC.tag + impCh.tag;
+      impRerollNote + impCC.tag + impCh.tag + eldI.tag;
 
     const gangTagOrk =
-      (orkDiceCount > 2 ? ` <span class="log-hit">[${orkBansheeBonus ? '🔊 Banshee ' : (orkWaaaghBonus ? '🟢 WAAAGH! ' : 'Gang-Up ')}${orkDiceCount}D6!]</span>` : '') +
+      (orkExtraDice + orkWaaaghBonus > 0 ? ` <span class="log-hit">[${orkWaaaghBonus && !orkExtraDice ? '🟢 WAAAGH! ' : 'Gang-Up '}${orkDiceCount}D6!]</span>` : '') +
       (orkImmuneGang ? ` <span class="log-save">[${orkDet.isTitan ? '🗿 Titan: no gang-up dice' : '🦅 Calgar Unstoppable'}]</span>` : '') +
       (orkGarrisonBonus > 0 ? ` <span class="log-save">[🏰 +${orkGarrisonBonus} CAF]</span>` : '') +
       (orkSynapseBonus > 0 ? ` <span class="log-cc">[🧬 +1 Synapse]</span>` : '') +
@@ -54793,7 +55326,7 @@ class NetEpicScene extends Phaser.Scene {
       (orkLeader > 0 ? ` <span class="log-save">[🎖️ +1 Leader]</span>` : '') +
       (orkDeathrolla > 0 ? ` <span class="log-hit">[⚙️ +2 Deathrolla]</span>` : '') +
       (impDaemonHunterPen < 0 ? ` <span class="log-kill">[⚔️ -2 Daemonhunter]</span>` : '') +
-      orkRerollNote + orkCC.tag + orkCh.tag;
+      orkRerollNote + orkCC.tag + orkCh.tag + eldO.tag;
 
     const midX = (impStand.container.x + orkStand.container.x) / 2;
     const midY = (impStand.container.y + orkStand.container.y) / 2;
@@ -54855,7 +55388,8 @@ class NetEpicScene extends Phaser.Scene {
           if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
-          if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
+          if (this.avatarSaves(victimDet, victimStand)) outcomeHtml = `<span class="log-save">🔥 ${victimDet.name} shrugs off the blow (fixed 2+ save)</span>`;
+          else if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
           else { this.removeCasualty(victimDet, victimStand); this.checkBreakPoint(victimDet); }
         }
       } else if (orkWin) {
@@ -54868,7 +55402,8 @@ class NetEpicScene extends Phaser.Scene {
           if (destroyed && victimDet.stands.includes(victimStand)) this.removeCasualty(victimDet, victimStand);
           this.checkBreakPoint(victimDet);
         } else if (victimStand && victimDet) {
-          if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
+          if (this.avatarSaves(victimDet, victimStand)) outcomeHtml = `<span class="log-save">🔥 ${victimDet.name} shrugs off the blow (fixed 2+ save)</span>`;
+          else if (this.tryHealerSave(victimDet, victimStand)) outcomeHtml = `<span class="log-save">💊 ${victimDet.name} (${victimStand.label}) is saved by a healer!</span>`;
           else { this.removeCasualty(victimDet, victimStand); this.checkBreakPoint(victimDet); }
         }
       } else {
@@ -55097,6 +55632,7 @@ class NetEpicScene extends Phaser.Scene {
       this.waaaghActive = false;
     }
 
+    this.eldarEndPhase();
     // Clear transient psychic powers from detachments
     this.detachments.forEach(d => {
       d.guided = false;
@@ -55248,7 +55784,7 @@ class NetEpicScene extends Phaser.Scene {
     this.autoSaveTurn();
   }
 
-  checkCoherency(det) {
+  checkCoherencyCore(det) {
     if (!det) return true;
     // NetEpic Gold Rules: Single models, Titans, Revenant Scout Titan pairs, Warhound pairs, and Independent units do NOT observe coherency
     if (det.noCoherency || det.isTitan || det.independent || det.key === 'card_eld_revenant_pair') return true;
@@ -55637,7 +56173,7 @@ class NetEpicScene extends Phaser.Scene {
     const popSuffix = det.poppedUp ? ' 🚀POP-UP' : '';
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
-    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
+    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : det.instinct === 'AVATAR' ? 'Avatar' : det.instinct === 'WAYSTONE' ? 'Spirit' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
     const rokkitSuffix = (det.weapon && det.weapon.pulsaRokkit) ? ` 🚀${det.rokkitsRemaining || 0}/3` : '';
     const pulsaSuppSuffix = det.suppressedByPulsa ? ' ⚡DISRUPTED' : '';
     const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + rokkitSuffix + pulsaSuppSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
@@ -55687,6 +56223,7 @@ class NetEpicScene extends Phaser.Scene {
     try { this.renderSalvoPicker(); } catch (e) {}
     try { this.renderTitanAimPanel(); } catch (e) {}
     try { this.renderModePicker(); } catch (e) {}
+    try { this.renderEldFlex(); } catch (e) {}
     return r;
   }
 
@@ -55940,8 +56477,6 @@ class NetEpicScene extends Phaser.Scene {
         const orkFought = this.defenderFoughtCounts ? (this.defenderFoughtCounts.get(b.orkStand) || 0) : 0;
         let impDice = (orkFought > 0 && impFought === 0) ? 2 + orkFought : 2;
         let orkDice = (impFought > 0 && orkFought === 0) ? 2 + impFought : 2;
-        if (impDet.bansheeMask && orkDet.pinningClass === 1) impDice += 1;
-        if (orkDet.bansheeMask && impDet.pinningClass === 1) orkDice += 1;
         const impBase = impDet.damageState === 'HEAVY' ? Math.floor(impDet.caf / 2) : impDet.caf;
         const orkBase = orkDet.damageState === 'HEAVY' ? Math.floor(orkDet.caf / 2) : orkDet.caf;
         const impSyn = (impDet.armyBook === 'TYRANIDS' && this.hasSynapseAura(impDet)) ? 1 : 0;
@@ -56126,7 +56661,7 @@ class NetEpicScene extends Phaser.Scene {
       const ghazBadge = (d.characterRules && d.characterRules.ghazghkull) ? ` | 🟢 ${d.characterRules.waaaghAvailable ? 'WAAAGH! Ready' : 'WAAAGH! Used'}` : '';
       const abaddonBadge = (d.characterRules && d.characterRules.abaddon) ? ' | ⚔️ Warmaster' : '';
       const guideBadge = d.guided ? ' | ✨ Guided' : '';
-      const doomBadge = d.doomed ? ' | 💀 Doomed' : '';
+      const doomBadge = (d.doomed || this.eldDoomActive(d) ? ' | 💀 Doomed' : '') + (d.eldGuide === this.turn ? ' | 🎯 Guided +1 to hit' : '') + (d.witchSight === this.turn ? ' | 👁️ Witch Sight' : '') + (d.eldFlex ? ' | 🔮 Foresight: can change orders when it moves' : '') + (d.stands.some(s => s.psyLock) ? ' | 🔒 Psychic Lock' : '') + (d.avatar ? ' | 🔥 Avatar: moves and fights on its own, fixed 2+ save' : '');
       const transfixedBadge = d.transfixed ? ' | 👁️ Transfixed' : '';
       const waaaghBadge = (this.waaaghActive && d.armyBook === 'ORKS') ? ' | 🟢 WAAAGH! ACTIVE' : '';
       const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
@@ -56220,6 +56755,7 @@ class NetEpicScene extends Phaser.Scene {
   testMoraleCore(det, reason = '') {
     if (!det || det.stands.length === 0) return true;
     if (det.armyBook === 'TYRANIDS') return true; // Tyranids never take morale tests
+    if (this.isHarlequin(det) && this.detachments.some(e => e.faction !== det.faction && e.armyBook === 'CHAOS' && e.stands.length)) { this.log(`🎭 <b>${det.name}</b> hates Chaos too much to waver${reason ? ` (${reason})` : ''}.`); return true; }
     if (this.isFearlessUnit(det)) {
       this.log(`🧠 <b>${det.name}</b> is fearless and ignores the morale test${reason ? ` (${reason})` : ''}.`);
       return true;
@@ -56500,6 +57036,7 @@ class NetEpicScene extends Phaser.Scene {
     window._restoring = true; window._live = null;
     let ok = false;
     try { ok = this.restoreGameStateCore(saveData); } finally { window._restoring = false; }
+    try { this.applyEldarSetup(); } catch (e) { console.error(e); }
     if (ok !== false) window.battleActive = true;
     return ok;
   }
