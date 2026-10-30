@@ -15636,7 +15636,8 @@ const UNIT_CATALOG = {
           "stands": 5,
           "transport": 0
         }
-      ]
+      ],
+      "craftworld": "SAIM_HANN"
     },
     {
       "key": "card_eld_falcon_host",
@@ -15789,7 +15790,8 @@ const UNIT_CATALOG = {
             "dice": 1,
             "toHit": 3,
             "tsm": -4,
-            "damagesBuildings": true
+            "damagesBuildings": true,
+            "fx": "distortion"
           },
           "salvos": [
             {
@@ -15800,7 +15802,8 @@ const UNIT_CATALOG = {
               "dice": 1,
               "toHit": 3,
               "tsm": -4,
-              "damagesBuildings": true
+              "damagesBuildings": true,
+              "fx": "distortion"
             },
             {
               "id": "cobra_shuriken",
@@ -15826,7 +15829,8 @@ const UNIT_CATALOG = {
             "dice": 1,
             "toHit": 3,
             "tsm": -4,
-            "damagesBuildings": true
+            "damagesBuildings": true,
+            "fx": "distortion"
           },
           "salvos": [
             {
@@ -15837,7 +15841,8 @@ const UNIT_CATALOG = {
               "dice": 1,
               "toHit": 3,
               "tsm": -4,
-              "damagesBuildings": true
+              "damagesBuildings": true,
+              "fx": "distortion"
             },
             {
               "id": "cobra_shuriken",
@@ -15989,7 +15994,8 @@ const UNIT_CATALOG = {
             }
           ]
         }
-      ]
+      ],
+      "craftworld": "IYANDEN"
     },
     {
       "key": "card_eld_dragon_host",
@@ -16478,7 +16484,8 @@ const UNIT_CATALOG = {
         "rangeCm": 75,
         "dice": 1,
         "toHit": 3,
-        "tsm": -2
+        "tsm": -2,
+        "fx": "prism"
       },
       "standsCount": 1,
       "color": 15357964,
@@ -16503,14 +16510,15 @@ const UNIT_CATALOG = {
       "skimmer": true,
       "jump": true,
       "weapon": {
-        "name": "Monofilament Web Barrage",
+        "name": "Doomweaver Web",
         "rangeCm": 90,
         "dice": 1,
         "toHit": 4,
-        "tsm": -1,
+        "tsm": 0,
         "barrage": true,
         "barrageBp": 3,
-        "indirect": true
+        "indirect": true,
+        "fx": "web"
       },
       "standsCount": 2,
       "color": 15381256,
@@ -17456,11 +17464,13 @@ const UNIT_CATALOG = {
       ],
       "weapon": {
         "name": "Death Spinners",
-        "rangeCm": 30,
-        "dice": 2,
+        "rangeCm": 10,
+        "dice": 1,
         "toHit": 3,
         "tsm": 0,
-        "ignoresCover": true
+        "ignoresCover": true,
+        "fx": "spinner",
+        "teardropCm": 10
       },
       "standsCount": 4,
       "color": 10033947,
@@ -17817,11 +17827,12 @@ const UNIT_CATALOG = {
         {
           "id": "ws_warpwave",
           "mount": "Force Projector",
-          "name": "Warp Wave Energy Blast",
+          "name": "Warp Wave",
           "rangeCm": 40,
           "dice": 1,
           "toHit": 4,
-          "tsm": 0
+          "tsm": 0,
+          "fx": "wave"
         }
       ],
       "standsCount": 2,
@@ -17902,12 +17913,13 @@ const UNIT_CATALOG = {
       "caf": -3,
       "pinningClass": 1,
       "weapon": {
-        "name": "Vibro-Cannon Beam",
+        "name": "Vibro-Cannon",
         "rangeCm": 75,
         "dice": 1,
-        "toHit": 4,
-        "tsm": -2,
-        "damagesBuildings": true
+        "toHit": 5,
+        "tsm": 0,
+        "fx": "vibro",
+        "bldTsm": -3
       },
       "standsCount": 3,
       "color": 14251782,
@@ -17931,11 +17943,13 @@ const UNIT_CATALOG = {
       "pinningClass": 2,
       "skimmer": true,
       "weapon": {
-        "name": "Mobile Vibro-Cannon",
+        "name": "Vibro-Cannon",
         "rangeCm": 75,
         "dice": 1,
-        "toHit": 4,
-        "tsm": -2
+        "toHit": 5,
+        "tsm": 0,
+        "fx": "vibro",
+        "bldTsm": 0
       },
       "standsCount": 2,
       "color": 14251782,
@@ -17959,11 +17973,12 @@ const UNIT_CATALOG = {
       "pinningClass": 2,
       "skimmer": true,
       "weapon": {
-        "name": "Mounted D-Cannon",
+        "name": "Warp Hunter Cannon",
         "rangeCm": 75,
         "dice": 1,
         "toHit": 3,
-        "tsm": -3,
+        "tsm": 0,
+        "fx": "warphunter",
         "damagesBuildings": true
       },
       "standsCount": 2,
@@ -18058,7 +18073,8 @@ const UNIT_CATALOG = {
           "dice": 1,
           "toHit": 3,
           "tsm": -4,
-          "damagesBuildings": true
+          "damagesBuildings": true,
+          "fx": "distortion"
         },
         {
           "id": "cobra_shuriken",
@@ -19338,7 +19354,8 @@ const UNIT_CATALOG = {
           "stands": 6,
           "transport": 0
         }
-      ]
+      ],
+      "craftworld": "ULTHWE"
     },
     {
       "key": "card_eld_guardian_storm",
@@ -20086,11 +20103,12 @@ const UNIT_CATALOG = {
         {
           "id": "ds_warpwave",
           "mount": "Force Projector",
-          "name": "Warp Wave Energy Blast",
+          "name": "Warp Wave",
           "rangeCm": 40,
           "dice": 1,
           "toHit": 4,
-          "tsm": 0
+          "tsm": 0,
+          "fx": "wave"
         }
       ]
     },
@@ -21929,6 +21947,57 @@ const UNIT_CATALOG = {
       "baseW": 24,
       "baseH": 30,
       "transportCapacity": 2
+    },
+    {
+      "key": "card_eld_phoenix_host",
+      "cardType": "COMPANY",
+      "cardName": "Phoenix Host",
+      "armyBook": "ELDAR",
+      "name": "Phoenix Host",
+      "composition": "Your first three Aspect Warrior cards join the Host (they no longer count as Support cards) and each gains a Phoenix Lord stand (Biel-Tan)",
+      "points": 200,
+      "breakPoint": 0,
+      "morale": 2,
+      "vpValue": 2,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "-",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "standsCount": 0,
+      "craftworld": "BIEL_TAN",
+      "effectOnly": "phoenixHost"
+    },
+    {
+      "key": "card_eld_master_mime",
+      "cardType": "SPECIAL",
+      "cardName": "Master Mime",
+      "armyBook": "ELDAR",
+      "name": "Master Mime",
+      "composition": "Play once in an Orders Phase on an enemy detachment: it loses its orders, can't move and takes no orders until it passes a morale test in an End Phase. Gives the enemy 1 VP when played.",
+      "points": 50,
+      "breakPoint": 0,
+      "morale": 2,
+      "vpValue": 1,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "weapon": {
+        "name": "-",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 6,
+        "tsm": 0
+      },
+      "standsCount": 0,
+      "effectOnly": "masterMime"
     }
   ],
   "CHAOS": [
@@ -39466,8 +39535,17 @@ const CHAPTER_PROHIBITED = {
 };
 SW_PROHIBITED.add('card_sm_drop_pods'); // the Wolves have their own pods
 window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
-window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
+// Eldar Craftworlds (Eldar book pp. 6-8): each adds its own host and rules; the standard list has none of them
+const ELDAR_CRAFTWORLDS = [['CODEX', 'Any (standard list)'], ['ALAITOC', 'Alaitoc'], ['BIEL_TAN', 'Biel-Tan'], ['IYANDEN', 'Iyanden'], ['SAIM_HANN', 'Saim-Hann'], ['ULTHWE', 'Ulthwe']];
+const ELDAR_CW_PROHIBITED = { IYANDEN: new Set(['card_eld_guardian_host']), SAIM_HANN: new Set(['card_eld_tempest_host', 'card_eld_phantom']) };
+const ELD_ASPECT_KEYS = ['card_eld_avengers', 'card_eld_banshees', 'card_eld_scorpions', 'card_eld_dragons', 'card_eld_hawks', 'card_eld_reapers', 'card_eld_warp_spiders', 'card_eld_shining_spears'];
+window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch) || ELDAR_CRAFTWORLDS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
 window.cardAllowed = function(side, u) {
+  if (u && (window.sideFaction[side] || side) === 'ELDAR') {
+    const cw = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
+    if (u.craftworld && u.craftworld !== cw) return false;
+    return !(ELDAR_CW_PROHIBITED[cw] && ELDAR_CW_PROHIBITED[cw].has(u.key));
+  }
   if (!u || (window.sideFaction[side] || side) !== 'IMPERIUM') return true;
   const ch = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
   if (u.chapter && ![].concat(u.chapter).includes(ch)) return false;
@@ -39478,7 +39556,7 @@ window.setSideChapter = function(side, ch) {
   window.sideChapter[side] = ch || 'CODEX';
   const r = (window.armyRosters[side] || []).filter(k => window.cardAllowed(side, window.findCatalogUnit(k)));
   if (!r.some(k => (window.findCatalogUnit(k) || {}).cardType === 'COMPANY')) {
-    const co = UNIT_CATALOG.IMPERIUM.filter(u => u.cardType === 'COMPANY' && window.cardAllowed(side, u)).sort((a, b) => Boolean(b.chapter) - Boolean(a.chapter))[0];
+    const co = (UNIT_CATALOG[window.sideFaction[side] || 'IMPERIUM'] || []).filter(u => u.cardType === 'COMPANY' && !u.effectOnly && window.cardAllowed(side, u)).sort((a, b) => Boolean(b.chapter) - Boolean(a.chapter))[0];
     if (co) r.unshift(co.key);
   }
   window.armyRosters[side] = r;
@@ -39615,6 +39693,8 @@ window.getRosterBreakdown = function(side) {
     }
   });
 
+  const phHosts = roster.filter(k => k === 'card_eld_phoenix_host').length, phAsp = roster.filter(k => ELD_ASPECT_KEYS.includes(k)).length;
+  if (phHosts) support -= Math.min(phAsp, phHosts * 3); // their Aspect Warriors are part of the Host
   const maxSupport = companies * 5;
   const maxSpecial = companies * 1;
   // NetEpic p. 13: 1 Unique per full 3,000 pts (min 1 allowed for armies up to 2000 pts)
@@ -39632,6 +39712,7 @@ window.getRosterBreakdown = function(side) {
   if (companies > 0 && special > maxSpecial) {
     errors.push(`Special limit exceeded: ${special}/${maxSpecial} (max 1 per Company).`);
   }
+  if (phHosts && phAsp < phHosts * 3) errors.push(`Phoenix Host: buy three Aspect Warrior cards for each Host (${phAsp}/${phHosts * 3}).`);
   if (duplicateUnique) {
     errors.push(`Duplicate Unique Character: "${duplicateUnique}" (personalities may never be duplicated).`);
   }
@@ -39643,7 +39724,7 @@ window.getRosterBreakdown = function(side) {
   }
   const notAllowed = roster.map(k => window.findCatalogUnit(k)).filter(u => u && !window.cardAllowed(side, u));
   if (window.gameScene && window.gameScene.chapterRosterErrors) errors.push(...window.gameScene.chapterRosterErrors(side, roster));
-  if (notAllowed.length) errors.push(`Not allowed in a ${window.chapterName(window.sideChapter[side] || 'CODEX')} army: ${[...new Set(notAllowed.map(u => u.cardName || u.name))].join(', ')}.`);
+  if (notAllowed.length) errors.push(`${(window.sideFaction[side] || side) === 'ELDAR' ? ((window.sideChapter[side] || 'CODEX') === 'CODEX' ? 'Needs its Craftworld (pick it under the army list)' : `Not allowed for ${window.chapterName(window.sideChapter[side])}`) : `Not allowed in a ${window.chapterName(window.sideChapter[side] || 'CODEX')} army`}: ${[...new Set(notAllowed.map(u => u.cardName || u.name))].join(', ')}.`);
 
   return {
     totalPts,
@@ -39808,11 +39889,11 @@ window.renderArmyModal = function() {
     // Space Marines only: which chapter
     const chRow = document.getElementById(`${prefix}-chapter-row`), chSel = document.getElementById(`${prefix}-chapter-select`);
     if (chRow && chSel) {
-      chRow.style.display = activeBook === 'IMPERIUM' ? 'block' : 'none';
-      if (!chSel.options.length) SM_CHAPTERS.forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = `🛡️ Chapter: ${n}`; chSel.appendChild(o); });
+      chRow.style.display = (activeBook === 'IMPERIUM' || activeBook === 'ELDAR') ? 'block' : 'none';
+      if (chSel.dataset.book !== activeBook) { chSel.innerHTML = ''; chSel.dataset.book = activeBook; (activeBook === 'ELDAR' ? ELDAR_CRAFTWORLDS : SM_CHAPTERS).forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = activeBook === 'ELDAR' ? `💠 Craftworld: ${n}` : `🛡️ Chapter: ${n}`; chSel.appendChild(o); }); }
       chSel.value = window.sideChapter[side] || 'CODEX';
       chSel.style.borderColor = meta.borderHex;
-      chSel.title = '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
+      chSel.title = activeBook === 'ELDAR' ? 'Craftworld: adds its own host and special rule' : '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
     }
 
     // Render Compact Card Filter Pills (All, 🏢 Co, 🛡️ Sup, ⚔️ Spc)
@@ -45341,7 +45422,7 @@ class NetEpicScene extends Phaser.Scene {
     return det.stands.some(s => this.isPointOnRoad(s.originX, s.originY) || this.isPointOnRoad(s.container.x, s.container.y));
   }
 
-  getEffectiveMoveCm(det) {
+  getEffectiveMoveCmCore(det) {
     if (!det) return 0;
     const ts = det.titanState;
     if (ts && (ts.immobile || ts.reactor || ts.noAct || ts.fireNoMove)) return 0;
@@ -46861,11 +46942,12 @@ class NetEpicScene extends Phaser.Scene {
       });
     };
 
-    this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
+    this._mimes = {}; this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
+    this.applyCraftworldAtSpawn();
     this.detachments.forEach(d => this.nudgeOutOfTerrain(d));
     this.scnState = {}; this._surpriseLogged = false; this._reportShown = false;
     if (this.customZones()) ['IMPERIUM', 'ORKS'].forEach(f => this.scenarioPlaceSide(f));
@@ -48014,7 +48096,7 @@ class NetEpicScene extends Phaser.Scene {
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     this._attacker = firerDet;
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
-    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta/.test(wpn.fx) || (wpn.fx === 'teardrop' && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
+    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave/.test(wpn.fx) || (/teardrop|spinner/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (!sol.validPairs.length) return stop(`⚠️ <b>${firerDet.name}</b> can't bring the ${wpn.name} to bear on <b>${targetDet.name}</b>.`);
@@ -48141,6 +48223,11 @@ class NetEpicScene extends Phaser.Scene {
         title = '🧲 Supa Lifta-Droppa'; desc = 'Hit 4+ · save at -4 · failed models are lifted and dropped on others';
         break;
       }
+      case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': {
+        const h = this.eldSpecialFx(wpn.fx, { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter, isSnapFire });
+        if (!h) return stop(`⚠️ ${wpn.name}: nothing to fire.`);
+        title = h.title; desc = h.desc; break;
+      }
       default: return stop(`⚠️ ${wpn.name}: nothing to fire.`);
     }
     this.finishSpecialShot(firerDet, targetDet, wpn, S, title, desc, isSnapFire, opts, sol);
@@ -48236,13 +48323,17 @@ class NetEpicScene extends Phaser.Scene {
       bursts.push({ x1, y1, x2, y2 });
     });
     if (bursts.length) this.spawnFlameBurstFX(bursts);
-    if (S.line) {
-      const { x1, y1, x2, y2, color, tremor } = S.line, ang = Math.atan2(y2 - y1, x2 - x1), d = Phaser.Math.Distance.Between(x1, y1, x2, y2);
+    (S.lines || []).concat(S.line ? [S.line] : []).forEach(LN => {
+      const { x1, y1, x2, y2, color, tremor } = LN, ang = Math.atan2(y2 - y1, x2 - x1), d = Phaser.Math.Distance.Between(x1, y1, x2, y2);
       g.lineStyle(tremor ? 3 : 2, color, 0.9); g.beginPath();
       for (let t = 0; t <= d; t += 4) { const w = tremor ? Math.sin(t / 5) * 4 : 0; const px = x1 + Math.cos(ang) * t - Math.sin(ang) * w, py = y1 + Math.sin(ang) * t + Math.cos(ang) * w; t ? g.lineTo(px, py) : g.moveTo(px, py); }
       g.strokePath();
       if (tremor) this.spawnGroundCracks && this.spawnGroundCracks(x2, y2, 20);
-    }
+    });
+    if (S.waveBand) { const { x1, y1, x2, y2, w } = S.waveBand, a = Math.atan2(y2 - y1, x2 - x1), nx = -Math.sin(a) * w / 2, ny = Math.cos(a) * w / 2;
+      g.fillStyle(0x22d3ee, 0.22); g.fillPoints([{ x: x1 + nx, y: y1 + ny }, { x: x2 + nx, y: y2 + ny }, { x: x2 - nx, y: y2 - ny }, { x: x1 - nx, y: y1 - ny }], true);
+      g.lineStyle(2, 0x67e8f9, 0.9); g.lineBetween(x2 + nx, y2 + ny, x2 - nx, y2 - ny); }
+    (S.hexes || []).forEach(hx => { const pts = []; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; pts.push({ x: hx.x + Math.cos(a) * R, y: hx.y + Math.sin(a) * R }); } g.lineStyle(2, 0xf8fafc, 0.95); g.strokePoints(pts, true); });
     const rings = this.add.graphics().setDepth(465); keep.push(rings);
     S.casualties.forEach(st => this.drawStandBrackets(rings, st, 0xef4444, 2));
     this._templateFx = keep;
@@ -48666,7 +48757,7 @@ class NetEpicScene extends Phaser.Scene {
     return 0;
   }
   // Movement: rock is impassable to ground units; units on Charge orders can't cross a trench (core p. 29)
-  terrainMoveBlock(det, s) {
+  terrainMoveBlockCore(det, s) {
     const air = Boolean(det.flyer || det.skimmer || det.jump || det.isFlyer);
     const x = s.container.x, y = s.container.y, ox = s.originX != null ? s.originX : x, oy = s.originY != null ? s.originY : y;
     const path = this.standPath(s);
@@ -49151,14 +49242,14 @@ class NetEpicScene extends Phaser.Scene {
     return best || { x, y };
   }
   // Keep a set-up position inside the side's zone (infiltrators may be up to their allowance outside it)
-  zoneClamp(det, x, y) {
+  zoneClampCore(det, x, y) {
     if (this.inDeployZone(det.faction, x, y)) return { x, y };
     const p = this.nearestInZone(det.faction, x, y), extra = this.infiltrateCm ? this.infiltrateCm(det) * PX_PER_CM : 0, d = Phaser.Math.Distance.Between(x, y, p.x, p.y);
     if (extra && d <= extra) return { x, y };
     return extra ? { x: p.x + (x - p.x) / d * extra, y: p.y + (y - p.y) / d * extra } : p;
   }
   // The y-range of the standard strip (used by the existing set-up code); custom zones are clamped afterwards
-  deployBand(det) {
+  deployBandCore(det) {
     const infPx = this.infiltrateCm(det) * PX_PER_CM;
     const sh = this.zoneShapes(det.faction);
     if (sh.length === 1 && sh[0].kind === 'rect' && sh[0].w >= BOARD_W - 1) {
@@ -49199,7 +49290,7 @@ class NetEpicScene extends Phaser.Scene {
       this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
     });
   }
-  autoDeployAIFaction() {
+  autoDeployAIFactionPre() {
     if (!this.customZones()) return this.autoDeployAIFactionCore();
     if (window.aiFaction === 'NONE') return;
     const ai = this.detachments.filter(d => d.faction === window.aiFaction && d.stands.length > 0 && !d.embarkedOn);
@@ -49737,7 +49828,7 @@ class NetEpicScene extends Phaser.Scene {
     this.drawDetailedBuilding(b);
   }
   // Taps on the board: aim at a building in targeting mode, otherwise show what a building is like
-  handleBoardTap(x, y) {
+  handleBoardTapCore(x, y) {
     const b = this.getBuildingAt(x, y); if (!b) return;
     const det = this.activatingDetachment;
     if (this.targetBuildingMode && det && !this.isFactionAI(det.faction) && /^COMBAT_(FIRST|ADVANCE)/.test(this.phase)) { this.selectTargetBuilding(b); return; }
@@ -49768,7 +49859,17 @@ class NetEpicScene extends Phaser.Scene {
   isInfantry(det) { return det && (det.pinningClass || 1) === 1 && !det.isTitan && !det.superHeavy; }
   // Cards that change other cards when they are set up (Raptor drop, Space Wolf Razorbacks); returns null for cards with no models
   cardEffectTemplate(template, side, keys) {
+    if (template.effectOnly === 'masterMime') { this._mimes = this._mimes || {}; this._mimes[side] = (this._mimes[side] || 0) + 1; return null; }
     if (template.effectOnly) return null;
+    { // Biel-Tan Phoenix Host: the first three Aspect Warrior cards gain a Phoenix Lord
+      const ph = keys.filter(k => k === 'card_eld_phoenix_host').length; this._fx = this._fx || {};
+      if (ph && ELD_ASPECT_KEYS.includes(template.key) && (this._fx[side + 'phoenix'] || 0) < ph * 3) {
+        this._fx[side + 'phoenix'] = (this._fx[side + 'phoenix'] || 0) + 1;
+        const t = JSON.parse(JSON.stringify(template)); t.standsCount = (t.standsCount || 1) + 1; t.phoenixLord = true; t.name = 'Phoenix Host ' + t.name;
+        t.composition = (t.composition || '') + ' + a Phoenix Lord';
+        return t;
+      }
+    }
     const has = k => keys.some(x => (window.findCatalogUnit(x) || {}).effectOnly === k);
     this._fx = this._fx || {};
     if (has('raptorDrop') && ['card_sm_term_co', 'card_sm_vet_co'].includes(template.key) && !this._fx[side + 'raptor']) {
@@ -50088,6 +50189,8 @@ class NetEpicScene extends Phaser.Scene {
         d.stands.forEach(s => { s.label = 'Avatar'; });
         d.specialAbilities = [...new Set([...(d.specialAbilities || []), 'Command', 'Fear', 'Fearless', 'HardToHit'])];
       }
+      if (/revenant/i.test(n) && d.isTitan) { d._jumpJets = true; d.skimmer = false; Object.defineProperty(d, 'jump', { get: () => d.order === 'CHARGE', set: () => {}, configurable: true, enumerable: true }); }
+      if (d.phoenixLord && d.stands.length) d.stands[d.stands.length - 1].label = 'Phoenix Lord';
     });
   }
 
@@ -50364,6 +50467,8 @@ class NetEpicScene extends Phaser.Scene {
 
   // ---------- orders: Warlocks, the Warlock Titan and Waystone spirits ----------
   applyEldarOrders() {
+    try { this.resolveWraithgates(); this.aiMasterMime(); } catch (e) { console.error(e); }
+    this.detachments.forEach(d => { if (d.mimed && d.stands.length) { d.order = 'ADVANCE'; d.orderRevealed = true; d.moved = true; this.updateDetachmentBadge(d); } });
     const warlocks = this.detachments.filter(d => this.isEldWarlock(d) && d.stands.length && !d.embarkedOn);
     const seers = this.detachments.filter(d => this.isEldSpiritseer(d) && d.stands.length && !d.embarkedOn);
     this.detachments.forEach(d => {
@@ -50502,6 +50607,8 @@ class NetEpicScene extends Phaser.Scene {
 
   // ---------- End Phase ----------
   eldarEndPhase() {
+    try { this.resolveWebs(); } catch (e) { console.error(e); }
+    this.detachments.forEach(d => { if (d.mimed && d.stands.length && this.testMorale(d, 'shake off the Master Mime')) { d.mimed = false; this.log(`🎭 <b>${d.name}</b> sees through the Master Mime's tricks and takes orders again next turn.`); } });
     this.detachments.forEach(d => {
       d.psychicPowerUsed = false;
       if (d.instinct === 'WAYSTONE') { d.instinct = null; d.order = null; d.orderRevealed = false; }
@@ -50529,7 +50636,16 @@ class NetEpicScene extends Phaser.Scene {
       det.stands.forEach(s => { if ((s.psyLock || s.stunned === this.turn) && s.originX != null) { s.container.x = s.originX; s.container.y = s.originY; } });
       det._eldMovedNow = det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1);
     }
+    const spider = det && this.eldWarpSpider(det) ? det.stands.map(s => [s, s.originX != null ? Math.hypot(s.container.x - s.originX, s.container.y - s.originY) : 0]) : null;
     const r = this.confirmDetachmentMoveCore();
+    if (spider && det.moved) { // Warp Spiders: a stand that jumps more than 15 cm is lost in the warp on a 1
+      const far = spider.filter(([s, d]) => d > 15 * PX_PER_CM && det.stands.includes(s));
+      if (far.length) {
+        const rolls = far.map(() => Phaser.Math.Between(1, 6)), lost = far.filter((x, i) => rolls[i] === 1);
+        this.log(`🕷️ <b>${det.name}</b> warp-jumps over 15 cm: ${far.length} stand${far.length > 1 ? 's' : ''} roll [${rolls.join(', ')}]${lost.length ? ` — <span class="log-kill">${lost.length} lost in the warp</span>` : ' — all arrive safely'}.`);
+        lost.forEach(([s]) => this.removeCasualty(det, s, 0, true)); if (lost.length) this.checkBreakPoint(det);
+      }
+    }
     if (det && det.moved) {
       if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
       if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
@@ -50543,7 +50659,15 @@ class NetEpicScene extends Phaser.Scene {
     try { return this.checkCoherencyCore(det); } finally { det.stands = all; }
   }
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
-    const off = firerDet && firerDet.stands.filter(s => s.psyLock || s.stunned === this.turn);
+    if (isSnapFire && firerDet) { // weapons that can't snap fire are never offered for it
+      const w = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
+      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism/.test(w.fx) || (/teardrop|spinner/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
+        return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
+    }
+    return this.eldWaveFilter(firerDet, targetDet, this.evaluateFireSolutionEld(firerDet, targetDet, isSnapFire));
+  }
+  evaluateFireSolutionEld(firerDet, targetDet, isSnapFire = false) {
+    const off = firerDet && firerDet.stands.filter(s => s.psyLock || s.stunned === this.turn || (s.webbed === this.turn && this.phase === 'COMBAT_FIRST'));
     if (!off || !off.length) return this.evaluateFireSolutionCore(firerDet, targetDet, isSnapFire);
     if (off.length >= firerDet.stands.length) return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     const all = firerDet.stands; firerDet.stands = all.filter(s => !off.includes(s));
@@ -50556,6 +50680,403 @@ class NetEpicScene extends Phaser.Scene {
   startCombatSegment(segment) {
     if (segment === 'COMBAT_FIRST') ['IMPERIUM', 'ORKS'].forEach(f => { try { this.aiEldarPsychics(f); } catch (e) { console.error(e); } });
     return this.startCombatSegmentCore(segment);
+  }
+
+  // ===== ELDAR special weapons (Eldar book pp. 22-27) =====
+  eldStun(s) { s.stunned = this.turn; }
+  eldMoveStand(s, x, y) {
+    s.container.x = Phaser.Math.Clamp(x, 12, BOARD_W - 12); s.container.y = Phaser.Math.Clamp(y, 12, BOARD_H - 12);
+    s.originX = s.container.x; s.originY = s.container.y;
+    if (s.detachment) this.updateDetachmentBadgePos(s.detachment);
+  }
+  // A building must pass its basic save (with a modifier) or it is destroyed
+  eldBuildingSave(b, tsm, S, label) {
+    if (!b || b.collapsed) return;
+    const need = (b.save || 4) - (tsm || 0), r = Phaser.Math.Between(1, 6);
+    if (need <= 6 && r >= need) { S.notes.push(`${b.name} holds (${r})`); return; }
+    S.notes.push(`${b.name} destroyed`); this.collapseBuilding(b, label);
+  }
+  eldWarpSpider(d) { return this.isEldar(d) && /warp spider/i.test(this.eldName(d)); }
+  eldIsPrism(d) { return Boolean(d && d.weapon && d.weapon.fx === 'prism' && !d.salvos); }
+  eldWaveSerpent(d) { return this.isEldar(d) && /wave serpent|dragon serpent/i.test(this.eldName(d)); }
+  // Fire Prisms that can relay their shot to this one (in range, line of sight, still to fire this segment)
+  eldPrismDonors(rec) {
+    const rs = rec.stands[0]; if (!rs) return [];
+    return this.detachments.filter(d => d !== rec && d.faction === rec.faction && this.eldIsPrism(d) && d.stands.length && !d.fired && !d.embarkedOn && !d.inReserve &&
+      this.isEligibleInCombatPhase(d) && d.stands.some(s => !this.isStandEngaged(s) && this.eldStandDist(s, rs) <= 75 * PX_PER_CM && !this.buildings.some(b => !b.collapsed && this.lineHitsRect(b, s.container.x, s.container.y, rs.container.x, rs.container.y))));
+  }
+  // Called before a weapon with an effect fires; returns true if it is waiting on the player
+  eldPreFire(firerDet, targetDet, isSnapFire, opts) {
+    const w = firerDet.weapon;
+    if (w && w.fx === 'prism' && !isSnapFire && opts.prismDonors === undefined) {
+      const donors = this.eldPrismDonors(firerDet);
+      if (!donors.length) { opts.prismDonors = []; return false; }
+      if (this.isFactionAI(firerDet.faction)) { opts.prismDonors = (this.hasHitLocations(targetDet) || targetDet.superHeavy || (targetDet.save || 7) <= 3) ? donors : []; return false; }
+      this.eldChoose(`🔗 ${donors.length} other Fire Prism${donors.length > 1 ? 's' : ''} can relay ${donors.length > 1 ? 'their shots' : 'its shot'} into this one (3+ each). The linked shot hits ${targetDet.name} with 1 hit plus every relayed hit.`, [
+        { label: `🔗 Link ${donors.length}`, fn: () => this.executeRangedAttack(firerDet, targetDet, isSnapFire, { ...opts, prismDonors: donors }) },
+        { label: 'Fire alone', fn: () => this.executeRangedAttack(firerDet, targetDet, isSnapFire, { ...opts, prismDonors: [] }) }]);
+      return true;
+    }
+    return false;
+  }
+  eldSpecialFx(fx, c) {
+    const { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter } = c, R = BARRAGE_RADIUS_PX;
+    S.lines = S.lines || [];
+    if (fx === 'vibro') {
+      opts._pairs = sol.validPairs; S.color = 0xfbbf24;
+      let n = 0; const rolls = [];
+      sol.validPairs.forEach(p => {
+        const x1 = p.shooter.container.x, y1 = p.shooter.container.y, line = new Phaser.Geom.Line(x1, y1, P.x, P.y);
+        S.lines.push({ x1, y1, x2: P.x, y2: P.y, color: 0xfbbf24, tremor: true });
+        const r = Phaser.Math.Between(1, 6); rolls.push(r); if (r >= 5) n++;
+        this.detachments.forEach(d => {
+          if (d === firerDet || !d.stands.length || d.embarkedOn || d.inReserve) return;
+          d.stands.forEach(s => { if (s !== aim && Phaser.Geom.Intersects.LineToCircle(line, new Phaser.Geom.Circle(s.container.x, s.container.y, PX_PER_CM + 4))) this.specialHit(S, d, s, { need: 6, tsm: 0, ignoreShields: true, ignoreCover: true, titanCtx: { location: 'legs', template: false } }); });
+        });
+        this.buildings.forEach(b => { if (!b.collapsed && this.lineHitsRect(b, x1, y1, P.x, P.y)) this.eldBuildingSave(b, wpn.bldTsm || 0, S, 'shaken apart by a vibro-cannon'); });
+      });
+      const tsm = n ? -(Math.min(n, 3) - 1) : 0;
+      S.notes.push(`${sol.validPairs.length} beam${sol.validPairs.length > 1 ? 's' : ''} [${rolls.join(', ')}], ${n} hit${n === 1 ? 's' : ''} the target on 5+`);
+      if (n) this.specialHit(S, targetDet, aim, { need: null, tsm, ignoreShields: true, titanCtx: { location: 'legs', template: false } });
+      return { title: '〰️ Vibro-Cannon', desc: `Target hit on 5+ per beam · TSM 0 / -1 / -2 for 1 / 2 / 3 beams · models on the line hit on 6+ · ignores shields · titans hit in the legs` };
+    }
+    if (fx === 'web') {
+      opts._pairs = sol.validPairs; S.color = 0xe5e7eb;
+      const step = Math.sqrt(3) * R, hexes = [];
+      sol.validPairs.forEach(() => {
+        const a = Math.random() * Math.PI * 2, cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6);
+        const c0 = { x: Phaser.Math.Clamp(P.x + Math.cos(a) * cm * PX_PER_CM, 12, BOARD_W - 12), y: Phaser.Math.Clamp(P.y + Math.sin(a) * cm * PX_PER_CM, 12, BOARD_H - 12) };
+        hexes.push(c0); S.notes.push(`web drifts ${cm} cm`);
+        const used = new Set();
+        for (let k = 0; k < 2; k++) { const e = Phaser.Math.Between(0, 5); if (used.has(e)) { S.notes.push('a web strand is wasted'); continue; } used.add(e); const ang = e * Math.PI / 3 + Math.PI / 6; hexes.push({ x: c0.x + Math.cos(ang) * step, y: c0.y + Math.sin(ang) * step }); }
+      });
+      S.hexes = hexes;
+      const inWeb = (x, y) => hexes.some(h => Phaser.Math.Distance.Between(h.x, h.y, x, y) <= R);
+      const cx = hexes.reduce((a, h) => a + h.x, 0) / hexes.length, cy = hexes.reduce((a, h) => a + h.y, 0) / hexes.length;
+      this.detachments.forEach(d => {
+        if (!d.stands.length || d.embarkedOn || d.inReserve) return;
+        d.stands.slice().forEach(s => {
+          if (!inWeb(s.container.x, s.container.y)) return;
+          S.hits++; S.hitDice.push({ val: '✓', cls: 'die-pass', tip: `${d.name}: caught in the web` });
+          if (d.shields > 0 || (d.save || 7) <= 1) { S.saves++; S.notes.push(`${d.name} is untouched`); return; }
+          if (this.hasHitLocations(d)) { const r = this.applyTitanHit(d, s, { noSave: true, autoCrit: true, from: S.from }); if (r && r.destroyed) S.kills++; return; }
+          const r = Phaser.Math.Between(1, 6);
+          S.saveDice.push({ val: r, cls: r >= 4 ? 'die-fail' : 'die-pass', tip: `${d.name}: destroyed on 4+` });
+          if (r >= 4 && !(d.avatar && this.avatarSaves(d, s))) { S.kills++; S.casualties.push(s); return; }
+          S.saves++;
+          let ang = Math.atan2(s.container.y - cy, s.container.x - cx), x = s.container.x, y = s.container.y;
+          for (let i = 0; i < 12 && inWeb(x, y); i++) { x += Math.cos(ang) * 8; y += Math.sin(ang) * 8; }
+          this.eldMoveStand(s, x + Math.cos(ang) * 6, y + Math.sin(ang) * 6);
+          if (d.order === 'FIRST_FIRE' && !d.fired) s.webbed = this.turn;
+        });
+      });
+      this.buildings.forEach(b => { if (!b.collapsed && hexes.some(h => this.distToRect(b, h.x, h.y) <= R)) { b.webbed = true; S.notes.push(`${b.name} is webbed shut for the rest of the game`); } });
+      this.addWeb(hexes);
+      return { title: '🕸️ Doomweaver', desc: 'Web drifts 2D6 cm and spreads · models under it destroyed on 4+ (shields and 1+ saves immune), the rest pushed clear · titans take maximum damage on a random location · the web blocks movement for 2 turns' };
+    }
+    if (fx === 'warphunter') {
+      opts._pairs = sol.validPairs.slice(0, 1); S.color = 0xa855f7;
+      const pt = scatter(scatter(P));
+      S.templates.push({ x: pt.x, y: pt.y, color: 0xa855f7 });
+      this.standsWithin(pt, R, null).forEach(({ det: d, stand: s }) => {
+        if (d === firerDet || !d.stands.includes(s)) return;
+        S.hits++; S.hitDice.push({ val: '✓', cls: 'die-pass', tip: `${d.name}: in the warp hole` });
+        const throwIt = (cm, a) => { this.eldMoveStand(s, s.container.x + Math.cos(a) * cm * PX_PER_CM, s.container.y + Math.sin(a) * cm * PX_PER_CM); };
+        if (d.shields > 0) { d.shields--; this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(d); S.saves++; S.notes.push(`${d.name} loses a shield`); if (!this.hasHitLocations(d)) throwIt(Phaser.Math.Between(1, 6), Math.random() * Math.PI * 2); return; }
+        if (this.hasHitLocations(d)) { const r = this.applyTitanHit(d, s, { noSave: true, from: pt }); if (r && r.destroyed) S.kills++; return; }
+        const hit = Phaser.Math.Between(1, 6) <= 2;
+        S.saveDice.push({ val: hit ? '🎯' : '➶', cls: hit ? 'die-fail' : 'die-pass', tip: hit ? 'Scatter die HIT: sucked into the warp' : 'Thrown aside' });
+        if (hit && !(d.avatar && this.avatarSaves(d, s))) { S.kills++; S.casualties.push(s); return; }
+        S.saves++; throwIt(Phaser.Math.Between(1, 6), Math.random() * Math.PI * 2); this.eldStun(s);
+      });
+      this.buildings.forEach(b => { if (!b.collapsed && this.distToRect(b, pt.x, pt.y) <= R) this.eldBuildingSave(b, 0, S, 'sucked into the warp'); });
+      return { title: '🌌 Warp Hunter', desc: 'Template scatters twice · each model rolls the scatter die: HIT = sucked into the warp, otherwise thrown D6 cm and stunned · shields lose one · titans: location hit, no save' };
+    }
+    if (fx === 'spinner') {
+      opts._pairs = sol.validPairs; S.teardrops = [];
+      const lenPx = (wpn.teardropCm || 10) * PX_PER_CM, wPx = 5 * PX_PER_CM;
+      sol.validPairs.forEach(p => {
+        const x1 = p.shooter.container.x, y1 = p.shooter.container.y, ang = Math.atan2(p.target.container.y - y1, p.target.container.x - x1);
+        S.teardrops.push({ x1, y1, ang, lenPx, wPx });
+        this.standsInTeardrop(x1, y1, ang, lenPx, wPx, F).forEach(t => this.specialHit(S, t.det, t.stand, { need: wpn.toHit || 3, tsm: 0, ignoreCover: true }));
+      });
+      return { title: '🕷️ Death Spinners', desc: `${sol.validPairs.length} × 10 cm teardrop · hit ${wpn.toHit || 3}+ · TSM 0 · ignores cover` };
+    }
+    if (fx === 'prism') {
+      opts._pairs = sol.validPairs; S.color = 0x38bdf8;
+      const donors = opts.prismDonors || [], rs = sol.validPairs[0].shooter;
+      let T = 0; const rr = [];
+      donors.forEach(d => {
+        d.stands.forEach(st => { const r = Phaser.Math.Between(1, 6); rr.push(r); if (r >= 3) T++; S.lines.push({ x1: st.container.x, y1: st.container.y, x2: rs.container.x, y2: rs.container.y, color: 0x7dd3fc }); });
+        d.fired = true; d.standsFired = new Set(d.stands.map(s => s.id)); d.orderRevealed = true; this.updateDetachmentBadge(d);
+      });
+      if (donors.length) S.notes.push(`${donors.length} Fire Prism${donors.length > 1 ? 's' : ''} relay [${rr.join(', ')}]: ${T} transferred on 3+`);
+      sol.validPairs.forEach((p, i) => {
+        S.lines.push({ x1: p.shooter.container.x, y1: p.shooter.container.y, x2: p.target.container.x, y2: p.target.container.y, color: 0x38bdf8 });
+        const before = S.hits;
+        this.specialHit(S, targetDet, p.target, { need: wpn.toHit || 3, tsm: wpn.tsm || 0 });
+        if (i === 0 && T && S.hits > before) for (let k = 0; k < T; k++) {
+          const st = (targetDet.stands.includes(p.target) && !S.casualties.includes(p.target)) ? p.target : targetDet.stands.find(s => !S.casualties.includes(s));
+          if (!st) break;
+          this.specialHit(S, targetDet, st, { need: null, tsm: wpn.tsm || 0 });
+        }
+      });
+      return { title: donors.length ? '🔗 Linked Prism Cannon' : '🔷 Prism Cannon', desc: `Hit ${wpn.toHit || 3}+ · TSM ${wpn.tsm || 0}${T ? ` · +${T} relayed hit${T > 1 ? 's' : ''}, each saved separately` : ''}` };
+    }
+    if (fx === 'wave') {
+      opts._pairs = sol.validPairs.slice(0, 1); S.color = 0x22d3ee;
+      const sh = sol.validPairs[0].shooter, x1 = sh.container.x, y1 = sh.container.y, ang = Math.atan2(P.y - y1, P.x - x1), ca = Math.cos(ang), sa = Math.sin(ang);
+      const cm = (Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6)) * 10, L = cm * PX_PER_CM, W = 6 * PX_PER_CM;
+      const x2 = x1 + ca * L, y2 = y1 + sa * L;
+      S.waveBand = { x1, y1, x2, y2, w: W }; S.notes.push(`the wave rolls ${cm} cm`);
+      this.detachments.forEach(d => {
+        if (d === firerDet || !d.stands.length || d.embarkedOn || d.inReserve || d.isFlyer || d.flyer) return;
+        d.stands.slice().forEach(s => {
+          const dx = s.container.x - x1, dy = s.container.y - y1, t = dx * ca + dy * sa, nn = -dx * sa + dy * ca;
+          if (t < 0 || t > L || Math.abs(nn) > W / 2 + (s.baseRadius || 10) * 0.5) return;
+          if (this.hasHitLocations(d) || d.isTitan) {
+            S.hits++; S.hitDice.push({ val: '✓', cls: 'die-pass', tip: `${d.name}: struck by the wave` });
+            if (d.shields > 0) { d.shields--; this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(d); S.saves++; S.notes.push(`${d.name} loses a shield`); }
+            else { const r = this.applyTitanHit(d, s, { location: 'legs', tsm: -2, from: { x: x1, y: y1 } }); if (r && r.destroyed) S.kills++; }
+            return;
+          }
+          this.specialHit(S, d, s, { need: 4, tsm: 0, ignoreCover: true });
+          if (d.stands.includes(s) && !S.casualties.includes(s)) { this.eldMoveStand(s, x1 + ca * (L + (s.baseRadius || 10) + 4) - sa * nn, y1 + sa * (L + (s.baseRadius || 10) + 4) + ca * nn); this.eldStun(s); }
+        });
+      });
+      this.buildings.forEach(b => { if (!b.collapsed && this.lineHitsRect(b, x1, y1, x2, y2, W / 2)) this.eldBuildingSave(b, 0, S, 'smashed by a warp wave'); });
+      firerDet.waveFiredTurn = this.turn;
+      return { title: '🌊 Warp Wave', desc: 'The wave rolls 2D6 × 10 cm · everything in its path is hit on 4+ and swept to the far end, stunned · shields lose one, titans take a -2 hit on the legs · the Wave Serpent has no wave shield until next turn' };
+    }
+    return null;
+  }
+  // The Wave Serpent's warp wave shield: nothing can shoot through it from the front (barrages fired indirectly can)
+  eldWaveFilter(firerDet, targetDet, r) {
+    if (!r || !r.validPairs || !r.validPairs.length || !this.eldWaveSerpent(targetDet) || targetDet.waveFiredTurn === this.turn) return r;
+    const keep = r.validPairs.filter(p => {
+      if (p.res && p.res.indirect) return true;
+      if (firerDet.isFlyer || firerDet.flyer || firerDet.poppedUp) return true;
+      const t = p.target, a = Math.atan2(p.shooter.container.y - t.container.y, p.shooter.container.x - t.container.x);
+      let d = a - (t.facingRad || 0); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      return Math.abs(d) > Math.PI / 3;
+    });
+    if (keep.length < r.validPairs.length && !this._waveNote) { this._waveNote = true; this.log(`🌊 <b>${targetDet.name}</b>'s warp wave shield blocks shots from in front of it.`); this.time.delayedCall(2000, () => { this._waveNote = false; }); }
+    return keep.length === r.validPairs.length ? r : { ...r, validPairs: keep };
+  }
+  // Monofilament webs on the table: they block movement for 2 turns
+  addWeb(hexes) {
+    this.webs = this.webs || [];
+    const g = this.add.graphics().setDepth(18), R = BARRAGE_RADIUS_PX;
+    hexes.forEach(h => {
+      const pts = []; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; pts.push({ x: h.x + Math.cos(a) * R, y: h.y + Math.sin(a) * R }); }
+      g.fillStyle(0xe5e7eb, 0.18); g.fillPoints(pts, true); g.lineStyle(1.5, 0xf8fafc, 0.8); g.strokePoints(pts, true);
+      g.lineStyle(0.8, 0xe5e7eb, 0.6); for (let i = 0; i < 3; i++) { const a = i * Math.PI / 3; g.lineBetween(h.x - Math.cos(a) * R, h.y - Math.sin(a) * R, h.x + Math.cos(a) * R, h.y + Math.sin(a) * R); }
+    });
+    this.webs.push({ hexes, life: 2, g });
+  }
+  inWebAt(x, y) { return (this.webs || []).some(w => w.hexes.some(h => Phaser.Math.Distance.Between(h.x, h.y, x, y) <= BARRAGE_RADIUS_PX)); }
+  webBlocksPath(x1, y1, x2, y2) {
+    const line = new Phaser.Geom.Line(x1, y1, x2, y2);
+    return (this.webs || []).some(w => w.hexes.some(h => Phaser.Geom.Intersects.LineToCircle(line, new Phaser.Geom.Circle(h.x, h.y, BARRAGE_RADIUS_PX - 2))));
+  }
+  resolveWebs() {
+    (this.webs || []).slice().forEach(w => {
+      w.life--;
+      if (w.life <= 0) { this.tweens.add({ targets: w.g, alpha: 0, duration: 600, onComplete: () => w.g.destroy() }); this.webs.splice(this.webs.indexOf(w), 1); this.log('🕸️ A Doomweaver web disperses.'); }
+      else w.g.setAlpha(0.6);
+    });
+  }
+
+  // ===== ELDAR army extras: Craftworlds, Master Mime, Wraithgate, jump jets =====
+  eldCraftworld(side) { return (window.sideFaction[side] || side) === 'ELDAR' ? ((window.sideChapter && window.sideChapter[side]) || 'CODEX') : null; }
+  applyCraftworldAtSpawn() {
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      const cw = this.eldCraftworld(side); if (!cw || cw === 'CODEX') return;
+      const mine = this.detachments.filter(d => d.faction === side && d.stands.length), notes = [];
+      if (cw === 'ALAITOC') { mine.forEach(d => { if (/pathfinder|ranger/i.test(d.name) && !/exodite/i.test(d.name)) { d.deployAnywhere = true; d.name = d.name.replace(/Pathfinders?/i, 'Rangers'); this.updateDetachmentBadge(d); } }); notes.push('Rangers may set up anywhere outside the enemy deployment zone'); }
+      if (cw === 'BIEL_TAN') notes.push('the Phoenix Host leads its Aspect Warriors');
+      if (cw === 'IYANDEN') notes.push('the Wraith Host; no Guardian Hosts');
+      if (cw === 'SAIM_HANN') notes.push('the Wind Rider Host; Warlocks and Farseers ride jetbikes at no extra cost; no Tempest Host or Phantom Titans');
+      if (cw === 'ULTHWE') notes.push('the Black Guardian Host: four Guardian detachments for the price of three');
+      this.log(`💠 <b>${this.getSideName(side)}: ${window.chapterName(cw)}</b>${notes.length ? ' — ' + notes.join('; ') : ''}.`);
+    });
+  }
+  // ---- Master Mime ----
+  mimeImmune(d) { return !d || d.order === 'FALL_BACK' || d.armyBook === 'TYRANIDS' || this.hasAbility(d, 'HQ') || this.hasAbility(d, 'Robot') || this.isCommandUnit(d) || d.daemonicTerror || /daemon|robot|dreadnought|tarantula|wraith/i.test(this.eldName(d)) || d.instinct; }
+  playMasterMime(side, t) {
+    this._mimes = this._mimes || {};
+    if (!(this._mimes[side] > 0) || !t || t.faction === side || this.mimeImmune(t) || t.mimed) return false;
+    this._mimes[side]--; t.mimed = true; t.order = 'ADVANCE'; t.orderRevealed = true;
+    const foe = side === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM'; this.vp[foe] += 1;
+    const c = this.getDetachmentCenter(t); this.spawnFloatingText(c.x, c.y - 18, '🎭 MASTER MIME!', '#f0abfc', '13px');
+    this.log(`🎭 <b>Master Mime!</b> False orders confuse <b>${t.name}</b>: it can't move this turn and fires in the Advance segment, and takes no orders until it passes a morale test in an End Phase. (+1 VP to ${this.getSideName(foe)} for revealing the Mime.)`);
+    this.updateDetachmentBadge(t); this.drawOverlays(); this.updateUI();
+    return true;
+  }
+  playMasterMimeSelected() {
+    const side = (this.selectedDetachment && this.selectedDetachment.faction !== this.mimeSide()) ? this.mimeSide() : null;
+    if (!side) { this.log('🎭 Tap an enemy detachment first, then play the Master Mime.'); return; }
+    const t = this.selectedDetachment;
+    if (this.mimeImmune(t)) { this.log(`🎭 The Master Mime can't affect <b>${t.name}</b> (HQ, command, daemonic, robotic, Tyranid or falling back).`); return; }
+    this.playMasterMime(side, t);
+  }
+  mimeSide() { const m = this._mimes || {}; return ['IMPERIUM', 'ORKS'].find(f => m[f] > 0 && !this.isFactionAI(f)) || null; }
+  aiMasterMime() {
+    const m = this._mimes || {};
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      if (!(m[side] > 0) || !this.isFactionAI(side) || this.turn < 2) return;
+      const cands = this.detachments.filter(d => d.faction !== side && d.stands.length && !d.embarkedOn && !d.inReserve && !this.mimeImmune(d) && !d.mimed && d.order !== 'FIRST_FIRE');
+      const t = cands.sort((a, b) => this.eldValue(b) * b.stands.length - this.eldValue(a) * a.stands.length)[0];
+      if (t && (t.isTitan || t.superHeavy || t.stands.length >= 4)) this.playMasterMime(side, t);
+    });
+  }
+  // ---- Storm Serpent Wraithgate ----
+  isStormSerpent(d) { return this.isEldar(d) && /storm serpent/i.test(this.eldName(d)); }
+  canOpenGate(d) { return this.isStormSerpent(d) && d.stands.length && this.phase === 'MOVEMENT' && !d.moved && d.order === 'FIRST_FIRE' && d.faction === this.activePlayer && !this.isFactionAI(d.faction) && !this.detachments.some(o => o.inTransit && o.inTransit.by === d.id); }
+  startGatePlacement() {
+    const d = this.activatingDetachment || this.selectedDetachment; if (!this.canOpenGate(d)) return;
+    this._gatePlace = d; this.log(`🌀 <b>${d.name}</b>: tap a point within 75 cm and in line of sight to open the Wraithgate.`);
+    this.updateUI();
+  }
+  placeGate(x, y) {
+    const d = this._gatePlace; this._gatePlace = null; if (!d || !d.stands.length) return;
+    const s = d.stands[0], dist = Phaser.Math.Distance.Between(s.container.x, s.container.y, x, y) / PX_PER_CM;
+    const blocked = this.buildings.some(b => !b.collapsed && !this.pointInRect(b, x, y) && this.lineHitsRect(b, s.container.x, s.container.y, x, y)) || (this.terrainLosBlock && this.terrainLosBlock({ x: s.container.x, y: s.container.y }, { x, y }));
+    if (dist > 75 || blocked || this.rockAt(x, y)) { this.log(`🌀 The Wraithgate can't open there (${dist > 75 ? 'over 75 cm away' : 'no line of sight or impassable'}).`); this.updateUI(); return; }
+    d.wraithgate = { x, y }; this.drawGates();
+    this.log(`🌀 <b>${d.name}</b> opens a Wraithgate ${Math.round(dist)} cm away. Eldar infantry, cavalry and walkers within 5 cm of the gate or the Storm Serpent can step through; they come out at the other end next turn.`);
+    if (this.activatingDetachment === d || !d.moved) { d.moved = true; d.orderRevealed = true; this.activatingDetachment = null; this.finishMovementActivation(); }
+  }
+  drawGates() {
+    if (this._gateG) this._gateG.destroy();
+    const g = this._gateG = this.add.graphics().setDepth(19);
+    this.detachments.forEach(d => { if (!d.wraithgate || !d.stands.length) return; const p = d.wraithgate; g.lineStyle(3, 0xa855f7, 0.9); g.strokeCircle(p.x, p.y, 16); g.lineStyle(1.5, 0xe9d5ff, 0.8); g.strokeCircle(p.x, p.y, 9); g.fillStyle(0x581c87, 0.35); g.fillCircle(p.x, p.y, 16); });
+  }
+  gateEntryFor(det) {
+    if (!det || !this.isEldar(det) || this.phase !== 'MOVEMENT' || det.inTransit || det.embarkedOn || this.isFactionAI(det.faction) || det.isTitan || det.superHeavy || this.isStormSerpent(det)) return null;
+    if ((det.pinningClass || 1) > 2 && !/walker|wraithlord|dreadnought/i.test(det.name)) return null;
+    if (!det.moved && det.faction !== this.activePlayer) return null;
+    if (det.stands.some(s => this.isStandEngaged(s))) return null;
+    for (const g of this.detachments.filter(o => o.faction === det.faction && this.isStormSerpent(o) && o.wraithgate && o.stands.length)) {
+      const near = p => det.stands.every(s => Phaser.Math.Distance.Between(s.container.x, s.container.y, p.x, p.y) <= 5 * PX_PER_CM + (s.baseRadius || 10) + 16);
+      if (near(g.wraithgate)) return { by: g, exit: 'serpent' };
+      if (near({ x: g.stands[0].container.x, y: g.stands[0].container.y })) return { by: g, exit: 'gate' };
+    }
+    return null;
+  }
+  enterGate() {
+    const det = this.activatingDetachment || this.selectedDetachment, e = this.gateEntryFor(det); if (!e) return;
+    const go = order => {
+      if (this.activatingDetachment === det) this.undoDetachmentMove && null;
+      det.inTransit = { by: e.by.id, exit: e.exit, order }; det.inReserve = true; det.moved = true;
+      det.stands.forEach(s => s.container.setVisible(false)); if (det.badge) det.badge.setVisible && det.badge.setVisible(false);
+      this.log(`🌀 <b>${det.name}</b> steps into the Wraithgate: it comes out by the ${e.exit === 'gate' ? 'gate' : 'Storm Serpent'} next turn on <b>${this.eldOrderName(order)}</b> orders.`);
+      if (this.activatingDetachment === det) { this.activatingDetachment = null; this.finishMovementActivation(); } else { this.selectedDetachment = null; this.drawOverlays(); this.updateUI(); }
+    };
+    this.eldChoose(`🌀 ${det.name} enters the Wraithgate. Orders for when it comes out next turn:`, ['FIRST_FIRE', 'ADVANCE', 'CHARGE'].map(o => ({ label: this.eldOrderName(o), fn: () => go(o) })));
+  }
+  resolveWraithgates() {
+    this.detachments.filter(d => d.inTransit).forEach(d => {
+      const g = this.detachments.find(o => o.id === d.inTransit.by), t = d.inTransit;
+      d.inTransit = null; d.inReserve = false;
+      if (!g || !g.stands.length) {
+        d.stands.forEach(s => s.container.setVisible(true));
+        this.log(`💀 The Storm Serpent is gone: <b>${d.name}</b> is lost in the warp!`);
+        d.stands.slice().forEach(s => this.removeCasualty(d, s, 0, true)); this.checkBreakPoint(d); return;
+      }
+      const base = t.exit === 'gate' && g.wraithgate ? g.wraithgate : { x: g.stands[0].container.x, y: g.stands[0].container.y };
+      const a = Math.random() * Math.PI * 2, cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6);
+      const cx = base.x + Math.cos(a) * cm * PX_PER_CM, cy = base.y + Math.sin(a) * cm * PX_PER_CM;
+      d.stands.forEach((s, i) => { const ang = i * 2.4, r = 14 + i * 5; this.eldMoveStand(s, cx + Math.cos(ang) * r, cy + Math.sin(ang) * r); s.container.setVisible(true); s.container.setAlpha(1); });
+      this.nudgeOutOfTerrain && this.nudgeOutOfTerrain(d);
+      d.order = t.order || 'ADVANCE'; d.orderRevealed = true; d.moved = false; this.updateDetachmentBadge(d);
+      this.log(`🌀 <b>${d.name}</b> emerges from the Wraithgate ${cm} cm from the ${t.exit === 'gate' ? 'gate' : 'Storm Serpent'}.`);
+    });
+    // a Storm Serpent with units in transit must stay on First Fire
+    this.detachments.forEach(g => { if (this.isStormSerpent(g) && this.detachments.some(o => o.inTransit && o.inTransit.by === g.id)) { g.order = 'FIRST_FIRE'; g.orderRevealed = true; } });
+    this.drawGates();
+  }
+  // Rows of extra buttons: Wraithgate, gate entry, Master Mime
+  renderEldExtras() {
+    let row = document.getElementById('eld-extra-row');
+    const det = this.activatingDetachment || this.selectedDetachment, btns = [];
+    if (this.canOpenGate(det)) btns.push(`<button class="btn-primary" style="background:#7e22ce" onclick="window.gameScene.startGatePlacement()">${this._gatePlace ? '🌀 Tap the board…' : (det.wraithgate ? '🌀 Move Wraithgate' : '🌀 Open Wraithgate')}</button>`);
+    if (this.gateEntryFor(det)) btns.push(`<button class="btn-primary" style="background:#7e22ce" onclick="window.gameScene.enterGate()">🌀 Enter Wraithgate</button>`);
+    const ms = this.phase === 'ORDERS' ? this.mimeSide() : null;
+    if (ms && det && det.faction !== ms && det.stands.length) btns.push(`<button class="btn-primary" style="background:#a21caf" onclick="window.gameScene.playMasterMimeSelected()">🎭 Master Mime on ${this.shortName(det.name, 16)} (${this._mimes[ms]})</button>`);
+    else if (ms) btns.push(`<span style="font-size:0.66rem;color:#f0abfc;align-self:center">🎭 Master Mime ready (${this._mimes[ms]}): tap an enemy detachment to play it</span>`);
+    if (!btns.length) { if (row) row.style.display = 'none'; return; }
+    if (!row) {
+      const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls'); if (!anchor) return;
+      row = document.createElement('div'); row.id = 'eld-extra-row'; row.className = 'btn-row'; row.style.marginTop = '6px';
+      anchor.parentNode.insertBefore(row, anchor.nextSibling);
+    } else {
+      const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls');
+      if (anchor && row.previousSibling !== anchor) anchor.parentNode.insertBefore(row, anchor.nextSibling);
+    }
+    row.innerHTML = btns.join('');
+    row.style.display = 'flex';
+  }
+  // Alaitoc Rangers set up anywhere outside the enemy deployment zone
+  eldEnemyZoneBand(det) {
+    const foe = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM', sh = this.zoneShapes(foe);
+    if (sh.length === 1 && sh[0].kind === 'rect' && sh[0].w >= BOARD_W - 1) { const z = sh[0]; return z.y === 0 ? { minY: z.h + 18, maxY: BOARD_H - 18 } : { minY: 18, maxY: z.y - 18 }; }
+    return { minY: 18, maxY: BOARD_H - 18 };
+  }
+  eldRangersForward(side) {
+    this.detachments.filter(d => d.faction === side && d.deployAnywhere && d.stands.length && !d.embarkedOn).forEach(d => {
+      const band = this.eldEnemyZoneBand(d), objs = (this.objectives || []).filter(o => o.y >= band.minY && o.y <= band.maxY);
+      const midY = side === 'IMPERIUM' ? band.minY + 40 : band.maxY - 40;
+      const o = objs.sort((a, b) => Math.abs(a.y - midY) - Math.abs(b.y - midY))[0] || { x: BOARD_W / 2, y: midY };
+      const y0 = Phaser.Math.Clamp(o.y + (side === 'IMPERIUM' ? 40 : -40), band.minY, band.maxY);
+      d.stands.forEach((s, i) => this.eldMoveStand(s, o.x - 30 + (i % 3) * 24, y0 + Math.floor(i / 3) * 24 * (side === 'IMPERIUM' ? 1 : -1)));
+      this.nudgeOutOfTerrain && this.nudgeOutOfTerrain(d);
+      this.log(`🌿 <b>${d.name}</b> slips into position far forward.`);
+    });
+  }
+
+  // ---------- wrappers (round 3/4) ----------
+  terrainMoveBlock(det, s) {
+    const jj = det && det._jumpJets && det.order === 'CHARGE';
+    if (jj && (this.rockAt(s.container.x, s.container.y) || (this.isPointInImpassableRiver && this.isPointInImpassableRiver(s.container.x, s.container.y)))) return 'The Revenant can\'t land in impassable terrain';
+    const r = this.terrainMoveBlockCore(det, s);
+    if (r) return r;
+    if (det && !(det.flyer || det.isFlyer || det.skimmer || (det.jump && !det._jumpJets))) {
+      const ox = s.originX != null ? s.originX : s.container.x, oy = s.originY != null ? s.originY : s.container.y;
+      if ((this.webs || []).length && Phaser.Math.Distance.Between(ox, oy, s.container.x, s.container.y) > 1 && (this.inWebAt(s.container.x, s.container.y) || this.webBlocksPath(ox, oy, s.container.x, s.container.y))) return 'Monofilament webs block the way';
+    }
+    const b = this.getBuildingAt(s.container.x, s.container.y);
+    if (b && b.webbed && !this.pointInRect(b, s.originX, s.originY)) return `${b.name} is webbed shut`;
+    return null;
+  }
+  getEffectiveMoveCm(det) {
+    const mv = this.getEffectiveMoveCmCore(det);
+    return (det && det.order === 'CHARGE' && this.eldWarpSpider(det)) ? mv / 2 : mv; // their move is a maximum: no doubling on a charge
+  }
+  isStandPinned(stand) { return stand && stand.detachment && this.eldWarpSpider(stand.detachment) ? false : this.isStandPinnedCore(stand); }
+  isEligibleInCombatPhase(det) {
+    if (det && this.phase === 'COMBAT_FIRST' && det.order === 'ADVANCE' && this.eldWarpSpider(det) && !det.fired && det.fofHeld !== this.turn && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Fire on the Fly
+    const ok = this.isEligibleInCombatPhaseCore(det);
+    if (ok && det && this.phase === 'COMBAT_ADVANCE' && this.eldWarpSpider(det) && det.fired) return false;
+    if (ok && det && this.phase === 'COMBAT_FIRST' && det.stands.length && det.stands.every(s => s.webbed === this.turn || s.stunned === this.turn)) return false;
+    return ok;
+  }
+  handleBoardTap(x, y) {
+    if (this._gatePlace) { this.placeGate(x, y); return; }
+    return this.handleBoardTapCore(x, y);
+  }
+  zoneClamp(det, x, y) {
+    if (det && det.deployAnywhere && this.phase === 'DEPLOYMENT') { const foe = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM'; if (!this.inDeployZone(foe, x, y)) return { x, y }; }
+    return this.zoneClampCore(det, x, y);
+  }
+  deployBand(det) {
+    if (det && det.deployAnywhere) return this.eldEnemyZoneBand(det);
+    return this.deployBandCore(det);
+  }
+  autoDeployAIFaction() {
+    const r = this.autoDeployAIFactionPre();
+    if (window.aiFaction && window.aiFaction !== 'NONE') try { this.eldRangersForward(window.aiFaction); } catch (e) { console.error(e); }
+    return r;
   }
 
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
@@ -51836,7 +52357,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // A stand is Pinned if an engaged enemy has >= Pinning Class, OR if this stand's detachment already moved this turn
-  isStandPinned(stand) {
+  isStandPinnedCore(stand) {
     const enemies = this.getEngagedEnemies(stand);
     if (enemies.length === 0) return false;
     if (stand.detachment.moved) return true;
@@ -52269,6 +52790,9 @@ class NetEpicScene extends Phaser.Scene {
     if (this.isSalvoFirer(firerDet)) {
       const sw = this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0);
       if (sw && sw.fx) { this.executeTitanSpecialShot(firerDet, targetDet, sw, isSnapFire, opts); return; }
+    } else if (firerDet.weapon && firerDet.weapon.fx) {
+      if (this.eldPreFire(firerDet, targetDet, isSnapFire, opts)) return;
+      this.executeTitanSpecialShot(firerDet, targetDet, firerDet.weapon, isSnapFire, opts); return;
     }
     const flameWpn = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
     if (flameWpn && flameWpn.isFlame && !flameWpn.fx) { this.executeFlameTemplateAttack(firerDet, targetDet, flameWpn, isSnapFire, opts); return; }
@@ -53819,7 +54343,7 @@ class NetEpicScene extends Phaser.Scene {
 
     this.detachments.forEach(det => {
       if (det.faction !== window.aiFaction || det.stands.length === 0) return;
-      if (det.order === 'FALL_BACK' || det.zealous || (this.isCommandUnit(det) && !det.deathCompany) || det.instinct) return;
+      if (det.order === 'FALL_BACK' || det.zealous || (this.isCommandUnit(det) && !det.deathCompany) || det.instinct || det.mimed) return;
       if (det.embarkedOn) {
         det.order = 'ADVANCE';
         det.orderRevealed = false;
@@ -54448,6 +54972,7 @@ class NetEpicScene extends Phaser.Scene {
   assignOrder(orderKey) {
     if (!this.selectedDetachment || this.phase !== 'ORDERS' || this._awaitingInitChoice) return;
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
+    if (this.selectedDetachment.mimed) { this.log(`🎭 <b>${this.selectedDetachment.name}</b> is confused by the Master Mime and can't take orders.`); return; }
     if (this.selectedDetachment.order === 'FALL_BACK' || this.selectedDetachment.zealous) return;
     if (this.selectedDetachment.deathCompany && orderKey === 'FIRST_FIRE') { this.log(`💀 The <b>Death Company</b> is too frenzied to hold back: Advance or Charge only.`); return; }
     if (this.isCommandUnit(this.selectedDetachment) && !this.selectedDetachment.deathCompany) return; // Command units take no orders
@@ -54889,7 +55414,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- III. COMBAT PHASE (1: FIRST FIRE, 2: CLOSE COMBAT, 3: ADVANCE FIRE) ---
-  isEligibleInCombatPhase(det) {
+  isEligibleInCombatPhaseCore(det) {
     if (det.stands.length === 0 || det.fired || det.embarkedOn || det.inReserve || det.transfixed) return false;
     // Must have at least one stand NOT locked in Close Combat
     const hasUnengagedStand = det.stands.some(s => !this.isStandEngaged(s) || this.canFireOutOfCombat(s));
@@ -55536,7 +56061,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!this.activatingDetachment || this.phase !== 'COMBAT_FIRST') return;
     // Command units always fire in First Fire, so holding simply means passing
     if (this.isCommandUnit(this.activatingDetachment)) { this.skipFireDetachment(); return; }
-    this.activatingDetachment.order = 'ADVANCE';
+    this.activatingDetachment.order = 'ADVANCE'; this.activatingDetachment.fofHeld = this.turn;
     this.updateDetachmentBadge(this.activatingDetachment);
     this.log(`⏳ <b>${this.activatingDetachment.name}</b> Holds Fire until the Advance Fire Segment.`);
     this.finishCombatActivation();
@@ -56224,6 +56749,7 @@ class NetEpicScene extends Phaser.Scene {
     try { this.renderTitanAimPanel(); } catch (e) {}
     try { this.renderModePicker(); } catch (e) {}
     try { this.renderEldFlex(); } catch (e) {}
+    try { this.renderEldExtras(); } catch (e) {}
     return r;
   }
 
