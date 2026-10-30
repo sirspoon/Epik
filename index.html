@@ -4038,6 +4038,14 @@ const UNIT_CATALOG = {
         "standsCount": 1,
         "baseW": 22,
         "baseH": 26
+      },
+      "characterRules": {
+        "psyker": true,
+        "spells": [
+          "purge_psyker",
+          "imp_mind_blast",
+          "imp_destroy_daemon"
+        ]
       }
     },
     {
@@ -5028,7 +5036,6 @@ const UNIT_CATALOG = {
       "specialAbilities": [
         "Elite",
         "Fearless",
-        "Teleport",
         "Terror"
       ],
       "weapon": {
@@ -5380,8 +5387,8 @@ const UNIT_CATALOG = {
         "psyker": true,
         "spells": [
           "purge_psyker",
-          "mind_blast",
-          "destroy_daemon"
+          "imp_mind_blast",
+          "imp_destroy_daemon"
         ]
       },
       "dedicatedTransport": {
@@ -7047,8 +7054,8 @@ const UNIT_CATALOG = {
         "psyker": true,
         "spells": [
           "purge_psyker",
-          "mind_blast",
-          "destroy_daemon"
+          "imp_mind_blast",
+          "imp_destroy_daemon"
         ]
       },
       "dedicatedTransport": {
@@ -12046,6 +12053,68 @@ const UNIT_CATALOG = {
       "baseW": 24,
       "baseH": 24,
       "chapter": "SPACE_WOLVES"
+    },
+    {
+      "key": "card_sm_ob_light",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "IMPERIUM",
+      "name": "Light Off-Board Barrage",
+      "composition": "One light orbital barrage round (6 BP, TSM -1), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 1 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -1,
+        "barrage": true,
+        "barrageBp": 6
+      },
+      "offBoard": {
+        "bp": 6,
+        "tsm": -1,
+        "vp": 1
+      }
+    },
+    {
+      "key": "card_sm_ob_heavy",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "IMPERIUM",
+      "name": "Heavy Off-Board Barrage",
+      "composition": "One heavy orbital barrage round (10 BP, TSM -2), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 2 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -2,
+        "barrage": true,
+        "barrageBp": 10
+      },
+      "offBoard": {
+        "bp": 10,
+        "tsm": -2,
+        "vp": 2
+      }
     }
   ],
   "ORKS": [
@@ -28801,7 +28870,6 @@ const UNIT_CATALOG = {
       "breakPoint": 15,
       "morale": 3,
       "vpValue": 6,
-      "squatMastery": true,
       "moveCm": 10,
       "save": 7,
       "caf": 0,
@@ -29259,7 +29327,6 @@ const UNIT_CATALOG = {
       "save": 7,
       "caf": 0,
       "pinningClass": 1,
-      "squatMastery": true,
       "weapon": {
         "name": "Lasguns",
         "rangeCm": 50,
@@ -29799,8 +29866,7 @@ const UNIT_CATALOG = {
       "characterRules": {
         "livingAncestor": true,
         "spells": [
-          "guide",
-          "mind_blast"
+          "sq_shield"
         ]
       },
       "color": 14251782
@@ -29974,8 +30040,9 @@ const UNIT_CATALOG = {
       "characterRules": {
         "psyker": true,
         "spells": [
-          "guide",
-          "mind_blast"
+          "sq_heal",
+          "sq_precog",
+          "sq_dome"
         ]
       },
       "specialAbilities": [
@@ -30147,8 +30214,7 @@ const UNIT_CATALOG = {
       "characterRules": {
         "livingAncestor": true,
         "spells": [
-          "guide",
-          "mind_blast"
+          "sq_shield"
         ]
       },
       "specialAbilities": [
@@ -31397,8 +31463,7 @@ const UNIT_CATALOG = {
       "baseH": 22,
       "specialAbilities": [
         "Quickdraw",
-        "Robotic",
-        "RoF2"
+        "Robot"
       ]
     },
     {
@@ -31584,6 +31649,68 @@ const UNIT_CATALOG = {
           "id": "sqhf_1"
         }
       ]
+    },
+    {
+      "key": "card_sqt_ob_light",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "SQUATS",
+      "name": "Light Off-Board Barrage",
+      "composition": "One light orbital barrage round (6 BP, TSM -1), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 1 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -1,
+        "barrage": true,
+        "barrageBp": 6
+      },
+      "offBoard": {
+        "bp": 6,
+        "tsm": -1,
+        "vp": 1
+      }
+    },
+    {
+      "key": "card_sqt_ob_heavy",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "SQUATS",
+      "name": "Heavy Off-Board Barrage",
+      "composition": "One heavy orbital barrage round (10 BP, TSM -2), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 2 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -2,
+        "barrage": true,
+        "barrageBp": 10
+      },
+      "offBoard": {
+        "bp": 10,
+        "tsm": -2,
+        "vp": 2
+      }
     }
   ],
   "MILITARIS": [
@@ -32777,8 +32904,6 @@ const UNIT_CATALOG = {
       "pinningClass": 2,
       "standsCount": 1,
       "isCharacter": true,
-      "isPsyker": true,
-      "psychicRank": 3,
       "baseW": 22,
       "baseH": 22,
       "weapon": {
@@ -32788,15 +32913,15 @@ const UNIT_CATALOG = {
         "toHit": 4,
         "tsm": -1
       },
-      "characterRules": {
-        "psyker": true,
-        "spells": [
-          "mind_blast",
-          "purge_psyker",
-          "destroy_daemon"
-        ]
-      },
-      "color": 8266446
+      "characterRules": {},
+      "color": 8266446,
+      "specialAbilities": [
+        "Command",
+        "Elite",
+        "Fearless",
+        "HQ",
+        "PsychicSave4"
+      ]
     },
     {
       "key": "card_mil_regimental_hq",
@@ -34578,7 +34703,9 @@ const UNIT_CATALOG = {
       "characterRules": {
         "psyker": true,
         "spells": [
-          "mind_blast"
+          "imp_embolden",
+          "imp_telepathic",
+          "imp_righteous"
         ]
       },
       "dedicatedTransport": {
@@ -34641,7 +34768,9 @@ const UNIT_CATALOG = {
       "characterRules": {
         "psyker": true,
         "spells": [
-          "purge_psyker"
+          "imp_beacon",
+          "imp_cancel",
+          "imp_guidance"
         ]
       },
       "dedicatedTransport": {
@@ -36881,6 +37010,68 @@ const UNIT_CATALOG = {
           "id": "mil_am_oa_las"
         }
       ]
+    },
+    {
+      "key": "card_mil_ob_light",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "MILITARIS",
+      "name": "Light Off-Board Barrage",
+      "composition": "One light orbital barrage round (6 BP, TSM -1), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 1 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -1,
+        "barrage": true,
+        "barrageBp": 6
+      },
+      "offBoard": {
+        "bp": 6,
+        "tsm": -1,
+        "vp": 1
+      }
+    },
+    {
+      "key": "card_mil_ob_heavy",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "MILITARIS",
+      "name": "Heavy Off-Board Barrage",
+      "composition": "One heavy orbital barrage round (10 BP, TSM -2), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 2 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -2,
+        "barrage": true,
+        "barrageBp": 10
+      },
+      "offBoard": {
+        "bp": 10,
+        "tsm": -2,
+        "vp": 2
+      }
     }
   ],
   "MECHANICUS": [
@@ -38428,7 +38619,9 @@ const UNIT_CATALOG = {
       "characterRules": {
         "psyker": true,
         "spells": [
-          "mind_blast"
+          "imp_embolden",
+          "imp_telepathic",
+          "imp_righteous"
         ]
       },
       "dedicatedTransport": {
@@ -38491,7 +38684,9 @@ const UNIT_CATALOG = {
       "characterRules": {
         "psyker": true,
         "spells": [
-          "purge_psyker"
+          "imp_beacon",
+          "imp_cancel",
+          "imp_guidance"
         ]
       },
       "dedicatedTransport": {
@@ -39170,6 +39365,68 @@ const UNIT_CATALOG = {
           "id": "am_sb1_3"
         }
       ]
+    },
+    {
+      "key": "card_am_ob_light",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "MECHANICUS",
+      "name": "Light Off-Board Barrage",
+      "composition": "One light orbital barrage round (6 BP, TSM -1), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 1 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -1,
+        "barrage": true,
+        "barrageBp": 6
+      },
+      "offBoard": {
+        "bp": 6,
+        "tsm": -1,
+        "vp": 1
+      }
+    },
+    {
+      "key": "card_am_ob_heavy",
+      "cardType": "SUPPORT",
+      "cardName": "Off-Board Barrage",
+      "armyBook": "MECHANICUS",
+      "name": "Heavy Off-Board Barrage",
+      "composition": "One heavy orbital barrage round (10 BP, TSM -2), called in by a Forward Observer on a 3+. Costs no points: the enemy scores 2 VP when it is used.",
+      "points": 0,
+      "breakPoint": 0,
+      "morale": 1,
+      "vpValue": 0,
+      "moveCm": 0,
+      "save": 7,
+      "caf": 0,
+      "pinningClass": 1,
+      "standsCount": 0,
+      "weapon": {
+        "name": "Orbital Barrage",
+        "rangeCm": 0,
+        "dice": 0,
+        "toHit": 4,
+        "tsm": -2,
+        "barrage": true,
+        "barrageBp": 10
+      },
+      "offBoard": {
+        "bp": 10,
+        "tsm": -2,
+        "vp": 2
+      }
     }
   ]
 };
@@ -46946,6 +47203,7 @@ class NetEpicScene extends Phaser.Scene {
         let template = window.findCatalogUnit(key);
         if (template) template = this.cardEffectTemplate(template, side, keys);
         if (!template) return;
+        if (template.offBoard) { (this.offBoard = this.offBoard || { IMPERIUM: [], ORKS: [] })[side].push({ ...template.offBoard, name: template.name }); return; } // bought with VP, no models
 
         const spanX = Math.min(BOARD_W - 350, Math.max(400, (cardCount - 1) * 250));
         const startX = (BOARD_W / 2) - (spanX / 2) + (cardCount > 1 ? (cardIdx * (spanX / (cardCount - 1))) : 0) - 36;
@@ -47020,9 +47278,10 @@ class NetEpicScene extends Phaser.Scene {
     };
 
     this._mimes = {}; this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
+    this.offBoard = { IMPERIUM: [], ORKS: [] }; this.forceDomes = []; this.impInstallPowers();
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
-    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); } catch (e) { console.error(e); }
+    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); this.impLegionSetup(); this.sqBodyguardSetup(); } catch (e) { console.error(e); }
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
     this.applyCraftworldAtSpawn();
@@ -48064,7 +48323,8 @@ class NetEpicScene extends Phaser.Scene {
     const c = this.titanClassOf(det);
     if (c && c.psychicSave) return c.psychicSave;
     if (det.psychicSave) return det.psychicSave;
-    const m = /(\d)\+ Psychic Save/i.exec((det.composition || '') + ' ' + (det.specialAbilities || []).join(' '));
+    const txt = (det.composition || '') + ' ' + (det.specialAbilities || []).join(' ');
+    const m = /(\d)\+ Psychic Save/i.exec(txt) || /PsychicSave(\d)/.exec(txt);
     return m ? +m[1] : null;
   }
   rollNeed(need) {
@@ -48564,9 +48824,9 @@ class NetEpicScene extends Phaser.Scene {
       h.stands.some(hs => Phaser.Math.Distance.Between(hs.container.x, hs.container.y, stand.container.x, stand.container.y) <= 10 * PX_PER_CM));
     if (!healer) return false;
     healer.healUses = (healer.healUses || 0) + 1;
-    const r = Phaser.Math.Between(1, 6), ok = r >= 5;
+    const hneed = (healer.armyBook === 'SQUATS' && need === 'mechanic') ? 4 : 5, r = Phaser.Math.Between(1, 6), ok = r >= hneed;
     if (r === 1 && healer.armyBook === 'ORKS') { if (out) out.push({ val: r, cls: 'die-fail', tip: 'Ork healer mishap!' }); this.orkHealerMishap(healer, vDet, stand, need); return false; }
-    if (out) out.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `${need === 'medic' ? '💊 Medic' : '🔧 Mechanic'} 5+ (${healer.healUses}/5 this turn)` });
+    if (out) out.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `${need === 'medic' ? '💊 Medic' : '🔧 Mechanic'} ${hneed}+ (${healer.healUses}/5 this turn)` });
     if (ok) { this.spawnFloatingText(stand.container.x, stand.container.y - 8, need === 'medic' ? `💊 SAVED BY MEDIC (${r})` : `🔧 REPAIRED (${r})`, '#4ade80', '10px'); this.log(`${need === 'medic' ? '💊' : '🔧'} <b>${healer.name}</b> saves a stand of <b>${vDet.name}</b> (${r}).`); }
     return ok;
   }
@@ -49989,7 +50249,7 @@ class NetEpicScene extends Phaser.Scene {
       mine.forEach(d => {
         if (!d.isPsyker) return;
         if (/rune priest/i.test(d.name)) d.characterRules = { ...(d.characterRules || {}), spells: ['courage_russ', 'wolf_howl', 'fangs_fenris'] };
-        else if (power) { const sp = ((d.characterRules && d.characterRules.spells) || ['mind_blast']).map(k => k === 'mind_blast' ? power : k); d.characterRules = { ...(d.characterRules || {}), spells: sp }; }
+        else if (power) { const sp = ((d.characterRules && d.characterRules.spells) || ['mind_blast']).map(k => (k === 'mind_blast' || k === 'imp_mind_blast') ? power : k); d.characterRules = { ...(d.characterRules || {}), spells: sp }; }
       });
       this.log(`🛡️ <b>${this.getSideName(side)}: ${window.chapterName(ch)}</b>${notes.length ? ' — ' + notes.join('; ') : ''}.`);
     });
@@ -50056,7 +50316,10 @@ class NetEpicScene extends Phaser.Scene {
   }
   // Chapter psychic powers
   castChapterPower(det, key) {
-    if (/^eld_/.test(key)) { this.castEldarPower(det, key); return; }
+    if (this.impCancelled(det)) { det.psychicPowerUsed = true; this.updateUI(); return; }
+    { const bt = this.impBeaconTarget(det); if (bt) this.targetDetachment = bt; }
+    if (/^eld_/.test(key)) { this.castEldarPower(det, key, { _cc: true }); return; }
+    if (/^(imp|sq)_/.test(key)) { this.castImpPower(det, key); return; }
     const c = this.getDetachmentCenter(det), inR = (o, cm) => { const oc = this.getDetachmentCenter(o); return Phaser.Math.Distance.Between(c.x, c.y, oc.x, oc.y) <= cm * PX_PER_CM; };
     const sel = this.selectedDetachment && this.selectedDetachment !== det ? this.selectedDetachment : null, tgt = this.targetDetachment;
     const nearestEnemy = cm => this.detachments.filter(o => o.faction !== det.faction && o.stands.length && !o.embarkedOn && !o.inReserve && inR(o, cm)).sort((a, b) => Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(a).x, this.getDetachmentCenter(a).y) - Phaser.Math.Distance.Between(c.x, c.y, this.getDetachmentCenter(b).x, this.getDetachmentCenter(b).y))[0];
@@ -50349,6 +50612,8 @@ class NetEpicScene extends Phaser.Scene {
   eldDoomActive(t) { if (!t || !t.eldDoomBy) return false; const c = this.detachments.find(o => o.id === t.eldDoomBy); return Boolean(c && c.stands.length && c.eldDoomTarget === t.id); }
 
   castEldarPower(det, key, opt = {}) {
+    if (!opt._cc && this.impCancelled(det)) { det.psychicPowerUsed = true; return true; }
+    if (!opt._cc) { const bt = this.impBeaconTarget(det); if (bt) this.targetDetachment = bt; }
     if (!det || !det.stands.length) return false;
     const P = PSYCHIC_POWERS[key], ai = this.isFactionAI(det.faction), c = this.getDetachmentCenter(det);
     const tgt = opt.target || (this.targetDetachment && this.targetDetachment.faction !== det.faction ? this.targetDetachment : null);
@@ -50593,7 +50858,7 @@ class NetEpicScene extends Phaser.Scene {
     const det = this.activatingDetachment || this.selectedDetachment;
     if (!this.eldFlexMovable(det) || det.order === k) return;
     const from = det.order; det.order = k; det.orderRevealed = true;
-    this.log(`🔮 <b>${det.name}</b> ${this.isWarlockTitan(det) ? 'acts on the Warlock Titan\'s foresight' : 'heeds the Warlock\'s foresight'}: orders change from ${from ? this.eldOrderName(from) : 'none'} to <b>${this.eldOrderName(k)}</b>.`);
+    this.log(`🔮 <b>${det.name}</b> ${!this.isEldar(det) ? 'uses its second order counter' : this.isWarlockTitan(det) ? 'acts on the Warlock Titan\'s foresight' : 'heeds the Warlock\'s foresight'}: orders change from ${from ? this.eldOrderName(from) : 'none'} to <b>${this.eldOrderName(k)}</b>.`);
     this.updateDetachmentBadge(det); this.drawOverlays(); this.updateUI();
   }
   renderEldFlex() {
@@ -50606,7 +50871,7 @@ class NetEpicScene extends Phaser.Scene {
       mc.parentNode.insertBefore(row, mc.nextSibling);
     }
     const b = (k, cls, lab) => `<button class="${cls}" style="${det.order === k ? 'outline:2px solid #fde047;' : 'opacity:0.75;'}" onclick="window.gameScene.setEldFlexOrder('${k}')">${lab}</button>`;
-    row.innerHTML = `<span style="align-self:center;font-size:0.68rem;font-weight:800;color:#d8b4fe;margin-right:4px">🔮 Foresight:</span>${b('FIRST_FIRE', 'btn-ff', 'First Fire')}${b('ADVANCE', 'btn-adv', 'Advance')}${b('CHARGE', 'btn-chg', 'Charge')}`;
+    row.innerHTML = `<span style="align-self:center;font-size:0.68rem;font-weight:800;color:#d8b4fe;margin-right:4px">${this.isEldar(det) ? '🔮 Foresight' : '🔀 Second order'}:</span>${b('FIRST_FIRE', 'btn-ff', 'First Fire')}${b('ADVANCE', 'btn-adv', 'Advance')}${b('CHARGE', 'btn-chg', 'Charge')}`;
     row.style.display = 'flex';
   }
 
@@ -50679,6 +50944,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.orkMadIdle(me)) { zero = true; tags.push('🤪 Madboyz: no dice'); }
     if (me.madState === 'TANK') { dice += 2; tags.push('🤪 Get da tank: double dice'); }
     if (this.tourNear(me)) { caf += 1; tags.push('🎸 Goffik Rok +1'); }
+    if (this.detachments.some(p => p.faction === me.faction && p.emboldenTurn === this.turn && this.impLive(p) && this.impNear(p, me, 15))) { caf += 1; tags.push('🦁 Embolden +1'); }
     if (this.isGrots(me) && this.detachments.some(r => r.faction === me.faction && this.orkIs(r, /runtherd/i) && r.stands.length && this.orkNear(me, r, 5))) { const up = Math.max(0, 1 - (me.caf || 0)); if (up) { caf += up; tags.push('🐀 Runtherd: CAF +1'); } }
     if (me.rokkitBoost === this.turn) { caf += 1; tags.push('🚀 Rokkit landing +1'); }
     if (me.order === 'CHARGE' && this.orkHas(me, 'SPIKY')) { caf += 2; tags.push('🔧 Xtra-Spiky +2'); }
@@ -50733,6 +50999,7 @@ class NetEpicScene extends Phaser.Scene {
     const det = this.activatingDetachment;
     if (det) {
       det.stands.forEach(s => { if ((s.psyLock || s.stunned === this.turn) && s.originX != null) { s.container.x = s.originX; s.container.y = s.originY; } });
+      if ((this.forceDomes || []).length) { let blocked = 0; det.stands.forEach(s => { if (s.originX != null && this.sqDomeBlocks(s.originX, s.originY, s.container.x, s.container.y)) { s.container.x = s.originX; s.container.y = s.originY; blocked++; } }); if (blocked) this.log(`🔵 ${det.name}: ${blocked} stand${blocked > 1 ? 's' : ''} can't pass through the Force Dome and stay put.`); }
       det._eldMovedNow = det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1);
     }
     const rolla = det && det.deathrolla ? det.stands.map(s => [s, s.originX != null ? s.originX : s.container.x, s.originY != null ? s.originY : s.container.y]) : null;
@@ -50786,6 +51053,7 @@ class NetEpicScene extends Phaser.Scene {
   startCombatSegment(segment) {
     try { this.orkSegmentEnd(); if (segment === 'COMBAT_FIRST') this.orkTinbotOrders(); } catch (e) { console.error(e); }
     if (segment === 'COMBAT_FIRST') ['IMPERIUM', 'ORKS'].forEach(f => { try { this.aiEldarPsychics(f); } catch (e) { console.error(e); } });
+    ['IMPERIUM', 'ORKS'].forEach(f => { try { if (segment === 'COMBAT_FIRST') this.aiImpPsychics(f); if (segment === 'COMBAT_FIRST' || segment === 'COMBAT_ADVANCE') this.aiOffBoard(f); } catch (e) { console.error(e); } });
     return this.startCombatSegmentCore(segment);
   }
 
@@ -51114,7 +51382,7 @@ class NetEpicScene extends Phaser.Scene {
     const ms = this.phase === 'ORDERS' ? this.mimeSide() : null;
     if (ms && det && det.faction !== ms && det.stands.length) btns.push(`<button class="btn-primary" style="background:#a21caf" onclick="window.gameScene.playMasterMimeSelected()">🎭 Master Mime on ${this.shortName(det.name, 16)} (${this._mimes[ms]})</button>`);
     else if (ms) btns.push(`<span style="font-size:0.66rem;color:#f0abfc;align-self:center">🎭 Master Mime ready (${this._mimes[ms]}): tap an enemy detachment to play it</span>`);
-    try { this.orkExtraButtons(det, btns); } catch (e) { console.error(e); }
+    try { this.orkExtraButtons(det, btns); this.impExtraButtons(det, btns); } catch (e) { console.error(e); }
     if (!btns.length) { if (row) row.style.display = 'none'; return; }
     if (!row) {
       const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls'); if (!anchor) return;
@@ -51161,10 +51429,10 @@ class NetEpicScene extends Phaser.Scene {
   }
   getEffectiveMoveCm(det) {
     if (det && (this.isLanda(det) || this.isRokkit(det))) return 0; // grounded Landas and Rokkit launchers never move
-    const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det) + this.orkKustomMove(det); // Mekboy Speedstas: +2D6 cm
+    const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det) + this.orkKustomMove(det) + this.impForcedMarch(det); // Mekboy Speedstas: +2D6 cm
     return (det && det.order === 'CHARGE' && this.eldWarpSpider(det)) ? mv / 2 : mv; // their move is a maximum: no doubling on a charge
   }
-  isStandPinned(stand) { return stand && stand.detachment && this.eldWarpSpider(stand.detachment) ? false : this.isStandPinnedCore(stand); }
+  isStandPinned(stand) { return stand && stand.detachment && (this.eldWarpSpider(stand.detachment) || this.hitAndRunFree(stand)) ? false : this.isStandPinnedCore(stand); }
   isEligibleInCombatPhase(det) {
     if (det && this.orkMadIdle(det)) return false;
     if (det && this.phase === 'COMBAT_FIRST' && det.order === 'ADVANCE' && this.eldWarpSpider(det) && !det.fired && det.fofHeld !== this.turn && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Fire on the Fly
@@ -51175,6 +51443,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   handleBoardTap(x, y) {
     if (this._gatePlace) { this.placeGate(x, y); return; }
+    if (this._obPlace) { this.impPlaceOffBoard(x, y); return; }
     return this.handleBoardTapCore(x, y);
   }
   zoneClamp(det, x, y) {
@@ -51494,6 +51763,7 @@ class NetEpicScene extends Phaser.Scene {
   orkTurnStart() {
     if (this._orkTurnStart === this.turn) return; this._orkTurnStart = this.turn;
     try { this.orkTraktorTurn(); } catch (e) { console.error(e); }
+    try { this.impOrdersStart(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length) return;
       if (d.instinct === 'WOOFED' && d.woofedTurn !== this.turn) { d.instinct = null; d.order = null; d.orderRevealed = false; }
@@ -51511,6 +51781,7 @@ class NetEpicScene extends Phaser.Scene {
   orkFinishOrders() {
     try { this.orkMoveSwarms(); } catch (e) { console.error(e); }
     try { this.orkRokkitsCompulsory(); } catch (e) { console.error(e); }
+    try { ['IMPERIUM', 'ORKS'].forEach(f => this.aiImpPsychics(f)); this.impFinishOrders(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length) return;
       if (d.instinct === 'WOOFED') { d.moved = true; d.fired = true; }
@@ -51680,6 +51951,7 @@ class NetEpicScene extends Phaser.Scene {
   // ---------- wrappers (Orks round 2) ----------
   testMoraleCore(det, reason = '') {
     if (this.isMadboyz(det) && det.stands.length) { this.orkMadRoll(det, reason || 'morale test'); return true; }
+    { const q = det && det.stands.length ? this.impInquisitorNear(det) : null; if (q) { this.log(`⚖️ <b>${det.name}</b> passes its morale test automatically under ${q.name}'s gaze${reason ? ` (${reason})` : ''}.`); return true; } }
     if (det && det.stands.length && this.isOrk(det) && this.detachments.some(o => o !== det && o.faction === det.faction && o.stands.length && this.orkHas(o, 'SOUNDZ') && this.orkNear(det, o, 10))) {
       det.morale -= 1; try { return this.testMoraleOrkCore(det, (reason ? reason + ', ' : '') + 'Soundz +1'); } finally { det.morale += 1; }
     }
@@ -51699,9 +51971,10 @@ class NetEpicScene extends Phaser.Scene {
     if (this.isTourWagon(det)) return; // the band plays on
     return this.failMoraleOrkCore(det);
   }
-  isFearlessUnit(det) { return this.isFearlessUnitOrkCore(det) || this.tourNear(det); }
-  psychicSaveOf(det) { const b = this.psychicSaveOfOrkCore(det); return this.tourNear(det) ? Math.min(b || 7, 4) : b; }
+  isFearlessUnit(det) { return this.isFearlessUnitOrkCore(det) || this.tourNear(det) || this.impFearless(det); }
+  psychicSaveOf(det) { let b = this.psychicSaveOfOrkCore(det); if (this.sqShieldNear(det)) b = Math.min(b || 7, 5); return this.tourNear(det) ? Math.min(b || 7, 4) : b; }
   removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false, opts = {}) {
+    if (det && this.sqGuardRedirect(det, specificStand, weaponTsm, isMeltdown)) return;
     { const s0 = det && (specificStand || det.stands[det.stands.length - 1]); if (s0 && s0.traktorHeld) { s0.traktorHeld = null; det.casualties = Math.max(0, (det.casualties || 0) - 1); } }
     if (det && this.isOrk(det)) {
       if (this.isMadboyz(det)) det._madHit = true;
@@ -51714,7 +51987,9 @@ class NetEpicScene extends Phaser.Scene {
         }));
       }
     }
-    return this.removeCasualtyOrkCore(det, specificStand, weaponTsm, isMeltdown, opts);
+    const res = this.removeCasualtyOrkCore(det, specificStand, weaponTsm, isMeltdown, opts);
+    if (det && !det.stands.length && this.isSquatLeader(det)) { try { this.sqLeaderLost(det); } catch (e) { console.error(e); } }
+    return res;
   }
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (this.isMegaSquiggoth(det) && det.stands.length) {
@@ -52170,7 +52445,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   // ---- Landa: deep strikes with the artillery die; a Misfire crashes it ----
   isLanda(d) { return this.orkIs(d, /landa/i); }
-  executeDeepStrikeScatter(det) {
+  executeDeepStrikeScatterImpCore(det) {
     if (!det || !det.deepStrikeActive || !this.isLanda(det)) return this.executeDeepStrikeScatterOrkCore(det);
     det.deepStrikeActive = false; det.deepStrikeUsed = true; det.inReserve = false; det.landaDown = true;
     det.stands.forEach(s => s.container.setAlpha(1));
@@ -52328,13 +52603,13 @@ class NetEpicScene extends Phaser.Scene {
     const dets = {};
     this.detachments.forEach(d => {
       const x = {};
-      ['turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
+      ['cmMode', 'geniusTurn', 'emboldenTurn', 'telepathTurn', 'beaconTurn', 'cancelTurn', 'guidanceTurn', 'healTurn', 'precogTurn', 'sqFlexTurn', 'sqShield', 'legionWaiting', 'legionArrived', 'guardOf', 'guardFury', 'gwUsed', 'turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
       const kap = d.stands.findIndex(s => s.isKaptin); if (kap >= 0) x.kaptin = kap;
       const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil, s.traktorHeld] : null).filter(Boolean); if (held.length) x.held = held;
       if (d.stands.some(s => s.bionikCaf)) x.bionik = d.stands.map(s => s.bionikCaf || 0);
       if (Object.keys(x).length) dets[d.id] = x;
     });
-    return { dets, swarms: (this.squigSwarms || []).map(w => ({ x: w.x, y: w.y })), webs: (this.webs || []).map(w => ({ hexes: w.hexes, life: w.life })), mimes: this._mimes || {} };
+    return { dets, offBoard: this.offBoard || null, domes: (this.forceDomes || []).map(d => ({ x: d.x, y: d.y, turn: d.turn, phase: d.phase, side: d.side })), swarms: (this.squigSwarms || []).map(w => ({ x: w.x, y: w.y })), webs: (this.webs || []).map(w => ({ hexes: w.hexes, life: w.life })), mimes: this._mimes || {} };
   }
   orkRestoreExtra(save) {
     const X = save && save.orkExtra; if (!X) return;
@@ -52347,6 +52622,7 @@ class NetEpicScene extends Phaser.Scene {
       if (this.isWeirdboy(d)) { d.weapon = this.orkBolt(d.weirdEnergy || 0); d.stands.forEach(s => { s.weapon = d.weapon; }); }
       if (d.madState && d._madBase) { const s = d.madState; d.madState = null; if (s === 'SHOOT') d.weapon = { ...d.weapon, dice: (d.weapon.dice || 1) + 1 }; if (s === 'INVINCIBLE' || s === 'TANK') d.fixedSave = 3; if (s === 'WAAARGH') { d.moveCm *= 2; d.caf = 8; d.weapon = { ...d.weapon, toHit: 2 }; } if (s === 'TANK') { d.weapon = { ...d.weapon, rangeCm: 0 }; d.instinct = 'MAD_TANK'; } if (s === 'COVER') d.instinct = 'MAD_COVER'; d.madState = s; }
       if (d.inTransit) { d.inReserve = true; d.stands.forEach(s => s.container.setVisible(false)); }
+      if (d.legionWaiting) { d.inReserve = true; d.stands.forEach(s => s.container.setVisible(false)); if (d.badge) d.badge.setVisible(false); }
       if (d.rokkitLanded && d.stands.length > 1) { const l = d.stands.pop(); l.container.destroy(); }
     });
     (this.squigSwarms || []).forEach(w => w.g && w.g.destroy()); this.squigSwarms = [];
@@ -52354,6 +52630,9 @@ class NetEpicScene extends Phaser.Scene {
     (X.swarms || []).forEach(p => this.addSquigSwarm(p));
     (X.webs || []).forEach(w => { this.addWeb(w.hexes); this.webs[this.webs.length - 1].life = w.life; });
     this._mimes = X.mimes || {};
+    if (X.offBoard) this.offBoard = X.offBoard;
+    (this.forceDomes || []).forEach(d => d.g && d.g.destroy()); this.forceDomes = [];
+    (X.domes || []).forEach(d => { const t = this.turn, ph = this.phase; this.turn = d.turn; this.phase = d.phase; try { this.sqAddDome(d, d.side); } finally { this.turn = t; this.phase = ph; } });
     if (this.drawGates) this.drawGates();
   }
   serializeGameState(saveName = null) {
@@ -52361,7 +52640,7 @@ class NetEpicScene extends Phaser.Scene {
     try { if (s) s.orkExtra = this.orkSaveExtra(); } catch (e) { console.error(e); }
     return s;
   }
-  tryHealerSave(vDet, stand, out) { return this.tryHealerSaveOrkCore(vDet, stand, out); }
+  tryHealerSave(vDet, stand, out) { return this.tryHealerSaveOrkCore(vDet, stand, out) || this.sqLordHeal(vDet, stand, out); }
   // Kustom Force Field: 'save' if its 2+ holds, 'fail' if not (the armour save is then at -1), null without one
   orkForceField(vDet, stand, out) {
     if (!vDet || !this.orkHas(vDet, 'FORCE_FIELD') || this.hasHitLocations(vDet)) return null;
@@ -52475,6 +52754,505 @@ class NetEpicScene extends Phaser.Scene {
   disembarkDetachment(t, x = null, y = null) {
     if (t && t.rokkitTrapped && this.turn < t.rokkitTrapped) { this.log(`🙃 The Orks inside <b>${t.name}</b> are still trying to blast their way out: they emerge next turn.`); return false; }
     return this.disembarkDetachmentOrkCore(t, x, y);
+  }
+
+  // ===== IMPERIAL & SQUAT round 1: shared rules, psykers and characters =====
+  isImpBook(d) { return Boolean(d && ['IMPERIUM', 'MILITARIS', 'MECHANICUS'].includes(d.armyBook)); }
+  isSquat(d) { return Boolean(d && d.armyBook === 'SQUATS'); }
+  impNear(a, b, cm) { // any stand of a within cm of any stand of b
+    if (!a || !b || !a.stands.length || !b.stands.length) return false;
+    const R = cm * PX_PER_CM;
+    return a.stands.some(s => b.stands.some(t => Phaser.Math.Distance.Between(s.container.x, s.container.y, t.container.x, t.container.y) <= R));
+  }
+  impLive(d) { return Boolean(d && d.stands.length && !d.embarkedOn && !d.inReserve); }
+  impPointLoS(stand, p, wpn = null) { // line of sight from a stand to a point on the table
+    for (const d of this.detachments) { if (d === stand.detachment || !d.stands.length || d.embarkedOn || d.inReserve) continue; const t = d.stands.find(q => Phaser.Math.Distance.Between(q.container.x, q.container.y, p.x, p.y) <= 4); if (t) { const r = this.checkStandLoS(stand, t, false, wpn || { name: 'Spotting', rangeCm: 999, dice: 1, toHit: 4, tsm: 0 }); return r.valid || /close combat/i.test(r.reason || ''); } }
+    const dummy = { container: { x: p.x, y: p.y }, baseRadius: 1, label: 'point', detachment: { id: '_pt', name: 'the target point', faction: '_none', stands: [], embarkedOn: null, inReserve: false, pinningClass: 1, specialAbilities: [] } };
+    dummy.detachment.stands = [dummy]; dummy.detachment.faction = stand.detachment && stand.detachment.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    const eng = this.isStandEngaged; this.isStandEngaged = s => (s === dummy ? false : eng.call(this, s));
+    try { return this.checkStandLoSAt(stand, dummy, false, wpn || { name: 'Spotting', rangeCm: 999, dice: 1, toHit: 4, tsm: 0 }, null, p).valid; } catch (e) { return true; } finally { delete this.isStandEngaged; }
+  }
+
+  // ---------- Hit & Run (core rules): a unit that charged into combat last turn and survived isn't pinned ----------
+  hasHitAndRun(d) { return this.hasAbility(d, 'Hit & Run') || this.hasAbility(d, 'HitAndRun') || Boolean(d && d.hitAndRun); }
+  hitAndRunFree(stand) {
+    const d = stand && stand.detachment;
+    return Boolean(d && this.phase === 'MOVEMENT' && this.hasHitAndRun(d) && stand.chargedTurn === this.turn - 1);
+  }
+
+  // ---------- Forward Observers and off-board barrages ----------
+  isForwardObserver(d) {
+    if (!d || !d.stands.length) return false;
+    return this.hasAbility(d, 'Forward Observer') || (/forward observer|observation balloon/i.test(d.name || '') && !(d.transportCapacity > 0) && !/rhino|chimera/i.test(d.name || '')) || d.telepathTurn === this.turn;
+  }
+  impObserverFor(side, p, firer = null) { // a friendly observer free to direct fire at point p
+    return this.detachments.find(o => o.faction === side && o !== firer && this.impLive(o) && this.isForwardObserver(o) && !o.fired && !o.stands.some(s => this.isStandEngaged(s)) && o.stands.some(s => this.impPointLoS(s, p)));
+  }
+  // An indirect barrage: Telepathic Link or Astropath Guidance stop the scatter, a Forward Observer halves it
+  impIndirectScatter(firer, p) {
+    const side = firer && firer.faction;
+    if (side) {
+      const link = this.detachments.find(o => o.faction === side && this.impLive(o) && o.telepathTurn === this.turn && o.stands.some(s => this.impPointLoS(s, p)));
+      if (link) return { point: { ...p }, note: `${link.name}'s Telepathic Link: fired as direct, no scatter` };
+      const guide = this.detachments.find(a => a.faction === side && this.impLive(a) && a.guidanceTurn === this.turn && this.impNear(a, firer, 75) &&
+        this.detachments.some(e => e.faction === side && this.impLive(e) && this.impNear(e, a, 25) && e.stands.some(s => this.impPointLoS(s, p))));
+      if (guide) return { point: { ...p }, note: `${guide.name}'s Guidance: no scatter` };
+      const fo = this.impObserverFor(side, p, firer);
+      if (fo) {
+        fo.fired = true; fo.orderRevealed = true; this.updateDetachmentBadge(fo);
+        if (Phaser.Math.Between(1, 6) <= 2) return { point: { ...p }, note: `${fo.name} spots it: on target` };
+        const cm = Phaser.Math.Between(1, 6), a = Math.random() * Math.PI * 2;
+        return { point: { x: Phaser.Math.Clamp(p.x + Math.cos(a) * cm * PX_PER_CM, 10, BOARD_W - 10), y: Phaser.Math.Clamp(p.y + Math.sin(a) * cm * PX_PER_CM, 10, BOARD_H - 10) }, note: `${fo.name} spots it: scatters only ${cm} cm (${this.getCompassHeading(a)})` };
+      }
+    }
+    return this.rollIndirectScatter(p);
+  }
+  impOffBoardLeft(side) { return ((this.offBoard || {})[side] || []).length; }
+  impCanCallOffBoard(det) {
+    return Boolean(det && this.isForwardObserver(det) && this.impOffBoardLeft(det.faction) && /COMBAT_FIRST|COMBAT_ADVANCE/.test(this.phase || '') &&
+      !det.fired && this.impLive(det) && !det.stands.some(s => this.isStandEngaged(s)) && det.faction === this.activePlayer && (this.phase === 'COMBAT_ADVANCE' || det.order === 'FIRST_FIRE'));
+  }
+  startOffBoardCall() {
+    const det = this.activatingDetachment || this.selectedDetachment; if (!this.impCanCallOffBoard(det)) return;
+    const r = Phaser.Math.Between(1, 6);
+    this.showDiceRollTray(`📡 ${det.name}: call in the off-board barrage (3+)`, [{ label: det.name, dice: [{ val: r, cls: r >= 3 ? 'die-pass' : 'die-fail', tip: 'Communications roll 3+' }] }]);
+    det.fired = true; det.orderRevealed = true; this.updateDetachmentBadge(det);
+    if (r < 3) { this.log(`📡 <b>${det.name}</b> radios the coordinates (${r}), but the battery doesn't answer this turn.`); this.impAfterObserver(det); return; }
+    this._obPlace = det;
+    this.log(`📡 <b>${det.name}</b> gets through (${r}): tap the spot in its line of sight where the ${this.offBoard[det.faction][0].name} should land.`);
+    this.updateUI();
+  }
+  impPlaceOffBoard(x, y) {
+    const det = this._obPlace; this._obPlace = null; if (!det || !det.stands.length) return;
+    if (!det.stands.some(s => this.impPointLoS(s, { x, y }))) { this._obPlace = det; this.log(`📡 <b>${det.name}</b> can't see that spot: pick one in its line of sight.`); return; }
+    this.impFireOffBoard(det, { x, y });
+    this.impAfterObserver(det);
+  }
+  impAfterObserver(det) {
+    if (this.activatingDetachment === det) this.finishCombatActivation(); else { this.drawOverlays(); this.updateUI(); }
+  }
+  impFireOffBoard(det, p) {
+    const side = det.faction, ob = this.offBoard[side].shift(); if (!ob) return;
+    const enemy = side === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    this.vp[enemy] = (this.vp[enemy] || 0) + ob.vp;
+    let pt = p, note = 'on target';
+    if (Phaser.Math.Between(1, 6) > 2) { const cm = Phaser.Math.Between(1, 6), a = Math.random() * Math.PI * 2; pt = { x: Phaser.Math.Clamp(p.x + Math.cos(a) * cm * PX_PER_CM, 10, BOARD_W - 10), y: Phaser.Math.Clamp(p.y + Math.sin(a) * cm * PX_PER_CM, 10, BOARD_H - 10) }; note = `scatters ${cm} cm`; }
+    const st = this.getBarrageStats(ob.bp, ob.tsm), S = { from: { x: pt.x, y: pt.y - 400 }, hitBonus: 0, hitDice: [], saveDice: [], hits: 0, saves: 0, kills: 0, casualties: [], templates: [{ x: pt.x, y: pt.y, color: 0xef4444 }], notes: [] };
+    this.standsWithin(pt, BARRAGE_RADIUS_PX, side).forEach(c => this.specialHit(S, c.det, c.stand, { need: st.toHit, tsm: ob.tsm }));
+    this.spawnExplosionFX(pt.x, pt.y, BARRAGE_RADIUS_PX * 1.4, true);
+    try { window.sfx.playBarrage && window.sfx.playBarrage(); } catch (e) {}
+    this.drawSpecialFX && this.drawSpecialFX(S);
+    const hitDets = new Set(S.casualties.map(s => s.detachment).filter(Boolean));
+    this.time.delayedCall(500, () => { S.casualties.forEach(s => { const d = s.detachment; if (d && d.stands.includes(s)) this.removeCasualty(d, s, ob.tsm, false); }); hitDets.forEach(d => this.checkBreakPoint(d)); this.drawOverlays(); });
+    this.log(`💥 <b>${ob.name}</b> called in by ${det.name} (${note}, ${ob.bp} BP, hit ${st.toHit}+, TSM ${ob.tsm}): <span class="log-hit">${S.hits} hit</span>, <span class="log-kill">${S.kills} destroyed</span>. ${this.getSideName(enemy)} scores ${ob.vp} VP for the barrage.`);
+    this.showDiceRollTray(`💥 ${ob.name} (${ob.bp} BP)`, [{ label: 'To hit', dice: S.hitDice.length ? S.hitDice : [{ val: '–', cls: 'die-fail', tip: 'nothing under the template' }] }, ...(S.saveDice.length ? [{ label: 'Saves', dice: S.saveDice }] : [])]);
+  }
+  // The computer calls its barrages on the biggest target an observer can see
+  aiOffBoard(side) {
+    if (!this.isFactionAI(side) || !this.impOffBoardLeft(side)) return;
+    this.detachments.filter(d => d.faction === side && this.impLive(d) && this.isForwardObserver(d) && !d.fired && !d.stands.some(s => this.isStandEngaged(s))).forEach(fo => {
+      if (!this.impOffBoardLeft(side)) return;
+      let best = null, bv = 2.5;
+      this.detachments.forEach(e => { if (e.faction === side || !this.impLive(e)) return;
+        e.stands.forEach(s => { if (!fo.stands.some(f => this.impPointLoS(f, { x: s.container.x, y: s.container.y }))) return;
+          const n = this.standsWithin({ x: s.container.x, y: s.container.y }, BARRAGE_RADIUS_PX, side).length + (e.isTitan || e.superHeavy ? 2 : 0);
+          if (n > bv) { bv = n; best = s; } }); });
+      if (!best) return;
+      fo.fired = true; fo.orderRevealed = true; this.updateDetachmentBadge(fo);
+      const r = Phaser.Math.Between(1, 6);
+      if (r < 3) { this.log(`📡 <b>${fo.name}</b> calls for the off-board battery (${r}), but gets no answer.`); return; }
+      this.impFireOffBoard(fo, { x: best.container.x, y: best.container.y });
+    });
+  }
+
+  // ---------- arriving from off the table (core rules): teleport, deep strike, tunnelling ----------
+  isTunneler(d) { return this.hasAbility(d, 'Tunneler') || (/termite|\bmole\b|hellbore|hellworm|\bram\b/i.test(d.name || '') && !/mortar/i.test(d.name || '')); }
+  impArrivalType(d) {
+    if (!d || !(this.isImpBook(d) || this.isSquat(d))) return null;
+    if (this.isTunneler(d)) return 'TUNNEL';
+    if (this.hasAbility(d, 'Teleport') || /grey knight|gray knight|teleport/i.test(d.name || '')) return null; // the standard arrival is a teleport
+    return 'DEEP';
+  }
+  impBadSpot(d, x, y) {
+    if (x < 12 || y < 12 || x > BOARD_W - 12 || y > BOARD_H - 12) return true;
+    if (this.rockAt && this.rockAt(x, y)) return true;
+    if (!d.jump && !d.skimmer && this.isPointInImpassableRiver && this.isPointInImpassableRiver(x, y)) return true;
+    return false;
+  }
+  impBackToReserve(det, why) {
+    det.deepStrikeActive = false; det.deepStrikeUsed = false; det.inReserve = true;
+    const rx = det.faction === 'IMPERIUM' ? 110 : (BOARD_W - 150), ry = det.faction === 'IMPERIUM' ? (BOARD_H - 70) : 70;
+    det.stands.forEach((s, i) => { s.container.x = s.originX = rx + (i % 2) * 28; s.container.y = s.originY = ry + Math.floor(i / 2) * 28; s.container.setAlpha(0.75); });
+    this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
+    this.log(`⛏️ <b>${det.name}</b> ${why}: it stays underground and may try again next turn.`);
+  }
+  executeDeepStrikeScatter(det) {
+    const type = det && det.deepStrikeActive ? this.impArrivalType(det) : null;
+    if (!type) return this.executeDeepStrikeScatterImpCore(det);
+    const c = this.getDetachmentCenter(det), offs = det.stands.map(s => ({ s, dx: s.container.x - c.x, dy: s.container.y - c.y }));
+    det.stands.forEach(s => s.container.setAlpha(1));
+    if (type === 'TUNNEL') {
+      const r = Phaser.Math.Between(1, 6);
+      if (r === 1) { this.impBackToReserve(det, 'hits solid bedrock (rolled a 1)'); return; }
+      const cm = Phaser.Math.Between(1, 6) * 10, a = Math.random() * Math.PI * 2;
+      const p = { x: Phaser.Math.Clamp(c.x + Math.cos(a) * cm * PX_PER_CM, 20, BOARD_W - 20), y: Phaser.Math.Clamp(c.y + Math.sin(a) * cm * PX_PER_CM, 20, BOARD_H - 20) };
+      if (this.impBadSpot(det, p.x, p.y)) { this.impBackToReserve(det, `veers ${cm} cm into impassable ground`); return; }
+      det.deepStrikeActive = false; det.deepStrikeUsed = true; det.inReserve = false;
+      const k = Math.min(1, (6 * PX_PER_CM) / Math.max(1, ...offs.map(o => Math.hypot(o.dx, o.dy))));
+      offs.forEach(o => { o.s.container.x = o.s.originX = Phaser.Math.Clamp(p.x + o.dx * k, 12, BOARD_W - 12); o.s.container.y = o.s.originY = Phaser.Math.Clamp(p.y + o.dy * k, 12, BOARD_H - 12); });
+      this.spawnExplosionFX(p.x, p.y, 30, false);
+      this.log(`⛏️ <b>${det.name}</b> bursts out of the ground ${cm} cm from where it aimed.`);
+      // surfacing under a building: it saves at minus the tunneller's CAF; the tunneller is hit by the debris
+      const hitB = new Set(); det.stands.forEach(s => { const b = this.getBuildingAt(s.container.x, s.container.y); if (b && !b.collapsed) hitB.add(b); });
+      hitB.forEach(b => {
+        const S = { notes: [] }; this.eldBuildingSave(b, -Math.max(1, det.caf || 1), S, `undermined by ${det.name}`);
+        const down = b.collapsed, tsm = down ? -1 : -3;
+        this.log(`🏚️ ${det.name} surfaces under ${b.name}: ${down ? 'it collapses' : 'it stands'}; falling debris hits the tunnellers at ${tsm}.`);
+        this.time.delayedCall(300, () => det.stands.slice().forEach(s => { if (this.getBuildingAt(s.container.x, s.container.y) === b || down) { if (!this.orkSave(det, tsm, null)) this.removeCasualty(det, s, tsm, false); } }));
+      });
+    } else {
+      det.deepStrikeActive = false; det.deepStrikeUsed = true; det.inReserve = false;
+      const s1 = this.rollIndirectScatter(c), s2 = this.rollIndirectScatter(s1.point), p = s2.point;
+      const R = 20 * PX_PER_CM, far = Math.max(1, ...offs.map(o => Math.hypot(o.dx, o.dy))), k = Math.min(1, R / far);
+      const lost = [];
+      offs.forEach(o => {
+        const sc = this.rollIndirectScatter({ x: p.x + o.dx * k, y: p.y + o.dy * k }).point;
+        o.s.container.x = o.s.originX = Phaser.Math.Clamp(sc.x, 12, BOARD_W - 12); o.s.container.y = o.s.originY = Phaser.Math.Clamp(sc.y, 12, BOARD_H - 12);
+        if (this.impBadSpot(det, sc.x, sc.y)) lost.push(o.s);
+      });
+      this.spawnExplosionFX(p.x, p.y, 34, false);
+      this.log(`☄️ <b>${det.name}</b> deep strikes: the landing point scatters twice (${s1.note.toLowerCase()}; ${s2.note.toLowerCase()}), then each model scatters 2D6 cm${lost.length ? ` — <span class="log-kill">${lost.length} land in impassable terrain and are lost</span>` : ''}.`);
+      if (lost.length) this.time.delayedCall(250, () => { lost.forEach(s => { if (det.stands.includes(s)) this.removeCasualty(det, s, 0, true); }); this.checkBreakPoint(det); });
+    }
+    window.sfx.playTeleport && window.sfx.playTeleport();
+    this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det); this.drawOverlays();
+  }
+
+  // ---------- characters ----------
+  isChapterMaster(d) { return Boolean(d && this.impLive(d) && (d.key === 'card_sm_chapter_master' || /chapter master/i.test(d.name || ''))); }
+  impForcedMarch(det) {
+    if (!det || !det.stands.length || !(this.isImpBook(det))) return 0;
+    const cm = this.detachments.find(m => m.faction === det.faction && this.isChapterMaster(m) && (m.cmMode || 'MARCH') === 'MARCH' && this.impNearOrigin(m, det, 10));
+    return cm ? (det.order === 'CHARGE' ? 10 : 5) : 0;
+  }
+  impNearOrigin(a, b, cm) { // measured from where the stands started their move
+    const R = cm * PX_PER_CM, P = s => ({ x: s.originX != null ? s.originX : s.container.x, y: s.originY != null ? s.originY : s.container.y });
+    return a.stands.some(s => b.stands.some(t => { const p = P(s), q = P(t); return Phaser.Math.Distance.Between(p.x, p.y, q.x, q.y) <= R; }));
+  }
+  setChapterMasterMode(m) { const d = this.selectedDetachment; if (!this.isChapterMaster(d)) return; d.cmMode = m; this.log(m === 'MARCH' ? `🎖️ <b>${d.name}</b> drives the troops on: <b>Forced March</b> (+5 cm, +10 cm on Charge, within 10 cm).` : `🎖️ <b>${d.name}</b> will use <b>Tactical Genius</b> this turn: one unit within 10 cm may shift its orders a step.`); this.updateUI(); }
+  impGeniusFor(det) {
+    if (!det || det.moved || det.fired || !det.order || det.order === 'FALL_BACK' || !['MOVEMENT', 'COMBAT_FIRST'].includes(this.phase) || det.faction !== this.activePlayer || this.isFactionAI(det.faction)) return null;
+    return this.detachments.find(m => m.faction === det.faction && this.isChapterMaster(m) && m.cmMode === 'GENIUS' && m.geniusTurn !== this.turn && this.impNear(m, det, 10)) || null;
+  }
+  useTacticalGenius(order) {
+    const det = this.activatingDetachment || this.selectedDetachment, m = this.impGeniusFor(det); if (!m) return;
+    const line = ['CHARGE', 'ADVANCE', 'FIRST_FIRE'], i = line.indexOf(det.order), j = line.indexOf(order);
+    if (i < 0 || j < 0 || Math.abs(i - j) !== 1) return;
+    if (this.activatingDetachment === det && det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1)) return;
+    m.geniusTurn = this.turn; const from = det.order; det.order = order; det.orderRevealed = true;
+    this.log(`🎖️ <b>Tactical Genius:</b> ${m.name} switches ${det.name} from ${this.eldOrderName(from)} to <b>${this.eldOrderName(order)}</b>.`);
+    this.updateDetachmentBadge(det); this.drawOverlays(); this.updateUI();
+  }
+  // Inquisitors: Imperial troops within 25 cm automatically pass morale (Ordo Malleus excepted)
+  impInquisitorNear(det) {
+    if (!det || !this.isImpBook(det)) return null;
+    return this.detachments.find(q => q.faction === det.faction && this.impLive(q) && /inquisitor/i.test(q.name || '') && !/malleus/i.test(q.name || '') && this.impNear(q, det, 25)) || null;
+  }
+  // Embolden and the Squat Fundamentalist make units Fearless
+  impFearless(det) {
+    if (!det || !det.stands.length) return false;
+    if (this.detachments.some(p => p.faction === det.faction && this.impLive(p) && p.emboldenTurn === this.turn && this.impNear(p, det, 15))) return true;
+    if (this.isSquat(det) && (det.pinningClass || 1) <= 2 && !this.isVehicleClass(det)) {
+      const f = this.detachments.find(o => o.faction === det.faction && this.impLive(o) && /fundamentalist/i.test(o.name || ''));
+      if (f && (f === det || det.stands.some(s => f.stands.some(t => this.checkStandLoS(s, t, false, { name: 'sight', rangeCm: 999, dice: 1, toHit: 4, tsm: 0 }).valid)))) return true;
+    }
+    return false;
+  }
+  // Legion of the Damned: held back until the first Space Marine card breaks, then appears beside it
+  isLegion(d) { return Boolean(d && /legion of the damned/i.test(d.name || '')); }
+  impLegionSetup() {
+    this.detachments.filter(d => this.isLegion(d) && d.stands.length && !d.legionArrived).forEach(d => {
+      d.inReserve = true; d.legionWaiting = true; d.stands.forEach(s => s.container.setVisible(false)); if (d.badge) d.badge.setVisible(false);
+    });
+  }
+  impLegionArrive() {
+    this.detachments.filter(d => d.legionWaiting && d.stands.length).forEach(L => {
+      const broken = this.detachments.filter(d => d.faction === L.faction && d.armyBook === 'IMPERIUM' && !this.isLegion(d) && (d.broken || d.companyBroken) && d.stands.length && !d.embarkedOn);
+      if (!broken.length) return;
+      const b = broken[0], s0 = b.stands[0];
+      L.legionWaiting = false; L.legionArrived = true; L.inReserve = false;
+      L.stands.forEach((s, i) => { const a = i * 1.3; s.container.x = s.originX = Phaser.Math.Clamp(s0.container.x + Math.cos(a) * (22 + i * 4), 12, BOARD_W - 12); s.container.y = s.originY = Phaser.Math.Clamp(s0.container.y + Math.sin(a) * (22 + i * 4), 12, BOARD_H - 12); s.container.setVisible(true); s.container.setAlpha(1); });
+      if (L.badge) L.badge.setVisible(true);
+      L.order = 'ADVANCE'; L.orderRevealed = true;
+      if (b.order === 'FALL_BACK') { b.order = 'ADVANCE'; b.orderRevealed = true; b.moved = true; this.updateDetachmentBadge(b); }
+      this.spawnExplosionFX(s0.container.x, s0.container.y, 40, false);
+      this.log(`💀🔥 <b>The Legion of the Damned</b> appears beside ${b.name}! ${b.order === 'ADVANCE' && b.moved ? `${b.name} stops falling back and holds its ground, firing in the Advance Fire segment.` : ''}`);
+      this.updateDetachmentBadge(L); this.updateDetachmentBadgePos(L);
+    });
+  }
+  // Squat Bodyguards: tied to a leader, take the hits meant for it, and go berserk if it dies
+  isSquatLeader(d) { return Boolean(d && this.isSquat(d) && /warlord|ancestor/i.test(d.name || '')); }
+  sqBodyguardSetup() {
+    this.detachments.filter(d => this.hasAbility(d, 'Bodyguard') && d.stands.length && !d.guardOf).forEach(g => {
+      const free = this.detachments.filter(l => l.faction === g.faction && this.isSquatLeader(l) && l.stands.length && !this.detachments.some(o => o.guardOf === l.id));
+      if (!free.length) return;
+      const gc = this.getDetachmentCenter(g), l = free.reduce((a, b) => { const ac = this.getDetachmentCenter(a), bc = this.getDetachmentCenter(b); return Phaser.Math.Distance.Between(gc.x, gc.y, bc.x, bc.y) < Phaser.Math.Distance.Between(gc.x, gc.y, ac.x, ac.y) ? b : a; });
+      g.guardOf = l.id; g.cfg.guardOf = l.id;
+      const lc = l.stands[0]; g.stands.forEach((s, i) => { s.container.x = s.originX = lc.container.x + Math.cos(i * 1.6) * 24; s.container.y = s.originY = lc.container.y + Math.sin(i * 1.6) * 24; });
+      this.updateDetachmentBadgePos(g);
+    });
+  }
+  sqGuardsOf(l) { return this.detachments.filter(g => g.guardOf === l.id && g.stands.length && !g.guardFury); }
+  // ---------- Grand Warlord: +1 initiative once a game, used when it wins or ties the roll ----------
+  sqGrandWarlord(imp, ork) {
+    const out = { imp, ork };
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      const gw = this.detachments.find(d => d.faction === side && d.stands.length && /grand warlord/i.test(d.name || '') && !d.gwUsed); if (!gw) return;
+      const mine = side === 'IMPERIUM' ? out.imp : out.ork, theirs = side === 'IMPERIUM' ? out.ork : out.imp;
+      const helps = mine === theirs || (mine + 1 === theirs && this.turn > 1 && this.lastInitiativeLoser === side);
+      if (!helps) return;
+      gw.gwUsed = true; gw.cfg.gwUsed = true;
+      if (side === 'IMPERIUM') out.imp += 1; else out.ork += 1;
+      this.log(`👑 <b>${gw.name}</b> adds +1 to the initiative roll (once a game).`);
+    });
+    return out;
+  }
+
+  // ---------- psychic powers from the Imperial and Squat books ----------
+  impPowerDefs() {
+    return {
+      imp_mind_blast: { key: 'imp_mind_blast', name: 'Mind Blast', icon: '🧠', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'One enemy model within 25 cm and line of sight is destroyed on a 4+ with no save. An unshielded titan takes damage to its head instead. No effect on robots and other mindless units.' },
+      imp_destroy_daemon: { key: 'imp_destroy_daemon', name: 'Destroy Daemon', icon: '✝️', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'A daemonic model within 25 cm and line of sight: 2D6 against its 1D6 (minor daemons), 2D6 (Wraithguard, Dreadnoughts) or 3D6 (Greater Daemons, the Avatar). Win and it is destroyed; lose by double and the psyker is slain.' },
+      imp_embolden: { key: 'imp_embolden', name: 'Embolden', icon: '🦁', difficulty: 0, rangeCm: 15, targetType: 'SELF', chapter: true, desc: 'Every Imperial detachment within 15 cm (the psyker too) is Fearless, immune to morale and gets +1 CAF until the End Phase.' },
+      imp_telepathic: { key: 'imp_telepathic', name: 'Telepathic Link', icon: '📡', difficulty: 0, rangeCm: 0, targetType: 'SELF', chapter: true, desc: 'Until the End Phase the psyker is a Forward Observer, and indirect barrages aimed at points it can see are fired as direct (no scatter).' },
+      imp_righteous: { key: 'imp_righteous', name: 'Righteous Fire', icon: '🔥', difficulty: 0, rangeCm: 25, targetType: 'ENEMY', chapter: true, desc: 'One enemy model within 25 cm and line of sight takes a hit at -2 TSM on a 4+ (a physical psychic attack).' },
+      imp_beacon: { key: 'imp_beacon', name: 'Beacon', icon: '🔆', difficulty: 0, rangeCm: 100, targetType: 'SELF', chapter: true, desc: 'Until the End Phase, enemy psykers, Greater Daemons and Waystone spirits within 100 cm may only shoot at, or use powers on, the Astropath.' },
+      imp_cancel: { key: 'imp_cancel', name: 'Cancellation', icon: '🚫', difficulty: 0, rangeCm: 75, targetType: 'SELF', chapter: true, desc: 'Until the End Phase, an enemy psyker or Greater Daemon within 75 cm using a psychic power rolls a D6 against the Astropath\'s D6+2 (+3 for a Greater Daemon): lose and the power fails.' },
+      imp_guidance: { key: 'imp_guidance', name: 'Guidance', icon: '🎯', difficulty: 0, rangeCm: 75, targetType: 'SELF', chapter: true, desc: 'Until the End Phase, artillery within 75 cm may fire indirectly without scattering at targets seen by an Imperial unit within 25 cm of the Astropath.' },
+      sq_shield: { key: 'sq_shield', name: 'Psychic Shield', icon: '🛡️', difficulty: 0, rangeCm: 25, targetType: 'SELF', chapter: true, desc: 'All Squat stands within 25 cm get a 5+ psychic save for the rest of this phase. (Experienced is used automatically in the Orders Phase.)' },
+      sq_heal: { key: 'sq_heal', name: 'Heal', icon: '💚', difficulty: 0, rangeCm: 25, targetType: 'SELF', chapter: true, desc: 'Until the End Phase the Ancestor Lord is a Medic with a 25 cm range, against any damage including psychic powers.' },
+      sq_precog: { key: 'sq_precog', name: 'Precognition', icon: '🔮', difficulty: 0, rangeCm: 6, targetType: 'SELF', chapter: true, desc: 'Cast in the Orders Phase: every detachment within 6 cm gets a second order counter and chooses which to use when it first activates.' },
+      sq_dome: { key: 'sq_dome', name: 'Force Dome', icon: '🔵', difficulty: 0, rangeCm: 50, targetType: 'ENEMY', chapter: true, desc: 'A 12 cm dome within 50 cm (on a 5+) stops all movement, fire and powers passing through it, and barrages that touch it, for one full turn.' }
+    };
+  }
+  impInstallPowers() { Object.assign(PSYCHIC_POWERS, this.impPowerDefs()); }
+  isMindless(d) { return this.hasAbility(d, 'Robot') || this.hasAbility(d, 'Robotic') || /robot|tarantula|necron|android|automat|tinbot|servitor/i.test(d.name || '') || (d.isVehicle && !d.crewed && false); }
+  isDaemonic(d) { return Boolean(d && (d.daemonicTerror || this.isGreaterDaemon(d) || /daemon|bloodletter|plaguebearer|horror|daemonette|flesh hound|screamer|beast of nurgle|fiend|android|avatar|wraithguard|dreadnought/i.test((d.name || '') + ' ' + (d.composition || '')) && (d.armyBook === 'CHAOS' || /avatar|wraithguard|dreadnought/i.test(d.name || '')))); }
+  impDaemonDice(d) { return (this.isGreaterDaemon(d) || /avatar/i.test(d.name || '')) ? 3 : (/wraithguard|dreadnought/i.test(d.name || '') ? 2 : 1); }
+  impBeaconTarget(caster) { // an Astropath's Beacon pulls enemy psychic attention
+    if (!caster || !(caster.isPsyker || this.isGreaterDaemon(caster) || this.isWaystone && this.isWaystone(caster))) return null;
+    return this.detachments.find(a => a.faction !== caster.faction && this.impLive(a) && a.beaconTurn === this.turn && this.impNear(a, caster, 100)) || null;
+  }
+  impCancelled(caster) { // an Astropath's Cancellation
+    if (!caster) return false;
+    const a = this.detachments.find(o => o.faction !== caster.faction && this.impLive(o) && o.cancelTurn === this.turn && this.impNear(o, caster, 75)); if (!a) return false;
+    const gd = this.isGreaterDaemon(caster), r1 = Phaser.Math.Between(1, 6), r2 = Phaser.Math.Between(1, 6);
+    const ast = r2 + 2, them = r1 + (gd ? 3 : 0);
+    if (ast > them) { this.log(`🚫 <b>${a.name}</b>'s Cancellation smothers ${caster.name}'s power (${ast} v ${them}).`); this.spawnFloatingText(this.getDetachmentCenter(caster).x, this.getDetachmentCenter(caster).y - 16, '🚫 CANCELLED', '#94a3b8', '12px'); return true; }
+    this.log(`🚫 ${caster.name} pushes through ${a.name}'s Cancellation (${them} v ${ast}).`);
+    return false;
+  }
+  castImpPower(det, key) {
+    const c = this.getDetachmentCenter(det), tgt = this.targetDetachment;
+    det.psychicPowerUsed = true; window.sfx.playPsychic && window.sfx.playPsychic();
+    const pick = (cm, filter) => { // an enemy model in range and sight: the chosen target first, else the nearest
+      const order = [tgt, ...this.detachments.filter(o => o !== tgt)].filter(o => o && o.faction !== det.faction && this.impLive(o) && filter(o));
+      for (const o of order) for (const s of o.stands) { if (det.stands.some(p => Phaser.Math.Distance.Between(p.container.x, p.container.y, s.container.x, s.container.y) <= cm * PX_PER_CM && this.checkStandLoS(p, s, false, { name: 'psychic', rangeCm: cm, dice: 1, toHit: 4, tsm: 0 }).valid)) return { d: o, s }; }
+      return null;
+    };
+    const fail = msg => { this.log(msg); det.psychicPowerUsed = false; this.updateUI(); };
+    const fx = m => this.spawnPsychicFX(c.x, c.y, m.s.container.x, m.s.container.y);
+    if (key === 'imp_mind_blast') {
+      const m = pick(25, o => !this.isMindless(o)); if (!m) return fail('🧠 Mind Blast: no thinking enemy within 25 cm and sight.');
+      fx(m); const r = Phaser.Math.Between(1, 6);
+      if (this.hasHitLocations(m.d)) { if (m.d.shields > 0) { this.log(`🧠 Mind Blast: ${m.d.name}'s shields keep the psyker out.`); return; } if (r >= 4) { this.log(`🧠 <b>Mind Blast</b> (${r}) tears into ${m.d.name}'s crew!`); this.applyTitanHit(m.d, m.s, { location: 'head', noSave: true, from: c }); } else this.log(`🧠 Mind Blast fails (${r}).`); return; }
+      if (r < 4) { this.log(`🧠 <b>Mind Blast</b> at ${m.d.name} fails (${r}, needs 4+).`); return; }
+      this.log(`🧠 <b>Mind Blast</b> (${r}): ${m.d.name} ${m.s.label || ''} is destroyed, no save.`);
+      this.time.delayedCall(250, () => { if (m.d.superHeavy) { this.removeCasualty(m.d, m.s, 0, true); } else this.removeCasualty(m.d, m.s, 0, false); this.checkBreakPoint(m.d); });
+      return;
+    }
+    if (key === 'imp_destroy_daemon') {
+      const m = pick(25, o => this.isDaemonic(o)); if (!m) return fail('✝️ Destroy Daemon: no daemonic target within 25 cm and sight.');
+      fx(m); const roll = n => { let t = 0; for (let i = 0; i < n; i++) t += Phaser.Math.Between(1, 6); return t; };
+      const me = roll(2), them = roll(this.impDaemonDice(m.d));
+      if (me > them) { this.log(`✝️ <b>Destroy Daemon</b>: ${det.name} ${me} v ${m.d.name} ${them} — the daemon is banished!`); this.time.delayedCall(250, () => { if (this.hasHitLocations(m.d)) this.applyTitanHit(m.d, m.s, { noSave: true, autoCrit: true, from: c }); else this.removeCasualty(m.d, m.s, 0, true); this.checkBreakPoint(m.d); }); }
+      else if (them >= me * 2) { this.log(`✝️ Destroy Daemon backfires: ${m.d.name} ${them} v ${me} — ${det.name} is slain by psychic feedback!`); this.time.delayedCall(250, () => { det.stands.slice().forEach(s => this.removeCasualty(det, s, 0, true)); this.checkBreakPoint(det); }); }
+      else this.log(`✝️ Destroy Daemon: ${me} v ${them}, the daemon resists.`);
+      return;
+    }
+    if (key === 'imp_righteous') {
+      const m = pick(25, () => true); if (!m) return fail('🔥 Righteous Fire: no enemy within 25 cm and sight.');
+      fx(m); const r = Phaser.Math.Between(1, 6);
+      if (r < 4) { this.log(`🔥 Righteous Fire misses ${m.d.name} (${r}).`); return; }
+      const S = { from: c, hitBonus: 0, hitDice: [], saveDice: [], hits: 0, saves: 0, kills: 0, casualties: [], templates: [], notes: [] };
+      this.specialHit(S, m.d, m.s, { need: null, tsm: -2, psychic: true });
+      this.log(`🔥 <b>Righteous Fire</b> (${r}) strikes ${m.d.name}: ${S.kills ? 'a model is destroyed' : 'it survives'}.`);
+      this.time.delayedCall(250, () => { S.casualties.forEach(s => { const d = s.detachment; if (d && d.stands.includes(s)) this.removeCasualty(d, s, -2, false); }); this.checkBreakPoint(m.d); });
+      return;
+    }
+    if (key === 'imp_embolden') { det.emboldenTurn = this.turn; const n = this.detachments.filter(o => o.faction === det.faction && this.impLive(o) && this.impNear(det, o, 15)).length; this.spawnFloatingText(c.x, c.y - 18, '🦁 EMBOLDEN', '#fde047', '12px'); this.log(`🦁 <b>Embolden:</b> ${n} detachment${n > 1 ? 's' : ''} within 15 cm of ${det.name} are Fearless and +1 CAF until the End Phase.`); return; }
+    if (key === 'imp_telepathic') { det.telepathTurn = this.turn; this.spawnFloatingText(c.x, c.y - 18, '📡 TELEPATHIC LINK', '#a5f3fc', '12px'); this.log(`📡 <b>Telepathic Link:</b> ${det.name} spots for the artillery until the End Phase.`); return; }
+    if (key === 'imp_beacon') { det.beaconTurn = this.turn; this.spawnFloatingText(c.x, c.y - 18, '🔆 BEACON', '#fde68a', '12px'); this.log(`🔆 <b>Beacon:</b> ${det.name} blazes in the warp — enemy psykers within 100 cm can only target the Astropath until the End Phase.`); return; }
+    if (key === 'imp_cancel') { det.cancelTurn = this.turn; this.spawnFloatingText(c.x, c.y - 18, '🚫 CANCELLATION', '#cbd5e1', '12px'); this.log(`🚫 <b>Cancellation:</b> ${det.name} dampens psychic powers within 75 cm until the End Phase.`); return; }
+    if (key === 'imp_guidance') { det.guidanceTurn = this.turn; this.spawnFloatingText(c.x, c.y - 18, '🎯 GUIDANCE', '#86efac', '12px'); this.log(`🎯 <b>Guidance:</b> artillery within 75 cm of ${det.name} won't scatter at targets its comrades can see.`); return; }
+    if (key === 'sq_shield') { det.sqShield = { turn: this.turn, phase: this.phase }; this.spawnFloatingText(c.x, c.y - 18, '🛡️ PSYCHIC SHIELD', '#93c5fd', '12px'); this.log(`🛡️ <b>Psychic Shield:</b> Squat stands within 25 cm of ${det.name} have a 5+ psychic save this phase.`); return; }
+    if (key === 'sq_heal') { det.healTurn = this.turn; this.spawnFloatingText(c.x, c.y - 18, '💚 HEAL', '#4ade80', '12px'); this.log(`💚 <b>Heal:</b> ${det.name} tends the wounded within 25 cm until the End Phase.`); return; }
+    if (key === 'sq_precog') {
+      if (this.phase !== 'ORDERS') return fail('🔮 Precognition must be cast in the Orders Phase.');
+      det.precogTurn = this.turn;
+      const n = this.detachments.filter(o => o.faction === det.faction && this.impLive(o) && this.impNear(det, o, 6)).length;
+      this.log(`🔮 <b>Precognition:</b> ${n} detachment${n > 1 ? 's' : ''} within 6 cm of ${det.name} get a second order counter this turn.`); return;
+    }
+    if (key === 'sq_dome') {
+      const m = pick(50, () => true), p = m ? { x: m.s.container.x, y: m.s.container.y } : (tgt && tgt.stands.length ? this.getDetachmentCenter(tgt) : null);
+      if (!p) return fail('🔵 Force Dome: no target point within 50 cm.');
+      const r = Phaser.Math.Between(1, 6);
+      if (r < 5) { this.log(`🔵 Force Dome fails to form (${r}, needs 5+).`); return; }
+      this.sqAddDome(p, det.faction);
+      return;
+    }
+  }
+  // ---------- Force Dome ----------
+  sqDomeR() { return 6 * PX_PER_CM; }
+  sqAddDome(p, side) {
+    const R = this.sqDomeR(), g = this.add.graphics().setDepth(56);
+    g.fillStyle(0x60a5fa, 0.16); g.fillCircle(p.x, p.y, R); g.lineStyle(3, 0x93c5fd, 0.85); g.strokeCircle(p.x, p.y, R);
+    const dome = { x: p.x, y: p.y, turn: this.turn, phase: this.phase, side, g };
+    (this.forceDomes = this.forceDomes || []).push(dome);
+    // models on the edge: 1-3 inside, 4-6 pushed out (titans stay put)
+    let pushed = 0;
+    this.detachments.forEach(d => { if (!this.impLive(d) || d.isTitan) return; d.stands.forEach(s => {
+      const dd = Phaser.Math.Distance.Between(p.x, p.y, s.container.x, s.container.y), br = s.baseRadius || 10;
+      if (Math.abs(dd - R) > br) return;
+      if (Phaser.Math.Between(1, 6) <= 3) { const k = (R - br - 2) / Math.max(1, dd); this.eldMoveStand(s, p.x + (s.container.x - p.x) * k, p.y + (s.container.y - p.y) * k); }
+      else { const k = (R + br + 2) / Math.max(1, dd); this.eldMoveStand(s, p.x + (s.container.x - p.x) * k, p.y + (s.container.y - p.y) * k); pushed++; }
+    }); });
+    this.log(`🔵 <b>A Force Dome</b> shimmers into being${pushed ? ` (${pushed} stand${pushed > 1 ? 's' : ''} pushed out)` : ''}: nothing moves, shoots or casts through it for a full turn.`);
+    this.drawOverlays();
+  }
+  sqDomeLive(dm) {
+    const P = ['ORDERS', 'MOVEMENT', 'COMBAT_FIRST', 'COMBAT_ADVANCE', 'COMBAT_CC', 'END_PHASE'], i = p => Math.max(0, P.indexOf(p));
+    return this.turn === dm.turn || (this.turn === dm.turn + 1 && i(this.phase) < i(dm.phase));
+  }
+  sqDomesTick() { (this.forceDomes || []).forEach(dm => { if (!this.sqDomeLive(dm)) { dm.g && dm.g.destroy(); dm.dead = true; this.log('🔵 The Force Dome fades away.'); } }); this.forceDomes = (this.forceDomes || []).filter(dm => !dm.dead); }
+  sqDomeBlocks(x1, y1, x2, y2) { // a line crossing a dome's edge
+    return (this.forceDomes || []).some(dm => {
+      const R = this.sqDomeR(), in1 = Phaser.Math.Distance.Between(x1, y1, dm.x, dm.y) < R, in2 = Phaser.Math.Distance.Between(x2, y2, dm.x, dm.y) < R;
+      if (in1 !== in2) return true; if (in1 && in2) return false;
+      return Phaser.Geom.Intersects.LineToCircle(new Phaser.Geom.Line(x1, y1, x2, y2), new Phaser.Geom.Circle(dm.x, dm.y, R));
+    });
+  }
+  sqDomeTouches(p, r) { return (this.forceDomes || []).some(dm => Phaser.Math.Distance.Between(p.x, p.y, dm.x, dm.y) <= this.sqDomeR() + r); }
+
+  // ---------- turn hooks ----------
+  impOrdersStart() { // start of the Orders Phase
+    try { this.sqDomesTick(); } catch (e) { console.error(e); }
+    // Squat Living Ancestor (Experienced): D6 detachments of a nearby Warlord's brotherhood get a second order counter
+    this.detachments.filter(d => d.stands.length && /living ancestor/i.test(d.name || '') && !d.embarkedOn).forEach(a => {
+      const wl = this.detachments.find(w => w.faction === a.faction && w.stands.length && /warlord/i.test(w.name || '') && (w === a || this.impNear(a, w, 6)));
+      if (!wl) return;
+      const n = Phaser.Math.Between(1, 6), wc = this.getDetachmentCenter(wl);
+      const pool = this.detachments.filter(d => d.faction === a.faction && this.isSquat(d) && this.impLive(d) && d !== a && (!wl.companyCardId || d.companyCardId === wl.companyCardId || !d.companyCardId))
+        .sort((p, q) => { const pc = this.getDetachmentCenter(p), qc = this.getDetachmentCenter(q); return Phaser.Math.Distance.Between(wc.x, wc.y, pc.x, pc.y) - Phaser.Math.Distance.Between(wc.x, wc.y, qc.x, qc.y); }).slice(0, n);
+      pool.forEach(d => { d.sqFlexTurn = this.turn; });
+      if (pool.length) this.log(`🧓 <b>${a.name}</b> (Experienced, rolled ${n}): ${pool.map(d => this.shortName(d.name, 18)).join(', ')} get a second order counter this turn.`);
+    });
+  }
+  impFinishOrders() { // orders locked: grant flexible orders, Legion, Bodyguard fury
+    this.detachments.forEach(d => {
+      if (!d.stands.length || d.embarkedOn) return;
+      const pre = this.detachments.some(l => l.faction === d.faction && l.precogTurn === this.turn && this.impLive(l) && this.impNear(l, d, 6));
+      if ((pre || d.sqFlexTurn === this.turn) && d.order !== 'FALL_BACK') d.eldFlex = true;
+      if (d.guardFury) { d.order = 'CHARGE'; d.orderRevealed = true; this.updateDetachmentBadge(d); }
+    });
+    try { this.impLegionArrive(); } catch (e) { console.error(e); }
+  }
+  // The computer's Imperial and Squat psykers
+  aiImpPsychics(side) {
+    if (!this.isFactionAI(side)) return;
+    this.detachments.filter(d => d.faction === side && this.impLive(d) && d.isPsyker && !d.psychicPowerUsed && (this.isImpBook(d) || this.isSquat(d))).forEach(d => {
+      const sp = (d.characterRules && d.characterRules.spells) || [];
+      const enemyNear = cm => this.detachments.some(o => o.faction !== side && this.impLive(o) && this.impNear(d, o, cm));
+      const tryP = k => { if (!sp.includes(k) || d.psychicPowerUsed) return false; this.targetDetachment = null; this.castChapterPower(d, k); return d.psychicPowerUsed; };
+      if (this.phase === 'ORDERS') { if (sp.includes('sq_precog') && this.detachments.filter(o => o.faction === side && this.impLive(o) && this.impNear(d, o, 6)).length >= 2) tryP('sq_precog'); return; }
+      if (sp.includes('imp_destroy_daemon') && this.detachments.some(o => o.faction !== side && this.impLive(o) && this.isDaemonic(o) && this.impNear(d, o, 25)) && tryP('imp_destroy_daemon')) return;
+      if (sp.includes('imp_mind_blast') && enemyNear(25) && tryP('imp_mind_blast')) return;
+      if (sp.includes('purge_psyker') && this.detachments.some(o => o.faction !== side && this.impLive(o) && o.isPsyker && this.impNear(d, o, 50))) { const t = this.detachments.find(o => o.faction !== side && this.impLive(o) && o.isPsyker && this.impNear(d, o, 50)); this.selectedDetachment = d; this.activatingDetachment = null; this.targetDetachment = t; try { this.castPsychicPowerCore('purge_psyker'); } catch (e) { console.error(e); } if (d.psychicPowerUsed) return; }
+      if (sp.includes('imp_righteous') && enemyNear(25) && tryP('imp_righteous')) return;
+      if (sp.includes('imp_embolden') && enemyNear(40) && tryP('imp_embolden')) return;
+      if (sp.includes('imp_telepathic') && this.detachments.some(o => o.faction === side && this.impLive(o) && o.weapon && o.weapon.indirect) && tryP('imp_telepathic')) return;
+      if (sp.includes('imp_cancel') && this.detachments.some(o => o.faction !== side && this.impLive(o) && (o.isPsyker || this.isGreaterDaemon(o)) && this.impNear(d, o, 75)) && tryP('imp_cancel')) return;
+      if (sp.includes('imp_guidance') && this.detachments.some(o => o.faction === side && this.impLive(o) && o.weapon && o.weapon.indirect && this.impNear(d, o, 75)) && tryP('imp_guidance')) return;
+      if (sp.includes('sq_heal') && enemyNear(60) && tryP('sq_heal')) return;
+      if (sp.includes('sq_shield') && enemyNear(80) && tryP('sq_shield')) { d.sqShield.phase = 'COMBAT_FIRST'; return; }
+      if (sp.includes('sq_dome') && this.detachments.some(o => o.faction !== side && this.impLive(o) && (o.isTitan || o.stands.length >= 6) && this.impNear(d, o, 50))) { this.targetDetachment = this.detachments.find(o => o.faction !== side && this.impLive(o) && (o.isTitan || o.stands.length >= 6) && this.impNear(d, o, 50)); this.castChapterPower(d, 'sq_dome'); }
+    });
+  }
+  // Order-phase button for the Chapter Master, Tactical Genius buttons, the off-board barrage call
+  impExtraButtons(det, btns) {
+    if (!det) return;
+    if (this.phase === 'ORDERS' && this.isChapterMaster(det) && !this.isFactionAI(det.faction)) {
+      const m = det.cmMode || 'MARCH';
+      btns.push(`<button class="btn-primary" style="background:${m === 'MARCH' ? '#1d4ed8' : '#334155'}" onclick="window.gameScene.setChapterMasterMode('MARCH')">🎖️ Forced March</button>`);
+      btns.push(`<button class="btn-primary" style="background:${m === 'GENIUS' ? '#1d4ed8' : '#334155'}" onclick="window.gameScene.setChapterMasterMode('GENIUS')">🎖️ Tactical Genius</button>`);
+    }
+    const gm = this.impGeniusFor(det);
+    if (gm) {
+      const line = ['CHARGE', 'ADVANCE', 'FIRST_FIRE'], i = line.indexOf(det.order);
+      [line[i - 1], line[i + 1]].filter(Boolean).forEach(o => btns.push(`<button class="btn-primary" style="background:#1e40af" onclick="window.gameScene.useTacticalGenius('${o}')">🎖️ Genius → ${this.eldOrderName(o)}</button>`));
+    }
+    if (this.impCanCallOffBoard(det) && !this.isFactionAI(det.faction)) btns.push(`<button class="btn-primary" style="background:#b91c1c" onclick="window.gameScene.startOffBoardCall()">${this._obPlace === det ? '📡 Tap the target…' : `📡 Call ${this.offBoard[det.faction][0].name} (${this.impOffBoardLeft(det.faction)} left)`}</button>`);
+  }
+  sqShieldNear(det) {
+    if (!det || !this.isSquat(det)) return false;
+    const cls = p => (/COMBAT/.test(p || '') ? 'COMBAT' : p);
+    return this.detachments.some(a => a.faction === det.faction && this.impLive(a) && a.sqShield && a.sqShield.turn === this.turn && cls(a.sqShield.phase) === cls(this.phase) && this.impNear(a, det, 25));
+  }
+  sqLordHeal(vDet, stand, out) {
+    if (!vDet || !stand || this.hasHitLocations(vDet) || vDet.superHeavy || this.isVehicleClass(vDet)) return false;
+    const L = this.detachments.find(h => h.faction === vDet.faction && this.impLive(h) && h.healTurn === this.turn && (h.healUses || 0) < 5 && h.stands.some(hs => Phaser.Math.Distance.Between(hs.container.x, hs.container.y, stand.container.x, stand.container.y) <= 25 * PX_PER_CM));
+    if (!L) return false;
+    L.healUses = (L.healUses || 0) + 1;
+    const r = Phaser.Math.Between(1, 6), ok = r >= 5;
+    if (out) out.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `💚 ${L.name}: Heal 5+` });
+    if (ok) { this.spawnFloatingText(stand.container.x, stand.container.y - 8, `💚 HEALED (${r})`, '#4ade80', '10px'); this.log(`💚 <b>${L.name}</b> heals a wounded stand of ${vDet.name} (${r}).`); }
+    return ok;
+  }
+  // Bodyguards take the hit meant for their leader (with their own save)
+  sqGuardRedirect(det, stand, tsm, melt) {
+    if (melt || !this.isSquatLeader(det)) return false;
+    const guards = this.sqGuardsOf(det); if (!guards.length) return false;
+    const ls = stand || det.stands[0]; if (!ls) return false;
+    let best = null, bd = 1e9, bg = null;
+    guards.forEach(g => g.stands.forEach(s => { const dd = Phaser.Math.Distance.Between(s.container.x, s.container.y, ls.container.x, ls.container.y); if (dd < bd) { bd = dd; best = s; bg = g; } }));
+    if (!best) return false;
+    if (this.orkSave(bg, tsm || 0, null)) { this.log(`🛡️ <b>${bg.name}</b> throws themselves in front of ${det.name} and survives the blow.`); return true; }
+    this.log(`🛡️ <b>${bg.name}</b> takes the hit meant for ${det.name}, and a bodyguard falls.`);
+    this.removeCasualty(bg, best, tsm, false); this.checkBreakPoint(bg);
+    return true;
+  }
+  sqLeaderLost(det) {
+    this.detachments.filter(g => g.guardOf === det.id && g.stands.length && !g.guardFury).forEach(g => {
+      g.guardFury = true; g.order = 'CHARGE'; g.orderRevealed = true; this.updateDetachmentBadge(g);
+      this.log(`😡 <b>${g.name}</b> see ${det.name} fall and fly into a rage: they must charge the nearest enemy from now on, re-rolling close combat 1s and 2s.`);
+    });
+  }
+  checkBreakPoint(det) {
+    if (det && det.guardOf) {
+      const l = this.detachments.find(o => o.id === det.guardOf);
+      if (l && l.stands.length) return; // bodyguards only break when their leader dies
+      if (det.guardFury && !det.broken) det.casualties = Math.max(det.casualties || 0, det.breakPoint || 1);
+    }
+    return this.checkBreakPointImpCore(det);
+  }
+  checkStandLoSAt(a, b, snap = false, w = null, from = null, to = null) {
+    const r = this.checkStandLoSAtCore(a, b, snap, w, from, to);
+    if (!r || !r.valid || !a || !b) return r;
+    const p = from || a.container, q = to || b.container;
+    if ((this.forceDomes || []).length && !r.indirect && this.sqDomeBlocks(p.x, p.y, q.x, q.y)) return { ...r, valid: false, reason: 'Blocked by a Force Dome' };
+    const bd = b.detachment, ad = a.detachment;
+    if (ad && bd && bd.id !== '_pt') { const bt = this.impBeaconTarget(ad); if (bt && bd !== bt) return { ...r, valid: false, reason: `Drawn to ${bt.name}'s Beacon` }; }
+    return r;
   }
 
   applySuperHeavyDamageOrkCore(det, stand = null, isCloseCombat = false) {
@@ -52672,6 +53450,8 @@ class NetEpicScene extends Phaser.Scene {
     this.closePsykerModal();
     const det = this.activatingDetachment || this.selectedDetachment;
     if (!det || !det.isPsyker || det.stands.length === 0 || det.psychicPowerUsed) return;
+    if (this.impCancelled(det)) { det.psychicPowerUsed = true; this.updateUI(); return; }
+    { const bt = this.impBeaconTarget(det); if (bt) this.targetDetachment = bt; }
     this._attacker = det;
     const power = PSYCHIC_POWERS[powerKey];
     if (!power) return;
@@ -53813,7 +54593,7 @@ class NetEpicScene extends Phaser.Scene {
     return r;
   }
 
-  checkStandLoSAt(shooterStand, targetStand, isSnapFire = false, customWpn = null, fromPt = null, toPt = null) {
+  checkStandLoSAtCore(shooterStand, targetStand, isSnapFire = false, customWpn = null, fromPt = null, toPt = null) {
     if (shooterStand.detachment.embarkedOn || targetStand.detachment.embarkedOn ||
         shooterStand.detachment.inReserve || targetStand.detachment.inReserve) {
       return { valid: false, reason: 'In Reserve / Embarked', distCm: 0, coverMod: 0, indirect: false };
@@ -54241,13 +55021,14 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
     if (sol.isBarrage && sol.isIndirect && sol.aimPoint) {
-      const sc = this.rollIndirectScatter(sol.aimPoint);
+      const sc = this.impIndirectScatter(firerDet, sol.aimPoint);
       sol.intendedPoint = { ...sol.aimPoint };
       sol.aimPoint = sc.point;
       sol.scatterNote = sc.note;
       sol.templateTargets = this.getTemplateTargets(sc.point, firerDet.faction, isSnapFire);
     }
 
+    if (sol.isBarrage && sol.aimPoint && this.sqDomeTouches(sol.aimPoint, BARRAGE_RADIUS_PX)) { sol.templateTargets = []; sol.scatterNote = (sol.scatterNote ? sol.scatterNote + ' · ' : '') + 'the template touches a Force Dome and fizzles out'; }
     let salvoTag = '';
     let shotDesc = '';
     if (isSalvoUnit) {
@@ -54766,7 +55547,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // Core Rules p. 41: Break Points are counted in the End Phase. Calls during the turn are ignored;
   // startEndPhase() checks every detachment.
-  checkBreakPoint(det) {
+  checkBreakPointImpCore(det) {
     if (this.phase !== 'END_PHASE' || !det) return;
     const scoringSide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
     const scoringName = this.getSideName(scoringSide);
@@ -56439,6 +57220,7 @@ class NetEpicScene extends Phaser.Scene {
       orkRoll = Phaser.Math.Between(1, 6);
       impTotal = impRoll + southInitMod;
       orkTotal = orkRoll + northInitMod;
+      ({ imp: impTotal, ork: orkTotal } = this.sqGrandWarlord(impTotal, orkTotal));
       // Core p. 17: re-roll ties only on the first turn; later, a tie goes to whoever lost initiative last turn
       if (impTotal === orkTotal && this.turn > 1 && this.lastInitiativeLoser) tieWinner = this.lastInitiativeLoser;
     } while (impTotal === orkTotal && !tieWinner);
@@ -57141,7 +57923,7 @@ class NetEpicScene extends Phaser.Scene {
     const impRolls = [];
     for (let i = 0; i < impDiceCount; i++) {
       let r = Phaser.Math.Between(1, 6);
-      if (impDet.squatMastery && (r === 1 || (r === 2 && orkDet.armyBook === 'ORKS'))) {
+      if ((impDet.squatMastery || impDet.guardFury) && (r === 1 || (r === 2 && (orkDet.armyBook === 'ORKS' || impDet.guardFury)))) {
         const rr = Phaser.Math.Between(1, 6);
         impRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
         r = rr;
@@ -57169,7 +57951,7 @@ class NetEpicScene extends Phaser.Scene {
     const orkRolls = [];
     for (let i = 0; i < orkDiceCount; i++) {
       let r = Phaser.Math.Between(1, 6);
-      if (orkDet.squatMastery && (r === 1 || (r === 2 && impDet.armyBook === 'ORKS'))) {
+      if ((orkDet.squatMastery || orkDet.guardFury) && (r === 1 || (r === 2 && (impDet.armyBook === 'ORKS' || orkDet.guardFury)))) {
         const rr = Phaser.Math.Between(1, 6);
         orkRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
         r = rr;
@@ -58976,7 +59758,7 @@ class NetEpicScene extends Phaser.Scene {
     window._restoring = true; window._live = null;
     let ok = false;
     try { ok = this.restoreGameStateCore(saveData); } finally { window._restoring = false; }
-    try { this.applyEldarSetup(); this.orkSetup(); this.orkRestoreExtra(saveData); } catch (e) { console.error(e); }
+    try { this.impInstallPowers(); this.applyEldarSetup(); this.orkSetup(); this.orkRestoreExtra(saveData); } catch (e) { console.error(e); }
     if (ok !== false) window.battleActive = true;
     return ok;
   }
