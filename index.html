@@ -13358,14 +13358,13 @@ const UNIT_CATALOG = {
       "caf": -1,
       "pinningClass": 1,
       "weapon": {
-        "name": "Snotling Vortex Tunnel",
-        "rangeCm": 75,
+        "name": "Shokk Attack Gun",
+        "rangeCm": 300,
         "dice": 1,
-        "toHit": 4,
-        "tsm": -3,
-        "barrage": true,
-        "barrageBp": 4,
-        "indirect": true
+        "toHit": 0,
+        "tsm": 0,
+        "fx": "shokk",
+        "firstFireOnly": true
       },
       "standsCount": 4,
       "color": 8702998,
@@ -13415,11 +13414,12 @@ const UNIT_CATALOG = {
       "caf": 0,
       "pinningClass": 1,
       "weapon": {
-        "name": "Gravity Traktor Beam",
+        "name": "Traktor Kannon",
         "rangeCm": 50,
         "dice": 1,
         "toHit": 5,
-        "tsm": -1
+        "tsm": -1,
+        "fx": "traktor"
       },
       "standsCount": 5,
       "color": 165063,
@@ -13461,15 +13461,18 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "ork_fb_rok",
           "barrage": true,
-          "barrageBp": 6
+          "barrageBp": 6,
+          "bpRoll": "ART"
         },
         {
-          "name": "Kustom Shootas",
+          "name": "Kustom Kannon",
           "rangeCm": 25,
           "dice": 6,
           "toHit": 5,
           "tsm": 0,
-          "id": "ork_fb_kannon"
+          "id": "ork_fb_kannon",
+          "diceRoll": "ART",
+          "misfireTsm": 0
         }
       ]
     },
@@ -14155,12 +14158,12 @@ const UNIT_CATALOG = {
       "caf": 2,
       "pinningClass": 2,
       "weapon": {
-        "name": "Bubble Chukka Force Projector",
+        "name": "Bubble Chukka",
         "rangeCm": 50,
         "dice": 1,
-        "toHit": 4,
-        "tsm": -2,
-        "notes": "Envelops target in a bouncing force bubble; incoming/outgoing shots rebound and hit target firer directly, bypassing shields."
+        "toHit": 0,
+        "tsm": 0,
+        "fx": "bubble"
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14183,12 +14186,14 @@ const UNIT_CATALOG = {
       "caf": 3,
       "pinningClass": 2,
       "weapon": {
-        "name": "Destruktor Rokkits Barrage",
+        "name": "Destrukta Rokkits",
         "rangeCm": 75,
-        "dice": 6,
+        "dice": 1,
         "toHit": 4,
-        "tsm": -2,
-        "notes": "Direct-fire rokkit barrage (2-10 BP). Misfire hits Speedsta at -2 TSM."
+        "tsm": 0,
+        "barrage": true,
+        "barrageBp": 6,
+        "fx": "destrukta"
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14213,12 +14218,11 @@ const UNIT_CATALOG = {
       "shieldType": "POWER",
       "maxShields": 2,
       "weapon": {
-        "name": "Deflektor Field & Twin Big Shootas",
+        "name": "Twin Big Shootas (Deflektor Field)",
         "rangeCm": 25,
         "dice": 2,
         "toHit": 5,
-        "tsm": 0,
-        "notes": "6cm Deflektor Field deflects incoming shots and barrages 4D6cm on scatter."
+        "tsm": 0
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14241,12 +14245,12 @@ const UNIT_CATALOG = {
       "caf": 3,
       "pinningClass": 2,
       "weapon": {
-        "name": "Rotary Kustom Kannon",
+        "name": "Kustom Kannon",
         "rangeCm": 75,
-        "dice": 4,
+        "dice": 1,
         "toHit": 5,
         "tsm": -2,
-        "notes": "Heavy variable-fire autocannon (2-10 attacks). Misfire damages Speedsta."
+        "fx": "kkannon"
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14269,12 +14273,12 @@ const UNIT_CATALOG = {
       "caf": 2,
       "pinningClass": 2,
       "weapon": {
-        "name": "Lifta-Droppa Grav Beam",
+        "name": "Lifta-Droppa",
         "rangeCm": 75,
         "dice": 1,
         "toHit": 4,
         "tsm": -4,
-        "notes": "Lifts target vehicle/titan into the sky and drops it with 2D6cm scatter, crushing victims below."
+        "fx": "liftone"
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14595,9 +14599,11 @@ const UNIT_CATALOG = {
         "rangeCm": 50,
         "dice": 1,
         "toHit": 4,
-        "tsm": -1,
+        "tsm": 0,
         "barrage": true,
-        "barrageBp": 1
+        "barrageBp": 1,
+        "fx": "hopsplat",
+        "firstFireOnly": true
       },
       "standsCount": 5,
       "color": 1409085,
@@ -14653,12 +14659,12 @@ const UNIT_CATALOG = {
       "caf": 1,
       "pinningClass": 2,
       "weapon": {
-        "name": "Buzz Squig Swarm & Tower Guns",
+        "name": "Squig Katapult",
         "rangeCm": 50,
-        "dice": 2,
-        "toHit": 5,
+        "dice": 1,
+        "toHit": 0,
         "tsm": 1,
-        "notes": "Catapults swarms of biting buzz-squigs over obstacles into enemy lines."
+        "fx": "squigs"
       },
       "standsCount": 3,
       "color": 7877903,
@@ -14681,12 +14687,13 @@ const UNIT_CATALOG = {
       "caf": 0,
       "pinningClass": 2,
       "weapon": {
-        "name": "Magna Kannon",
+        "name": "Doomdiver Magna-Kannon",
         "rangeCm": 100,
         "dice": 1,
         "toHit": 5,
         "tsm": -2,
-        "isAA": true
+        "isAA": true,
+        "fx": "doomdiver"
       },
       "standsCount": 1,
       "color": 1409085,
@@ -14724,7 +14731,8 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 1409085,
       "baseW": 34,
-      "baseH": 42
+      "baseH": 42,
+      "deathrolla": true
     },
     {
       "key": "card_ork_skullhamma",
@@ -14754,7 +14762,8 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 1409085,
       "baseW": 34,
-      "baseH": 42
+      "baseH": 42,
+      "tripleCharge": true
     },
     {
       "key": "card_ork_tour_wagon",
@@ -14853,12 +14862,12 @@ const UNIT_CATALOG = {
       "caf": 0,
       "pinningClass": 1,
       "weapon": {
-        "name": "Kustom Heavy Shootaz",
-        "rangeCm": 50,
-        "dice": 2,
-        "toHit": 4,
+        "name": "Kustom Shootaz",
+        "rangeCm": 100,
+        "dice": 1,
+        "toHit": 0,
         "tsm": -1,
-        "notes": "Enhanced fire rate and armor-piercing looted ammunition."
+        "fx": "kshoota"
       },
       "standsCount": 4,
       "color": 1920984,
@@ -15184,15 +15193,18 @@ const UNIT_CATALOG = {
           "tsm": -1,
           "id": "ork_hb_rok",
           "barrage": true,
-          "barrageBp": 6
+          "barrageBp": 6,
+          "bpRoll": "ART"
         },
         {
-          "name": "Kustom Shoota",
+          "name": "Kustom Kannon",
           "rangeCm": 25,
           "dice": 6,
           "toHit": 5,
-          "tsm": -1,
-          "id": "ork_hb_kannon"
+          "tsm": -2,
+          "id": "ork_hb_kannon",
+          "diceRoll": "ART",
+          "misfireTsm": -2
         },
         {
           "name": "Big Shootas",
@@ -48160,7 +48172,7 @@ class NetEpicScene extends Phaser.Scene {
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     this._attacker = firerDet;
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
-    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
+    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|shokk|hopsplat|squigs|destrukta/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (!sol.validPairs.length) return stop(`⚠️ <b>${firerDet.name}</b> can't bring the ${wpn.name} to bear on <b>${targetDet.name}</b>.`);
@@ -48287,7 +48299,7 @@ class NetEpicScene extends Phaser.Scene {
         title = '🧲 Supa Lifta-Droppa'; desc = 'Hit 4+ · save at -4 · failed models are lifted and dropped on others';
         break;
       }
-      case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': case 'woofer': {
+      case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': case 'woofer': case 'shokk': case 'traktor': case 'doomdiver': case 'hopsplat': case 'squigs': case 'kshoota': case 'bubble': case 'destrukta': case 'kkannon': case 'liftone': {
         const h = this.eldSpecialFx(wpn.fx, { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter, isSnapFire });
         if (!h) return stop(`⚠️ ${wpn.name}: nothing to fire.`);
         title = h.title; desc = h.desc; break;
@@ -50708,6 +50720,7 @@ class NetEpicScene extends Phaser.Scene {
       det.stands.forEach(s => { if ((s.psyLock || s.stunned === this.turn) && s.originX != null) { s.container.x = s.originX; s.container.y = s.originY; } });
       det._eldMovedNow = det.stands.some(s => s.originX != null && Math.hypot(s.container.x - s.originX, s.container.y - s.originY) > 1);
     }
+    const rolla = det && det.deathrolla ? det.stands.map(s => [s, s.originX != null ? s.originX : s.container.x, s.originY != null ? s.originY : s.container.y]) : null;
     const spider = det && this.eldWarpSpider(det) ? det.stands.map(s => [s, s.originX != null ? Math.hypot(s.container.x - s.originX, s.container.y - s.originY) : 0]) : null;
     const r = this.confirmDetachmentMoveCore();
     if (spider && det.moved) { // Warp Spiders: a stand that jumps more than 15 cm is lost in the warp on a 1
@@ -50719,7 +50732,7 @@ class NetEpicScene extends Phaser.Scene {
       }
     }
     if (det && det.moved) {
-      try { this.orkGrotsFollow(det); } catch (e) { console.error(e); }
+      try { this.orkGrotsFollow(det); if (rolla) this.orkDeathrolla(det, rolla); } catch (e) { console.error(e); }
       if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
       if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
     }
@@ -50735,7 +50748,7 @@ class NetEpicScene extends Phaser.Scene {
     if ((targetDet && targetDet.madState === 'DEAD') || (firerDet && this.orkMadIdle(firerDet))) return { validPairs: [], isSnapFire, isBarrage: false, templateTargets: [], totalBp: 0, isIndirect: false };
     if (isSnapFire && firerDet) { // weapons that can't snap fire are never offered for it
       const w = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
-      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
+      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
         return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     }
     return this.eldWaveFilter(firerDet, targetDet, this.evaluateFireSolutionEld(firerDet, targetDet, isSnapFire));
@@ -50799,6 +50812,7 @@ class NetEpicScene extends Phaser.Scene {
     const { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter } = c, R = BARRAGE_RADIUS_PX;
     S.lines = S.lines || [];
     if (fx === 'woofer') return this.orkWoofer(c);
+    if (/^(shokk|traktor|doomdiver|hopsplat|squigs|kshoota|bubble|destrukta|kkannon|liftone)$/.test(fx)) return this.orkSpecialFx(fx, c);
     if (fx === 'vibro') {
       opts._pairs = sol.validPairs; S.color = 0xfbbf24;
       let n = 0; const rolls = [];
@@ -51127,7 +51141,7 @@ class NetEpicScene extends Phaser.Scene {
     return null;
   }
   getEffectiveMoveCm(det) {
-    const mv = this.getEffectiveMoveCmCore(det);
+    const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det); // Mekboy Speedstas: +2D6 cm
     return (det && det.order === 'CHARGE' && this.eldWarpSpider(det)) ? mv / 2 : mv; // their move is a maximum: no doubling on a charge
   }
   isStandPinned(stand) { return stand && stand.detachment && this.eldWarpSpider(stand.detachment) ? false : this.isStandPinnedCore(stand); }
@@ -51358,6 +51372,7 @@ class NetEpicScene extends Phaser.Scene {
       }
       if (/freebooter|kommando/i.test(d.name || '') && d.stands.length) { d.stands[0].isKaptin = true; d.stands[0].label = 'Kaptin'; }
       if (this.isMegaSquiggoth(d) && d.megaWounds == null) d.megaWounds = 3;
+      if (this.isSpeedsta(d) && !/dragsta/i.test(d.name || '')) Object.defineProperty(d, 'save', { get: () => [1, 1, 2, 2, 3, 3][Phaser.Math.Between(0, 5)], set: () => {}, configurable: true, enumerable: true }); // Mekboy kustom force fields
     });
   }
   // A Weirdboy's psychic bolts depend on the power he soaked up last End Phase
@@ -51472,6 +51487,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   // ---- orders locked (finishOrdersPhase) ----
   orkFinishOrders() {
+    try { this.orkMoveSwarms(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length) return;
       if (d.instinct === 'WOOFED') { d.moved = true; d.fired = true; }
@@ -51687,6 +51703,263 @@ class NetEpicScene extends Phaser.Scene {
   }
   startCloseCombatSegment() { try { this.orkSegmentEnd(); } catch (e) { console.error(e); } return this.startCloseCombatSegmentOrkCore(); }
   startEndPhase() { try { this.orkSegmentEnd(); } catch (e) { console.error(e); } return this.startEndPhaseOrkCore(); }
+
+  // ===== ORKS round 3: weapons (Ork book pp. 13-20) =====
+  orkArt() { return Phaser.Utils.Array.GetRandom([2, 4, 6, 8, 10, 'MISFIRE']); }
+  orkLiveStand(d, pref, S) { return (pref && d.stands.includes(pref) && !S.casualties.includes(pref)) ? pref : d.stands.find(s => !S.casualties.includes(s)); }
+  // A plain save (fixed saves count); returns true if the stand survives
+  orkSave(d, tsm, S, label) {
+    const ns = Math.min((d.save || 7) - (tsm || 0), d.fixedSave || 7), r = Phaser.Math.Between(1, 6), ok = ns <= 6 && r >= ns;
+    if (S) S.saveDice.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `${d.name}: ${label || 'save'} ${ns > 6 ? 'none' : ns + '+'}` });
+    return ok;
+  }
+  orkKill(S, d, s) { if (d.avatar && this.avatarSaves(d, s)) { S.saves++; return; } S.kills++; S.casualties.push(s); this.spawnFloatingText(s.container.x, s.container.y - 10, '💀', '#ef4444', '11px'); }
+  orkSelfHit(det, stand, tsm, why) {
+    this.time.delayedCall(600, () => {
+      if (!det.stands.includes(stand)) return;
+      if (this.orkSave(det, tsm, null)) { this.log(`🔧 <b>${det.name}</b> survives ${why}.`); return; }
+      this.log(`💥 <b>${det.name}</b> is wrecked by ${why}!`);
+      if (det.superHeavy) this.applySuperHeavyDamage(det, stand, false); else this.removeCasualty(det, stand, tsm, false);
+      this.checkBreakPoint(det);
+    });
+  }
+  orkSpecialFx(fx, c) {
+    const { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, isSnapFire } = c, R = BARRAGE_RADIUS_PX, from = S.from;
+    const tA = (pt, o, color) => { S.templates.push({ x: pt.x, y: pt.y, color }); this.standsWithin(pt, R, F).forEach(x => this.specialHit(S, x.det, x.stand, o)); };
+    const moveBy = (p, cm, a) => ({ x: Phaser.Math.Clamp(p.x + Math.cos(a) * cm * PX_PER_CM, 10, BOARD_W - 10), y: Phaser.Math.Clamp(p.y + Math.sin(a) * cm * PX_PER_CM, 10, BOARD_H - 10) });
+    if (fx === 'shokk') {
+      opts._pairs = sol.validPairs; S.color = 0x22c55e;
+      const herd = this.detachments.some(r => r.faction === firerDet.faction && this.orkIs(r, /runtherd/i) && r.stands.length && this.orkNear(firerDet, r, 5));
+      const fight = (d, s, how) => {
+        if (d.isFlyer || d.flyer) { S.notes.push(`${how}: the snotlings can't reach a flier`); return; }
+        const a = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + (herd ? Phaser.Math.Between(1, 3) : 0), b = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + (d.caf || 0);
+        S.hitDice.push({ val: a, cls: a > b ? 'die-pass' : 'die-fail', tip: `Snotlings ${a} v ${d.name} ${b}` });
+        if (a > b) {
+          S.hits++; S.notes.push(`${how}: snotlings maul ${d.name} (${a} v ${b})`);
+          if (this.hasHitLocations(d)) { const r = this.applyTitanHit(d, s, { isCC: true, from }); if (r && r.destroyed) S.kills++; }
+          else if (d.superHeavy) { if (this.applySuperHeavyDamage(d, s, true)) S.kills++; }
+          else this.orkKill(S, d, s);
+        } else { S.notes.push(`${how}: ${d.name} squashes the snotlings (${b} v ${a})`); if ((d.pinningClass || 1) <= 1) d.stands.forEach(x => { if (x === s) x.stunned = this.turn; }); }
+      };
+      sol.validPairs.forEach(p => {
+        const t = this.orkLiveStand(targetDet, p.target, S); if (!t) return;
+        const hit = Phaser.Math.Between(1, 6) <= 2, a = Phaser.Math.Between(1, 6), b = Phaser.Math.Between(1, 6);
+        S.lines.push({ x1: p.shooter.container.x, y1: p.shooter.container.y, x2: t.container.x, y2: t.container.y, color: 0x22c55e });
+        if (hit && a === b) {
+          S.hits++; S.hitDice.push({ val: `🎯${a}${b}`, cls: 'die-pass', tip: 'HIT + double: the warp tunnel opens inside the target' });
+          S.notes.push(`HIT + double ${a}: the tunnel opens inside ${targetDet.name}`);
+          if (this.hasHitLocations(targetDet)) { const r = this.applyTitanHit(targetDet, t, { noSave: true, aimed: true, from }); if (r && r.destroyed) S.kills++; }
+          else if (targetDet.superHeavy) { if (this.applySuperHeavyDamage(targetDet, t, false)) S.kills++; }
+          else this.orkKill(S, targetDet, t);
+        } else if (hit) fight(targetDet, t, `HIT ${a}+${b}`);
+        else {
+          const q = moveBy({ x: t.container.x, y: t.container.y }, Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), Math.random() * Math.PI * 2);
+          S.templates.push({ x: q.x, y: q.y, color: 0x22c55e, small: true });
+          const near = []; this.detachments.forEach(d => { if (!d.stands.length || d.embarkedOn || d.inReserve) return; d.stands.forEach(s => { const dd = Phaser.Math.Distance.Between(q.x, q.y, s.container.x, s.container.y); if (dd <= 5 * PX_PER_CM && !S.casualties.includes(s)) near.push({ d, s, dd }); }); });
+          near.sort((x, y) => x.dd - y.dd);
+          if (near.length) fight(near[0].d, near[0].s, `the snotlings land off target by ${near[0].d.name}`); else S.notes.push('the snotlings land in the open and wander off');
+        }
+      });
+      return { title: '🐀 Shokk Attack Gun', desc: 'Scatter die + 2D6 per gun: HIT + double = target destroyed, HIT = snotlings fight it (2D6 v 2D6 + CAF), arrow = they land 2D6 cm away and attack whatever is within 5 cm' };
+    }
+    if (fx === 'traktor') {
+      opts._pairs = sol.validPairs; S.color = 0x60a5fa;
+      sol.validPairs.forEach(p => {
+        const t = this.orkLiveStand(targetDet, p.target, S); if (!t) return;
+        const h = this.rollNeed(5); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: 'Traktor beam: 5+' });
+        S.lines.push({ x1: p.shooter.container.x, y1: p.shooter.container.y, x2: t.container.x, y2: t.container.y, color: 0x60a5fa });
+        if (!h.ok) return; S.hits++;
+        if (this.hasHitLocations(targetDet)) { const r = this.applyTitanHit(targetDet, t, { tsm: -1, from }); if (r && r.saved) S.saves++; if (r && r.destroyed) S.kills++; return; }
+        if (this.orkSave(targetDet, -1, S)) { S.saves++; return; }
+        const r = Phaser.Math.Between(1, 6) + ((targetDet.save || 7) >= 7 ? 1 : 0);
+        if (r >= 6) { S.notes.push(`${targetDet.name} squashed (${r})`); this.orkKill(S, targetDet, t); }
+        else { t.stunned = this.turn + 1; S.saves++; S.notes.push(`${targetDet.name} ${t.label || ''} held fast: it can do nothing next turn (${r})`); this.spawnFloatingText(t.container.x, t.container.y - 12, '🧲 HELD', '#60a5fa', '11px'); }
+      });
+      return { title: '🧲 Traktor Kannon', desc: 'Hit 5+ · save at -1 (shields don\'t help) · if it fails: D6 (+1 with no save) 6+ squashed, otherwise held fast next turn' };
+    }
+    if (fx === 'doomdiver') {
+      opts._pairs = sol.validPairs; S.color = 0xf97316;
+      const air = targetDet.isFlyer || targetDet.flyer || targetDet.skimmer || targetDet.poppedUp;
+      sol.validPairs.forEach(p => {
+        const t = this.orkLiveStand(targetDet, p.target, S); if (!t) return;
+        const h = this.rollNeed(wpn.toHit || 5); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: `Doomdiver ${wpn.toHit || 5}+` });
+        if (!h.ok) return; S.hits++;
+        if (air && !targetDet.superHeavy && !this.hasHitLocations(targetDet)) { if (this.orkSave(targetDet, -2, S, 'save at -2')) S.saves++; else { S.notes.push(`${targetDet.name} smashes into the ground`); this.orkKill(S, targetDet, t); } }
+        else if (isSnapFire && !targetDet.superHeavy && !this.hasHitLocations(targetDet)) { targetDet.doomStopped = this.turn; S.notes.push(`${targetDet.name} is knocked off course and stops`); }
+        else S.notes.push(`${targetDet.name} shrugs off the Gretchin pilot`);
+      });
+      return { title: '🎯 Doomdiver Magna-Kannon', desc: 'Fliers and skimmers it hits save at -2 or crash · ground targets: no effect (a snap fire hit stops them) · nothing bigger than a super-heavy is hurt' };
+    }
+    if (fx === 'hopsplat') {
+      opts._pairs = sol.validPairs; S.color = 0xfacc15;
+      const bp = sol.validPairs.length * (wpn.barrageBp || 1), st = this.getBarrageStats(bp);
+      let p = { x: P.x, y: P.y };
+      for (let i = 0; i < 3; i++) {
+        if (i) { const cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6); p = moveBy(p, cm, Math.random() * Math.PI * 2); S.notes.push(`bounces ${cm} cm`); }
+        tA(p, { need: st.toHit, tsm: st.tsm || 0 }, 0xfacc15);
+      }
+      return { title: '🏀 Hop-Splat', desc: `${bp} BP template · lands, bounces 3D6 cm and lands again, twice · hit ${st.toHit}+` };
+    }
+    if (fx === 'squigs') {
+      opts._pairs = sol.validPairs; S.color = 0xa3e635;
+      const r = 2 * PX_PER_CM;
+      sol.validPairs.forEach(() => {
+        const sc = this.rollIndirectScatter({ x: P.x, y: P.y }), pt = sc.point;
+        S.templates.push({ x: pt.x, y: pt.y, color: 0xa3e635, small: true });
+        const before = S.kills;
+        this.squigBite(S, pt, r, true);
+        if (S.kills > before && Phaser.Math.Between(1, 6) >= 4) {
+          const cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), end = moveBy(pt, cm, Math.random() * Math.PI * 2);
+          for (let k = 0.25; k <= 1.001; k += 0.25) this.squigBite(S, { x: pt.x + (end.x - pt.x) * k, y: pt.y + (end.y - pt.y) * k }, r, false);
+          this.addSquigSwarm(end);
+          S.notes.push(`the squigs go into a feeding frenzy and swarm ${cm} cm`);
+        }
+      });
+      return { title: '🐝 Squig Katapult', desc: 'A 4 cm template per Katapult, scattered · everything under it is bitten (Orks are left alone), save at +1 (6+ with no save) · casualties may set off a roaming feeding frenzy' };
+    }
+    if (fx === 'kshoota') {
+      opts._pairs = sol.validPairs; S.color = 0xfb923c;
+      const rolls = [];
+      sol.validPairs.forEach(p => {
+        const v = this.orkArt(); rolls.push(v);
+        if (v === 'MISFIRE') { S.notes.push('a Kustom Shoota blows up'); this.orkSelfHit(firerDet, p.shooter, -99, 'its own Kustom Shoota'); return; }
+        const t = this.orkLiveStand(targetDet, p.target, S); if (!t) return;
+        const dcm = Phaser.Math.Distance.Between(p.shooter.container.x, p.shooter.container.y, t.container.x, t.container.y) / PX_PER_CM;
+        if (dcm > v * 10) { S.hitDice.push({ val: v, cls: 'die-fail', tip: `Range ${v * 10} cm: falls short` }); return; }
+        this.specialHit(S, targetDet, t, { need: null, tsm: -1, ignoreCover: true });
+      });
+      S.notes.push(`artillery dice [${rolls.join(', ')}] × 10 cm`);
+      return { title: '🔫 Kustom Shootaz', desc: 'Artillery die × 10 cm range per stand · anything in range is hit, whatever its size or cover, at -1 · a Misfire destroys the stand' };
+    }
+    if (fx === 'bubble') {
+      opts._pairs = sol.validPairs.slice(0, 1);
+      targetDet.bubbledTurn = this.turn;
+      S.templates.push({ x: aim.container.x, y: aim.container.y, color: 0x67e8f9, small: true });
+      S.notes.push(`${targetDet.name} is wrapped in a force bubble: if it fires this turn, a scatter-die HIT bounces its shots back on itself`);
+      return { title: '🫧 Bubble Chukka', desc: 'The target\'s next shooting this turn rebounds on it on a scatter-die HIT (shields don\'t help)' };
+    }
+    if (fx === 'destrukta') {
+      opts._pairs = sol.validPairs.slice(0, 1);
+      const v = this.orkArt();
+      if (v === 'MISFIRE') { S.notes.push('Misfire! The rokkits blow up on the launcher'); this.orkSelfHit(firerDet, sol.validPairs[0].shooter, -2, 'its own Destrukta Rokkits'); return { title: '🚀 Destrukta Rokkits: MISFIRE', desc: 'The Speedsta saves at -2 or is destroyed' }; }
+      const st = this.getBarrageStats(v); tA({ x: P.x, y: P.y }, { need: st.toHit, tsm: st.tsm || 0 }, 0xf97316);
+      return { title: `🚀 Destrukta Rokkits (${v} BP)`, desc: `Artillery die barrage points · line of sight only · hit ${st.toHit}+` };
+    }
+    if (fx === 'kkannon') {
+      opts._pairs = sol.validPairs.slice(0, 1);
+      const v = this.orkArt();
+      if (v === 'MISFIRE') { S.notes.push('Misfire! A shell explodes in the breach'); this.orkSelfHit(firerDet, sol.validPairs[0].shooter, -2, 'a shell exploding in its Kustom Kannon'); return { title: '💥 Kustom Kannon: MISFIRE', desc: 'The Speedsta takes a hit at -2' }; }
+      for (let i = 0; i < v; i++) { const t = this.orkLiveStand(targetDet, i === 0 ? aim : null, S); if (!t) break; this.specialHit(S, targetDet, t, { need: 5, tsm: -2 }); }
+      return { title: `🔫 Kustom Kannon (${v} shots)`, desc: 'Artillery die attacks · 5+ at -2 · a Misfire hits the Speedsta' };
+    }
+    if (fx === 'liftone') {
+      opts._pairs = sol.validPairs.slice(0, 1); S.color = 0x4ade80;
+      if (this.hasHitLocations(targetDet)) { S.notes.push(`${targetDet.name} is far too big to pick up`); return { title: '🧲 Lifta-Droppa', desc: 'Titans can\'t be lifted' }; }
+      const before = S.casualties.length;
+      this.specialHit(S, targetDet, aim, { need: wpn.toHit || 4, tsm: wpn.tsm || -4 });
+      if (S.casualties.length > before) this.dropLiftedModel(S, targetDet, aim, F);
+      return { title: '🧲 Lifta-Droppa', desc: 'Hit 4+ · save at -4 · a model that fails is lifted and dropped within 6 cm, crushing what it lands on' };
+    }
+    return null;
+  }
+  squigBite(S, pt, r, sparesOrks) {
+    this.detachments.forEach(d => {
+      if (!d.stands.length || d.embarkedOn || d.inReserve || (sparesOrks && d.armyBook === 'ORKS') || this.hasHitLocations(d)) return;
+      d.stands.forEach(s => {
+        if (S.casualties.includes(s) || Phaser.Math.Distance.Between(pt.x, pt.y, s.container.x, s.container.y) > r + (s.baseRadius || 10) * 0.5) return;
+        S.hits++; S.hitDice.push({ val: '🐝', cls: 'die-pass', tip: `${d.name}: bitten` });
+        const ns = Math.min((d.save || 7) >= 7 ? 6 : (d.save || 7) + 1, d.fixedSave || 7), rr = Phaser.Math.Between(1, 6);
+        S.saveDice.push({ val: rr, cls: rr >= ns ? 'die-pass' : 'die-fail', tip: `${d.name}: save ${ns}+ (+1)` });
+        if (rr >= ns) S.saves++; else this.orkKill(S, d, s);
+      });
+    });
+  }
+  addSquigSwarm(p) {
+    this.squigSwarms = this.squigSwarms || [];
+    const g = this.add.graphics({ x: p.x, y: p.y }).setDepth(57);
+    g.fillStyle(0x65a30d, 0.35); g.fillCircle(0, 0, 2 * PX_PER_CM);
+    for (let i = 0; i < 9; i++) { g.fillStyle(0xbef264, 0.95); g.fillCircle(Math.cos(i * 2.1) * (6 + (i % 3) * 5), Math.sin(i * 2.1) * (6 + (i % 3) * 5), 2); }
+    this.tweens.add({ targets: g, angle: 360, duration: 1800, repeat: -1 });
+    this.squigSwarms.push({ x: p.x, y: p.y, g });
+  }
+  // Compulsory movement: feeding-frenzy squig swarms drift 2D6 cm, biting everything they pass over (Orks too)
+  orkMoveSwarms() {
+    (this.squigSwarms || []).forEach(w => {
+      const cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), a = Math.random() * Math.PI * 2;
+      const nx = Phaser.Math.Clamp(w.x + Math.cos(a) * cm * PX_PER_CM, 10, BOARD_W - 10), ny = Phaser.Math.Clamp(w.y + Math.sin(a) * cm * PX_PER_CM, 10, BOARD_H - 10);
+      const S = { hitDice: [], saveDice: [], hits: 0, saves: 0, kills: 0, casualties: [], templates: [], notes: [] };
+      for (let k = 0.25; k <= 1.001; k += 0.25) this.squigBite(S, { x: w.x + (nx - w.x) * k, y: w.y + (ny - w.y) * k }, 2 * PX_PER_CM, false);
+      S.casualties.forEach(s => { const d = s.detachment; if (d && d.stands.includes(s)) { this.removeCasualty(d, s, 0, false); this.checkBreakPoint(d); } });
+      this.log(`🐝 A squig swarm buzzes ${cm} cm ${this.getCompassHeading(a)}${S.hits ? `: ${S.hits} bitten, ${S.kills} eaten` : ''}.`);
+      w.x = nx; w.y = ny; this.tweens.add({ targets: w.g, x: nx, y: ny, duration: 700 });
+    });
+  }
+  // Mekboy Dragsta deflektor field: a hit traced through it is deflected unless the scatter die shows HIT
+  orkDeflekt(shooter, target, targetDet, wpn) {
+    if (!shooter || !target || !targetDet || this.hasHitLocations(targetDet) || targetDet.isTitan || (wpn && wpn.ignoreShields)) return false;
+    const line = new Phaser.Geom.Line(shooter.container.x, shooter.container.y, target.container.x, target.container.y);
+    const fields = this.detachments.filter(d => d.faction === targetDet.faction && this.orkIs(d, /dragsta/i) && d.stands.length);
+    if (!fields.length) return false;
+    const R = 6 * PX_PER_CM;
+    const live = fields.filter(f => !fields.some(o => o !== f && Phaser.Math.Distance.Between(o.stands[0].container.x, o.stands[0].container.y, f.stands[0].container.x, f.stands[0].container.y) < 2 * R));
+    const through = live.find(f => Phaser.Math.Distance.Between(f.stands[0].container.x, f.stands[0].container.y, shooter.container.x, shooter.container.y) > R && Phaser.Geom.Intersects.LineToCircle(line, new Phaser.Geom.Circle(f.stands[0].container.x, f.stands[0].container.y, R)));
+    if (!through) return false;
+    if (Phaser.Math.Between(1, 6) <= 2) return false;
+    this.spawnFloatingText(through.stands[0].container.x, through.stands[0].container.y - 14, '🛡️ DEFLEKTED', '#a5f3fc', '11px');
+    if (!this._deflektNote) { this._deflektNote = true; this.log(`🛡️ <b>${through.name}</b>'s deflektor field bounces shots away.`); this.time.delayedCall(1500, () => { this._deflektNote = false; }); }
+    return true;
+  }
+  // Deathrollas squish infantry and cavalry they run over (4+ at 0 TSM); a survivor stops the roller
+  orkDeathrolla(det, paths) {
+    let squished = 0, stopped = 0;
+    paths.forEach(([s, ox, oy]) => {
+      if (!det.stands.includes(s)) return;
+      const x2 = s.container.x, y2 = s.container.y, L = Phaser.Math.Distance.Between(ox, oy, x2, y2); if (L < 5) return;
+      const ux = (x2 - ox) / L, uy = (y2 - oy) / L, victims = [];
+      this.detachments.forEach(o => { if (o.faction === det.faction || !o.stands.length || o.embarkedOn || o.inReserve || (o.pinningClass || 1) > 2 || this.isVehicleClass(o)) return;
+        o.stands.forEach(v => { const dx = v.container.x - ox, dy = v.container.y - oy, t = dx * ux + dy * uy, n = Math.abs(-dx * uy + dy * ux);
+          if (t > 0 && t < L + 4 && n <= (v.baseRadius || 10) + (s.baseRadius || 12) - 2) victims.push({ o, v, t }); }); });
+      victims.sort((a, b) => a.t - b.t);
+      for (const { o, v, t } of victims) {
+        if (!o.stands.includes(v)) continue;
+        const r = Phaser.Math.Between(1, 6);
+        if (r >= 4 && !this.orkSave(o, 0, null)) { this.removeCasualty(o, v, 0, false); this.checkBreakPoint(o); squished++; continue; }
+        const back = Math.max(0, t - ((v.baseRadius || 10) + (s.baseRadius || 12)));
+        s.container.x = s.originX = ox + ux * back; s.container.y = s.originY = oy + uy * back; stopped++;
+        break;
+      }
+    });
+    if (squished || stopped) { this.log(`⚙️ <b>${det.name}</b>'s Deathrolla ${squished ? `squishes ${squished} stand${squished > 1 ? 's' : ''}` : 'rolls in'}${stopped ? `${squished ? ', but ' : ' and '}is stopped by a survivor` : ''}.`); this.updateDetachmentBadgePos(det); this.drawOverlays(); }
+  }
+  isSpeedsta(d) { return this.orkIs(d, /speedsta|dragsta/i); }
+  orkSpeedBonus(det) {
+    if (!det || !this.isSpeedsta(det)) return 0;
+    if (det._spdTurn !== this.turn) { det._spdTurn = this.turn; det._spd = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6); }
+    return det._spd;
+  }
+  // The Bubble Chukka: a bubbled unit's shots may bounce back on itself
+  executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+    if (firerDet && firerDet.bubbledTurn === this.turn && !isSnapFire && !opts._bubbleDone) {
+      firerDet.bubbledTurn = null;
+      const hit = Phaser.Math.Between(1, 6) <= 2;
+      if (hit) {
+        const w = (this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon) || {};
+        const n = Math.min(8, w.barrage ? firerDet.stands.length : firerDet.stands.length * (w.dice || 1)), tsm = w.tsm || 0;
+        this.log(`🫧 <b>${firerDet.name}</b> fires inside the force bubble: the shots bounce straight back (${n} hit${n > 1 ? 's' : ''} at ${tsm})!`);
+        for (let i = 0; i < n && firerDet.stands.length; i++) {
+          const s = Phaser.Utils.Array.GetRandom(firerDet.stands);
+          if (this.hasHitLocations(firerDet)) this.applyTitanHit(firerDet, s, { tsm, from: { x: s.container.x, y: s.container.y - 10 } });
+          else if (!this.orkSave(firerDet, tsm, null)) { if (firerDet.superHeavy) this.applySuperHeavyDamage(firerDet, s, false); else this.removeCasualty(firerDet, s, tsm, false); }
+        }
+        this.checkBreakPoint(firerDet);
+        this.markFirerAfterShot(firerDet, firerDet.stands.map(s => ({ shooter: s })), Boolean(opts.split), 1);
+        if (opts.onComplete) opts.onComplete(); else if (firerDet.fired || !firerDet.stands.length) this.finishCombatActivation(); else { this.drawOverlays(); this.updateUI(); }
+        return;
+      }
+      this.log(`🫧 The force bubble around <b>${firerDet.name}</b> fizzles: it fires normally.`);
+    }
+    return this.executeRangedAttackOrkCore(firerDet, targetDet, isSnapFire, opts);
+  }
 
   applySuperHeavyDamageOrkCore(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
@@ -53389,7 +53662,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // --- RANGED COMBAT & ARTILLERY BARRAGE RESOLUTION ENGINE ---
-  executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
+  executeRangedAttackOrkCore(firerDet, targetDet, isSnapFire = false, opts = {}) {
     this._attacker = firerDet;
     if (firerDet.weapon && firerDet.weapon.pulsaRokkit) {
       this.executePulsaRokkitAttack(firerDet, targetDet, isSnapFire, opts);
@@ -53425,6 +53698,7 @@ class NetEpicScene extends Phaser.Scene {
         this.log(`💥 <b>${firerDet.name}</b>'s <i>${activeSalvoWpn.name}</i> MISFIRES!`);
         const L = this.titanClassOf(firerDet) && this.titanClassOf(firerDet).locations.find(x => x.mount === activeSalvoWpn.mountId);
         if (L && firerDet.stands.length) this.rollTitanDamage(firerDet, firerDet.stands[0], L, {});
+        else if (activeSalvoWpn.misfireTsm != null && firerDet.stands.length) this.orkSelfHit(firerDet, firerDet.stands[0], activeSalvoWpn.misfireTsm, 'a shell exploding in its Kustom Kannon');
         this.markFirerAfterShot(firerDet, sol.validPairs, split, 1);
         if (opts.onComplete) opts.onComplete(); else if (!isSnapFire) { if (firerDet.fired || !firerDet.stands.length) this.finishCombatActivation(); else { this.drawOverlays(); this.updateUI(); } }
         return;
@@ -53669,6 +53943,7 @@ class NetEpicScene extends Phaser.Scene {
             }
             hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `Needed ${neededToHit}+${guidedNote}` });
 
+            if (hitSuccess && this.orkDeflekt(pair.shooter, pair.target, targetDet, curWpn)) hitSuccess = false; // Dragsta deflektor field
             if (hitSuccess) {
               hits++;
               // The hit lands on the stand this shooter aimed at; if that one is already going down,
@@ -56427,8 +56702,8 @@ class NetEpicScene extends Phaser.Scene {
     const impLeader = this.hasFriendlyAbilityWithin(impDet, 'CombatLeader', 10) ? 1 : 0;
     const orkLeader = this.hasFriendlyAbilityWithin(orkDet, 'CombatLeader', 10) ? 1 : 0;
     // Deathrolla rule: +2 CAF vs infantry/cavalry
-    const impDeathrolla = (impDet.deathrolla && (orkDet.pinningClass === 1 || orkDet.pinningClass === 2)) ? 2 : 0;
-    const orkDeathrolla = (orkDet.deathrolla && (impDet.pinningClass === 1 || impDet.pinningClass === 2)) ? 2 : 0;
+    const impDeathrolla = 0; // Deathrollas squish infantry as they move instead (orkDeathrolla)
+    const orkDeathrolla = 0;
 
     const halfCaf = d => d.damageState === 'HEAVY' || this.titanCond(d, 'cafHalved');
     const impBaseCaf = halfCaf(impDet) ? Math.ceil(impDet.caf / 2) : impDet.caf;
