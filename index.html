@@ -47533,6 +47533,7 @@ class NetEpicScene extends Phaser.Scene {
       let baseSave = (gridCell && !gridHull && st.status[loc.id] !== 'DESTROYED') ? gridCell.save : (sqSaves && sqSaves.length) ? Phaser.Utils.Array.GetRandom(sqSaves) : ((sv0.save && (sv0.save[facing] || sv0.save.front)) || det.save || 2);
       if (/carapace/i.test(loc.id) && !loc.mount && det.titanLoadout && Object.values(det.titanLoadout).includes('Fire Control Center')) baseSave = 3;
       if (/head/i.test(loc.id) && det.titanLoadout && det.titanLoadout.head && !c.bioTitan) baseSave += 1; // head variants cut the head save by 1
+      if (ctx.bestSave) baseSave = Math.min(baseSave, this.titanBestSave(det, facing));
       if (lift) { // a model dropped on it: no effect if this location's save is better than the dropped model's
         if (baseSave < lift) { this.spawnFloatingText(vx, vy - 10, `🛡️ ${loc.name} shrugs it off`, '#38bdf8', '10px'); return { saved: true, destroyed: false }; }
         return this.rollTitanDamage(det, stand, loc, { ...ctx, facing });
@@ -48153,6 +48154,9 @@ class NetEpicScene extends Phaser.Scene {
     ns -= facTsm;
     if (vDet.fixedSave) ns = Math.min(ns, vDet.fixedSave);
     if (vDet.doomed) ns += 1;
+    const ffr = this.orkForceField(vDet, stand, S.saveDice);
+    if (ffr === 'save') { S.saves++; return; }
+    if (ffr === 'fail') ns += 1;
     const sv = Phaser.Math.Between(1, 6), ok = ns <= 6 && sv >= ns;
     S.saveDice.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${ns}+${this.facingNote(facTsm)}` });
     if (ok) { S.saves++; this.spawnFloatingText(vx, vy, `🛡️ SAVED (${sv})`, '#38bdf8', '10px'); return; }
@@ -50682,6 +50686,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.orkHas(me, 'FLITE_SOOTS')) { const f = Phaser.Math.Between(1, 3); caf += f; tags.push(`🔧 Flite Soots +${f}`); }
     if (this.orkHas(me, 'STIKKBOMZ')) { dice += 1; tags.push('🔧 Super Stikkbomz +1D6'); }
     if (myStand.traktorHeld) { zero = true; tags.push('🧲 Held: base CAF only'); }
+    if (myStand.bionikCaf) { caf += myStand.bionikCaf; tags.push(`🔧 Bionik +${myStand.bionikCaf}`); }
     const base = me.caf || 0;
     if (this.eldDoomActive(me)) { caf -= Math.floor(base / 2); tags.push('💀 Doom: CAF halved'); }
     const fx = this._eldBout && this._eldBout.get(myStand);
@@ -51736,7 +51741,8 @@ class NetEpicScene extends Phaser.Scene {
   orkLiveStand(d, pref, S) { return (pref && d.stands.includes(pref) && !S.casualties.includes(pref)) ? pref : d.stands.find(s => !S.casualties.includes(s)); }
   // A plain save (fixed saves count); returns true if the stand survives
   orkSave(d, tsm, S, label) {
-    const ns = Math.min((d.save || 7) - (tsm || 0), d.fixedSave || 7), r = Phaser.Math.Between(1, 6), ok = ns <= 6 && r >= ns;
+    const ffr = this.orkForceField(d, null, S ? S.saveDice : null); if (ffr === 'save') return true;
+    const ns = Math.min((d.save || 7) - (tsm || 0), d.fixedSave || 7) + (ffr === 'fail' ? 1 : 0), r = Phaser.Math.Between(1, 6), ok = ns <= 6 && r >= ns;
     if (S) S.saveDice.push({ val: r, cls: ok ? 'die-pass' : 'die-fail', tip: `${d.name}: ${label || 'save'} ${ns > 6 ? 'none' : ns + '+'}` });
     return ok;
   }
@@ -52065,8 +52071,8 @@ class NetEpicScene extends Phaser.Scene {
         const d = Phaser.Utils.Array.GetRandom(cands.filter(x => ((x.cfg && x.cfg.kustom) || []).length === fewest));
         d.cfg = d.cfg || {}; d.cfg.kustom = [...(d.cfg.kustom || []), c.id];
         if (c.id === 'BIONIK') {
-          d.cfg.kustomCaf = Phaser.Math.Between(1, 6);
-          const mad = d.stands.filter(() => Phaser.Math.Between(1, 6) === 6);
+          const mad = [];
+          d.stands.forEach(s => { const r = Phaser.Math.Between(1, 6); if (r === 6) mad.push(s); else s.bionikCaf = Phaser.Math.Between(1, 6); });
           mad.forEach(s => { if (d.stands.length > 1) { this.orkHealerMishap({ name: 'The Mekboy\'s bionik work' }, d, s, 'medic'); d.stands = d.stands.filter(x => x !== s); s.container.destroy(); d.initialCount = Math.max(1, (d.initialCount || 1) - 1); } });
         }
         notes.push(`${c.name} → ${d.name} (${c.txt})`);
@@ -52079,7 +52085,6 @@ class NetEpicScene extends Phaser.Scene {
     d._kustomApplied = true;
     const tsm = w => { if (w) w.tsm = (w.tsm || 0) - 1; }, dice = w => { if (w) w.dice = (w.dice || 1) + 1; };
     if (this.orkHas(d, 'SUPAPOWA') || this.orkHas(d, 'BIONIK')) d.fixedSave = Math.min(d.fixedSave || 7, 6);
-    if (this.orkHas(d, 'BIONIK')) d.caf = (d.caf || 0) + ((d.cfg && d.cfg.kustomCaf) || 0);
     const sd = Object.getOwnPropertyDescriptor(d, 'save');
     if (this.orkHas(d, 'ARMOR_PLATING') && !(sd && sd.get)) d.save = Math.max(1, (d.save || 7) - 1);
     if (this.orkHas(d, 'GLYPH')) d.morale = Math.max(1, (d.morale || 4) - 1);
@@ -52240,6 +52245,18 @@ class NetEpicScene extends Phaser.Scene {
           if (!this.orkSave(o, 0, null)) { if (o.superHeavy) this.applySuperHeavyDamage(o, s, false); else this.removeCasualty(o, s, 0, false); }
         }); this.checkBreakPoint(o); });
         this.buildings.forEach(b => { if (!b.collapsed && this.distToRect(b, P.x, P.y) <= R) this.eldBuildingSave(b, 0, { notes: [] }, 'Supa Rokkit debris'); });
+        const burnt = (this.woods || []).filter(w => Phaser.Math.Distance.Between(P.x, P.y, w.x, w.y) <= R + w.r && Phaser.Math.Between(1, 6) >= 5);
+        burnt.forEach(w => {
+          let lost = 0;
+          this.spawnExplosionFX(w.x, w.y, w.r, true);
+          this.detachments.forEach(o => { if (!o.stands.length || o.embarkedOn || this.hasHitLocations(o)) return; o.stands.slice().forEach(s => {
+            if (Phaser.Math.Distance.Between(s.container.x, s.container.y, w.x, w.y) > w.r) return;
+            const sv = o.save || 7, r = Phaser.Math.Between(1, 6); // an unmodified save
+            if (!(sv <= 6 && r >= sv)) { this.removeCasualty(o, s, 0, false); lost++; }
+          }); this.checkBreakPoint(o); });
+          this.log(`🔥 Burning wreckage sets a wood alight! It burns to the ground${lost ? ` and ${lost} stand${lost > 1 ? 's' : ''} inside ${lost > 1 ? 'are' : 'is'} lost` : ''}.`);
+        });
+        if (burnt.length) { this.woods = this.woods.filter(w => !burnt.includes(w)); this.drawBattlefield(); }
         det.stands.slice().forEach(s => this.removeCasualty(det, s, 0, true)); this.checkBreakPoint(det);
       });
       return;
@@ -52313,7 +52330,8 @@ class NetEpicScene extends Phaser.Scene {
       const x = {};
       ['turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
       const kap = d.stands.findIndex(s => s.isKaptin); if (kap >= 0) x.kaptin = kap;
-      const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil] : null).filter(Boolean); if (held.length) x.held = held;
+      const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil, s.traktorHeld] : null).filter(Boolean); if (held.length) x.held = held;
+      if (d.stands.some(s => s.bionikCaf)) x.bionik = d.stands.map(s => s.bionikCaf || 0);
       if (Object.keys(x).length) dets[d.id] = x;
     });
     return { dets, swarms: (this.squigSwarms || []).map(w => ({ x: w.x, y: w.y })), webs: (this.webs || []).map(w => ({ hexes: w.hexes, life: w.life })), mimes: this._mimes || {} };
@@ -52322,9 +52340,10 @@ class NetEpicScene extends Phaser.Scene {
     const X = save && save.orkExtra; if (!X) return;
     Object.entries(X.dets || {}).forEach(([id, x]) => {
       const d = this.detachments.find(q => q.id === id); if (!d) return;
-      Object.entries(x).forEach(([k, v]) => { if (!['kaptin', 'held'].includes(k)) d[k] = v; });
+      Object.entries(x).forEach(([k, v]) => { if (!['kaptin', 'held', 'bionik'].includes(k)) d[k] = v; });
+      (x.bionik || []).forEach((v, i) => { if (d.stands[i] && v) d.stands[i].bionikCaf = v; });
       if (x.kaptin != null) { d.stands.forEach(s => { s.isKaptin = false; }); if (d.stands[x.kaptin]) { d.stands[x.kaptin].isKaptin = true; d.stands[x.kaptin].label = 'Kaptin'; } }
-      (x.held || []).forEach(([i, until]) => { if (d.stands[i]) { d.stands[i].traktorHeld = true; d.stands[i].traktorHeldUntil = until; d.stands[i].stunned = until; } });
+      (x.held || []).forEach(([i, until, by]) => { if (d.stands[i]) { d.stands[i].traktorHeld = by || true; d.stands[i].traktorHeldUntil = until; d.stands[i].stunned = until; } });
       if (this.isWeirdboy(d)) { d.weapon = this.orkBolt(d.weirdEnergy || 0); d.stands.forEach(s => { s.weapon = d.weapon; }); }
       if (d.madState && d._madBase) { const s = d.madState; d.madState = null; if (s === 'SHOOT') d.weapon = { ...d.weapon, dice: (d.weapon.dice || 1) + 1 }; if (s === 'INVINCIBLE' || s === 'TANK') d.fixedSave = 3; if (s === 'WAAARGH') { d.moveCm *= 2; d.caf = 8; d.weapon = { ...d.weapon, toHit: 2 }; } if (s === 'TANK') { d.weapon = { ...d.weapon, rangeCm: 0 }; d.instinct = 'MAD_TANK'; } if (s === 'COVER') d.instinct = 'MAD_COVER'; d.madState = s; }
       if (d.inTransit) { d.inReserve = true; d.stands.forEach(s => s.container.setVisible(false)); }
@@ -52342,22 +52361,27 @@ class NetEpicScene extends Phaser.Scene {
     try { if (s) s.orkExtra = this.orkSaveExtra(); } catch (e) { console.error(e); }
     return s;
   }
-  tryHealerSave(vDet, stand, out) {
-    if (vDet && stand && this.orkHas(vDet, 'FORCE_FIELD') && !this.hasHitLocations(vDet)) {
-      const r = Phaser.Math.Between(1, 6);
-      if (out) out.push({ val: r, cls: r >= 2 ? 'die-pass' : 'die-fail', tip: 'Kustom Force Field 2+' });
-      if (r >= 2) { this.spawnFloatingText(stand.container.x, stand.container.y - 8, `🔵 FORCE FIELD (${r})`, '#93c5fd', '10px'); return true; }
-    }
-    return this.tryHealerSaveOrkCore(vDet, stand, out);
+  tryHealerSave(vDet, stand, out) { return this.tryHealerSaveOrkCore(vDet, stand, out); }
+  // Kustom Force Field: 'save' if its 2+ holds, 'fail' if not (the armour save is then at -1), null without one
+  orkForceField(vDet, stand, out) {
+    if (!vDet || !this.orkHas(vDet, 'FORCE_FIELD') || this.hasHitLocations(vDet)) return null;
+    const r = Phaser.Math.Between(1, 6);
+    if (out) out.push({ val: r, cls: r >= 2 ? 'die-pass' : 'die-fail', tip: `${vDet.name}: Kustom Force Field 2+${r >= 2 ? '' : ' (armour save now at -1)'}` });
+    if (r >= 2 && stand) this.spawnFloatingText(stand.container.x, stand.container.y - 8, `🔵 FORCE FIELD (${r})`, '#93c5fd', '10px');
+    return r >= 2 ? 'save' : 'fail';
   }
   // ---- Doomdiver: a snap fire hit stops a moving unit where it was hit ----
   orkDoomStop(td, fd, wpn) {
     const from = td._moveFrom; if (!from || td._moveTurn !== this.turn || !fd || !fd.stands.length) return false;
     const R = ((wpn && wpn.rangeCm) || 75) * PX_PER_CM;
-    const inR = (x, y) => fd.stands.some(s => Phaser.Math.Distance.Between(x, y, s.container.x, s.container.y) <= R);
     const at = (s, t) => { const f = from.get(s); return f ? { x: f.x + (s.container.x - f.x) * t, y: f.y + (s.container.y - f.y) * t } : null; };
+    const seen = (s, p) => { // in range and in sight of a Doomdiver with the target stand at p
+      const ox = s.container.x, oy = s.container.y; s.container.x = p.x; s.container.y = p.y;
+      try { return fd.stands.some(f => Phaser.Math.Distance.Between(p.x, p.y, f.container.x, f.container.y) <= R && this.checkStandLoS(f, s, true, wpn).valid); }
+      catch (e) { return false; } finally { s.container.x = ox; s.container.y = oy; }
+    };
     let k = 1;
-    for (let t = 0; t <= 1.0001; t += 0.05) { if (td.stands.some(s => { const p = at(s, t); return p && inR(p.x, p.y); })) { k = t; break; } }
+    for (let t = 0; t <= 1.0001; t += 0.05) { if (td.stands.some(s => { const p = at(s, t); return p && seen(s, p); })) { k = t; break; } }
     if (k >= 0.999) return false;
     td.stands.forEach(s => { const p = at(s, k); if (p) this.eldMoveStand(s, p.x, p.y); });
     this.syncEmbarkedPassengers(td); this.updateDetachmentBadgePos(td); this.drawOverlays();
@@ -52385,6 +52409,18 @@ class NetEpicScene extends Phaser.Scene {
       else s.stunned = this.turn;
     }));
   }
+  // The best armour save anywhere on a titan, seen from one facing
+  titanBestSave(det, facing) {
+    const c = this.titanClassOf(det); let best = 7;
+    const take = v => { if (typeof v === 'number' && v >= 1 && v < best) best = v; };
+    (c.locations || []).forEach(L => {
+      if (L.save) take(typeof L.save === 'number' ? L.save : (L.save[facing] || L.save.front));
+      if (L.squareSaves && L.squareSaves[facing]) L.squareSaves[facing].forEach(take);
+    });
+    const walk = o => { if (Array.isArray(o)) o.forEach(walk); else if (o && typeof o === 'object') { take(o.save); Object.values(o).forEach(v => { if (v && typeof v === 'object') walk(v); }); } };
+    if (c.grid && c.grid[facing]) walk(c.grid[facing]);
+    return best;
+  }
   orkTraktorFx(c) {
     const { firerDet, targetDet, S, sol, opts } = c, from = S.from;
     opts._pairs = sol.validPairs; S.color = 0x60a5fa;
@@ -52399,7 +52435,7 @@ class NetEpicScene extends Phaser.Scene {
       if (t === held) S.hitDice.push({ val: '🧲', cls: 'die-pass', tip: 'Still held: no roll to hit needed' });
       else { const h = this.rollNeed(5); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: 'Traktor beam: 5+' }); if (!h.ok) return; }
       S.hits++; done = true;
-      if (this.hasHitLocations(targetDet)) { const r = this.applyTitanHit(targetDet, t, { tsm: -1, from }); if (r && r.saved) S.saves++; if (r && r.destroyed) S.kills++; return; }
+      if (this.hasHitLocations(targetDet)) { const r = this.applyTitanHit(targetDet, t, { tsm: -1, bestSave: true, from }); if (r && r.saved) S.saves++; if (r && r.destroyed) S.kills++; return; }
       if (this.orkSave(targetDet, -1, S)) { S.saves++; if (t === held) { this.orkTraktorRelease(firerDet); S.notes.push(`${targetDet.name} breaks free`); } return; }
       const r = Phaser.Math.Between(1, 6) + ((targetDet.save || 7) >= 7 ? 1 : 0);
       if (r >= 6) { if (t.traktorHeld) this.orkTraktorRelease(firerDet); S.notes.push(`${targetDet.name} squashed (${r})`); this.orkKill(S, targetDet, t); }
@@ -54332,7 +54368,8 @@ class NetEpicScene extends Phaser.Scene {
             const facTsm = this.facingArmourTsm(vDet, victimStand, this.getDetachmentCenter(firerDet));
             let neededSave = baseSave - barrageStats.tsm - facTsm + doomPen;
             if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
-            let saved = saveRoll >= neededSave && neededSave <= 6;
+            const ffr = this.orkForceField(vDet, victimStand, saveDiceUI); if (ffr === 'fail') neededSave += 1;
+            let saved = ffr === 'save' || (saveRoll >= neededSave && neededSave <= 6);
 
             if (!saved && this.tryHealerSave(vDet, victimStand, saveDiceUI)) saved = true; // medic / mechanic 5+
 
@@ -54479,7 +54516,8 @@ class NetEpicScene extends Phaser.Scene {
               if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
               const holoSave = this.getHoloFieldSave(targetDet);
               if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
-              let saved = saveRoll >= neededSave && neededSave <= 6;
+              const ffr = this.orkForceField(targetDet, victimRef, saveDiceUI); if (ffr === 'fail') neededSave += 1;
+              let saved = ffr === 'save' || (saveRoll >= neededSave && neededSave <= 6);
 
               if (!saved && this.tryHealerSave(targetDet, victimRef, saveDiceUI)) saved = true; // medic / mechanic 5+
 
