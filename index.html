@@ -41009,7 +41009,22 @@ const EpikArt = (() => {
     ELDAR:      { main: '#e39b28', dark: '#9a5a12', light: '#f8cf73', trim: '#2a78c8', metal: '#d8d2c0', skin: '#f2dcc0', accent: '#1d3f73', lens: '#5ee7ff' },
     CHAOS:      { main: '#36363e', dark: '#17171c', light: '#6c6c79', trim: '#c9a23d', metal: '#8a8580', skin: '#c9a48a', accent: '#a51d1d', lens: '#ff3b30' },
     TYRANIDS:   { main: '#74308a', dark: '#3a1247', light: '#b067c6', trim: '#efe2bd', metal: '#d8c9a0', skin: '#efe2bd', accent: '#c4342a', lens: '#ffd23b' },
-    SQUATS:     { main: '#8c5a2b', dark: '#4e3114', light: '#c58f53', trim: '#dcb64a', metal: '#8f959b', skin: '#e3b38a', accent: '#7a1f1f', lens: '#ffcf4a' }
+    SQUATS:     { main: '#8c5a2b', dark: '#4e3114', light: '#c58f53', trim: '#dcb64a', metal: '#8f959b', skin: '#e3b38a', accent: '#7a1f1f', lens: '#ffcf4a' },
+    // Space Marine chapters
+    SM_BLOOD_ANGELS:   { main: '#b3212b', dark: '#6b0f16', light: '#e2545c', trim: '#e2b53e', metal: '#9aa5b3', skin: '#e0b48c', accent: '#1c1c1f', lens: '#62e07c' },
+    SM_DARK_ANGELS:    { main: '#1f5c34', dark: '#0d3119', light: '#4f9160', trim: '#d9cfa4', metal: '#9aa5b3', skin: '#e0b48c', accent: '#a32b25', lens: '#ff4b3e' },
+    SM_SPACE_WOLVES:   { main: '#6f8498', dark: '#3c4a59', light: '#a6b7c8', trim: '#d8b44a', metal: '#9aa5b3', skin: '#e0b48c', accent: '#a8302a', lens: '#ffd75e' },
+    SM_BLACK_TEMPLARS: { main: '#24252c', dark: '#0e0f13', light: '#50525d', trim: '#ebe8df', metal: '#a2a9b3', skin: '#e0b48c', accent: '#b02a2a', lens: '#ff4b3e' },
+    SM_IRON_HANDS:     { main: '#27282e', dark: '#101115', light: '#575a63', trim: '#c3c8ce', metal: '#b7bcc2', skin: '#d9c2a8', accent: '#e6e6e6', lens: '#ff4b3e' },
+    SM_SALAMANDERS:    { main: '#2f7f34', dark: '#164718', light: '#68b86c', trim: '#1f1f22', metal: '#9aa5b3', skin: '#3a3a3a', accent: '#e07a1e', lens: '#ff4b3e' },
+    SM_WHITE_SCARS:    { main: '#e7e4da', dark: '#a8a397', light: '#ffffff', trim: '#b8262b', metal: '#9aa5b3', skin: '#d9b48c', accent: '#1c1c1f', lens: '#ff4b3e' },
+    SM_CRIMSON_FISTS:  { main: '#274f9f', dark: '#12295d', light: '#6f94da', trim: '#c0282c', metal: '#9aa5b3', skin: '#e0b48c', accent: '#c0282c', lens: '#ff4b3e' },
+    SM_CRIMSON_SUNS:   { main: '#9c1d2a', dark: '#5a0d16', light: '#d4505d', trim: '#e2b53e', metal: '#9aa5b3', skin: '#e0b48c', accent: '#1c1c1f', lens: '#ffd75e' },
+    SM_DESERT_LIONS:   { main: '#b59b63', dark: '#6f5a32', light: '#dcc897', trim: '#a33a2a', metal: '#a08a5c', skin: '#d9b48c', accent: '#a33a2a', lens: '#ff4b3e' },
+    SM_FLESH_EATERS:   { main: '#c42b2b', dark: '#761616', light: '#ef6b5f', trim: '#eeeeee', metal: '#9aa5b3', skin: '#e0b48c', accent: '#eeeeee', lens: '#ffd75e' },
+    SM_MENTOR_LEGION:  { main: '#2f8a5a', dark: '#155033', light: '#e9e5d9', trim: '#ece8dc', metal: '#b7bcc2', skin: '#e0b48c', accent: '#ece8dc', lens: '#7cf5ff' },
+    SM_RAPTOR_LEGION:  { main: '#566b3a', dark: '#2e3b1e', light: '#8ba363', trim: '#d6c9a0', metal: '#9aa5b3', skin: '#e0b48c', accent: '#1c1c1f', lens: '#ff4b3e' },
+    SM_SILVER_SKULLS:  { main: '#a9b0b8', dark: '#5c636b', light: '#e0e4e8', trim: '#222327', metal: '#c9ced3', skin: '#e0b48c', accent: '#b3262a', lens: '#ff3b30' }
   };
   const ORK_CLAN = { goff: '#3a3a3a', bad_moon: '#e0b52a', evil_sunz: '#c42a22', blood_axe: '#6b7a3e', deathskull: '#2f6fbf', snakebite: '#7a4b22' };
   const INK = 'rgba(8,10,14,0.88)';
@@ -42016,8 +42031,9 @@ const EpikArt = (() => {
     const t = `${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''} ${cfg.label || ''} ${cfg.textureKey || ''}`.toLowerCase().replace(/[_-]/g, ' ');
     const has = (...ws) => ws.some(w => t.includes(w));
     const book = cfg.armyBook || 'IMPERIUM';
+    const palKey = (cfg.palKey && PAL[cfg.palKey]) ? cfg.palKey : book;
     const pc = cfg.pinningClass || 1;
-    const R_ = (recipe, opts = {}, pal) => ({ recipe, opts, pal: pal || book });
+    const R_ = (recipe, opts = {}, pal) => ({ recipe, opts, pal: pal || palKey });
     const hq = /\b(hq|chq|command|warlord$|champion|leader|lord|commissar|exarch|colonel|warboss|nob)\b/.test(t) && pc === 1;
 
     // ----- characters ride in command vehicles but are drawn as the hero -----
@@ -42332,8 +42348,8 @@ const EpikArt = (() => {
     if (has('thunderer') && pc >= 2) return R_('tank', { turret: 'none', artillery: { len: 10, wid: 4.2 }, trackOver: true });
     if (has('chimedon')) return R_('tank', { turret: 'round', barrels: [[0, 10, 1.6]], hatches: [[0.5, 0.78]], trackOver: true });
     if (has('chimerro')) return R_('tank', { turret: 'box', barrels: [[-1, 7, 0.8], [1, 7, 0.8]], hatches: [[0.5, 0.78]], trackOver: true });
-    if (has('vulture')) return R_('flyer', { span: 0.44, engines: true, guns: true, wing: PAL[book].main, body: PAL[book].light });
-    if (has('valkyrie')) return R_('flyer', { fat: 2.4, span: 0.48, engines: true, wing: PAL[book].main, body: PAL[book].light });
+    if (has('vulture')) return R_('flyer', { span: 0.44, engines: true, guns: true, wing: PAL[palKey].main, body: PAL[palKey].light });
+    if (has('valkyrie')) return R_('flyer', { fat: 2.4, span: 0.48, engines: true, wing: PAL[palKey].main, body: PAL[palKey].light });
     if (has('scorpion anti')) return R_('artillery', { kind: 'quad', crew: 'none' });
     if (has('beastman')) return R_('squad', { fig: 'beast', n: 4 });
     if (has('terminator')) return R_('squad', { fig: 'terminator', n: 3, pad: has('grey knight') ? '#b8c2cc' : undefined, body: has('grey knight') ? '#8e9aa6' : undefined });
@@ -42350,8 +42366,8 @@ const EpikArt = (() => {
     if (has('chimera')) return R_('tank', { turret: 'box', barrels: [[0, 6, 1.1]], hatches: [[0.5, 0.75]], trackOver: true });
     if (has('rhino', 'command rhino')) return R_('tank', { turret: 'hatch', pintle: true });
     if (has('dreadnought', 'contemptor', 'deredeo', 'furioso', 'punisher', 'bjorn', 'scatolo', 'onager')) return R_('walkerDread', { flame: has('furioso', 'vulkan') });
-    if (has('sentinel')) return R_('walkerDread', { body: PAL[book].main });
-    if (has('speeder')) return R_('jetbike', { n: 1, hull: PAL[book].main, crest: false });
+    if (has('sentinel')) return R_('walkerDread', { body: PAL[palKey].main });
+    if (has('speeder')) return R_('jetbike', { n: 1, hull: PAL[palKey].main, crest: false });
     if (has('bike')) return R_('bike', { fig: 'marine', n: 2 });
     if (has('rough rider')) return R_('bike', { fig: 'guard', n: 3, horse: true });
     if (has('rapier', 'tarantula')) return R_('artillery', { kind: 'laser', crew: has('tarantula') ? 'none' : trooper });
@@ -42829,6 +42845,8 @@ class NetEpicScene extends Phaser.Scene {
   getUnitArtTexture(cfg) {
     if (!cfg || typeof EpikArt === 'undefined') return null;
     const clanKey = (cfg.armyBook === 'ORKS') ? this.getOrkClan(cfg).toLowerCase() : null;
+    const ch = cfg.armyBook === 'IMPERIUM' && cfg.faction && window.sideChapter ? window.sideChapter[cfg.faction] : null;
+    if (ch && ch !== 'CODEX') cfg = { ...cfg, palKey: 'SM_' + ch };
     const art = EpikArt.pick(cfg, clanKey ? EpikArt.ORK_CLAN[clanKey] : null);
     const w = cfg.baseW || 22, h = cfg.baseH || 22;
     const key = `art|${art.recipe}|${art.pal}|${w}x${h}|${JSON.stringify(art.opts)}`;
