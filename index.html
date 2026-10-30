@@ -40867,16 +40867,26 @@ const EpikTitans = {
   weaponCost(classId, w) { return (w.classCost && w.classCost[classId] !== undefined) ? w.classCost[classId] : (w.cost || 0); },
   // A weapon as a fireable salvo
   toSalvo(w, mount) {
-    const m = (w.dice == null && w.barrageBp == null && w.modes && w.modes[0]) ? { ...w, ...w.modes[0], name: `${w.name} (${w.modes[0].name})` } : w;
+    if (w.modes && w.modes.length) {
+      const ms = w.modes.map(md => ({ ...this.toSalvo1({ ...w, ...md, name: `${w.name} (${md.name})`, modes: undefined }, mount), modeName: md.name }));
+      if (ms.length === 1) return ms[0];
+      const bands = ms.every(x => /^\d+-\d+\s*cm$/i.test(x.modeName));
+      return { ...ms[0], modes: ms, modeIdx: 0, baseName: w.name, rangeBands: bands || undefined };
+    }
+    return this.toSalvo1(w, mount);
+  },
+  toSalvo1(w, mount) {
+    const m = w;
     let bp = m.barrageBp || null;
     if (!bp && m.bpText) { const q = /(\d*)D(\d+)\s*\+?\s*(\d*)/i.exec(m.bpText); bp = q ? Math.round((+q[1] || 1) * (+q[2] + 1) / 2 + (+q[3] || 0)) : null; }
     return {
       id: mount.id, mountId: mount.id, mount: mount.name, name: m.name,
       rangeCm: m.rangeCm || (bp ? 100 : 50), dice: bp || m.dice || 1, toHit: m.toHit || (bp ? 4 : 5), tsm: m.tsm || 0,
       penetrating: m.penetrating || 0, barrage: Boolean(bp), barrageBp: bp || undefined, indirect: Boolean(bp && w.artillery),
+      rangeRoll: m.rangeText || undefined, diceRoll: m.diceText ? 'ART' : undefined,
       isFlame: (/teardrop|flame/.test(m.template || '') && !w.fx) || undefined, ignoresCover: /teardrop|flame/.test(m.template || '') || w.ignoresCover || undefined,
       oneShot: w.oneShot || undefined, limitsOtherFire: w.limitsOtherFire || undefined, damagesBuildings: (m.tsm || 0) <= -2 || Boolean(bp) || Boolean(w.damagesBuildings), special: w.special || '',
-      ...Object.fromEntries(['fx', 'teardropCm', 'templates', 'scatterFirst', 'missiles', 'perTurn', 'firstFireOnly', 'bpRoll', 'diceRoll', 'arcDeg', 'unmodifiedSave', 'artillery'].filter(k => w[k] != null).map(k => [k, w[k]]))
+      ...Object.fromEntries(['fx', 'teardropCm', 'templates', 'scatterFirst', 'missiles', 'perTurn', 'firstFireOnly', 'bpRoll', 'diceRoll', 'arcDeg', 'unmodifiedSave', 'artillery', 'hits'].filter(k => w[k] != null).map(k => [k, w[k]]))
     };
   },
   // Does the game use this weapon yet? (a shot, a close-combat bonus or Point Defence)
@@ -48409,6 +48419,69 @@ class NetEpicScene extends Phaser.Scene {
     this.bringSalvoForward(det, hit);
     return true;
   }
+  // ===== Weapons with more than one profile =====
+  setSalvoMode(det, idx, mi) {
+    const sv = det && det.salvos && det.salvos[idx]; if (!sv || !sv.modes || !sv.modes[mi]) return;
+    const keep = { id: sv.id, mountId: sv.mountId, mount: sv.mount, modes: sv.modes, baseName: sv.baseName, rangeBands: sv.rangeBands, _rangeTurn: sv._rangeTurn, _rolledRange: sv._rolledRange };
+    Object.keys(sv).forEach(k => { delete sv[k]; });
+    Object.assign(sv, keep.modes[mi], keep, { modeIdx: mi });
+    if (keep._rolledRange) sv.rangeCm = keep._rolledRange;
+  }
+  modeSummary(m) {
+    const range = m.rangeRoll ? `${m.rangeCm} cm (70+D6×10)` : `${m.rangeCm} cm`;
+    const shots = m.barrage ? `💥 ${m.barrageBp} BP barrage` : `🎯 ${m.diceRoll === 'ART' ? 'artillery-die' : m.dice} shot${m.dice > 1 || m.diceRoll ? 's' : ''}`;
+    return `${shots}${m.hits ? ` (${m.hits} hits each)` : ''} · hit ${m.toHit}+ · TSM ${m.tsm} · ${range}${m.penetrating ? ` · Pen +${m.penetrating}` : ''}`;
+  }
+  modeHint(m) { return m.barrage ? 'best vs troops & light vehicles' : ((m.tsm || 0) <= -2 || m.penetrating || m.hits ? 'best vs armour & titans' : ''); }
+  // Range bands (Heat Lance) follow the distance; rolled ranges (Soopa-Blasta Kannon) are rolled once a turn
+  prepareSalvoModes(det, target) {
+    (det.salvos || []).forEach((sv, i) => {
+      if (sv.rangeRoll && sv._rangeTurn !== this.turn) {
+        const r = Phaser.Math.Between(1, 6), cm = 70 + r * 10; sv._rangeTurn = this.turn; sv._rolledRange = cm; sv.rangeCm = cm;
+        (sv.modes || []).forEach(m => { m.rangeCm = cm; });
+        this.log(`💨 <b>${det.name}</b>: ${sv.baseName || sv.name} builds up pressure (rolled ${r}): range <b>${cm} cm</b> this turn.`);
+      }
+      if (sv.rangeBands && target && target.stands.length) {
+        const c = this.getDetachmentCenter(det), d = Math.min(...target.stands.map(s => Phaser.Math.Distance.Between(c.x, c.y, s.container.x, s.container.y))) / PX_PER_CM;
+        let mi = sv.modes.findIndex(m => d <= m.rangeCm); if (mi < 0) mi = sv.modes.length - 1;
+        if (mi !== sv.modeIdx) this.setSalvoMode(det, i, mi);
+      }
+    });
+  }
+  // The computer: armour-piercing profiles against armour and titans, barrages against everything else
+  chooseAIModes(det, target) {
+    if (!target) return;
+    const armoured = target.isTitan || target.superHeavy || this.hasHitLocations(target) || (target.save || 7) <= 3;
+    const c = this.getDetachmentCenter(det), tc = this.getDetachmentCenter(target), d = Phaser.Math.Distance.Between(c.x, c.y, tc.x, tc.y) / PX_PER_CM;
+    (det.salvos || []).forEach((sv, i) => {
+      if (!sv.modes || sv.rangeBands) return;
+      const ok = sv.modes.map((m, mi) => ({ m, mi })).filter(x => x.m.rangeCm >= d);
+      const pool = ok.length ? ok : sv.modes.map((m, mi) => ({ m, mi }));
+      const pick = armoured ? pool.reduce((a, b) => ((b.m.tsm || 0) - (b.m.penetrating || 0) < (a.m.tsm || 0) - (a.m.penetrating || 0) ? b : a))
+        : (pool.find(x => x.m.barrage) || pool.reduce((a, b) => ((b.m.dice || 0) > (a.m.dice || 0) ? b : a)));
+      if (pick.mi !== sv.modeIdx) this.setSalvoMode(det, i, pick.mi);
+    });
+  }
+  renderModePicker() {
+    let el = document.getElementById('mode-picker');
+    const det = this.activatingDetachment;
+    const sv = det && /^COMBAT_(FIRST|ADVANCE)$/.test(this.phase) && !det.fired && !this.isFactionAI(det.faction) && det.salvos && det.salvos[det.salvosFired || 0];
+    if (!sv || !sv.modes) { if (el) el.style.display = 'none'; return; }
+    if (!el) { const sp = document.getElementById('salvo-picker'); if (!sp) return; el = document.createElement('div'); el.id = 'mode-picker'; el.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:4px'; sp.parentNode.insertBefore(el, sp.nextSibling); }
+    const idx = det.salvosFired || 0;
+    if (sv.rangeBands) {
+      el.innerHTML = `<div style="font-size:0.64rem;color:#cbd5e1;line-height:1.35">🔥 ${sv.baseName}: profile set by range — ${sv.modes.map((m, mi) => `<span style="color:${mi === sv.modeIdx ? '#fde047' : '#94a3b8'};font-weight:${mi === sv.modeIdx ? 800 : 500}">${m.modeName}: hit ${m.toHit}+ TSM ${m.tsm}${m.penetrating ? ' Pen +' + m.penetrating : ''}</span>`).join(' · ')}</div>`;
+    } else {
+      el.innerHTML = `<span style="font-size:0.66rem;color:#94a3b8;align-self:center">${sv.baseName}:</span>` + sv.modes.map((m, mi) => {
+        const on = mi === sv.modeIdx, hint = this.modeHint(m);
+        return `<button data-mi="${mi}" style="text-align:left;padding:4px 7px;border-radius:7px;border:1px solid ${on ? '#facc15' : '#334155'};background:${on ? '#854d0e' : '#1e293b'};color:#f8fafc;flex:1 1 140px;min-width:0">
+          <div style="font-size:0.7rem;font-weight:800">${on ? '● ' : ''}${m.modeName}</div><div style="font-size:0.6rem;font-weight:500;color:#e2e8f0">${this.modeSummary(m)}</div>${hint ? `<div style="font-size:0.58rem;color:#fde68a">${hint}</div>` : ''}</button>`;
+      }).join('');
+      el.querySelectorAll('button[data-mi]').forEach(b => b.onclick = () => { this.setSalvoMode(det, idx, +b.dataset.mi); this.updateUI(); this.drawOverlays(); });
+    }
+    el.style.display = 'flex';
+  }
+
   selectSalvo(idx) {
     const det = this.activatingDetachment; if (!det) return;
     this.bringSalvoForward(det, idx);
@@ -51554,6 +51627,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // Evaluate all stands from firerDet shooting at targetDet (supports both Direct Fire and 6cm Artillery Barrage Templates!)
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
+    if (firerDet && firerDet.salvos && firerDet.salvos.some(sv => sv.modes || sv.rangeRoll)) this.prepareSalvoModes(firerDet, targetDet);
     if (!firerDet || !targetDet || firerDet.embarkedOn || targetDet.embarkedOn || firerDet.inReserve || targetDet.inReserve) {
       return { validPairs: [], isSnapFire, isBarrage: Boolean(firerDet && firerDet.weapon && firerDet.weapon.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     }
@@ -51970,12 +52044,24 @@ class NetEpicScene extends Phaser.Scene {
                 continue;
               }
               if (this.hasHitLocations(targetDet)) {
-                const tr = this.applyTitanHit(targetDet, victimRef, { aimed: true, tsm: curWpn.tsm, pen: curWpn.penetrating || 0, template: Boolean(curWpn.isFlame), from: { x: pair.shooter.container.x, y: pair.shooter.container.y } });
-                if (tr.saved) saves++;
-                if (tr.destroyed) kills++;
+                const nHits = curWpn.hits === 'D6' ? Phaser.Math.Between(1, 6) : 1; // e.g. Pulse Laser volley: D6 hits for each hit
+                if (nHits > 1) this.log(`⚡ <b>${curWpn.name}</b>: the hit splits into <b>${nHits} hits</b>.`);
+                for (let hh = 0; hh < nHits && targetDet.stands.length; hh++) {
+                  const tr = this.applyTitanHit(targetDet, victimRef, { aimed: true, tsm: curWpn.tsm, pen: curWpn.penetrating || 0, template: Boolean(curWpn.isFlame), from: { x: pair.shooter.container.x, y: pair.shooter.container.y } });
+                  if (tr.saved) saves++;
+                  if (tr.destroyed) { kills++; break; }
+                }
                 continue;
               }
 
+              if (curWpn.hits === 'D6') { // the extra hits land on the nearest other stands
+                const extra = Phaser.Math.Between(1, 6) - 1, from = { x: pair.shooter.container.x, y: pair.shooter.container.y };
+                for (let hh = 0; hh < extra; hh++) {
+                  const others = targetDet.stands.filter(s => s !== victimRef && !casualtiesToDestroy.includes(s)); if (!others.length) break;
+                  const s2 = others.reduce((a, b) => Phaser.Math.Distance.Between(vx, vy, b.container.x, b.container.y) < Phaser.Math.Distance.Between(vx, vy, a.container.x, a.container.y) ? b : a);
+                  this.blastHitStand(targetDet, s2, curWpn.tsm || 0, from);
+                }
+              }
               const saveRoll = Phaser.Math.Between(1, 6);
               const garrisoned = victimRef && this.isStandGarrisoned(victimRef);
               const baseSave = garrisoned ? Math.min(targetDet.save, 4) : targetDet.save;
@@ -53790,6 +53876,7 @@ class NetEpicScene extends Phaser.Scene {
     const aiTsm = aiWpn ? (aiWpn.tsm || 0) : 0;
 
     enemies.forEach(eDet => {
+      this.chooseAIModes(firer, eDet);
       const sol = this.evaluateFireSolution(firer, eDet, false);
       if (sol.validPairs.length > 0) {
         const hitPotential = sol.isBarrage ? (sol.templateTargets ? sol.templateTargets.length : 1) : sol.validPairs.length;
@@ -53810,6 +53897,8 @@ class NetEpicScene extends Phaser.Scene {
 
     if (bestTarget) {
       this.targetDetachment = bestTarget;
+      this.chooseAIModes(firer, bestTarget);
+      { const sv = firer.salvos && firer.salvos[firer.salvosFired || 0]; if (sv && sv.modes && !sv.rangeBands) this.log(`🤖 <b>${firer.name}</b> loads <b>${sv.modeName}</b> for ${sv.baseName} (${this.modeSummary(sv)}).`); }
       const fc = this.getDetachmentCenter(firer);
       const tc = this.getDetachmentCenter(bestTarget);
       this.panCameraBetween(fc, tc, 650);
@@ -55597,6 +55686,7 @@ class NetEpicScene extends Phaser.Scene {
     const r = this._updateUICore();
     try { this.renderSalvoPicker(); } catch (e) {}
     try { this.renderTitanAimPanel(); } catch (e) {}
+    try { this.renderModePicker(); } catch (e) {}
     return r;
   }
 
