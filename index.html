@@ -15146,15 +15146,17 @@ const UNIT_CATALOG = {
           "id": "ork_bb_bs"
         },
         {
-          "name": "Heavy Bomb Racks",
-          "rangeCm": 10,
+          "name": "Heavy Bomb Racks (bomb run)",
+          "rangeCm": 15,
           "dice": 6,
           "toHit": 4,
           "tsm": -1,
           "id": "ork_bb_bombs",
           "barrage": true,
           "barrageBp": 6,
-          "damagesBuildings": true
+          "damagesBuildings": true,
+          "fx": "bombrun",
+          "notes": "Templates by the Bomma, scatter 2D6, +D3 touching. Artillery die BP; Misfire = 10 BP and out of bombs."
         }
       ]
     },
@@ -47020,7 +47022,7 @@ class NetEpicScene extends Phaser.Scene {
     this._mimes = {}; this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
-    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); } catch (e) { console.error(e); }
+    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); } catch (e) { console.error(e); }
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
     this.applyCraftworldAtSpawn();
@@ -48172,7 +48174,7 @@ class NetEpicScene extends Phaser.Scene {
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     this._attacker = firerDet;
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
-    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|shokk|hopsplat|squigs|destrukta/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
+    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|shokk|hopsplat|squigs|destrukta|bombrun/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
     const sol = this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (!sol.validPairs.length) return stop(`⚠️ <b>${firerDet.name}</b> can't bring the ${wpn.name} to bear on <b>${targetDet.name}</b>.`);
@@ -48299,7 +48301,7 @@ class NetEpicScene extends Phaser.Scene {
         title = '🧲 Supa Lifta-Droppa'; desc = 'Hit 4+ · save at -4 · failed models are lifted and dropped on others';
         break;
       }
-      case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': case 'woofer': case 'shokk': case 'traktor': case 'doomdiver': case 'hopsplat': case 'squigs': case 'kshoota': case 'bubble': case 'destrukta': case 'kkannon': case 'liftone': {
+      case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': case 'woofer': case 'shokk': case 'traktor': case 'doomdiver': case 'hopsplat': case 'squigs': case 'kshoota': case 'bubble': case 'destrukta': case 'kkannon': case 'liftone': case 'bombrun': {
         const h = this.eldSpecialFx(wpn.fx, { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter, isSnapFire });
         if (!h) return stop(`⚠️ ${wpn.name}: nothing to fire.`);
         title = h.title; desc = h.desc; break;
@@ -48549,7 +48551,7 @@ class NetEpicScene extends Phaser.Scene {
   standCover(stand) { return this.isStandGarrisoned(stand) ? this.buildingCover(this.getBuildingAt(stand.container.x, stand.container.y)) : this.terrainCover(stand); }
   // Medics (infantry, cavalry) and mechanics (walkers, vehicles, superheavies) within 10 cm: an unmodified 5+ roll
   // saves a model that just died; each healer can try 5 times a turn (core p. 33)
-  tryHealerSave(vDet, stand, out) {
+  tryHealerSaveOrkCore(vDet, stand, out) {
     if (!vDet || !stand || this.hasHitLocations(vDet)) return false;
     const mech = vDet.superHeavy || vDet.isVehicle || ((vDet.pinningClass || 1) >= 2 && /walker|dreadnought|sentinel|\bkans?\b|tank|vehicle/i.test(vDet.name || ''));
     const need = mech ? 'mechanic' : 'medic';
@@ -50517,6 +50519,8 @@ class NetEpicScene extends Phaser.Scene {
     if (firer && firer.eldGuide === this.turn) need -= 1;
     if (firer && this.tourNear(firer)) need += 1; // excessive head banging
     if (target && target.witchSight === this.turn) need += 1;
+    if (target && this.orkHas(target, 'AFTABURNAS')) need += 1;
+    if (firer && firer.rokkitDaze === this.turn) need += 1; // shaky Supa Rokkit landing
     if (this.eldDoomActive(target)) need = Math.min(need, 3);
     return need;
   }
@@ -50672,6 +50676,12 @@ class NetEpicScene extends Phaser.Scene {
     if (me.madState === 'TANK') { dice += 2; tags.push('🤪 Get da tank: double dice'); }
     if (this.tourNear(me)) { caf += 1; tags.push('🎸 Goffik Rok +1'); }
     if (this.isGrots(me) && this.detachments.some(r => r.faction === me.faction && this.orkIs(r, /runtherd/i) && r.stands.length && this.orkNear(me, r, 5))) { const up = Math.max(0, 1 - (me.caf || 0)); if (up) { caf += up; tags.push('🐀 Runtherd: CAF +1'); } }
+    if (me.rokkitBoost === this.turn) { caf += 1; tags.push('🚀 Rokkit landing +1'); }
+    if (me.order === 'CHARGE' && this.orkHas(me, 'SPIKY')) { caf += 2; tags.push('🔧 Xtra-Spiky +2'); }
+    if (me.order === 'CHARGE' && this.orkHas(me, 'CYBOARS')) { dice += 1; tags.push('🔧 Cyboars +1D6'); }
+    if (this.orkHas(me, 'FLITE_SOOTS')) { const f = Phaser.Math.Between(1, 3); caf += f; tags.push(`🔧 Flite Soots +${f}`); }
+    if (this.orkHas(me, 'STIKKBOMZ')) { dice += 1; tags.push('🔧 Super Stikkbomz +1D6'); }
+    if (myStand.traktorHeld) { zero = true; tags.push('🧲 Held: base CAF only'); }
     const base = me.caf || 0;
     if (this.eldDoomActive(me)) { caf -= Math.floor(base / 2); tags.push('💀 Doom: CAF halved'); }
     const fx = this._eldBout && this._eldBout.get(myStand);
@@ -50722,6 +50732,7 @@ class NetEpicScene extends Phaser.Scene {
     }
     const rolla = det && det.deathrolla ? det.stands.map(s => [s, s.originX != null ? s.originX : s.container.x, s.originY != null ? s.originY : s.container.y]) : null;
     const spider = det && this.eldWarpSpider(det) ? det.stands.map(s => [s, s.originX != null ? Math.hypot(s.container.x - s.originX, s.container.y - s.originY) : 0]) : null;
+    if (det) { det._moveFrom = new Map(det.stands.map(s => [s, { x: s.originX != null ? s.originX : s.container.x, y: s.originY != null ? s.originY : s.container.y }])); det._moveTurn = this.turn; }
     const r = this.confirmDetachmentMoveCore();
     if (spider && det.moved) { // Warp Spiders: a stand that jumps more than 15 cm is lost in the warp on a 1
       const far = spider.filter(([s, d]) => d > 15 * PX_PER_CM && det.stands.includes(s));
@@ -50735,11 +50746,12 @@ class NetEpicScene extends Phaser.Scene {
       try { this.orkGrotsFollow(det); if (rolla) this.orkDeathrolla(det, rolla); } catch (e) { console.error(e); }
       if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
       if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
+      try { this.orkAfterMove(det, det._moveFrom); } catch (e) { console.error(e); }
     }
     return r;
   }
   checkCoherency(det) {
-    const off = det && det.stands.filter(s => s.psyLock || s.stunned === this.turn);
+    const off = det && det.stands.filter(s => s.psyLock || s.stunned === this.turn || s.traktorHeld);
     if (!off || !off.length || off.length >= det.stands.length) return this.checkCoherencyCore(det);
     const all = det.stands; det.stands = all.filter(s => !off.includes(s));
     try { return this.checkCoherencyCore(det); } finally { det.stands = all; }
@@ -50748,7 +50760,7 @@ class NetEpicScene extends Phaser.Scene {
     if ((targetDet && targetDet.madState === 'DEAD') || (firerDet && this.orkMadIdle(firerDet))) return { validPairs: [], isSnapFire, isBarrage: false, templateTargets: [], totalBp: 0, isIndirect: false };
     if (isSnapFire && firerDet) { // weapons that can't snap fire are never offered for it
       const w = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
-      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
+      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta|bombrun/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
         return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     }
     return this.eldWaveFilter(firerDet, targetDet, this.evaluateFireSolutionEld(firerDet, targetDet, isSnapFire));
@@ -50762,6 +50774,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
     if (firerDet && firerDet.eldLock) this.eldReleaseLock(firerDet, 'opens fire');
+    if (firerDet && this.orkHas(firerDet, 'AFTABURNAS')) firerDet.stands.slice().forEach(s => { if (Phaser.Math.Between(1, 6) === 1) { this.log(`💥 One of <b>${firerDet.name}</b> overdoes the aftaburnas and ploughs into the ground!`); this.time.delayedCall(500, () => { if (firerDet.stands.includes(s)) { this.removeCasualty(firerDet, s, 0, true); this.checkBreakPoint(firerDet); } }); } });
     if (firerDet && this.isWeirdboy(firerDet) && (firerDet.weirdEnergy || 0) > 0 && this.tourNear(firerDet) && Phaser.Math.Between(1, 6) >= 5) { this.log(`🎸💥 <b>${firerDet.name}</b> is too close to the Goffik Rok: his head explodes!`); this.time.delayedCall(600, () => { firerDet.stands.slice().forEach(s => this.removeCasualty(firerDet, s, 0, true)); this.checkBreakPoint(firerDet); }); }
     return this.markFirerAfterShotCore(firerDet, pairs, split, salvosUsed);
   }
@@ -50812,7 +50825,7 @@ class NetEpicScene extends Phaser.Scene {
     const { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter } = c, R = BARRAGE_RADIUS_PX;
     S.lines = S.lines || [];
     if (fx === 'woofer') return this.orkWoofer(c);
-    if (/^(shokk|traktor|doomdiver|hopsplat|squigs|kshoota|bubble|destrukta|kkannon|liftone)$/.test(fx)) return this.orkSpecialFx(fx, c);
+    if (/^(shokk|traktor|doomdiver|hopsplat|squigs|kshoota|bubble|destrukta|kkannon|liftone|bombrun)$/.test(fx)) return this.orkSpecialFx(fx, c);
     if (fx === 'vibro') {
       opts._pairs = sol.validPairs; S.color = 0xfbbf24;
       let n = 0; const rolls = [];
@@ -51096,6 +51109,7 @@ class NetEpicScene extends Phaser.Scene {
     const ms = this.phase === 'ORDERS' ? this.mimeSide() : null;
     if (ms && det && det.faction !== ms && det.stands.length) btns.push(`<button class="btn-primary" style="background:#a21caf" onclick="window.gameScene.playMasterMimeSelected()">🎭 Master Mime on ${this.shortName(det.name, 16)} (${this._mimes[ms]})</button>`);
     else if (ms) btns.push(`<span style="font-size:0.66rem;color:#f0abfc;align-self:center">🎭 Master Mime ready (${this._mimes[ms]}): tap an enemy detachment to play it</span>`);
+    try { this.orkExtraButtons(det, btns); } catch (e) { console.error(e); }
     if (!btns.length) { if (row) row.style.display = 'none'; return; }
     if (!row) {
       const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls'); if (!anchor) return;
@@ -51141,7 +51155,8 @@ class NetEpicScene extends Phaser.Scene {
     return null;
   }
   getEffectiveMoveCm(det) {
-    const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det); // Mekboy Speedstas: +2D6 cm
+    if (det && (this.isLanda(det) || this.isRokkit(det))) return 0; // grounded Landas and Rokkit launchers never move
+    const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det) + this.orkKustomMove(det); // Mekboy Speedstas: +2D6 cm
     return (det && det.order === 'CHARGE' && this.eldWarpSpider(det)) ? mv / 2 : mv; // their move is a maximum: no doubling on a charge
   }
   isStandPinned(stand) { return stand && stand.detachment && this.eldWarpSpider(stand.detachment) ? false : this.isStandPinnedCore(stand); }
@@ -51374,6 +51389,7 @@ class NetEpicScene extends Phaser.Scene {
       if (this.isMegaSquiggoth(d) && d.megaWounds == null) d.megaWounds = 3;
       if (this.isSpeedsta(d) && !/dragsta/i.test(d.name || '')) Object.defineProperty(d, 'save', { get: () => [1, 1, 2, 2, 3, 3][Phaser.Math.Between(0, 5)], set: () => {}, configurable: true, enumerable: true }); // Mekboy kustom force fields
     });
+    this.detachments.forEach(d => { try { this.orkKustomApply(d); } catch (e) { console.error(e); } });
   }
   // A Weirdboy's psychic bolts depend on the power he soaked up last End Phase
   orkBolt(e) {
@@ -51472,6 +51488,7 @@ class NetEpicScene extends Phaser.Scene {
   // ---- turn start (once per Orders Phase) ----
   orkTurnStart() {
     if (this._orkTurnStart === this.turn) return; this._orkTurnStart = this.turn;
+    try { this.orkTraktorTurn(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length) return;
       if (d.instinct === 'WOOFED' && d.woofedTurn !== this.turn) { d.instinct = null; d.order = null; d.orderRevealed = false; }
@@ -51488,6 +51505,7 @@ class NetEpicScene extends Phaser.Scene {
   // ---- orders locked (finishOrdersPhase) ----
   orkFinishOrders() {
     try { this.orkMoveSwarms(); } catch (e) { console.error(e); }
+    try { this.orkRokkitsCompulsory(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length) return;
       if (d.instinct === 'WOOFED') { d.moved = true; d.fired = true; }
@@ -51657,9 +51675,17 @@ class NetEpicScene extends Phaser.Scene {
   // ---------- wrappers (Orks round 2) ----------
   testMoraleCore(det, reason = '') {
     if (this.isMadboyz(det) && det.stands.length) { this.orkMadRoll(det, reason || 'morale test'); return true; }
+    if (det && det.stands.length && this.isOrk(det) && this.detachments.some(o => o !== det && o.faction === det.faction && o.stands.length && this.orkHas(o, 'SOUNDZ') && this.orkNear(det, o, 10))) {
+      det.morale -= 1; try { return this.testMoraleOrkCore(det, (reason ? reason + ', ' : '') + 'Soundz +1'); } finally { det.morale += 1; }
+    }
     return this.testMoraleOrkCore(det, reason);
   }
   failMorale(det) {
+    if (det && this.isLanda(det) && det.stands.length) {
+      this.log(`💥 <b>${det.name}</b>'s crew panic and wreck it trying to take off!`);
+      if (det.passengerDet) { const c = this.getDetachmentCenter(det); this.disembarkDetachment(det, c.x, c.y); }
+      det.stands.slice().forEach(s => this.removeCasualty(det, s, 0, true)); return;
+    }
     if (this.isOrkDread(det) && det.order !== 'FALL_BACK' && det.stands.length) {
       det.order = ['FIRST_FIRE', 'FIRST_FIRE', 'ADVANCE', 'ADVANCE', 'CHARGE', 'CHARGE'][Phaser.Math.Between(0, 5)]; det.orderRevealed = true;
       this.log(`🤖 <b>${det.name}</b> would fall back, but its Gretchin pilots panic and pick <b>${this.eldOrderName(det.order)}</b> orders instead.`);
@@ -51671,6 +51697,7 @@ class NetEpicScene extends Phaser.Scene {
   isFearlessUnit(det) { return this.isFearlessUnitOrkCore(det) || this.tourNear(det); }
   psychicSaveOf(det) { const b = this.psychicSaveOfOrkCore(det); return this.tourNear(det) ? Math.min(b || 7, 4) : b; }
   removeCasualty(det, specificStand = null, weaponTsm = 0, isMeltdown = false, opts = {}) {
+    { const s0 = det && (specificStand || det.stands[det.stands.length - 1]); if (s0 && s0.traktorHeld) { s0.traktorHeld = null; det.casualties = Math.max(0, (det.casualties || 0) - 1); } }
     if (det && this.isOrk(det)) {
       if (this.isMadboyz(det)) det._madHit = true;
       const s = specificStand || det.stands[det.stands.length - 1];
@@ -51731,7 +51758,7 @@ class NetEpicScene extends Phaser.Scene {
       opts._pairs = sol.validPairs; S.color = 0x22c55e;
       const herd = this.detachments.some(r => r.faction === firerDet.faction && this.orkIs(r, /runtherd/i) && r.stands.length && this.orkNear(firerDet, r, 5));
       const fight = (d, s, how) => {
-        if (d.isFlyer || d.flyer) { S.notes.push(`${how}: the snotlings can't reach a flier`); return; }
+        if (d.isFlyer || d.flyer || d.skimmer || d.poppedUp) { S.notes.push(`${how}: the snotlings can't reach ${d.name} in the air`); return; }
         const a = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + (herd ? Phaser.Math.Between(1, 3) : 0), b = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + (d.caf || 0);
         S.hitDice.push({ val: a, cls: a > b ? 'die-pass' : 'die-fail', tip: `Snotlings ${a} v ${d.name} ${b}` });
         if (a > b) {
@@ -51762,7 +51789,9 @@ class NetEpicScene extends Phaser.Scene {
       });
       return { title: '🐀 Shokk Attack Gun', desc: 'Scatter die + 2D6 per gun: HIT + double = target destroyed, HIT = snotlings fight it (2D6 v 2D6 + CAF), arrow = they land 2D6 cm away and attack whatever is within 5 cm' };
     }
-    if (fx === 'traktor') {
+    if (fx === 'bombrun') return this.orkBombRun(c);
+    if (fx === 'traktor') return this.orkTraktorFx(c);
+    if (fx === 'traktor_old') {
       opts._pairs = sol.validPairs; S.color = 0x60a5fa;
       sol.validPairs.forEach(p => {
         const t = this.orkLiveStand(targetDet, p.target, S); if (!t) return;
@@ -51785,7 +51814,7 @@ class NetEpicScene extends Phaser.Scene {
         const h = this.rollNeed(wpn.toHit || 5); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: `Doomdiver ${wpn.toHit || 5}+` });
         if (!h.ok) return; S.hits++;
         if (air && !targetDet.superHeavy && !this.hasHitLocations(targetDet)) { if (this.orkSave(targetDet, -2, S, 'save at -2')) S.saves++; else { S.notes.push(`${targetDet.name} smashes into the ground`); this.orkKill(S, targetDet, t); } }
-        else if (isSnapFire && !targetDet.superHeavy && !this.hasHitLocations(targetDet)) { targetDet.doomStopped = this.turn; S.notes.push(`${targetDet.name} is knocked off course and stops`); }
+        else if (isSnapFire && !targetDet.superHeavy && !this.hasHitLocations(targetDet)) { S.notes.push(this.orkDoomStop(targetDet, firerDet, wpn) ? `${targetDet.name} is knocked off course and stops where it was hit` : `${targetDet.name} is knocked off course`); targetDet.doomStopped = this.turn; }
         else S.notes.push(`${targetDet.name} shrugs off the Gretchin pilot`);
       });
       return { title: '🎯 Doomdiver Magna-Kannon', desc: 'Fliers and skimmers it hits save at -2 or crash · ground targets: no effect (a snap fire hit stops them) · nothing bigger than a super-heavy is hurt' };
@@ -51834,6 +51863,7 @@ class NetEpicScene extends Phaser.Scene {
     if (fx === 'bubble') {
       opts._pairs = sol.validPairs.slice(0, 1);
       targetDet.bubbledTurn = this.turn;
+      { const bw = this.orkBubbleNominate(firerDet, targetDet); if (bw) S.notes.push(`the bubble wraps its ${bw}`); }
       S.templates.push({ x: aim.container.x, y: aim.container.y, color: 0x67e8f9, small: true });
       S.notes.push(`${targetDet.name} is wrapped in a force bubble: if it fires this turn, a scatter-die HIT bounces its shots back on itself`);
       return { title: '🫧 Bubble Chukka', desc: 'The target\'s next shooting this turn rebounds on it on a scatter-die HIT (shields don\'t help)' };
@@ -51855,6 +51885,7 @@ class NetEpicScene extends Phaser.Scene {
     if (fx === 'liftone') {
       opts._pairs = sol.validPairs.slice(0, 1); S.color = 0x4ade80;
       if (this.hasHitLocations(targetDet)) { S.notes.push(`${targetDet.name} is far too big to pick up`); return { title: '🧲 Lifta-Droppa', desc: 'Titans can\'t be lifted' }; }
+      if (targetDet.superHeavy) { this.orkLiftSuper(c); return { title: '🧲 Lifta-Droppa', desc: 'Super-heavy: hit 4+, then a 6 lifts and drops it; anything else holds it still this turn' }; }
       const before = S.casualties.length;
       this.specialHit(S, targetDet, aim, { need: wpn.toHit || 4, tsm: wpn.tsm || -4 });
       if (S.casualties.length > before) this.dropLiftedModel(S, targetDet, aim, F);
@@ -51939,7 +51970,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   // The Bubble Chukka: a bubbled unit's shots may bounce back on itself
   executeRangedAttack(firerDet, targetDet, isSnapFire = false, opts = {}) {
-    if (firerDet && firerDet.bubbledTurn === this.turn && !isSnapFire && !opts._bubbleDone) {
+    if (firerDet && firerDet.bubbledTurn === this.turn && !isSnapFire && !opts._bubbleDone && !this.orkBubbleOther(firerDet)) {
       firerDet.bubbledTurn = null;
       const hit = Phaser.Math.Between(1, 6) <= 2;
       if (hit) {
@@ -51948,7 +51979,7 @@ class NetEpicScene extends Phaser.Scene {
         this.log(`🫧 <b>${firerDet.name}</b> fires inside the force bubble: the shots bounce straight back (${n} hit${n > 1 ? 's' : ''} at ${tsm})!`);
         for (let i = 0; i < n && firerDet.stands.length; i++) {
           const s = Phaser.Utils.Array.GetRandom(firerDet.stands);
-          if (this.hasHitLocations(firerDet)) this.applyTitanHit(firerDet, s, { tsm, from: { x: s.container.x, y: s.container.y - 10 } });
+          if (this.hasHitLocations(firerDet)) this.applyTitanHit(firerDet, s, { tsm, location: firerDet.bubbledWid || undefined, from: { x: s.container.x, y: s.container.y - 10 } });
           else if (!this.orkSave(firerDet, tsm, null)) { if (firerDet.superHeavy) this.applySuperHeavyDamage(firerDet, s, false); else this.removeCasualty(firerDet, s, tsm, false); }
         }
         this.checkBreakPoint(firerDet);
@@ -51959,6 +51990,455 @@ class NetEpicScene extends Phaser.Scene {
       this.log(`🫧 The force bubble around <b>${firerDet.name}</b> fizzles: it fires normally.`);
     }
     return this.executeRangedAttackOrkCore(firerDet, targetDet, isSnapFire, opts);
+  }
+
+  // ===== ORKS round 4: Landa, Supa Rokkit Trans'ort, Blasta Bomma, Mekboy Kustom cards =====
+  // ---- Squadrons whose models act alone: Renegade Mekboyz (each Speedsta its own kustom weapon), Landa and Supa Rokkit squadrons ----
+  orkSplitSquadrons() {
+    const MAP = [[/bubble/i, 'card_ork_bubble_chukka'], [/destrukta/i, 'card_ork_destrukta_rokkits'], [/dragsta/i, 'card_ork_dragsta'], [/kannon/i, 'card_ork_kustom_kannon'], [/lifta/i, 'card_ork_lifta_droppa']];
+    const RULES = [
+      { key: 'card_ork_renegade_mekboyz', per: 1, tpl: s => { const m = MAP.find(([re]) => re.test(s.label || '')); return m ? m[1] : 'card_ork_kustom_kannon'; }, name: (t, i) => `Renegade ${t.name.replace(/^Mekboy /, '').replace(/ Speedsta$/, '')} ${i + 1}`, clan: 'RENEGADE' },
+      { key: 'card_ork_landa', per: 1, tpl: () => 'card_ork_landa_single', name: (t, i) => `Landa ${i + 1}` },
+      { key: 'card_ork_supa_transport_rokkit', per: 2, tpl: () => 'card_ork_supa_rokkit_single', name: (t, i) => `Supa Rokkit ${i + 1}` }];
+    RULES.forEach(R => {
+      const card = window.findCatalogUnit(R.key); if (!card) return;
+      const groups = {};
+      this.detachments.filter(d => this.isOrk(d) && (d.key === R.key || d.companyCardKey === R.key) && d.stands.length > R.per && !d.passengerDet).forEach(d => {
+        const coId = d.companyCardId || d.id.replace(/_sub_\d+$/, '') + '_co';
+        groups[coId] = groups[coId] || 0;
+        for (let i = 0; i < d.stands.length; i += R.per) {
+          const grp = d.stands.slice(i, i + R.per), s0 = grp[0], tpl = window.findCatalogUnit(R.tpl(s0)); if (!tpl) continue;
+          const n = groups[coId]++;
+          const nd = this.createDetachment({ ...tpl, id: `${d.id}_m${i}`, faction: d.faction, armyBook: 'ORKS', name: R.name(tpl, n), standsCount: R.per, startX: s0.container.x, startY: s0.container.y,
+            companyCardId: coId, companyCardKey: R.key, companyName: card.cardName || card.name, companyBreakPoint: card.breakPoint, companyVpValue: card.vpValue, companyMorale: card.morale, companyTotalStands: card.standsCount, isCompanyDetachment: true, orkClan: R.clan || d.orkClan });
+          if (!nd) continue;
+          nd.order = d.order; if (R.clan) { nd.orkClan = R.clan; nd.cfg.orkClan = R.clan; }
+          nd.stands.forEach((s, k) => { const o = grp[k]; if (!o) return; s.container.x = s.originX = o.container.x; s.container.y = s.originY = o.container.y; if (o.facingRad != null) this.setStandFacing(s, o.facingRad); });
+          this.updateDetachmentBadgePos(nd);
+        }
+        d.stands.forEach(s => s.container.destroy()); d.stands = []; if (d.badge) d.badge.destroy();
+        this.detachments = this.detachments.filter(x => x !== d);
+      });
+    });
+  }
+  // ---- Mekboy Kustom Repair cards (Ork book pp. 37-38): 2 per Mekboy unit, drawn at random, given to fitting units ----
+  orkKustomDeck() {
+    const veh = d => !d.isTitan && !d.isFlyer && !d.flyer && (d.pinningClass || 1) >= 2 && !/bike|boar|wyvern|squiggoth|kan\b|kans|dread|onslaught|stompa|tinbot|kopta|copter/i.test(d.name || '');
+    const wheeled = d => veh(d) && /buggy|trukk|wagon|bowelburna|gobsmasha|spleenrippa|scorcher|bonecruncha|bonebreaka|speedsta|dragsta/i.test(d.name || '');
+    const nobz = d => this.isOrkNob(d) && (d.pinningClass || 1) === 1;
+    const boyz = d => (d.pinningClass || 1) === 1 && /boyz/i.test(d.name || '') && !/nobz|wild|boar|storm|mad|grot/i.test(d.name || '');
+    const bikes = d => /bike/i.test(d.name || '');
+    return [
+      { id: 'RED_PAINT', name: 'Red Paint Job', fit: veh, txt: 'go D6 cm faster whenever they move' },
+      { id: 'SUPAPOWA', name: 'Supapowa Armor', fit: nobz, txt: 'a 6+ save that is never modified' },
+      { id: 'FORCE_FIELD', name: 'Kustom Force Field', fit: veh, txt: 'an extra 2+ save' },
+      { id: 'BIG_WHEELS', name: 'Xtra-Big Wheels', fit: wheeled, txt: 'triple move on Charge, but a vehicle crashes on a 1' },
+      { id: 'SQUIG_FUEL', name: 'Squig Fuel Injector', fit: d => veh(d) || bikes(d), txt: '+5D6 cm boost after a charge; 21+ shakes a vehicle apart' },
+      { id: 'ROCKET_PACKS', name: 'Rocket Packs', fit: d => /freebooter|madboy/i.test(d.name || ''), txt: '+10 cm and ignore terrain, but they scatter D6 cm and may crash' },
+      { id: 'BIG_GUNS', name: 'Big Guns', fit: d => veh(d) || boyz(d), txt: 'an extra -1 to the target\'s save; a 1 to hit risks a misfire' },
+      { id: 'BIONIK', name: 'Bionik Bitz', fit: nobz, txt: '+D6 CAF and a 6+ fixed save (a 6 turns a Nob into a Madboy)' },
+      { id: 'SPIKY', name: 'Xtra-Spiky Bitz', fit: veh, txt: '+2 CAF when they charge' },
+      { id: 'CYBOARS', name: 'Cyboars', fit: d => /boarboyz/i.test(d.name || ''), txt: '+2D6 cm move and an extra close combat die on the charge' },
+      { id: 'KUSTOM_WEAPONS', name: 'Kustom Weapons', fit: nobz, txt: 'an extra attack die; a 1 may blow up the stand' },
+      { id: 'ARMOR_PLATING', name: 'Armor Plating', fit: veh, txt: '+1 to armour saves' },
+      { id: 'GLYPH', name: 'Glyph Inscription', fit: veh, txt: '+1 to morale' },
+      { id: 'SOUNDZ', name: 'Soundz', fit: veh, txt: 'Orks within 10 cm get +1 to morale' },
+      { id: 'FLITE_SOOTS', name: 'Flite Soots', fit: d => d.isFlyer || d.flyer, txt: '+D3 CAF in each fight' },
+      { id: 'AFTABURNAS', name: 'Aftaburnas', fit: d => /fighta/i.test(d.name || ''), txt: 'enemies are -1 to hit them, but a craft crashes on a 1 each time they attack' },
+      { id: 'OOGE_XHAUSTS', name: '\'Ooge Xhausts', fit: d => /warbike|bikeboyz|bike/i.test(d.name || ''), txt: 'the Mob is Fearless' },
+      { id: 'KROOZ', name: 'Krooz Missul', fit: d => veh(d) && !(d.weapon && (d.weapon.fx || d.weapon.barrage)) && !this.hasHitLocations(d), txt: 'a one-shot 50 cm missile (5+, -2); a 1 blows up the vehicle' },
+      { id: 'LENZ', name: 'Teleskopik Lenz', fit: d => d.isTitan, txt: '+1 to hit on one attack die a turn' },
+      { id: 'STIKKBOMZ', name: 'Super Stikkbomz', fit: boyz, txt: 'an extra close combat die; a double blows the stand up' }];
+  }
+  orkHas(d, id) { return Boolean(d && ((d.cfg && d.cfg.kustom) || d.kustom || []).includes(id)); }
+  orkKustomDraw(keysBySide) {
+    const MEK = ['card_ork_tinbotz', 'card_ork_doomdiver', 'card_ork_flakwagon', 'card_ork_bubble_chukka', 'card_ork_destrukta_rokkits', 'card_ork_dragsta', 'card_ork_kustom_kannon', 'card_ork_lifta_droppa', 'card_ork_shokk', 'card_ork_pulsa_rokkit', 'card_ork_soopa_gun', 'card_ork_fighta_bomma', 'card_ork_mekboy'];
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      const n = 2 * (keysBySide[side] || []).filter(k => MEK.includes(k)).length; if (!n) return;
+      const deck = [], base = this.orkKustomDeck();
+      while (deck.length < n) deck.push(...Phaser.Utils.Array.Shuffle(base.slice()));
+      const notes = [];
+      deck.slice(0, n).forEach(c => {
+        const cands = this.detachments.filter(d => d.faction === side && this.isOrk(d) && d.stands.length && c.fit(d) && !this.orkHas(d, c.id));
+        if (!cands.length) { notes.push(`${c.name} (wasted)`); return; }
+        const fewest = Math.min(...cands.map(d => ((d.cfg && d.cfg.kustom) || []).length));
+        const d = Phaser.Utils.Array.GetRandom(cands.filter(x => ((x.cfg && x.cfg.kustom) || []).length === fewest));
+        d.cfg = d.cfg || {}; d.cfg.kustom = [...(d.cfg.kustom || []), c.id];
+        if (c.id === 'BIONIK') {
+          d.cfg.kustomCaf = Phaser.Math.Between(1, 6);
+          const mad = d.stands.filter(() => Phaser.Math.Between(1, 6) === 6);
+          mad.forEach(s => { if (d.stands.length > 1) { this.orkHealerMishap({ name: 'The Mekboy\'s bionik work' }, d, s, 'medic'); d.stands = d.stands.filter(x => x !== s); s.container.destroy(); d.initialCount = Math.max(1, (d.initialCount || 1) - 1); } });
+        }
+        notes.push(`${c.name} → ${d.name} (${c.txt})`);
+      });
+      this.log(`🔧 <b>Mekboy Kustom cards</b> for ${this.getSideName(side)}: ${notes.join('; ')}.`);
+    });
+  }
+  orkKustomApply(d) {
+    if (!d || d._kustomApplied || !((d.cfg && d.cfg.kustom) || []).length) return;
+    d._kustomApplied = true;
+    const tsm = w => { if (w) w.tsm = (w.tsm || 0) - 1; }, dice = w => { if (w) w.dice = (w.dice || 1) + 1; };
+    if (this.orkHas(d, 'SUPAPOWA') || this.orkHas(d, 'BIONIK')) d.fixedSave = Math.min(d.fixedSave || 7, 6);
+    if (this.orkHas(d, 'BIONIK')) d.caf = (d.caf || 0) + ((d.cfg && d.cfg.kustomCaf) || 0);
+    const sd = Object.getOwnPropertyDescriptor(d, 'save');
+    if (this.orkHas(d, 'ARMOR_PLATING') && !(sd && sd.get)) d.save = Math.max(1, (d.save || 7) - 1);
+    if (this.orkHas(d, 'GLYPH')) d.morale = Math.max(1, (d.morale || 4) - 1);
+    if (this.orkHas(d, 'BIG_GUNS') || this.orkHas(d, 'KUSTOM_WEAPONS')) {
+      d.weapon = d.weapon ? { ...d.weapon } : d.weapon; if (d.salvos) d.salvos = d.salvos.map(w => ({ ...w }));
+      d.stands.forEach(s => { if (s.weapon) s.weapon = { ...s.weapon }; });
+      const all = [d.weapon, ...(d.salvos || []), ...d.stands.map(s => s.weapon)].filter((w, i, a) => w && a.indexOf(w) === i);
+      // weapons restored from a saved game already carry the change
+      all.forEach(w => { if (w._kustom) return; if (this.orkHas(d, 'BIG_GUNS')) tsm(w); if (this.orkHas(d, 'KUSTOM_WEAPONS')) dice(w); w._kustom = true; });
+    }
+    if (this.orkHas(d, 'OOGE_XHAUSTS')) d.specialAbilities = [...new Set([...(d.specialAbilities || []), 'Fearless'])];
+    if (this.orkHas(d, 'BIG_WHEELS')) d.tripleCharge = true;
+    if (this.orkHas(d, 'ROCKET_PACKS')) d.jump = true;
+    if (this.orkHas(d, 'KROOZ')) {
+      const krooz = { id: 'krooz_missul', name: 'Krooz Missul', rangeCm: 50, dice: 1, toHit: 5, tsm: -2, oneShot: true, kroozMissul: true };
+      if (d.salvos && d.salvos.length) { if (!d.salvos.some(w => w.id === 'krooz_missul')) d.salvos = [...d.salvos, krooz]; }
+      else if (d.weapon) d.salvos = [{ ...d.weapon, id: 'main_gun' }, krooz];
+      d.maxSalvos = d.salvos.length;
+    }
+  }
+  orkKustomMove(d) {
+    if (!d || !((d.cfg && d.cfg.kustom) || []).length) return 0;
+    if (d._kmTurn === this.turn && d._kmOrder === d.order) return d._km;
+    let b = 0;
+    if (this.orkHas(d, 'RED_PAINT')) b += Phaser.Math.Between(1, 6);
+    if (this.orkHas(d, 'CYBOARS')) b += Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6);
+    if (this.orkHas(d, 'ROCKET_PACKS')) b += 10;
+    d._kmTurn = this.turn; d._kmOrder = d.order; d._km = b;
+    return b;
+  }
+  // Direct fire: a 1 to hit with Big Guns, Kustom Weapons or a Krooz Missul may hurt the firer; Teleskopik Lenz nudges one miss
+  orkOnRollOne(firer, shooter, w) {
+    if (!firer || !shooter) return;
+    if (w && w.kroozMissul) this.orkSelfHit(firer, shooter, -2, 'its Krooz Missul exploding');
+    if (this.orkHas(firer, 'BIG_GUNS')) this.orkSelfHit(firer, shooter, -1, 'a misfiring big gun');
+    if (this.orkHas(firer, 'KUSTOM_WEAPONS') && Phaser.Math.Between(1, 6) >= 5) this.orkSelfHit(firer, shooter, -99, 'its kustom weapon blowing up');
+  }
+  orkLenz(firer, roll, need) {
+    if (!this.orkHas(firer, 'LENZ') || firer._lenzTurn === this.turn || need > 6 || roll === 1 || roll + 1 < need) return false;
+    firer._lenzTurn = this.turn; this.log(`🔭 <b>${firer.name}</b>'s Teleskopik Lenz turns a miss into a hit.`); return true;
+  }
+  orkStikk(d, rolls) { return this.orkHas(d, 'STIKKBOMZ') && rolls.some((r, i) => rolls.indexOf(r) !== i); }
+  orkAfterMove(det, from) {
+    if (!det || !det.stands.length || !this.isOrk(det)) return;
+    // Xtra-Big Wheels: a charging vehicle crashes on a 1
+    if (this.orkHas(det, 'BIG_WHEELS') && det.order === 'CHARGE') det.stands.slice().forEach(s => { if (Phaser.Math.Between(1, 6) === 1) { this.log(`💥 One of <b>${det.name}</b>'s Xtra-Big Wheels comes off at full speed!`); this.removeCasualty(det, s, 0, true); } });
+    // Rocket Packs: each stand scatters D6 cm from where it lands
+    if (this.orkHas(det, 'ROCKET_PACKS') && from) {
+      let lost = 0;
+      det.stands.slice().forEach(s => {
+        const f = from.get(s); if (!f || Phaser.Math.Distance.Between(f.x, f.y, s.container.x, s.container.y) < 2) return;
+        const hit = Phaser.Math.Between(1, 6) <= 2, d6 = Phaser.Math.Between(1, 6);
+        if (hit && d6 === 6) { this.removeCasualty(det, s, 0, true); lost++; return; }
+        if (!hit) { const a = Math.random() * Math.PI * 2; this.eldMoveStand(s, s.container.x + Math.cos(a) * d6 * PX_PER_CM, s.container.y + Math.sin(a) * d6 * PX_PER_CM); }
+        const x = s.container.x, y = s.container.y;
+        if (this.rockAt(x, y) || (this.isPointInImpassableRiver && this.isPointInImpassableRiver(x, y)) || (this.woods || []).some(w => Phaser.Math.Distance.Between(x, y, w.x, w.y) <= w.r)) { this.removeCasualty(det, s, 0, true); lost++; }
+      });
+      this.log(`🚀 <b>${det.name}</b> come down on their rocket packs${lost ? `: ${lost} crash` : ' in one piece'}.`);
+    }
+    // Squig Fuel Injector: an extra 5D6 cm straight on after a charge
+    if (this.orkHas(det, 'SQUIG_FUEL') && det.order === 'CHARGE' && from && !det.stands.some(s => this.isStandEngaged(s))) {
+      const go = () => {
+        let lost = 0;
+        det.stands.slice().forEach(s => {
+          const f = from.get(s); if (!f) return;
+          const dx = s.container.x - f.x, dy = s.container.y - f.y, L = Math.hypot(dx, dy); if (L < 2) return;
+          const roll = [1, 2, 3, 4, 5].reduce(a => a + Phaser.Math.Between(1, 6), 0);
+          if (roll >= 21) { this.removeCasualty(det, s, 0, true); lost++; return; }
+          const ux = dx / L, uy = dy / L; let k = 0;
+          for (; k < roll * PX_PER_CM; k += 4) {
+            const x = s.container.x + ux * (k + 4), y = s.container.y + uy * (k + 4);
+            if (x < 15 || y < 15 || x > BOARD_W - 15 || y > BOARD_H - 15 || this.getBuildingAt(x, y) || this.rockAt(x, y)) break;
+            if (this.detachments.some(o => o !== det && o.stands.length && !o.embarkedOn && o.stands.some(t => Phaser.Math.Distance.Between(x, y, t.container.x, t.container.y) <= (t.baseRadius || 10) + (s.baseRadius || 10) - 2))) break;
+          }
+          this.eldMoveStand(s, s.container.x + ux * k, s.container.y + uy * k);
+        });
+        this.log(`🐗💨 <b>${det.name}</b> fires its squig fuel injector and shoots forward${lost ? `: ${lost} vehicle${lost > 1 ? 's' : ''} shake apart` : ''}!`);
+        this.syncEmbarkedPassengers(det); this.drawOverlays();
+      };
+      if (this.isFactionAI(det.faction)) go();
+      else this.eldChoose(`🐗💨 ${det.name}: fire the squig fuel injector? Each vehicle shoots 5D6 cm straight on, and one that rolls 21+ shakes itself apart.`, [{ label: 'Fire it!', fn: go }, { label: 'No thanks', fn: () => {} }]);
+    }
+  }
+  // ---- Landa: deep strikes with the artillery die; a Misfire crashes it ----
+  isLanda(d) { return this.orkIs(d, /landa/i); }
+  executeDeepStrikeScatter(det) {
+    if (!det || !det.deepStrikeActive || !this.isLanda(det)) return this.executeDeepStrikeScatterOrkCore(det);
+    det.deepStrikeActive = false; det.deepStrikeUsed = true; det.inReserve = false; det.landaDown = true;
+    det.stands.forEach(s => s.container.setAlpha(1));
+    const art = this.orkArt(), hit = Phaser.Math.Between(1, 6) <= 2, dc = this.getDetachmentCenter(det);
+    if (art === 'MISFIRE') {
+      const shaken = Phaser.Math.Between(1, 6) >= 4, pax = det.passengerDet;
+      this.spawnExplosionFX(dc.x, dc.y, 30, true);
+      this.log(`💥 <b>${det.name}</b> lands on target... nose first! ${pax ? (shaken ? `${pax.name} stagger out of the wreck.` : `${pax.name} are lost with all hands.`) : ''}`);
+      if (pax) { if (shaken) this.disembarkDetachment(det, dc.x, dc.y); else pax.stands.slice().forEach(s => this.removeCasualty(pax, s, 0, true)); }
+      det.stands.slice().forEach(s => this.removeCasualty(det, s, 0, true)); this.checkBreakPoint(det);
+      return;
+    }
+    let dx = 0, dy = 0;
+    if (!hit) { const a = Math.random() * Math.PI * 2, cm = art * 2; dx = Math.cos(a) * cm * PX_PER_CM; dy = Math.sin(a) * cm * PX_PER_CM; }
+    det.stands.forEach(s => this.eldMoveStand(s, s.container.x + dx, s.container.y + dy));
+    this.nudgeOutOfTerrain && this.nudgeOutOfTerrain(det);
+    this.syncEmbarkedPassengers(det);
+    window.sfx.playTeleport && window.sfx.playTeleport();
+    this.spawnFloatingText(dc.x + dx, dc.y + dy - 20, hit ? '🛬 LANDA ON TARGET' : `🛬 LANDA OFF COURSE (${art * 2} cm)`, '#86efac', '12px');
+    this.log(`🛬 <b>${det.name}</b> comes in to land (artillery die ${art}, scatter ${hit ? 'HIT' : 'arrow'}): ${hit ? 'right on target' : `${art * 2} cm off course`}. It won't take off again.`);
+  }
+  // ---- Supa Rokkit Trans'ort ----
+  isRokkit(d) { return this.orkIs(d, /rokkit trans|supa rokkit|transport rokkit/i); }
+  orkRokkitLaunch(det) {
+    if (!det.stands.length || det.rokkitLanded) return;
+    det.rokkitLaunch = false;
+    const rk = det.stands[0], launcher = det.stands[1] || null;
+    const ang = rk.facingRad != null ? rk.facingRad : (det.faction === 'IMPERIUM' ? -Math.PI / 2 : Math.PI / 2);
+    const art = this.orkArt(), range = 50 + (art === 'MISFIRE' ? 12 : art) * 5;
+    const sc = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), sa = Math.random() * Math.PI * 2;
+    const x0 = rk.container.x, y0 = rk.container.y;
+    const P = { x: Phaser.Math.Clamp(x0 + Math.cos(ang) * range * PX_PER_CM + Math.cos(sa) * sc * PX_PER_CM, 20, BOARD_W - 20), y: Phaser.Math.Clamp(y0 + Math.sin(ang) * range * PX_PER_CM + Math.sin(sa) * sc * PX_PER_CM, 20, BOARD_H - 20) };
+    this.log(`🚀 <b>${det.name}</b> blasts off! ${range} cm of fuel (artillery die ${art}), scattering ${sc} cm.`);
+    // Snap fire at the rokkit in the air
+    let mod = 0;
+    const line = new Phaser.Geom.Line(x0, y0, P.x, P.y);
+    this.detachments.filter(e => e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve && !e.fired && e.order === 'FIRST_FIRE').forEach(e => {
+      const w = e.weapon; if (!w || !w.rangeCm || w.barrage || w.indirect) return;
+      const R = w.rangeCm * PX_PER_CM, near = e.stands.filter(s => Phaser.Geom.Line.GetNearestPoint ? Phaser.Math.Distance.Between(s.container.x, s.container.y, ...(p => [p.x, p.y])(Phaser.Geom.Line.GetNearestPoint(line, new Phaser.Geom.Point(s.container.x, s.container.y)))) <= R : true);
+      if (!near.length) return;
+      e.fired = true; e.orderRevealed = true; this.updateDetachmentBadge(e);
+      let pen = 0;
+      for (let i = 0; i < Math.min(8, near.length * (w.dice || 1)); i++) { if (Phaser.Math.Between(1, 6) >= (w.toHit || 5) && !this.orkSave(det, w.tsm || 0, null)) pen++; }
+      if (pen) { mod -= pen; this.log(`🎯 <b>${e.name}</b> snap fires at the rokkit as it streaks overhead: ${pen} hit${pen > 1 ? 's' : ''} get through.`); }
+    });
+    // Strike what it lands on
+    const victims = [];
+    this.detachments.forEach(o => { if (o === det || o === det.passengerDet || !o.stands.length || o.embarkedOn || o.inReserve) return; o.stands.forEach(s => { if (Phaser.Math.Distance.Between(P.x, P.y, s.container.x, s.container.y) <= (s.baseRadius || 10) + 12) victims.push({ o, s }); }); });
+    victims.forEach(({ o, s }) => {
+      if (o.shields > 0) { o.shields = 0; this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(o); this.log(`🚀 The rokkit slams into <b>${o.name}</b>: every shield goes down.`); if (this.hasHitLocations(o)) this.applyTitanHit(o, s, { tsm: -1, from: { x: x0, y: y0 } }); else if (!this.orkSave(o, -1, null)) this.applySuperHeavyDamage(o, s, false); mod -= 1; return; }
+      if (this.hasHitLocations(o) || o.superHeavy) { this.log(`🚀 The rokkit smashes into <b>${o.name}</b>!`); if (this.hasHitLocations(o)) this.applyTitanHit(o, s, { tsm: -3, from: { x: x0, y: y0 } }); else if (!this.orkSave(o, -3, null)) this.applySuperHeavyDamage(o, s, false); mod -= 1; return; }
+      this.log(`🚀 The rokkit lands squarely on <b>${o.name}</b>, flattening a stand.`); this.removeCasualty(o, s, 0, true); this.checkBreakPoint(o);
+    });
+    const bld = this.getBuildingAt(P.x, P.y);
+    if (bld && !bld.collapsed) { const S = { notes: [] }; this.eldBuildingSave(bld, -3, S, 'flattened by a Supa Rokkit'); this.log(`🚀 The rokkit crashes into ${bld.name}: ${S.notes.join(', ')}.`); mod -= 1; }
+    // Fly there
+    if (launcher) { det.stands = det.stands.filter(s => s !== launcher); launcher.container.destroy(); det.initialCount = Math.max(1, (det.initialCount || 2) - 1); }
+    this.tweens.add({ targets: rk.container, x: P.x, y: P.y, duration: 700, ease: 'Quad.easeIn' });
+    rk.container.x = P.x; rk.container.y = P.y; rk.originX = P.x; rk.originY = P.y;
+    det.rokkitLanded = true; det.moved = true; this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det);
+    this.spawnExplosionFX(P.x, P.y, 24, true);
+    const roll = Phaser.Math.Between(1, 6), tot = roll + mod, pax = det.passengerDet;
+    if (tot <= 1) {
+      const R = (Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6)) * PX_PER_CM;
+      this.log(`💥 <b>The Supa Rokkit explodes on impact</b> (landing roll ${roll}${mod ? mod : ''} = ${tot})! ${pax ? `${pax.name} go up in a fireball; ` : ''}debris hits everything within ${Math.round(R / PX_PER_CM)} cm.`);
+      this.spawnExplosionFX(P.x, P.y, R, true);
+      this.time.delayedCall(300, () => {
+        if (pax) pax.stands.slice().forEach(s => this.removeCasualty(pax, s, 0, true));
+        this.detachments.forEach(o => { if (o === det || !o.stands.length || o.embarkedOn) return; o.stands.slice().forEach(s => {
+          if (Phaser.Math.Distance.Between(P.x, P.y, s.container.x, s.container.y) > R) return;
+          if (this.hasHitLocations(o)) { this.applyTitanHit(o, s, { tsm: 0, from: P }); return; }
+          if (!this.orkSave(o, 0, null)) { if (o.superHeavy) this.applySuperHeavyDamage(o, s, false); else this.removeCasualty(o, s, 0, false); }
+        }); this.checkBreakPoint(o); });
+        this.buildings.forEach(b => { if (!b.collapsed && this.distToRect(b, P.x, P.y) <= R) this.eldBuildingSave(b, 0, { notes: [] }, 'Supa Rokkit debris'); });
+        det.stands.slice().forEach(s => this.removeCasualty(det, s, 0, true)); this.checkBreakPoint(det);
+      });
+      return;
+    }
+    if (tot <= 3) { det.rokkitTrapped = this.turn + 1; det.turretCrushed = true; det.fired = true; this.log(`🙃 The rokkit lands upside down (${tot}): the turret is crushed${pax ? ` and ${pax.name} are trapped inside until next turn` : ''}.`); this.updateDetachmentBadge(det); return; }
+    if (pax) this.disembarkDetachment(det, P.x, P.y);
+    if (tot <= 5) {
+      if (pax) { pax.order = 'ADVANCE'; pax.orderRevealed = true; pax.rokkitDaze = this.turn; }
+      det.order = 'ADVANCE'; det.rokkitDaze = this.turn;
+      this.log(`🚀 A shaky landing (${tot}): ${pax ? `${pax.name} pile out on Advance orders, too excited to shoot straight (-1 to hit)` : 'the rokkit\'s turret fires wildly (-1 to hit)'}.`);
+    } else {
+      if (pax) { pax.order = 'CHARGE'; pax.orderRevealed = true; pax.rokkitBoost = this.turn; }
+      det.order = 'FIRST_FIRE';
+      this.log(`🚀 A perfect landing (${tot})! ${pax ? `${pax.name} burst out on Charge orders, +1 CAF` : ''} The shootas fire on First Fire.`);
+    }
+    if (pax) this.updateDetachmentBadge(pax);
+    this.updateDetachmentBadge(det); this.drawOverlays();
+  }
+  // The computer turns its launcher towards the enemy, then fires next turn when someone is in reach
+  orkAIRokkit(d) {
+    const rk = d.stands[0]; if (!rk || !d.passengerDet) return;
+    const foes = this.detachments.filter(e => e.faction !== d.faction && e.stands.length && !e.embarkedOn && !e.inReserve && !e.isFlyer && !e.flyer);
+    let best = null, bd = 1e9;
+    foes.forEach(e => e.stands.forEach(s => { const dd = Phaser.Math.Distance.Between(rk.container.x, rk.container.y, s.container.x, s.container.y) / PX_PER_CM; if (dd >= 45 && dd <= 105 && dd < bd) { bd = dd; best = s; } }));
+    if (!best) return;
+    const ang = Math.atan2(best.container.y - rk.container.y, best.container.x - rk.container.x), cur = rk.facingRad != null ? rk.facingRad : 0;
+    if (Math.abs(Phaser.Math.Angle.Wrap(ang - cur)) < 0.35 && d._rkAimed && d._rkAimed < this.turn) { d.rokkitLaunch = true; return; }
+    d.stands.forEach(s => this.setStandFacing(s, ang));
+    d.facingRad = ang; d._rkAimed = this.turn;
+    this.log(`🚀 <b>${d.name}</b>'s launcher swings round to point at the enemy.`);
+  }
+  orkRokkitsCompulsory() {
+    // grounded Landas never move; the computer's launchers do their aiming here
+    this.detachments.forEach(d => { if (d.stands.length && !d.inReserve && (this.isLanda(d) || (this.isRokkit(d) && this.isFactionAI(d.faction)))) d.moved = true; });
+    this.detachments.filter(d => this.isRokkit(d) && d.stands.length).forEach(d => {
+      if (d.rokkitTrapped === this.turn && d.passengerDet) { this.log(`💥 <b>${d.passengerDet.name}</b> blast their way out of the upturned rokkit.`); const c = this.getDetachmentCenter(d); this.disembarkDetachment(d, c.x, c.y); }
+      if (d.turretCrushed) d.fired = true;
+      if (d.rokkitLanded) { d.moved = true; return; }
+      if (this.isFactionAI(d.faction)) this.orkAIRokkit(d);
+      if (d.rokkitLaunch) this.orkRokkitLaunch(d);
+    });
+  }
+  // ---- Blasta Bomma bomb run: artillery-die BP, a template by the bomma plus D3 more touching it ----
+  orkBombRun(c) {
+    const { firerDet, wpn, S, sol, P, F, opts } = c, R = BARRAGE_RADIUS_PX;
+    opts._pairs = sol.validPairs.slice(0, 1);
+    let bp = this.orkArt(), out = false;
+    if (bp === 'MISFIRE') { bp = 10; out = true; firerDet.salvos = (firerDet.salvos || []).map(x => (x.id || x.name) === (wpn.id || wpn.name) ? { ...x, oneShot: true } : x); (firerDet.spentOneShots = firerDet.spentOneShots || []).push(wpn.id || wpn.name); }
+    // the first template touches the bomma's base, on the side of the target, then scatters 2D6 cm
+    const b = sol.validPairs[0].shooter, ang = Math.atan2(P.y - b.container.y, P.x - b.container.x), off = Math.min(Phaser.Math.Distance.Between(b.container.x, b.container.y, P.x, P.y), (b.baseRadius || 20) + R);
+    const drop = { x: b.container.x + Math.cos(ang) * off, y: b.container.y + Math.sin(ang) * off };
+    const sd = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), sa = Math.random() * Math.PI * 2;
+    const first = { x: Phaser.Math.Clamp(drop.x + Math.cos(sa) * sd * PX_PER_CM, 10, BOARD_W - 10), y: Phaser.Math.Clamp(drop.y + Math.sin(sa) * sd * PX_PER_CM, 10, BOARD_H - 10) };
+    S.intended = drop; S.notes.push(`the bombs scatter ${sd} cm`);
+    const n = 1 + Phaser.Math.Between(1, 3), st = this.getBarrageStats(bp);
+    const pts = this.clusterPoints(first, n, F, 2);
+    pts.forEach(pt => { S.templates.push({ x: pt.x, y: pt.y, color: 0xf97316 }); this.standsWithin(pt, R, F).forEach(x => this.specialHit(S, x.det, x.stand, { need: st.toHit, tsm: st.tsm || 0 })); });
+    if (out) S.notes.push('Misfire: 10 BP, and the bomb bay is now empty');
+    return { title: `💣 Bomb Run (${bp} BP × ${pts.length})`, desc: `Artillery die barrage points · ${pts.length} touching templates · hit ${st.toHit}+${out ? ' · out of bombs' : ''}` };
+  }
+  // Buttons in the Orders Phase: launch a Supa Rokkit
+  orkExtraButtons(det, btns) {
+    if (this.phase === 'ORDERS' && det && this.isRokkit(det) && !this.isFactionAI(det.faction) && det.stands.length && !det.rokkitLanded)
+      btns.push(`<button class="btn-primary" style="background:${det.rokkitLaunch ? '#b91c1c' : '#c2410c'}" onclick="window.gameScene.toggleRokkitLaunch()">${det.rokkitLaunch ? '🚀 Launching this turn (tap to cancel)' : '🚀 Launch Rokkit this turn'}</button>`);
+  }
+  toggleRokkitLaunch() { const d = this.selectedDetachment; if (!d || !this.isRokkit(d)) return; d.rokkitLaunch = !d.rokkitLaunch; this.log(d.rokkitLaunch ? `🚀 <b>${d.name}</b> will blast off in the Compulsory Movement phase, straight ahead (turn it to aim).` : `🚀 <b>${d.name}</b> stays on its launcher.`); this.updateUI(); }
+  // ---- saving and loading the Ork and Eldar extras ----
+  orkSaveExtra() {
+    const dets = {};
+    this.detachments.forEach(d => {
+      const x = {};
+      ['turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
+      const kap = d.stands.findIndex(s => s.isKaptin); if (kap >= 0) x.kaptin = kap;
+      const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil] : null).filter(Boolean); if (held.length) x.held = held;
+      if (Object.keys(x).length) dets[d.id] = x;
+    });
+    return { dets, swarms: (this.squigSwarms || []).map(w => ({ x: w.x, y: w.y })), webs: (this.webs || []).map(w => ({ hexes: w.hexes, life: w.life })), mimes: this._mimes || {} };
+  }
+  orkRestoreExtra(save) {
+    const X = save && save.orkExtra; if (!X) return;
+    Object.entries(X.dets || {}).forEach(([id, x]) => {
+      const d = this.detachments.find(q => q.id === id); if (!d) return;
+      Object.entries(x).forEach(([k, v]) => { if (!['kaptin', 'held'].includes(k)) d[k] = v; });
+      if (x.kaptin != null) { d.stands.forEach(s => { s.isKaptin = false; }); if (d.stands[x.kaptin]) { d.stands[x.kaptin].isKaptin = true; d.stands[x.kaptin].label = 'Kaptin'; } }
+      (x.held || []).forEach(([i, until]) => { if (d.stands[i]) { d.stands[i].traktorHeld = true; d.stands[i].traktorHeldUntil = until; d.stands[i].stunned = until; } });
+      if (this.isWeirdboy(d)) { d.weapon = this.orkBolt(d.weirdEnergy || 0); d.stands.forEach(s => { s.weapon = d.weapon; }); }
+      if (d.madState && d._madBase) { const s = d.madState; d.madState = null; if (s === 'SHOOT') d.weapon = { ...d.weapon, dice: (d.weapon.dice || 1) + 1 }; if (s === 'INVINCIBLE' || s === 'TANK') d.fixedSave = 3; if (s === 'WAAARGH') { d.moveCm *= 2; d.caf = 8; d.weapon = { ...d.weapon, toHit: 2 }; } if (s === 'TANK') { d.weapon = { ...d.weapon, rangeCm: 0 }; d.instinct = 'MAD_TANK'; } if (s === 'COVER') d.instinct = 'MAD_COVER'; d.madState = s; }
+      if (d.inTransit) { d.inReserve = true; d.stands.forEach(s => s.container.setVisible(false)); }
+      if (d.rokkitLanded && d.stands.length > 1) { const l = d.stands.pop(); l.container.destroy(); }
+    });
+    (this.squigSwarms || []).forEach(w => w.g && w.g.destroy()); this.squigSwarms = [];
+    (this.webs || []).forEach(w => w.g && w.g.destroy()); this.webs = [];
+    (X.swarms || []).forEach(p => this.addSquigSwarm(p));
+    (X.webs || []).forEach(w => { this.addWeb(w.hexes); this.webs[this.webs.length - 1].life = w.life; });
+    this._mimes = X.mimes || {};
+    if (this.drawGates) this.drawGates();
+  }
+  serializeGameState(saveName = null) {
+    const s = this.serializeGameStateOrkCore(saveName);
+    try { if (s) s.orkExtra = this.orkSaveExtra(); } catch (e) { console.error(e); }
+    return s;
+  }
+  tryHealerSave(vDet, stand, out) {
+    if (vDet && stand && this.orkHas(vDet, 'FORCE_FIELD') && !this.hasHitLocations(vDet)) {
+      const r = Phaser.Math.Between(1, 6);
+      if (out) out.push({ val: r, cls: r >= 2 ? 'die-pass' : 'die-fail', tip: 'Kustom Force Field 2+' });
+      if (r >= 2) { this.spawnFloatingText(stand.container.x, stand.container.y - 8, `🔵 FORCE FIELD (${r})`, '#93c5fd', '10px'); return true; }
+    }
+    return this.tryHealerSaveOrkCore(vDet, stand, out);
+  }
+  // ---- Doomdiver: a snap fire hit stops a moving unit where it was hit ----
+  orkDoomStop(td, fd, wpn) {
+    const from = td._moveFrom; if (!from || td._moveTurn !== this.turn || !fd || !fd.stands.length) return false;
+    const R = ((wpn && wpn.rangeCm) || 75) * PX_PER_CM;
+    const inR = (x, y) => fd.stands.some(s => Phaser.Math.Distance.Between(x, y, s.container.x, s.container.y) <= R);
+    const at = (s, t) => { const f = from.get(s); return f ? { x: f.x + (s.container.x - f.x) * t, y: f.y + (s.container.y - f.y) * t } : null; };
+    let k = 1;
+    for (let t = 0; t <= 1.0001; t += 0.05) { if (td.stands.some(s => { const p = at(s, t); return p && inR(p.x, p.y); })) { k = t; break; } }
+    if (k >= 0.999) return false;
+    td.stands.forEach(s => { const p = at(s, k); if (p) this.eldMoveStand(s, p.x, p.y); });
+    this.syncEmbarkedPassengers(td); this.updateDetachmentBadgePos(td); this.drawOverlays();
+    return true;
+  }
+  // ---- Traktor Kannon: a held model counts as destroyed until it is released ----
+  orkTraktorHold(fd, td, t) {
+    this.orkTraktorRelease(fd);
+    if (!t.traktorHeld) td.casualties = (td.casualties || 0) + 1;
+    t.traktorHeld = fd.id; t.traktorHeldUntil = this.turn + 1; t.stunned = this.turn + 1;
+    fd.traktorTarget = { det: td.id, until: this.turn + 1 };
+  }
+  orkTraktorRelease(fd, only = null) {
+    this.detachments.forEach(d => d.stands.forEach(s => {
+      if (!s.traktorHeld || (fd && s.traktorHeld !== fd.id) || (only && s !== only)) return;
+      s.traktorHeld = null; s.traktorHeldUntil = null; d.casualties = Math.max(0, (d.casualties || 0) - 1);
+    }));
+    if (fd) fd.traktorTarget = null;
+  }
+  orkTraktorTurn() {
+    this.detachments.forEach(d => d.stands.forEach(s => {
+      if (!s.traktorHeld) return;
+      const k = this.detachments.find(o => o.id === s.traktorHeld);
+      if (!k || !k.stands.length || s.traktorHeldUntil < this.turn) { s.traktorHeld = null; s.traktorHeldUntil = null; d.casualties = Math.max(0, (d.casualties || 0) - 1); this.log(`🧲 <b>${d.name}</b> ${s.label || ''} breaks free of the traktor beam.`); }
+      else s.stunned = this.turn;
+    }));
+  }
+  orkTraktorFx(c) {
+    const { firerDet, targetDet, S, sol, opts } = c, from = S.from;
+    opts._pairs = sol.validPairs; S.color = 0x60a5fa;
+    const keep = firerDet.traktorTarget && firerDet.traktorTarget.det === targetDet.id && firerDet.traktorTarget.until === this.turn;
+    const held = keep ? targetDet.stands.find(s => s.traktorHeld === firerDet.id) : null;
+    if (!keep) this.orkTraktorRelease(firerDet);
+    let done = false;
+    sol.validPairs.forEach(p => {
+      if (done) return; // a Kannon holds one model at a time
+      const t = held && !S.casualties.includes(held) ? held : this.orkLiveStand(targetDet, p.target, S); if (!t) return;
+      S.lines.push({ x1: p.shooter.container.x, y1: p.shooter.container.y, x2: t.container.x, y2: t.container.y, color: 0x60a5fa });
+      if (t === held) S.hitDice.push({ val: '🧲', cls: 'die-pass', tip: 'Still held: no roll to hit needed' });
+      else { const h = this.rollNeed(5); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: 'Traktor beam: 5+' }); if (!h.ok) return; }
+      S.hits++; done = true;
+      if (this.hasHitLocations(targetDet)) { const r = this.applyTitanHit(targetDet, t, { tsm: -1, from }); if (r && r.saved) S.saves++; if (r && r.destroyed) S.kills++; return; }
+      if (this.orkSave(targetDet, -1, S)) { S.saves++; if (t === held) { this.orkTraktorRelease(firerDet); S.notes.push(`${targetDet.name} breaks free`); } return; }
+      const r = Phaser.Math.Between(1, 6) + ((targetDet.save || 7) >= 7 ? 1 : 0);
+      if (r >= 6) { if (t.traktorHeld) this.orkTraktorRelease(firerDet); S.notes.push(`${targetDet.name} squashed (${r})`); this.orkKill(S, targetDet, t); }
+      else { this.orkTraktorHold(firerDet, targetDet, t); S.saves++; S.notes.push(`${targetDet.name} ${t.label || ''} held fast: it does nothing next turn and counts as lost until freed (${r})`); this.spawnFloatingText(t.container.x, t.container.y - 12, '🧲 HELD', '#60a5fa', '11px'); }
+    });
+    return { title: '🧲 Traktor Kannon', desc: `${held ? 'Keeps hold of its target: save only, no roll to hit' : 'Hit 5+'} · save at -1 (shields don't help) · if it fails: D6 (+1 with no save) 6+ squashed, otherwise held fast next turn` };
+  }
+  // ---- Bubble Chukka on a titan: one nominated weapon ----
+  orkBubbleNominate(firerDet, td) {
+    if (!this.hasHitLocations(td)) { td.bubbledWid = null; return ''; }
+    const spent = td.spentOneShots || [], list = (td.salvos || []).filter(w => !(w.oneShot && spent.includes(w.id || w.name)) && (w.rangeCm || w.barrageBp));
+    if (!list.length) { td.bubbledWid = null; return ''; }
+    const val = w => (w.barrageBp ? w.barrageBp * 1.5 : (w.dice || 1) * (7 - Math.min(6, w.toHit || 4))) * (1 - (w.tsm || 0) / 3);
+    const key = w => w.mountId || w.name;
+    const best = list.reduce((a, b) => val(b) > val(a) ? b : a);
+    td.bubbledWid = key(best); td.bubbledWname = best.name;
+    if (!this.isFactionAI(firerDet.faction) && list.length > 1) {
+      this.time.delayedCall(50, () => this.eldChoose(`🫧 Bubble Chukka on ${td.name}: which weapon do you wrap in the bubble?`, list.map(w => ({ label: w.name, fn: () => { td.bubbledWid = key(w); td.bubbledWname = w.name; this.log(`🫧 The bubble wraps <b>${td.name}</b>'s ${w.name}.`); } }))));
+    }
+    return best.name;
+  }
+  orkBubbleOther(d) {
+    if (!this.hasHitLocations(d) || !d.bubbledWid) return false;
+    const w = this.isSalvoFirer(d) ? this.getSalvoWeapon(d, d.salvosFired || 0) : d.weapon;
+    return Boolean(w && (w.mountId || w.name) !== d.bubbledWid);
+  }
+  // ---- Lifta-Droppa against a super-heavy: a 6 lifts and drops it, otherwise it is pinned in place this turn ----
+  orkLiftSuper(c) {
+    const { targetDet, aim, S, wpn, F } = c;
+    const h = this.rollNeed(wpn.toHit || 4); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: `Lifta-Droppa ${wpn.toHit || 4}+` });
+    if (!h.ok) return;
+    S.hits++;
+    const r = Phaser.Math.Between(1, 6); S.saveDice.push({ val: r, cls: r === 6 ? 'die-fail' : 'die-pass', tip: `${targetDet.name}: lifted on a 6` });
+    if (r === 6) { S.notes.push(`${targetDet.name} is hauled into the air and dropped`); this.orkKill(S, targetDet, aim); this.dropLiftedModel(S, targetDet, aim, F); }
+    else { targetDet.moved = true; targetDet.fired = true; targetDet.stands.forEach(s => { s.stunned = this.turn; }); S.saves++; S.notes.push(`${targetDet.name} is too heavy to lift, but is held in the beam and can do nothing else this turn (${r})`); }
+  }
+  disembarkDetachment(t, x = null, y = null) {
+    if (t && t.rokkitTrapped && this.turn < t.rokkitTrapped) { this.log(`🙃 The Orks inside <b>${t.name}</b> are still trying to blast their way out: they emerge next turn.`); return false; }
+    return this.disembarkDetachmentOrkCore(t, x, y);
   }
 
   applySuperHeavyDamageOrkCore(det, stand = null, isCloseCombat = false) {
@@ -52956,7 +53436,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Execute NetEpic 2D6 cm Scatter Roll when confirming a Deep Strike / Teleport drop!
-  executeDeepStrikeScatter(det) {
+  executeDeepStrikeScatterOrkCore(det) {
     if (!det || !det.deepStrikeActive) return;
     det.deepStrikeActive = false;
     det.deepStrikeUsed = true;
@@ -53156,7 +53636,7 @@ class NetEpicScene extends Phaser.Scene {
     this.updateUI();
   }
 
-  disembarkDetachment(transDet, emergencyX = null, emergencyY = null) {
+  disembarkDetachmentOrkCore(transDet, emergencyX = null, emergencyY = null) {
     if (!transDet || !transDet.passengerDet) return;
     const infDet = transDet.passengerDet;
     transDet.passengerDet = null;
@@ -53941,6 +54421,8 @@ class NetEpicScene extends Phaser.Scene {
                 guidedNote = ` [✨Guide Re-roll]`;
               }
             }
+            if (!hitSuccess && roll > 1 && this.orkLenz(firerDet, roll, neededToHit)) hitSuccess = true;
+            if (roll === 1 && this.isOrk(firerDet)) this.orkOnRollOne(firerDet, pair.shooter, curWpn);
             hitDiceUI.push({ val: roll, cls: hitSuccess ? 'die-pass' : 'die-fail', sub: (extraRoll !== null ? `+${extraRoll}` : '') + (guidedNote ? '✨' : ''), tip: `Needed ${neededToHit}+${guidedNote}` });
 
             if (hitSuccess && this.orkDeflekt(pair.shooter, pair.target, targetDet, curWpn)) hitSuccess = false; // Dragsta deflektor field
@@ -56719,6 +57201,9 @@ class NetEpicScene extends Phaser.Scene {
       const b = this.eldarCCReroll(orkDet, orkRolls, orkTotal, impTotal);
       if (b) { orkRerollNote += b; orkSum = orkRolls.reduce((x, y) => x + y, 0); orkTotal = orkSum + orkModCaf; }
     }
+    // Super Stikkbomz: any double blows the stand up and its opponent survives
+    if (this.orkStikk(impDet, impRolls)) { impTotal = -99; impRerollNote += ' <span class="log-kill">[💥 Stikkbomz double: blown up!]</span>'; }
+    if (this.orkStikk(orkDet, orkRolls)) { orkTotal = -99; orkRerollNote += ' <span class="log-kill">[💥 Stikkbomz double: blown up!]</span>'; }
 
     const gangTagImp =
       (impExtraDice + impWaaaghBonus > 0 ? ` <span class="log-hit">[${impWaaaghBonus && !impExtraDice ? '🟢 WAAAGH! ' : 'Gang-Up '}${impDiceCount}D6!]</span>` : '') +
@@ -58308,7 +58793,7 @@ class NetEpicScene extends Phaser.Scene {
     const o = {}; Object.keys(v).forEach(k => { const c = this.plainCopy(v[k]); if (c !== undefined) o[k] = c; }); return o;
   }
 
-  serializeGameState(saveName = null) {
+  serializeGameStateOrkCore(saveName = null) {
     const d = new Date();
     const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const name = saveName || `Turn ${this.turn} (${ORDER_INFO[this.phase] ? ORDER_INFO[this.phase].label : this.phase})`;
@@ -58453,7 +58938,7 @@ class NetEpicScene extends Phaser.Scene {
     window._restoring = true; window._live = null;
     let ok = false;
     try { ok = this.restoreGameStateCore(saveData); } finally { window._restoring = false; }
-    try { this.applyEldarSetup(); this.orkSetup(); } catch (e) { console.error(e); }
+    try { this.applyEldarSetup(); this.orkSetup(); this.orkRestoreExtra(saveData); } catch (e) { console.error(e); }
     if (ok !== false) window.battleActive = true;
     return ok;
   }
