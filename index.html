@@ -39538,6 +39538,47 @@ window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
 // Eldar Craftworlds (Eldar book pp. 6-8): each adds its own host and rules; the standard list has none of them
 const ELDAR_CRAFTWORLDS = [['CODEX', 'Any (standard list)'], ['ALAITOC', 'Alaitoc'], ['BIEL_TAN', 'Biel-Tan'], ['IYANDEN', 'Iyanden'], ['SAIM_HANN', 'Saim-Hann'], ['ULTHWE', 'Ulthwe']];
 const ELDAR_CW_PROHIBITED = { IYANDEN: new Set(['card_eld_guardian_host']), SAIM_HANN: new Set(['card_eld_tempest_host', 'card_eld_phantom']) };
+// Ork clan-specific support cards (Ork book p. 5)
+window.ORK_CLAN_CARDS = { card_ork_gutrippa: 'GOFF', card_ork_lungbursta: 'GOFF', card_ork_bowelburna: 'EVIL_SUNZ', card_ork_gobsmasha: 'EVIL_SUNZ', card_ork_spleenrippa: 'EVIL_SUNZ', card_ork_nobz_warbikes: 'EVIL_SUNZ',
+  card_ork_boarboyz: 'SNAKEBITE', card_ork_squiggoth: 'SNAKEBITE', card_ork_cyberwyverns: 'SNAKEBITE', card_ork_squig_katapult: 'SNAKEBITE', card_ork_blood_axe_land_raider: 'BLOOD_AXE', card_ork_blood_axe_rhino: 'BLOOD_AXE',
+  card_ork_kommandos: 'BLOOD_AXE', card_ork_weirdboy_tower: 'BAD_MOON', card_ork_deathskull_shootas: 'DEATHSKULL' };
+// Ork army construction (Ork book pp. 4-6): leaders for big armies, no duplicate clans, limited Mekboyz, clan cards
+window.orkRosterCheck = function(roster) {
+  const CL = { card_ork_goff_co: 'GOFF', card_ork_bad_moon_co: 'BAD_MOON', card_ork_evil_sunz_co: 'EVIL_SUNZ', card_ork_blood_axe_co: 'BLOOD_AXE', card_ork_deathskull_co: 'DEATHSKULL', card_ork_snakebite_co: 'SNAKEBITE', card_ork_speed_co: 'KULT' };
+  const NAME = { GOFF: 'Goff', BAD_MOON: 'Bad Moon', EVIL_SUNZ: 'Evil Sunz', BLOOD_AXE: 'Blood Axe', DEATHSKULL: 'Deathskull', SNAKEBITE: 'Snakebite', KULT: 'Kult of Speed' };
+  const count = k => roster.filter(x => x === k).length, U = k => window.findCatalogUnit(k) || {};
+  const clanKeys = roster.filter(k => CL[k]), n = clanKeys.length, clans = new Set(clanKeys.map(k => CL[k])), errors = [];
+  let freeSpecial = 0;
+  const GARG = ['card_ork_mega_gargant', 'card_ork_gargant', 'card_ork_slasha_gargant', 'card_ork_great_gargant', 'card_ork_steam_gargant'], LORD = ['card_ork_warlord_stompas', 'card_ork_ghazghkull'], BOSS = ['card_ork_warboss'];
+  const need = n >= 7 ? GARG : n >= 5 ? [...LORD, ...GARG] : n >= 3 ? [...BOSS, ...LORD, ...GARG] : null;
+  if (need) {
+    const got = need.find(k => roster.includes(k));
+    if (!got) errors.push(`${n} clans need a ${n >= 7 ? 'Gargant' : n >= 5 ? 'Warlord or Gargant' : 'Warboss, Warlord or Gargant'} to keep them in line.`);
+    else if (U(got).cardType === 'SPECIAL') freeSpecial = 1; // the required leader doesn't use a Special slot
+  }
+  const dupl = Object.keys(CL).filter(k => count(k) > 1);
+  if (dupl.length && !Object.keys(NAME).every(c => clans.has(c))) errors.push(`No duplicate clans: take one of each clan before a second ${dupl.map(k => NAME[CL[k]]).join(', ')}.`);
+  const MEK = ['card_ork_tinbotz', 'card_ork_doomdiver', 'card_ork_flakwagon', 'card_ork_bubble_chukka', 'card_ork_destrukta_rokkits', 'card_ork_dragsta', 'card_ork_kustom_kannon', 'card_ork_lifta_droppa', 'card_ork_shokk', 'card_ork_pulsa_rokkit', 'card_ork_soopa_gun', 'card_ork_fighta_bomma'];
+  const mekN = roster.filter(k => MEK.includes(k)).length, mekAllow = clanKeys.reduce((a, k) => a + ({ BLOOD_AXE: 2, EVIL_SUNZ: 2, KULT: 5 }[CL[k]] || 1), 0) + (roster.includes('card_ork_renegade_mekboyz') ? 4 : 0);
+  if (n && mekN > mekAllow) errors.push(`Too many Mekboy cards: ${mekN}/${mekAllow} (1 per clan; 2 for Blood Axes and Evil Sunz, 5 for the Kult of Speed or with Renegade Mekboyz).`);
+  if (count('card_ork_pulsa_rokkit') > Math.max(1, n)) errors.push(`Pulsa Rokkit Batteries: at most one per clan (${count('card_ork_pulsa_rokkit')}/${Math.max(1, n)}).`);
+  const dreads = count('card_ork_kans') + count('card_ork_onslaughter'), dAllow = clanKeys.reduce((a, k) => a + (CL[k] === 'BAD_MOON' ? 2 : 1), 0);
+  if (n && dreads > dAllow) errors.push(`Dreadnought Mobz: at most one per clan, two for Bad Moons (${dreads}/${dAllow}).`);
+  if (count('card_ork_weirdboy_tower') > count('card_ork_bad_moon_co')) errors.push('Weirdboy Battletowers: one per Bad Moon clan.');
+  let borrowed = 0;
+  roster.forEach(k => {
+    const c = window.ORK_CLAN_CARDS[k]; if (!c || k === 'card_ork_weirdboy_tower' || clans.has(c) || (c === 'EVIL_SUNZ' && clans.has('KULT'))) return;
+    if (clans.has('DEATHSKULL')) borrowed++; else errors.push(`${U(k).cardName || U(k).name} needs the ${NAME[c]} clan.`);
+  });
+  if (borrowed > 2) errors.push(`The Deathskullz can borrow at most two other clans' cards (${borrowed}).`);
+  const cos = roster.filter(k => U(k).cardType === 'COMPANY');
+  if (cos.length && cos.every(k => k === 'card_ork_wildboyz_horde')) {
+    const ok = new Set(['card_ork_wildboyz_horde', 'card_ork_wildboyz', 'card_ork_madboyz', 'card_ork_lobbas', 'card_ork_gretchin', 'card_ork_gretchin_mob', 'card_ork_mega_squiggoth', 'card_ork_steam_gargant']);
+    const bad = roster.filter(k => !ok.has(k) && window.ORK_CLAN_CARDS[k] !== 'SNAKEBITE');
+    if (bad.length) errors.push(`A Wildboyz Horde can't take: ${[...new Set(bad.map(k => U(k).cardName || U(k).name))].join(', ')}.`);
+  }
+  return { errors, freeSpecial };
+};
 const ELD_ASPECT_KEYS = ['card_eld_avengers', 'card_eld_banshees', 'card_eld_scorpions', 'card_eld_dragons', 'card_eld_hawks', 'card_eld_reapers', 'card_eld_warp_spiders', 'card_eld_shining_spears'];
 window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch) || ELDAR_CRAFTWORLDS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
 window.cardAllowed = function(side, u) {
@@ -39695,6 +39736,8 @@ window.getRosterBreakdown = function(side) {
 
   const phHosts = roster.filter(k => k === 'card_eld_phoenix_host').length, phAsp = roster.filter(k => ELD_ASPECT_KEYS.includes(k)).length;
   if (phHosts) support -= Math.min(phAsp, phHosts * 3); // their Aspect Warriors are part of the Host
+  const orkR = (window.sideFaction[side] || side) === 'ORKS' && window.orkRosterCheck ? window.orkRosterCheck(roster) : null;
+  if (orkR) special -= orkR.freeSpecial;
   const maxSupport = companies * 5;
   const maxSpecial = companies * 1;
   // NetEpic p. 13: 1 Unique per full 3,000 pts (min 1 allowed for armies up to 2000 pts)
@@ -39712,6 +39755,7 @@ window.getRosterBreakdown = function(side) {
   if (companies > 0 && special > maxSpecial) {
     errors.push(`Special limit exceeded: ${special}/${maxSpecial} (max 1 per Company).`);
   }
+  if (orkR) errors.push(...orkR.errors);
   if (phHosts && phAsp < phHosts * 3) errors.push(`Phoenix Host: buy three Aspect Warrior cards for each Host (${phAsp}/${phHosts * 3}).`);
   if (duplicateUnique) {
     errors.push(`Duplicate Unique Character: "${duplicateUnique}" (personalities may never be duplicated).`);
@@ -45068,7 +45112,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Orders: instinctive broods out of synapse (or broken ones that fail a Hive Mind test) act on instinct
-  applyHiveMindOrders(afterInitiative = false) {
+  applyHiveMindOrdersCore(afterInitiative = false) {
     const ORD = { RAMPAGE: 'CHARGE', HUNT: 'ADVANCE', NEST: 'FIRST_FIRE' };
     this.detachments.forEach(det => {
       const role = this.getTyranidRole(det);
@@ -45094,15 +45138,14 @@ class NetEpicScene extends Phaser.Scene {
   // Compulsory movement for instinctive broods: Rampage (double move, straight at the nearest free enemy) and
   // Hunt (normal move towards the nearest free enemy). Nesting broods stay put.
   runInstinctMoves(done) {
-    const movers = this.detachments.filter(d => d.instinct && d.instinct !== 'NEST' && d.stands.length && !d.moved && !d.embarkedOn);
+    const movers = this.detachments.filter(d => this.instinctMoves(d) && d.stands.length && !d.moved && !d.embarkedOn);
     const next = () => {
       const det = movers.shift();
       if (!det) { done(); return; }
-      const enemies = det.instinct === 'WAYSTONE' ? this.eldLivingStands(det) : [];
-      if (det.instinct !== 'WAYSTONE') this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
+      const enemies = this.instinctTargets(det);
       det.moved = true;
       if (!enemies.length) { this.updateDetachmentBadge(det); next(); return; }
-      const allowance = this.getEffectiveMoveCm(det) * (det.instinct === 'RAMPAGE' || det.instinct === 'WAYSTONE' ? 2 : 1) * PX_PER_CM;
+      const allowance = this.getEffectiveMoveCm(det) * this.instinctMoveMult(det) * PX_PER_CM;
       const dests = det.stands.map(st => {
         const sx = st.container.x, sy = st.container.y;
         const tgt = enemies.reduce((a, b) => Phaser.Math.Distance.Between(sx, sy, b.container.x, b.container.y) < Phaser.Math.Distance.Between(sx, sy, a.container.x, a.container.y) ? b : a);
@@ -45116,7 +45159,7 @@ class NetEpicScene extends Phaser.Scene {
       });
       const dc = this.getDetachmentCenter(det);
       this.panCameraTo(dc.x, dc.y, 400);
-      this.spawnFloatingText(dc.x, dc.y - 22, det.instinct === 'AVATAR' ? '🔥 THE AVATAR STRIDES' : det.instinct === 'WAYSTONE' ? '👻 SPIRITS RETURN' : det.instinct === 'RAMPAGE' ? '🧠 RAMPAGE!' : '🧠 HUNTING', '#f0abfc', '11px');
+      this.spawnFloatingText(dc.x, dc.y - 22, this.instinctText(det, 'fx'), /^ORK_/.test(det.instinct) ? '#86efac' : '#f0abfc', '11px');
       const from = dests.map(d => ({ x: d.st.container.x, y: d.st.container.y }));
       const anim = { p: 0 };
       this.tweens.add({ targets: anim, p: 1, delay: 350, duration: 650, ease: 'Sine.easeInOut', onUpdate: () => {
@@ -45125,7 +45168,7 @@ class NetEpicScene extends Phaser.Scene {
       }, onComplete: () => {
         dests.forEach(d => { d.st.originX = d.x; d.st.originY = d.y; d.st.facingRad = d.ang; });
         this.applyStandFacing(det);
-        this.log(det.instinct === 'AVATAR' ? `🔥 <b>${det.name}</b> strides 15 cm towards the nearest enemy.` : det.instinct === 'WAYSTONE' ? `👻 <b>${det.name}</b> charges back towards the living Eldar.` : `🧠 <b>${det.name}</b> acts on instinct: <b>${det.instinct === 'RAMPAGE' ? 'Rampage' : 'Hunt'}</b>.`);
+        this.log(this.instinctText(det, 'log'));
         this.updateDetachmentBadge(det); this.drawOverlays();
         next();
       } });
@@ -45138,7 +45181,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!det || this.activatingDetachment !== det || det.fired) return;
     const dc = this.getDetachmentCenter(det);
     const dist = e => { const c = this.getDetachmentCenter(e); return Phaser.Math.Distance.Between(dc.x, dc.y, c.x, c.y); };
-    const cands = this.detachments.filter(e => e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve && this.evaluateFireSolution(det, e, false).validPairs.length > 0);
+    const cands = this.detachments.filter(e => e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve && this.orkInstinctCanShoot(det, e) && this.evaluateFireSolution(det, e, false).validPairs.length > 0);
     if (!cands.length) { this.skipFireDetachment(); return; }
     cands.sort((a, b) => dist(a) - dist(b));
     this.targetDetachment = cands[0];
@@ -46945,6 +46988,7 @@ class NetEpicScene extends Phaser.Scene {
     this._mimes = {}; this._fx = {}; // per-battle card effects (Raptor drop, Razorbacks)
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
+    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); } catch (e) { console.error(e); }
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
     this.applyCraftworldAtSpawn();
@@ -51079,6 +51123,175 @@ class NetEpicScene extends Phaser.Scene {
     return r;
   }
 
+  // ===== ORKS (NetEpic Ork book pp. 4-7): clans, Mobz, Nob command and natural instincts =====
+  isOrk(d) { return Boolean(d && d.armyBook === 'ORKS'); }
+  orkClanOf(d) {
+    if (!d) return null;
+    if (d.orkClan) return d.orkClan;
+    if (d.cfg && d.cfg.orkClan) return d.cfg.orkClan;
+    const k = d.companyCardKey || d.key || '';
+    if (k === 'card_ork_speed_co') return 'KULT';
+    if (k === 'card_ork_wildboyz_horde') return 'WILDBOYZ';
+    if (k === 'card_ork_renegade_mekboyz') return 'RENEGADE';
+    return d.clan || null;
+  }
+  orkClanName(c) { return { GOFF: 'Goff', BAD_MOON: 'Bad Moon', EVIL_SUNZ: 'Evil Sunz', BLOOD_AXE: 'Blood Axe', DEATHSKULL: 'Deathskull', SNAKEBITE: 'Snakebite', KULT: 'Kult of Speed', WILDBOYZ: 'Wildboyz', RENEGADE: 'Renegade Mekboyz' }[c] || 'Ork'; }
+  isOrkNob(d) { return this.isOrk(d) && d.stands.length && (this.isCommandUnit(d) || /\bnobz?\b|warboss|warlord|ghazghkull|\bboss\b|kaptin/i.test(d.name || '')); }
+  // Mobz that never need a Nob: Independent units, command units, gargants, fliers and units with their own Nobz on board
+  orkNoCommandNeeded(d) {
+    return !this.isOrk(d) || d.isTitan || d.isFlyer || d.flyer || this.isCommandUnit(d) || this.hasAbility(d, 'Independent') || d.independent ||
+      /tinbot|gibletgrinda|skullhamma|blasta bomma|landa|madboy|freebooter|kommando|stormboy|gretchin|grot|tour wagon|supa rokkit|trans'?ort/i.test(d.name || '');
+  }
+  orkDetPoints(d) { const t = d.embarkedOn || d; return t.stands.map(s => ({ x: s.container.x, y: s.container.y })); }
+  orkInCommand(d) {
+    const R = 10 * PX_PER_CM, mine = this.orkDetPoints(d), clan = this.orkClanOf(d);
+    const art = /hop.?splat|squig katapult|traktor|zzap|lobba|squiggoth/i.test(d.name || '');
+    return this.detachments.some(n => {
+      if (n === d || n.faction !== d.faction || !n.stands.length || n.inReserve) return false;
+      const isNob = this.isOrkNob(n), isHerd = art && /runtherd/i.test(n.name || '');
+      if (!isNob && !isHerd) return false;
+      if (isNob && this.orkClanOf(n) === 'BLOOD_AXE' && clan !== 'BLOOD_AXE') return false; // other Orks don't take orders from Blood Axe Nobz
+      return this.orkDetPoints(n).some(a => mine.some(b => Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y) <= R));
+    });
+  }
+  orkInstinctFor(d) {
+    if (/killa kan|dreadnought|onslaughter/i.test(d.name || '')) return 'ORK_DREAD';
+    return { GOFF: 'ORK_GOFF', BAD_MOON: 'ORK_BM', EVIL_SUNZ: 'ORK_SUNZ', RENEGADE: 'ORK_SUNZ', BLOOD_AXE: 'ORK_BAXE', DEATHSKULL: 'ORK_DSKULL', KULT: 'ORK_KULT', SNAKEBITE: 'ORK_SNAKE', WILDBOYZ: 'ORK_SNAKE' }[this.orkClanOf(d)] || null;
+  }
+  orkInstinctDesc(i) {
+    return { ORK_GOFF: 'Goffs charge the nearest enemy', ORK_BM: 'Bad Moons stay put and shoot the nearest enemy on First Fire', ORK_SUNZ: 'Evil Sunz race for the far table edge, fighting anything in the way',
+      ORK_BAXE: 'Blood Axes head for the nearest table edge and only shoot enemies within 25 cm', ORK_DSKULL: 'Deathskulls head for the nearest objective and only shoot enemies within 25 cm',
+      ORK_KULT: 'the Kult of Speed races flat out straight ahead', ORK_SNAKE: 'Snakebites move at normal speed at the nearest enemy and fight it', ORK_DREAD: 'the Dreadnought\'s orders are rolled at random' }[i] || 'clan instinct';
+  }
+  // Start of the Orders Phase (and again when orders are locked): Mobz out of Nob command follow their clan's instinct
+  applyOrkCommand(afterInitiative = false) {
+    if (afterInitiative) return;
+    const ORD = { ORK_GOFF: 'CHARGE', ORK_BM: 'FIRST_FIRE', ORK_SUNZ: 'CHARGE', ORK_BAXE: 'ADVANCE', ORK_DSKULL: 'ADVANCE', ORK_KULT: 'CHARGE', ORK_SNAKE: 'CHARGE' };
+    this.detachments.forEach(d => {
+      if (!this.isOrk(d) || !d.stands.length || d.inReserve) return;
+      const had = /^ORK_/.test(d.instinct || '');
+      if (this.orkNoCommandNeeded(d) || d.order === 'FALL_BACK' || this.orkInCommand(d)) {
+        if (had) { d.instinct = null; if (d._orkTurn !== this.turn) { d.order = null; d.orderRevealed = false; } this.updateDetachmentBadge(d); }
+        return;
+      }
+      const inst = this.orkInstinctFor(d); if (!inst) return;
+      if (had && d._orkTurn === this.turn) return; // already settled this turn
+      d._orkTurn = this.turn; d.instinct = inst; d.orderRevealed = true;
+      if (inst === 'ORK_DREAD') { d.order = ['FIRST_FIRE', 'FIRST_FIRE', 'ADVANCE', 'ADVANCE', 'CHARGE', 'CHARGE'][Phaser.Math.Between(0, 5)]; this.log(`🤖 <b>${d.name}</b> has no Nob to boss it about: its Gretchin pilots pick <b>${this.eldOrderName(d.order)}</b> orders.`); }
+      else { d.order = ORD[inst]; this.log(`🟢 <b>${d.name}</b> is more than 10 cm from a Nob: ${this.orkInstinctDesc(inst)}.`); }
+      this.updateDetachmentBadge(d);
+    });
+  }
+  // Where an instinctive Mob heads: a list of things with .container {x,y} (stands or points)
+  instinctTargets(det) {
+    const enemies = [];
+    this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
+    const pt = (x, y) => ({ container: { x: Phaser.Math.Clamp(x, 20, BOARD_W - 20), y: Phaser.Math.Clamp(y, 20, BOARD_H - 20) }, baseRadius: 0, point: true });
+    const c = this.getDetachmentCenter(det), i = det.instinct;
+    if (i === 'WAYSTONE') return this.eldLivingStands(det);
+    if (i === 'ORK_SUNZ' || i === 'ORK_KULT') {
+      const edges = [{ y: 20, d: c.y }, { y: BOARD_H - 20, d: BOARD_H - c.y }];
+      const far = det.faction === 'IMPERIUM' ? edges[0] : edges[1]; // the far (enemy) table edge
+      const reach = this.getEffectiveMoveCm(det) * 2 * PX_PER_CM, dirY = Math.sign(far.y - c.y) || 1;
+      const inWay = enemies.filter(s => Math.abs(s.container.x - c.x) <= 40 && (s.container.y - c.y) * dirY > 0 && Math.abs(s.container.y - c.y) <= reach + 20);
+      if (inWay.length) return inWay;
+      return det.stands.map(s => pt(s.container.x, far.y));
+    }
+    if (i === 'ORK_BAXE') {
+      const opts = [{ d: c.x, f: s => pt(20, s.container.y) }, { d: BOARD_W - c.x, f: s => pt(BOARD_W - 20, s.container.y) }, { d: c.y, f: s => pt(s.container.x, 20) }, { d: BOARD_H - c.y, f: s => pt(s.container.x, BOARD_H - 20) }];
+      const e = opts.sort((a, b) => a.d - b.d)[0];
+      if (e.d < 30) return [];
+      return det.stands.map(e.f);
+    }
+    if (i === 'ORK_DSKULL') {
+      const obs = (this.objectives || []).filter(o => o.x != null);
+      if (!obs.length) return [];
+      const o = obs.reduce((a, b) => Phaser.Math.Distance.Between(c.x, c.y, b.x, b.y) < Phaser.Math.Distance.Between(c.x, c.y, a.x, a.y) ? b : a);
+      if (Phaser.Math.Distance.Between(c.x, c.y, o.x, o.y) < 25) return [];
+      return [pt(o.x, o.y)];
+    }
+    return enemies;
+  }
+  instinctMoveMult(det) { return ({ RAMPAGE: 2, WAYSTONE: 2, ORK_GOFF: 2, ORK_SUNZ: 2, ORK_KULT: 2 })[det.instinct] || 1; }
+  instinctText(det, kind) {
+    const i = det.instinct, n = det.name;
+    const T = { AVATAR: ['🔥 THE AVATAR STRIDES', `🔥 <b>${n}</b> strides 15 cm towards the nearest enemy.`], WAYSTONE: ['👻 SPIRITS RETURN', `👻 <b>${n}</b> charges back towards the living Eldar.`],
+      RAMPAGE: ['🧠 RAMPAGE!', `🧠 <b>${n}</b> acts on instinct: <b>Rampage</b>.`], HUNT: ['🧠 HUNTING', `🧠 <b>${n}</b> acts on instinct: <b>Hunt</b>.`],
+      ORK_GOFF: ['🟢 WAAAGH! CHARGE!', `🟢 <b>${n}</b> (Goffs) charges at the enemy.`], ORK_SUNZ: ['🟢 FASTA!', `🟢 <b>${n}</b> (Evil Sunz) races for the far edge.`],
+      ORK_KULT: ['🟢 FULL THROTTLE!', `🟢 <b>${n}</b> (Kult of Speed) roars straight ahead.`], ORK_SNAKE: ['🟢 GET \'EM!', `🟢 <b>${n}</b> (Snakebites) goes for the nearest enemy.`],
+      ORK_BAXE: ['🟢 SNEAKIN\' OFF', `🟢 <b>${n}</b> (Blood Axes) heads for the nearest table edge.`], ORK_DSKULL: ['🟢 LOOT IT!', `🟢 <b>${n}</b> (Deathskulls) heads for the nearest objective.`] }[i] || ['🧠 INSTINCT', `🧠 <b>${n}</b> acts on instinct.`];
+    return kind === 'fx' ? T[0] : T[1];
+  }
+  instinctMoves(d) { return d.instinct && !['NEST', 'ORK_BM', 'ORK_DREAD'].includes(d.instinct); }
+  // Blood Axes and Deathskulls on instinct only shoot at enemies within 25 cm
+  orkInstinctCanShoot(det, e) {
+    if (!['ORK_BAXE', 'ORK_DSKULL'].includes(det.instinct)) return true;
+    return det.stands.some(a => e.stands.some(b => Phaser.Math.Distance.Between(a.container.x, a.container.y, b.container.x, b.container.y) <= 25 * PX_PER_CM));
+  }
+
+  // ---------- Mobz: support cards join their clan ----------
+  orkMobType(key, name) {
+    const n = (name || '').toLowerCase();
+    const T = { card_ork_boyz: /boyz mob|mechanized boyz|loota boyz|feral boyz mob|blood axe boyz|heavy shoota mob/, card_ork_nobz: /nobz/, card_ork_wildboyz: /wildboyz mob|feral boyz/,
+      card_ork_gretchin: /gretchin|grot/, card_ork_gretchin_mob: /gretchin|grot/, card_ork_bikes: /warbike|bikeboyz|warbike outriders/, card_ork_boarboyz: /boarboyz/, card_ork_coptas: /kopta|copter/, card_ork_kommandos: /kommando/ };
+    return T[key] ? (s => T[key].test(s.toLowerCase()) && !(key === 'card_ork_nobz' && /bike/.test(s.toLowerCase())) && !(key === 'card_ork_boyz' && /nobz|wild|boar|storm/.test(s.toLowerCase()))) : null;
+  }
+  orkClanCards() { return { card_ork_goff_co: 'GOFF', card_ork_bad_moon_co: 'BAD_MOON', card_ork_evil_sunz_co: 'EVIL_SUNZ', card_ork_blood_axe_co: 'BLOOD_AXE', card_ork_deathskull_co: 'DEATHSKULL', card_ork_snakebite_co: 'SNAKEBITE', card_ork_speed_co: 'KULT', card_ork_wildboyz_horde: 'WILDBOYZ' }; }
+  applyOrkMobz(keysBySide) {
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      const keys = keysBySide[side] || [], CL = this.orkClanCards(), SPEC = window.ORK_CLAN_CARDS || {};
+      const mine = this.detachments.filter(d => d.faction === side && this.isOrk(d));
+      if (!mine.length) return;
+      const idxOf = d => { const m = /_(\d+)_card_/.exec(d.id || ''); return m ? +m[1] : -1; };
+      // companies (clan cards) in roster order
+      const cos = [];
+      keys.forEach((k, i) => { if (CL[k]) { const id = mine.find(d => d.companyCardId && idxOf(d) === i); if (id) cos.push({ i, key: k, clan: CL[k], id: id.companyCardId }); } });
+      cos.forEach(c => mine.filter(d => d.companyCardId === c.id).forEach(d => { d.orkClan = c.clan; if (d.cfg) d.cfg.orkClan = c.clan; }));
+      if (!cos.length) return;
+      const notes = [];
+      mine.filter(d => !d.companyCardId && !d.embarkedOn).forEach(d => {
+        const i = idxOf(d), key = keys[i], card = window.findCatalogUnit(key);
+        if (!card || card.cardType !== 'SUPPORT' || d.isTitan) {
+          if (!this.orkClanOf(d)) { const pre = cos.filter(c => c.i < i).pop() || cos[0]; d.orkClan = pre.clan; if (d.cfg) d.cfg.orkClan = pre.clan; }
+          return;
+        }
+        const need = SPEC[key];
+        let co = null;
+        if (need) co = cos.find(c => c.clan === need) || (need === 'EVIL_SUNZ' && cos.find(c => c.clan === 'KULT')) || cos.find(c => c.clan === 'DEATHSKULL');
+        if (!co) co = cos.filter(c => c.i < i).pop() || cos[0];
+        const coDets = this.detachments.filter(x => x.companyCardId === co.id);
+        const head = coDets[0];
+        const bp = card.breakPoint || 0, vp = card.vpValue || 0, n = d.stands.length;
+        coDets.forEach(x => { x.companyBreakPoint = (x.companyBreakPoint || 0) + bp; x.companyVpValue = (x.companyVpValue || 0) + vp; x.companyTotalStands = (x.companyTotalStands || 0) + n; });
+        Object.assign(d, { companyCardId: co.id, companyCardKey: head.companyCardKey, companyName: head.companyName, companyBreakPoint: head.companyBreakPoint, companyVpValue: head.companyVpValue,
+          companyMorale: head.companyMorale, companyTotalStands: head.companyTotalStands, isCompanyDetachment: true, orkClan: co.clan });
+        if (d.cfg) d.cfg.orkClan = co.clan;
+        // join an existing Mob of the same type
+        const match = this.orkMobType(key, d.name);
+        const into = coDets.find(x => x !== d && x.stands.length && !x.isTitan && (match ? match(x.name || '') : (x._orkKey === key)));
+        d._orkKey = key;
+        if (into) {
+          const ox = into.stands[0].container.x, oy = into.stands[0].container.y;
+          d.stands.forEach((s, j) => { s.detachment = into; into.stands.push(s); s.container.x = s.originX = ox + ((into.stands.length + j) % 4) * 24 - 36; s.container.y = s.originY = oy + Math.floor((into.stands.length + j) / 4) * 22 * (side === 'IMPERIUM' ? 1 : -1); });
+          into.initialCount = (into.initialCount || 0) + n; into.standsCount = (into.standsCount || 0) + n;
+          if (into.cfg) into.cfg.standsCount = into.standsCount;
+          d.stands = [];
+          if (d.badge && d.badge.destroy) d.badge.destroy();
+          if (d.badgeText && d.badgeText.destroy) d.badgeText.destroy();
+          this.detachments = this.detachments.filter(x => x !== d);
+          this.updateDetachmentBadge(into); this.updateDetachmentBadgePos(into);
+          notes.push(`${card.cardName || card.name} join ${into.name} (${into.stands.length})`);
+        } else notes.push(`${card.cardName || card.name} join the ${this.orkClanName(co.clan)} clan`);
+      });
+      if (notes.length) this.log(`🟢 <b>Mobz:</b> ${notes.join('; ')}.`);
+    });
+  }
+  applyHiveMindOrders(afterInitiative = false) {
+    const r = this.applyHiveMindOrdersCore(afterInitiative);
+    try { this.applyOrkCommand(afterInitiative); } catch (e) { console.error(e); }
+    return r;
+  }
+
   applySuperHeavyDamage(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
     // Titans with a hit location template use it (location, armour save, damage table)
@@ -54976,7 +55189,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.selectedDetachment.order === 'FALL_BACK' || this.selectedDetachment.zealous) return;
     if (this.selectedDetachment.deathCompany && orderKey === 'FIRST_FIRE') { this.log(`💀 The <b>Death Company</b> is too frenzied to hold back: Advance or Charge only.`); return; }
     if (this.isCommandUnit(this.selectedDetachment) && !this.selectedDetachment.deathCompany) return; // Command units take no orders
-    if (this.selectedDetachment.instinct) { this.log(this.selectedDetachment.instinct === 'WAYSTONE' ? `👻 <b>${this.selectedDetachment.name}</b> has strayed from the living Eldar and must return to them this turn.` : `🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
+    if (this.selectedDetachment.instinct) { this.log(this.selectedDetachment.instinct === 'WAYSTONE' ? `👻 <b>${this.selectedDetachment.name}</b> has strayed from the living Eldar and must return to them this turn.` : /^ORK_/.test(this.selectedDetachment.instinct) ? `🟢 <b>${this.selectedDetachment.name}</b> is more than 10 cm from a Nob, so it can't be given orders: ${this.orkInstinctDesc(this.selectedDetachment.instinct)}.` : `🧠 <b>${this.selectedDetachment.name}</b> is out of synapse and acts on instinct – it can't be given orders.`); return; }
     this.selectedDetachment.order = orderKey;
     this.selectedDetachment.orderRevealed = false;
     // If this is a Transport carrying embarked passengers, automatically set the passenger's order to ADVANCE
@@ -55053,7 +55266,7 @@ class NetEpicScene extends Phaser.Scene {
     const afterChoice = () => {
     this.applyHiveMindOrders(true);
     const startMoves = () => { this.updateUI(); this.drawOverlays(); this.focusPlayerNextUnit(); this.checkAndRunAITurn(); };
-    if (this.detachments.some(d => d.instinct && d.instinct !== 'NEST' && d.stands.length)) {
+    if (this.detachments.some(d => this.instinctMoves(d) && d.stands.length && !d.moved)) {
       this.aiTimerPending = true;
       this.runInstinctMoves(() => {
         this.aiTimerPending = false;
@@ -56698,7 +56911,7 @@ class NetEpicScene extends Phaser.Scene {
     const popSuffix = det.poppedUp ? ' 🚀POP-UP' : '';
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
-    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : det.instinct === 'AVATAR' ? 'Avatar' : det.instinct === 'WAYSTONE' ? 'Spirit' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
+    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : det.instinct === 'AVATAR' ? 'Avatar' : det.instinct === 'WAYSTONE' ? 'Spirit' : /^ORK_/.test(det.instinct) ? 'No Nob' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
     const rokkitSuffix = (det.weapon && det.weapon.pulsaRokkit) ? ` 🚀${det.rokkitsRemaining || 0}/3` : '';
     const pulsaSuppSuffix = det.suppressedByPulsa ? ' ⚡DISRUPTED' : '';
     const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + rokkitSuffix + pulsaSuppSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
@@ -57187,7 +57400,7 @@ class NetEpicScene extends Phaser.Scene {
       const ghazBadge = (d.characterRules && d.characterRules.ghazghkull) ? ` | 🟢 ${d.characterRules.waaaghAvailable ? 'WAAAGH! Ready' : 'WAAAGH! Used'}` : '';
       const abaddonBadge = (d.characterRules && d.characterRules.abaddon) ? ' | ⚔️ Warmaster' : '';
       const guideBadge = d.guided ? ' | ✨ Guided' : '';
-      const doomBadge = (d.doomed || this.eldDoomActive(d) ? ' | 💀 Doomed' : '') + (d.eldGuide === this.turn ? ' | 🎯 Guided +1 to hit' : '') + (d.witchSight === this.turn ? ' | 👁️ Witch Sight' : '') + (d.eldFlex ? ' | 🔮 Foresight: can change orders when it moves' : '') + (d.stands.some(s => s.psyLock) ? ' | 🔒 Psychic Lock' : '') + (d.avatar ? ' | 🔥 Avatar: moves and fights on its own, fixed 2+ save' : '');
+      const doomBadge = (d.doomed || this.eldDoomActive(d) ? ' | 💀 Doomed' : '') + (d.eldGuide === this.turn ? ' | 🎯 Guided +1 to hit' : '') + (d.witchSight === this.turn ? ' | 👁️ Witch Sight' : '') + (d.eldFlex ? ' | 🔮 Foresight: can change orders when it moves' : '') + (d.stands.some(s => s.psyLock) ? ' | 🔒 Psychic Lock' : '') + (d.avatar ? ' | 🔥 Avatar: moves and fights on its own, fixed 2+ save' : '') + (/^ORK_/.test(d.instinct || '') ? ` | 🟢 No Nob within 10 cm: ${this.orkInstinctDesc(d.instinct)}` : (this.isOrk(d) && this.orkClanOf(d) ? ` | 🟢 ${this.orkClanName(this.orkClanOf(d))}` : ''));
       const transfixedBadge = d.transfixed ? ' | 👁️ Transfixed' : '';
       const waaaghBadge = (this.waaaghActive && d.armyBook === 'ORKS') ? ' | 🟢 WAAAGH! ACTIVE' : '';
       const roadBadge = this.hasRoadBonus(d) ? ' | 🛣️ +5cm Road' : '';
