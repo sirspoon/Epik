@@ -3768,7 +3768,11 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 1920728,
       "baseW": 34,
-      "baseH": 38
+      "baseH": 38,
+      "agile": true,
+      "specialAbilities": [
+        "HardToHitOnCharge"
+      ]
     },
     {
       "key": "card_sm_reaver",
@@ -5349,6 +5353,10 @@ const UNIT_CATALOG = {
           "breakPoint": 1,
           "vpValue": 2
         }
+      ],
+      "agile": true,
+      "specialAbilities": [
+        "HardToHitOnCharge"
       ]
     },
     {
@@ -24359,7 +24367,11 @@ const UNIT_CATALOG = {
       "shieldType": "VOID",
       "maxShields": 2,
       "isTitan": true,
-      "superHeavy": true
+      "superHeavy": true,
+      "agile": true,
+      "specialAbilities": [
+        "HardToHitOnCharge"
+      ]
     },
     {
       "key": "card_chs_angron",
@@ -36985,7 +36997,7 @@ const UNIT_CATALOG = {
       "superHeavy": true,
       "weapon": {
         "name": "Sonic Disruptor",
-        "rangeCm": 100,
+        "rangeCm": 300,
         "dice": 1,
         "toHit": 2,
         "tsm": -3,
@@ -36999,15 +37011,14 @@ const UNIT_CATALOG = {
       "baseH": 42,
       "salvos": [
         {
+          "id": "sonic",
           "name": "Sonic Disruptor",
-          "rangeCm": 100,
+          "rangeCm": 300,
           "dice": 1,
           "toHit": 2,
-          "tsm": -3,
-          "id": "mil_am_om_sonic",
-          "barrage": true,
-          "barrageBp": 10,
-          "damagesBuildings": true
+          "tsm": 0,
+          "fx": "sonic",
+          "ignoresCover": true
         },
         {
           "name": "Lascannons",
@@ -37017,7 +37028,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "mil_am_om_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_mil_ordinatus_golgotha",
@@ -37038,12 +37050,12 @@ const UNIT_CATALOG = {
       "superHeavy": true,
       "weapon": {
         "name": "Hellfire Missiles",
-        "rangeCm": 120,
+        "rangeCm": 200,
         "dice": 1,
-        "toHit": 2,
-        "tsm": -2,
+        "toHit": 3,
+        "tsm": -1,
         "barrage": true,
-        "barrageBp": 6,
+        "barrageBp": 8,
         "damagesBuildings": true
       },
       "standsCount": 1,
@@ -37052,15 +37064,39 @@ const UNIT_CATALOG = {
       "baseH": 42,
       "salvos": [
         {
-          "name": "Hellfire Missiles",
-          "rangeCm": 120,
+          "rangeCm": 200,
           "dice": 1,
-          "toHit": 2,
-          "tsm": -2,
-          "id": "mil_am_og_hellfire",
-          "barrage": true,
-          "barrageBp": 6,
-          "damagesBuildings": true
+          "toHit": 3,
+          "tsm": -1,
+          "fx": "hellfire",
+          "name": "Hellfire Missiles (two)",
+          "missiles": 2,
+          "modeName": "Two missiles",
+          "id": "hellfire",
+          "modes": [
+            {
+              "rangeCm": 200,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -1,
+              "fx": "hellfire",
+              "name": "Hellfire Missiles (two)",
+              "missiles": 2,
+              "modeName": "Two missiles"
+            },
+            {
+              "rangeCm": 200,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -1,
+              "fx": "hellfire",
+              "name": "Hellfire Missiles (one)",
+              "missiles": 1,
+              "modeName": "One missile"
+            }
+          ],
+          "modeIdx": 0,
+          "baseName": "Hellfire Missiles"
         },
         {
           "name": "Lascannons",
@@ -37070,7 +37106,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "mil_am_og_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_mil_ordinatus_armageddon",
@@ -37103,13 +37140,53 @@ const UNIT_CATALOG = {
       "baseH": 44,
       "salvos": [
         {
-          "name": "Nova Cannon",
           "rangeCm": 150,
           "dice": 1,
           "toHit": 2,
-          "tsm": -4,
-          "id": "mil_am_oa_nova",
-          "damagesBuildings": true
+          "tsm": -6,
+          "fx": "nova",
+          "damagesBuildings": true,
+          "name": "Nova Cannon (all-out)",
+          "novaMode": "MAX",
+          "modeName": "All-out: up to 6 plasma in one maximal shot, the rest as pulses",
+          "id": "nova",
+          "modes": [
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 2,
+              "tsm": -6,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (all-out)",
+              "novaMode": "MAX",
+              "modeName": "All-out: up to 6 plasma in one maximal shot, the rest as pulses"
+            },
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 2,
+              "tsm": -6,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (balanced)",
+              "novaMode": "BALANCED",
+              "modeName": "Balanced: 3 plasma maximal, the rest as pulses"
+            },
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 4,
+              "tsm": -1,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (pulse)",
+              "novaMode": "PULSE",
+              "modeName": "Pulse: every plasma counter a 4+ shot at -1"
+            }
+          ],
+          "modeIdx": 0,
+          "baseName": "Nova Cannon"
         },
         {
           "name": "Lascannons",
@@ -37119,7 +37196,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "mil_am_oa_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_mil_ob_light",
@@ -38233,7 +38311,11 @@ const UNIT_CATALOG = {
       "standsCount": 1,
       "color": 14427686,
       "baseW": 34,
-      "baseH": 38
+      "baseH": 38,
+      "agile": true,
+      "specialAbilities": [
+        "HardToHitOnCharge"
+      ]
     },
     {
       "key": "card_am_reaver",
@@ -38411,7 +38493,7 @@ const UNIT_CATALOG = {
       "superHeavy": true,
       "weapon": {
         "name": "Sonic Disruptor",
-        "rangeCm": 100,
+        "rangeCm": 300,
         "dice": 1,
         "toHit": 2,
         "tsm": -3,
@@ -38425,15 +38507,14 @@ const UNIT_CATALOG = {
       "baseH": 42,
       "salvos": [
         {
+          "id": "sonic",
           "name": "Sonic Disruptor",
-          "rangeCm": 100,
+          "rangeCm": 300,
           "dice": 1,
           "toHit": 2,
-          "tsm": -3,
-          "id": "am_om_sonic",
-          "barrage": true,
-          "barrageBp": 10,
-          "damagesBuildings": true
+          "tsm": 0,
+          "fx": "sonic",
+          "ignoresCover": true
         },
         {
           "name": "Lascannons",
@@ -38443,7 +38524,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "am_om_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_am_skitarii_co",
@@ -38543,12 +38625,12 @@ const UNIT_CATALOG = {
       "superHeavy": true,
       "weapon": {
         "name": "Hellfire Missiles",
-        "rangeCm": 120,
+        "rangeCm": 200,
         "dice": 1,
-        "toHit": 2,
-        "tsm": -2,
+        "toHit": 3,
+        "tsm": -1,
         "barrage": true,
-        "barrageBp": 6,
+        "barrageBp": 8,
         "damagesBuildings": true
       },
       "standsCount": 1,
@@ -38557,15 +38639,39 @@ const UNIT_CATALOG = {
       "baseH": 42,
       "salvos": [
         {
-          "name": "Hellfire Missiles",
-          "rangeCm": 120,
+          "rangeCm": 200,
           "dice": 1,
-          "toHit": 2,
-          "tsm": -2,
-          "id": "am_og_hellfire",
-          "barrage": true,
-          "barrageBp": 6,
-          "damagesBuildings": true
+          "toHit": 3,
+          "tsm": -1,
+          "fx": "hellfire",
+          "name": "Hellfire Missiles (two)",
+          "missiles": 2,
+          "modeName": "Two missiles",
+          "id": "hellfire",
+          "modes": [
+            {
+              "rangeCm": 200,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -1,
+              "fx": "hellfire",
+              "name": "Hellfire Missiles (two)",
+              "missiles": 2,
+              "modeName": "Two missiles"
+            },
+            {
+              "rangeCm": 200,
+              "dice": 1,
+              "toHit": 3,
+              "tsm": -1,
+              "fx": "hellfire",
+              "name": "Hellfire Missiles (one)",
+              "missiles": 1,
+              "modeName": "One missile"
+            }
+          ],
+          "modeIdx": 0,
+          "baseName": "Hellfire Missiles"
         },
         {
           "name": "Lascannons",
@@ -38575,7 +38681,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "am_og_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_am_ordinatus_armageddon",
@@ -38608,13 +38715,53 @@ const UNIT_CATALOG = {
       "baseH": 44,
       "salvos": [
         {
-          "name": "Nova Cannon",
           "rangeCm": 150,
           "dice": 1,
           "toHit": 2,
-          "tsm": -4,
-          "id": "am_oa_nova",
-          "damagesBuildings": true
+          "tsm": -6,
+          "fx": "nova",
+          "damagesBuildings": true,
+          "name": "Nova Cannon (all-out)",
+          "novaMode": "MAX",
+          "modeName": "All-out: up to 6 plasma in one maximal shot, the rest as pulses",
+          "id": "nova",
+          "modes": [
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 2,
+              "tsm": -6,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (all-out)",
+              "novaMode": "MAX",
+              "modeName": "All-out: up to 6 plasma in one maximal shot, the rest as pulses"
+            },
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 2,
+              "tsm": -6,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (balanced)",
+              "novaMode": "BALANCED",
+              "modeName": "Balanced: 3 plasma maximal, the rest as pulses"
+            },
+            {
+              "rangeCm": 150,
+              "dice": 1,
+              "toHit": 4,
+              "tsm": -1,
+              "fx": "nova",
+              "damagesBuildings": true,
+              "name": "Nova Cannon (pulse)",
+              "novaMode": "PULSE",
+              "modeName": "Pulse: every plasma counter a 4+ shot at -1"
+            }
+          ],
+          "modeIdx": 0,
+          "baseName": "Nova Cannon"
         },
         {
           "name": "Lascannons",
@@ -38624,7 +38771,8 @@ const UNIT_CATALOG = {
           "tsm": -2,
           "id": "am_oa_las"
         }
-      ]
+      ],
+      "maxSalvos": 2
     },
     {
       "key": "card_am_leman_co",
@@ -47461,7 +47609,7 @@ class NetEpicScene extends Phaser.Scene {
     this.offBoard = { IMPERIUM: [], ORKS: [] }; this.forceDomes = []; this.impInstallPowers();
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
-    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); this.impLegionSetup(); this.sqBodyguardSetup(); this.igSetup(); this.igDeathstrikeSetup(); } catch (e) { console.error(e); }
+    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); this.impLegionSetup(); this.sqBodyguardSetup(); this.igSetup(); this.igDeathstrikeSetup(); this.robotSetup(); } catch (e) { console.error(e); }
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
     this.applyCraftworldAtSpawn();
@@ -48438,7 +48586,7 @@ class NetEpicScene extends Phaser.Scene {
   // A titan (or praetorian) lost a close combat: the winner picks a location and rolls damage, no scatter or save
   titanLosesCloseCombat(wDet, wStand, lDet, lStand, margin) {
     if (!this.hasHitLocations(lDet)) return this.applySuperHeavyDamage(lDet, lStand, true);
-    const k = wDet.titanState ? this.titanCCKit(wDet) : { dmgBonus: 0, grab: 0 };
+    const k = wDet.titanState ? this.titanCCKit(wDet) : { dmgBonus: this.knPen(wDet), grab: 0 };
     const st = lDet.titanState, c = this.titanClassOf(lDet);
     const hit = (L, opts = {}) => {
       if (!lDet.stands.includes(lStand) || !L) return false;
@@ -48592,7 +48740,7 @@ class NetEpicScene extends Phaser.Scene {
     let ns = o.unmodifiedSave ? vDet.save : (this.isStandGarrisoned(stand) ? Math.min(vDet.save, 4) : vDet.save) - (o.tsm || 0);
     const facTsm = o.unmodifiedSave ? 0 : this.facingArmourTsm(vDet, stand, S.from);
     ns -= facTsm;
-    if (vDet.fixedSave) ns = Math.min(ns, vDet.fixedSave);
+    { const kf = this.knFixed(vDet, stand, S.from); if (kf) ns = Math.min(ns, kf); }
     if (vDet.doomed) ns += 1;
     const ffr = this.orkForceField(vDet, stand, S.saveDice);
     if (ffr === 'save') { S.saves++; return; }
@@ -48618,7 +48766,7 @@ class NetEpicScene extends Phaser.Scene {
   executeTitanSpecialShot(firerDet, targetDet, wpn, isSnapFire, opts = {}) {
     this._attacker = firerDet;
     const stop = msg => { this.log(msg); if (opts.onComplete) opts.onComplete(); };
-    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|shokk|hopsplat|squigs|destrukta|bombrun|manticore|deathstrike/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
+    if (isSnapFire && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|shokk|hopsplat|squigs|destrukta|bombrun|manticore|deathstrike|sonic|hellfire|nova/.test(wpn.fx) || (/teardrop|spinner|woofer/.test(wpn.fx) && targetDet.order !== 'CHARGE'))) return stop(`⚠️ The <b>${wpn.name}</b> can't snap fire.`);
     if (wpn.firstFireOnly && firerDet.order !== 'FIRST_FIRE') return stop(`⚠️ The <b>${wpn.name}</b> can only be fired on First Fire orders.`);
     const sol = opts._sol || this.evaluateFireSolution(firerDet, targetDet, isSnapFire);
     if (!sol.validPairs.length) return stop(`⚠️ <b>${firerDet.name}</b> can't bring the ${wpn.name} to bear on <b>${targetDet.name}</b>.`);
@@ -48745,8 +48893,8 @@ class NetEpicScene extends Phaser.Scene {
         title = '🧲 Supa Lifta-Droppa'; desc = 'Hit 4+ · save at -4 · failed models are lifted and dropped on others';
         break;
       }
-      case 'manticore': case 'deathstrike': {
-        const h = (wpn.fx === 'manticore' ? this.igManticoreFx : this.igDeathstrikeFx).call(this, { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter, isSnapFire });
+      case 'manticore': case 'deathstrike': case 'sonic': case 'hellfire': case 'nova': {
+        const h = ({ manticore: this.igManticoreFx, deathstrike: this.igDeathstrikeFx, sonic: this.ordSonicFx, hellfire: this.ordHellfireFx, nova: this.ordNovaFx })[wpn.fx].call(this, { firerDet, targetDet, wpn, S, sol, P, aim, F, opts, scatter, isSnapFire });
         title = h.title; desc = h.desc; break;
       }
       case 'vibro': case 'web': case 'warphunter': case 'spinner': case 'prism': case 'wave': case 'woofer': case 'shokk': case 'traktor': case 'doomdiver': case 'hopsplat': case 'squigs': case 'kshoota': case 'bubble': case 'destrukta': case 'kkannon': case 'liftone': case 'bombrun': {
@@ -51062,7 +51210,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // ---------- close combat ----------
   // Before the dice: Banshee scream, Laser Lances, Shining Spears, Eldar Knight Psychic Lances. Returns true if a model fell.
-  eldarPreStrike(impStand, orkStand) {
+  eldarPreStrikeKnCore(impStand, orkStand) {
     this._eldBout = new Map();
     if (!this._eldPre || this._eldPre.turn !== this.turn) this._eldPre = { turn: this.turn, done: new Set() };
     let fell = false;
@@ -51131,6 +51279,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.tourNear(me)) { caf += 1; tags.push('🎸 Goffik Rok +1'); }
     if (this.detachments.some(p => p.faction === me.faction && p.emboldenTurn === this.turn && this.impLive(p) && this.impNear(p, me, 15))) { caf += 1; tags.push('🦁 Embolden +1'); }
     if (this.igConfessorWith(me)) { caf += 1; tags.push('✝️ Confessor +1'); }
+    { const lc = this.knLanceCaf(me, myStand, foe, foeStand); if (lc) { caf += lc; tags.push('🔱 Shock lance: CAF doubled'); } }
     if (this.isGrots(me) && this.detachments.some(r => r.faction === me.faction && this.orkIs(r, /runtherd/i) && r.stands.length && this.orkNear(me, r, 5))) { const up = Math.max(0, 1 - (me.caf || 0)); if (up) { caf += up; tags.push('🐀 Runtherd: CAF +1'); } }
     if (me.rokkitBoost === this.turn) { caf += 1; tags.push('🚀 Rokkit landing +1'); }
     if (me.order === 'CHARGE' && this.orkHas(me, 'SPIKY')) { caf += 2; tags.push('🔧 Xtra-Spiky +2'); }
@@ -51206,7 +51355,7 @@ class NetEpicScene extends Phaser.Scene {
       if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
       if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
       try { this.orkAfterMove(det, det._moveFrom); } catch (e) { console.error(e); }
-      try { this.sqGuardIntercept(det); if (this.isUnderground(det)) { if (det._ugJump != null) { det.jump = det._ugJump; det._ugJump = null; } this.sqUndermine(det); } if (det._eldMovedNow) det._movedTurn = this.turn; } catch (e) { console.error(e); }
+      try { this.sqGuardIntercept(det); if (this.isUnderground(det)) { if (det._ugJump != null) { det.jump = det._ugJump; det._ugJump = null; } this.sqUndermine(det); } if (det._eldMovedNow) det._movedTurn = this.turn; if (det.craterTrapped && det._eldMovedNow) { det.craterTrapped = false; det.fired = true; this.log(`🕳️ <b>${det.name}</b> climbs out of the crater, firing nothing this turn.`); } } catch (e) { console.error(e); }
     }
     return r;
   }
@@ -51220,7 +51369,7 @@ class NetEpicScene extends Phaser.Scene {
     if ((targetDet && targetDet.madState === 'DEAD') || (firerDet && (this.orkMadIdle(firerDet) || this.igReloading(firerDet) || (/ratling/i.test(firerDet.name || '') && firerDet._movedTurn === this.turn)))) return { validPairs: [], isSnapFire, isBarrage: false, templateTargets: [], totalBp: 0, isIndirect: false };
     if (isSnapFire && firerDet) { // weapons that can't snap fire are never offered for it
       const w = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
-      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta|bombrun|manticore|deathstrike/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
+      if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta|bombrun|manticore|deathstrike|sonic|hellfire|nova/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
         return { validPairs: [], isSnapFire, isBarrage: Boolean(w.barrage), templateTargets: [], totalBp: 0, isIndirect: false };
     }
     return this.eldWaveFilter(firerDet, targetDet, this.evaluateFireSolutionEld(firerDet, targetDet, isSnapFire));
@@ -51235,6 +51384,7 @@ class NetEpicScene extends Phaser.Scene {
   markFirerAfterShot(firerDet, pairs, split, salvosUsed = 1) {
     if (firerDet && firerDet.eldLock) this.eldReleaseLock(firerDet, 'opens fire');
     if (firerDet && this.isManticore(firerDet)) firerDet.reloadTurn = this.turn + 1;
+    if (firerDet && this.isTarantula(firerDet)) { if (this.phase === 'COMBAT_FIRST') firerDet._ffShotTurn = this.turn; else if (this.phase === 'COMBAT_ADVANCE') firerDet._afShotTurn = this.turn; }
     if (firerDet && this.orkHas(firerDet, 'AFTABURNAS')) firerDet.stands.slice().forEach(s => { if (Phaser.Math.Between(1, 6) === 1) { this.log(`💥 One of <b>${firerDet.name}</b> overdoes the aftaburnas and ploughs into the ground!`); this.time.delayedCall(500, () => { if (firerDet.stands.includes(s)) { this.removeCasualty(firerDet, s, 0, true); this.checkBreakPoint(firerDet); } }); } });
     if (firerDet && this.isWeirdboy(firerDet) && (firerDet.weirdEnergy || 0) > 0 && this.tourNear(firerDet) && Phaser.Math.Between(1, 6) >= 5) { this.log(`🎸💥 <b>${firerDet.name}</b> is too close to the Goffik Rok: his head explodes!`); this.time.delayedCall(600, () => { firerDet.stands.slice().forEach(s => this.removeCasualty(firerDet, s, 0, true)); this.checkBreakPoint(firerDet); }); }
     return this.markFirerAfterShotCore(firerDet, pairs, split, salvosUsed);
@@ -51242,6 +51392,7 @@ class NetEpicScene extends Phaser.Scene {
   startCombatSegment(segment) {
     try { this.orkSegmentEnd(); if (segment === 'COMBAT_FIRST') this.orkTinbotOrders(); } catch (e) { console.error(e); }
     if (segment === 'COMBAT_FIRST') ['IMPERIUM', 'ORKS'].forEach(f => { try { this.aiEldarPsychics(f); } catch (e) { console.error(e); } });
+    if (segment === 'COMBAT_ADVANCE') this.detachments.forEach(d => { if (this.isTarantula(d) && d.order === 'FIRST_FIRE' && d.fired && d._ffShotTurn === this.turn && d._afShotTurn !== this.turn && d.stands.length) { d.fired = false; d.salvosFired = 0; d.standsFired = new Set(); d._tarAgain = this.turn; } });
     ['IMPERIUM', 'ORKS'].forEach(f => { try { if (segment === 'COMBAT_FIRST') this.aiImpPsychics(f); if (segment === 'COMBAT_FIRST' || segment === 'COMBAT_ADVANCE') this.aiOffBoard(f); } catch (e) { console.error(e); } });
     return this.startCombatSegmentCore(segment);
   }
@@ -51571,7 +51722,7 @@ class NetEpicScene extends Phaser.Scene {
     const ms = this.phase === 'ORDERS' ? this.mimeSide() : null;
     if (ms && det && det.faction !== ms && det.stands.length) btns.push(`<button class="btn-primary" style="background:#a21caf" onclick="window.gameScene.playMasterMimeSelected()">🎭 Master Mime on ${this.shortName(det.name, 16)} (${this._mimes[ms]})</button>`);
     else if (ms) btns.push(`<span style="font-size:0.66rem;color:#f0abfc;align-self:center">🎭 Master Mime ready (${this._mimes[ms]}): tap an enemy detachment to play it</span>`);
-    try { this.orkExtraButtons(det, btns); this.impExtraButtons(det, btns); this.impRound2Buttons(det, btns); } catch (e) { console.error(e); }
+    try { this.orkExtraButtons(det, btns); this.impExtraButtons(det, btns); this.impRound2Buttons(det, btns); this.amRound3Buttons(det, btns); } catch (e) { console.error(e); }
     if (!btns.length) { if (row) row.style.display = 'none'; return; }
     if (!row) {
       const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls'); if (!anchor) return;
@@ -51618,11 +51769,13 @@ class NetEpicScene extends Phaser.Scene {
   }
   getEffectiveMoveCm(det) {
     if (det && (this.isLanda(det) || this.isRokkit(det))) return 0; // grounded Landas and Rokkit launchers never move
+    if (det && det.craterTrapped && det.order !== 'CHARGE') return 0; // stuck in a Mole Mortar crater
     const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det) + this.orkKustomMove(det) + this.impForcedMarch(det); // Mekboy Speedstas: +2D6 cm
     return (det && det.order === 'CHARGE' && (this.eldWarpSpider(det) || this.isTunneler(det))) ? mv / 2 : mv; // no doubling on a charge // their move is a maximum: no doubling on a charge
   }
   isStandPinned(stand) { return stand && stand.detachment && (this.eldWarpSpider(stand.detachment) || this.hitAndRunFree(stand)) ? false : this.isStandPinnedCore(stand); }
   isEligibleInCombatPhase(det) {
+    if (det && this.phase === 'COMBAT_ADVANCE' && det._tarAgain === this.turn && !det.fired && det.order === 'FIRST_FIRE' && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Tarantulas fire again
     if (det && this.orkMadIdle(det)) return false;
     if (det && this.phase === 'COMBAT_FIRST' && det.order === 'ADVANCE' && this.eldWarpSpider(det) && !det.fired && det.fofHeld !== this.turn && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Fire on the Fly
     const ok = this.isEligibleInCombatPhaseCore(det);
@@ -51711,7 +51864,7 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
   // Where an instinctive Mob heads: a list of things with .container {x,y} (stands or points)
-  instinctTargets(det) {
+  instinctTargetsAmCore(det) {
     const enemies = [];
     this.detachments.forEach(e => { if (e.faction !== det.faction && e.stands.length && !e.embarkedOn && !e.inReserve) e.stands.forEach(s => { if (!this.isStandEngaged(s)) enemies.push(s); }); });
     const pt = (x, y) => ({ container: { x: Phaser.Math.Clamp(x, 20, BOARD_W - 20), y: Phaser.Math.Clamp(y, 20, BOARD_H - 20) }, baseRadius: 0, point: true });
@@ -51747,7 +51900,7 @@ class NetEpicScene extends Phaser.Scene {
     }
     return enemies;
   }
-  instinctMoveMult(det) { if (det.instinct === 'TINBOT') return det.order === 'CHARGE' ? 2 : 1; return ({ RAMPAGE: 2, WAYSTONE: 2, ORK_GOFF: 2, ORK_SUNZ: 2, ORK_KULT: 2, IG_WARRIOR: 2, MAD_COVER: 2, MAD_TANK: 2 })[det.instinct] || 1; }
+  instinctMoveMult(det) { if (det.instinct === 'TINBOT') return det.order === 'CHARGE' ? 2 : 1; return ({ RAMPAGE: 2, WAYSTONE: 2, ORK_GOFF: 2, ORK_SUNZ: 2, ORK_KULT: 2, IG_WARRIOR: 2, ROBOT_CHARGE: 2, MAD_COVER: 2, MAD_TANK: 2 })[det.instinct] || 1; }
   instinctTextIgCore(det, kind) {
     const i = det.instinct, n = det.name;
     const T = { AVATAR: ['🔥 THE AVATAR STRIDES', `🔥 <b>${n}</b> strides 15 cm towards the nearest enemy.`], WAYSTONE: ['👻 SPIRITS RETURN', `👻 <b>${n}</b> charges back towards the living Eldar.`],
@@ -51757,7 +51910,7 @@ class NetEpicScene extends Phaser.Scene {
       ORK_BAXE: ['🟢 SNEAKIN\' OFF', `🟢 <b>${n}</b> (Blood Axes) heads for the nearest table edge.`], ORK_DSKULL: ['🟢 LOOT IT!', `🟢 <b>${n}</b> (Deathskulls) heads for the nearest objective.`], TINBOT: ['🤖 TINBOTZ', `🤖 <b>${n}</b> clank towards the nearest enemy on last turn's orders.`], MAD_COVER: ['🤪 TOO EXPOSED!', `🤪 <b>${n}</b> dash for the nearest cover.`], MAD_TANK: ['🤪 GET DA TANK!', `🤪 <b>${n}</b> charge the nearest vehicle.`] }[i] || ['🧠 INSTINCT', `🧠 <b>${n}</b> acts on instinct.`];
     return kind === 'fx' ? T[0] : T[1];
   }
-  instinctMoves(d) { return d.instinct && !['NEST', 'ORK_BM', 'ORK_DREAD', 'ORK_HOLD', 'WOOFED', 'IG_NOCMD'].includes(d.instinct) && !(d.instinct === 'TINBOT' && d.order !== 'ADVANCE' && d.order !== 'CHARGE'); }
+  instinctMoves(d) { return d.instinct && !['NEST', 'ORK_BM', 'ORK_DREAD', 'ORK_HOLD', 'WOOFED', 'IG_NOCMD', 'ROBOT_FF'].includes(d.instinct) && !(d.instinct === 'TINBOT' && d.order !== 'ADVANCE' && d.order !== 'CHARGE'); }
   // Blood Axes and Deathskulls on instinct only shoot at enemies within 25 cm
   orkInstinctCanShoot(det, e) {
     if (!['ORK_BAXE', 'ORK_DSKULL'].includes(det.instinct)) return true;
@@ -52179,7 +52332,9 @@ class NetEpicScene extends Phaser.Scene {
         }));
       }
     }
+    const boomS = det && (specificStand || det.stands[det.stands.length - 1]), boomXY = boomS ? { container: { x: boomS.container.x, y: boomS.container.y } } : null;
     const res = this.removeCasualtyOrkCore(det, specificStand, weaponTsm, isMeltdown, opts);
+    if (det && boomXY && boomS && !det.stands.includes(boomS)) { try { if (/ordinatus/i.test(det.name || '')) this.ordExplosion(det, boomXY, Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), 0, 'reactor'); else if (/stormblade/i.test(det.name || '')) this.ordExplosion(det, boomXY, Phaser.Math.Between(1, 6), 4, 'plasma reactor'); } catch (e) { console.error(e); } }
     if (det && !det.stands.length && this.isSquatLeader(det)) { try { this.sqLeaderLost(det); } catch (e) { console.error(e); } }
     return res;
   }
@@ -52796,7 +52951,7 @@ class NetEpicScene extends Phaser.Scene {
     const dets = {};
     this.detachments.forEach(d => {
       const x = {};
-      ['confessorOf', 'reloadTurn', 'colonelTurn', 'undergroundTurn', 'engMission', '_movedTurn', 'cmMode', 'geniusTurn', 'emboldenTurn', 'telepathTurn', 'beaconTurn', 'cancelTurn', 'guidanceTurn', 'healTurn', 'precogTurn', 'sqFlexTurn', 'sqShield', 'legionWaiting', 'legionArrived', 'guardOf', 'guardFury', 'gwUsed', 'turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
+      ['craterTrapped', 'hellfireLeft', 'plasma', 'plasmaTurn', 'confessorOf', 'reloadTurn', 'colonelTurn', 'undergroundTurn', 'engMission', '_movedTurn', 'cmMode', 'geniusTurn', 'emboldenTurn', 'telepathTurn', 'beaconTurn', 'cancelTurn', 'guidanceTurn', 'healTurn', 'precogTurn', 'sqFlexTurn', 'sqShield', 'legionWaiting', 'legionArrived', 'guardOf', 'guardFury', 'gwUsed', 'turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
       const kap = d.stands.findIndex(s => s.isKaptin); if (kap >= 0) x.kaptin = kap;
       if (this.isGuard(d) && d._igSetup) x.shq = d.stands.findIndex(s => s.isSHQ);
       const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil, s.traktorHeld] : null).filter(Boolean); if (held.length) x.held = held;
@@ -53347,6 +53502,7 @@ class NetEpicScene extends Phaser.Scene {
   impOrdersStart() { // start of the Orders Phase
     try { this.sqDomesTick(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => { if (d._ugJump != null) { d.jump = d._ugJump; d._ugJump = null; } });
+    try { this.robotOrders(); } catch (e) { console.error(e); }
     // Squat Living Ancestor (Experienced): D6 detachments of a nearby Warlord's brotherhood get a second order counter
     this.detachments.filter(d => d.stands.length && /living ancestor/i.test(d.name || '') && !d.embarkedOn).forEach(a => {
       const wl = this.detachments.find(w => w.faction === a.faction && w.stands.length && /warlord/i.test(w.name || '') && (w === a || this.impNear(a, w, 6)));
@@ -53366,6 +53522,8 @@ class NetEpicScene extends Phaser.Scene {
       if ((pre || d.sqFlexTurn === this.turn) && d.order !== 'FALL_BACK') d.eldFlex = true;
       if (d.guardFury) { d.order = 'CHARGE'; d.orderRevealed = true; this.updateDetachmentBadge(d); }
       if (d.instinct === 'IG_NOCMD') d.moved = true;
+      if (this.isTarantula(d) && d.order === 'ADVANCE') { d.order = 'FIRST_FIRE'; this.updateDetachmentBadge(d); }
+      if (d.craterTrapped && d.order !== 'CHARGE') d.moved = true;
     });
     try { this.impLegionArrive(); } catch (e) { console.error(e); }
   }
@@ -53622,6 +53780,7 @@ class NetEpicScene extends Phaser.Scene {
     if (d.embarkedOn) return true; // orders go to the transport
     if (d.transportCapacity > 0 && !d.stands.some(s => s.weapon && s.weapon.rangeCm > 0) && /rhino|chimera|transport|gorgon|valkyrie/i.test(d.name || '')) return true; // transports go where their troops go
     if (/ratling/i.test(d.name || '')) return true; // Ratlings act independently
+    if (this.isProgRobot(d)) return true; // robots follow their program
     return false;
   }
   igIsRecon(d) { return Boolean(d && ((d.pinningClass || 1) === 2 && !/sentinel|walker|robot/i.test(d.name || '') || /recon|rough rider|bike|speeder|outrider/i.test(d.name || ''))); }
@@ -53685,6 +53844,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   instinctText(det, kind) {
     if (det && det.instinct === 'IG_WARRIOR') return kind === 'fx' ? '⚔️ CHAAARGE!' : `⚔️ <b>${det.name}</b> charges the nearest enemy.`;
+    if (det && /^ROBOT_/.test(det.instinct || '')) { const t = { ROBOT_CHARGE: 'charges the nearest enemy', ROBOT_ADV: 'advances on the nearest enemy', ROBOT_FF: 'holds and fires on First Fire', ROBOT_CAP: 'heads for the nearest objective' }[det.instinct]; return kind === 'fx' ? '🤖 PROGRAM' : `🤖 <b>${det.name}</b> follows its program: ${t}.`; }
     if (det && det.instinct === 'IG_NOCMD') return kind === 'fx' ? '📻 NO ORDERS' : `📻 <b>${det.name}</b> waits for orders.`;
     return this.instinctTextIgCore(det, kind);
   }
@@ -53812,6 +53972,181 @@ class NetEpicScene extends Phaser.Scene {
     const leash = Math.max(6, this.igRadiusCm(det.faction) - 4) * PX_PER_CM + allow, d = Phaser.Math.Distance.Between(hc.x, hc.y, gx, gy);
     if (d <= leash) return null;
     return { x: hc.x + (gx - hc.x) * leash / d, y: hc.y + (gy - hc.y) * leash / d };
+  }
+  // ===== ADEPTUS MECHANICUS round 3: Knights, Ordinatus, Robots, Tarantulas, Mole Mortars =====
+  isImpKnight(d) { return Boolean(d && ['MECHANICUS', 'MILITARIS', 'IMPERIUM'].includes(d.armyBook) && /knight|castellan|crusader|paladin|warden|lancer|errant|baron/i.test(d.name || '') && !/grey knight|gray knight/i.test(d.name || '')); }
+  // Knight shields: the fixed save only works against shots from the front 90 degrees
+  knFixed(det, stand, from) {
+    const fx = det && det.fixedSave; if (!fx) return null;
+    if (!this.isImpKnight(det) || !stand || !from) return fx;
+    const face = stand.facingRad != null ? stand.facingRad : (det.facingRad || 0);
+    const d = Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(from.y - stand.container.y, from.x - stand.container.x) - face));
+    return d <= Math.PI / 4 ? fx : null;
+  }
+  knHasLance(d) { return this.isImpKnight(d) && /baron|errant|lancer|paladin/i.test(d.name || ''); }
+  knHasPowerLance(d) { return this.isImpKnight(d) && /baron|lancer/i.test(d.name || ''); }
+  knPen(d) { return this.isImpKnight(d) && /errant/i.test(d.name || '') ? 2 : 0; }
+  // Shock lance: base CAF doubled in the first round of a charge; only one lance per small target
+  knLanceCaf(me, myStand, foe, foeStand) {
+    if (!this.knHasLance(me) || myStand.chargedTurn !== this.turn) return 0;
+    const big = foe.isTitan || foe.superHeavy || this.hasHitLocations(foe) || (foe.pinningClass || 1) >= 4;
+    if (!big) {
+      this._knLance = this._knLance && this._knLance.turn === this.turn ? this._knLance : { turn: this.turn, m: new Map() };
+      const first = this._knLance.m.get(foeStand); if (first && first !== myStand) return 0;
+      this._knLance.m.set(foeStand, myStand);
+    }
+    return me.caf || 0;
+  }
+  // Power lance: a 3+ hit at -3 before the dice are rolled
+  eldarPreStrike(impStand, orkStand) {
+    this._knPre = this._knPre && this._knPre.turn === this.turn ? this._knPre : { turn: this.turn, done: new Set() };
+    let fell = false;
+    const one = (aS, dS) => {
+      const a = aS.detachment, d = dS.detachment;
+      if (fell || !this.knHasPowerLance(a) || aS.chargedTurn !== this.turn || this._knPre.done.has(aS) || !d.stands.includes(dS)) return;
+      this._knPre.done.add(aS);
+      const r = Phaser.Math.Between(1, 6);
+      if (r < 3) { this.log(`🔱 <b>${a.name}</b>'s power lance misses (${r}).`); return; }
+      if (this.hasHitLocations(d)) { const res = this.applyTitanHit(d, dS, { tsm: -3, from: { x: aS.container.x, y: aS.container.y } }); if (res && res.destroyed) fell = true; this.log(`🔱 <b>${a.name}</b>'s power lance strikes ${d.name} (${r}).`); return; }
+      const sv = Math.min((d.save || 7) + 3, d.fixedSave || 7), sr = Phaser.Math.Between(1, 6);
+      if (sv <= 6 && sr >= sv) { this.log(`🔱 Power lance hits ${d.name} (${r}), but it saves (${sr} v ${sv}+).`); return; }
+      if (d.superHeavy) { this.applySuperHeavyDamage(d, dS, true); this.log(`🔱 <b>${a.name}</b>'s power lance damages ${d.name}.`); return; }
+      if (this.eldKill(d, dS)) { fell = true; this.log(`🔱 <b>Power lance!</b> ${a.name} skewers ${d.name} ${dS.label || ''} before the fight (${r}).`); }
+    };
+    one(impStand, orkStand); one(orkStand, impStand);
+    if (fell) return true;
+    return this.eldarPreStrikeKnCore(impStand, orkStand);
+  }
+  // ---------- Ordinatus ----------
+  ordSonicFx(c) { // Ordinatus Mars: a large teardrop, narrow end towards the Ordinatus; 2+ to hit, a flat 5+ save, shields lose one
+    const { firerDet, S, sol, P, F, opts } = c;
+    opts._pairs = sol.validPairs.slice(0, 1);
+    const sh = sol.validPairs[0].shooter, ang = Math.atan2(P.y - sh.container.y, P.x - sh.container.x);
+    const lenPx = 25 * PX_PER_CM, wPx = 6 * PX_PER_CM, back = 8 * PX_PER_CM;
+    const x1 = P.x - Math.cos(ang) * back, y1 = P.y - Math.sin(ang) * back;
+    S.teardrop = { x1, y1, ang, lenPx, wPx }; S.color = 0xa855f7;
+    this.standsInTeardrop(x1, y1, ang, lenPx, wPx, F).forEach(({ det: d, stand: s }) => {
+      const h = this.rollNeed(2); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: `${d.name}: Sonic Disruptor 2+` });
+      if (!h.ok) return; S.hits++;
+      if (d.shields > 0) { d.shields--; this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(d); S.saves++; S.notes.push(`${d.name} loses a shield`); return; }
+      const r = Phaser.Math.Between(1, 6); S.saveDice.push({ val: r, cls: r >= 5 ? 'die-pass' : 'die-fail', tip: `${d.name}: a flat 5+ save` });
+      if (r >= 5) { S.saves++; return; }
+      if (this.hasHitLocations(d)) { const res = this.applyTitanHit(d, s, { noSave: true, from: { x: sh.container.x, y: sh.container.y } }); if (res && res.destroyed) S.kills++; return; }
+      if (d.superHeavy) { if (this.applySuperHeavyDamage(d, s, false)) S.kills++; return; }
+      this.orkKill(S, d, s);
+    });
+    void firerDet;
+    return { title: '🔊 Sonic Disruptor', desc: 'Large teardrop · hit 2+ ignoring cover · every target saves on a flat 5+ (titans too) · shields lose one' };
+  }
+  ordHellfireFx(c) { // Ordinatus Golgotha: 1 or 2 Hellfire missiles, each a template plus D3 touching it; casualties test morale
+    const { firerDet, targetDet, wpn, S, sol, P, F, opts } = c;
+    opts._pairs = sol.validPairs.slice(0, 1);
+    firerDet.hellfireLeft = firerDet.hellfireLeft == null ? 6 : firerDet.hellfireLeft;
+    const n = Math.min(wpn.missiles || 1, firerDet.hellfireLeft);
+    if (n <= 0) { S.notes.push('no Hellfire missiles left'); return { title: '🚀 Hellfire Missiles', desc: 'Out of missiles' }; }
+    firerDet.hellfireLeft -= n;
+    const aims = [P, ...targetDet.stands.filter(s => Phaser.Math.Distance.Between(s.container.x, s.container.y, P.x, P.y) > BARRAGE_RADIUS_PX * 2).map(s => ({ x: s.container.x, y: s.container.y }))];
+    for (let i = 0; i < n; i++) {
+      const first = aims[i] || P, k = Phaser.Math.Between(1, 3);
+      this.clusterPoints(first, 1 + k, F, 1).forEach(pt => { S.templates.push({ x: pt.x, y: pt.y, color: 0xef4444 }); this.standsWithin(pt, BARRAGE_RADIUS_PX, F).forEach(x => this.specialHit(S, x.det, x.stand, { need: 3, tsm: -1 })); });
+    }
+    S.notes.push(`${n} missile${n > 1 ? 's' : ''} fired, ${firerDet.hellfireLeft} left`);
+    const hitDets = () => new Set(S.casualties.map(s => s.detachment).filter(Boolean));
+    this.time.delayedCall(1800, () => hitDets().forEach(d => { if (d.stands.length && d.order !== 'FALL_BACK' && !this.testMorale(d, 'Hellfire missiles')) this.failMorale(d); }));
+    return { title: `🚀 Hellfire Missiles × ${n}`, desc: 'Each missile: a template and D3 more touching it · 8 BP, hit 3+, TSM -1 · units that lose models test morale or fall back' };
+  }
+  ordNovaFx(c) { // Ordinatus Armageddon: plasma counters split between pulse shots and one maximal shot
+    const { firerDet, targetDet, wpn, S, sol, P, F, opts } = c;
+    opts._pairs = sol.validPairs.slice(0, 1);
+    const sh = sol.validPairs[0].shooter, from = { x: sh.container.x, y: sh.container.y }, aim = sol.validPairs[0].target;
+    if (firerDet.plasmaTurn !== this.turn) { firerDet.plasmaTurn = this.turn; firerDet.plasma = Phaser.Math.Between(1, 6) + 3; }
+    const total = firerDet.plasma || 0; firerDet.plasma = 0;
+    if (!total) { S.notes.push('no plasma left this turn'); return { title: '☀️ Nova Cannon', desc: 'The plasma reserve is spent this turn' }; }
+    const maxC = wpn.novaMode === 'PULSE' ? 0 : Math.min(6, wpn.novaMode === 'BALANCED' ? 3 : total), pulse = total - maxC;
+    const T = { 1: [4, -1], 2: [3, -2], 3: [2, -3], 4: [2, -4], 5: [2, -5], 6: [2, -6] };
+    const live = () => targetDet.stands.filter(s => !S.casualties.includes(s));
+    for (let i = 0; i < pulse; i++) { const t = live()[i % Math.max(1, live().length)]; if (!t) break; this.specialHit(S, targetDet, t, { need: 4, tsm: -1 }); }
+    if (maxC) {
+      const [need, tsm] = T[maxC], t = live().includes(aim) ? aim : live()[0];
+      if (t) {
+        if (this.hasHitLocations(targetDet)) {
+          const h = this.rollNeed(need); S.hitDice.push({ val: h.r, cls: h.ok ? 'die-pass' : 'die-fail', tip: `Maximal fire ${need}+` });
+          if (h.ok) {
+            S.hits++;
+            const res = this.applyTitanHit(targetDet, t, { tsm, from });
+            if (res && res.destroyed) S.kills++;
+            else { // the blast washes over the neighbouring areas at half the TSM
+              const half = Math.min(-1, Math.ceil(tsm / 2)), cls = this.titanClassOf(targetDet);
+              (cls.locations || []).filter(L => (targetDet.titanState.status || {})[L.id] !== 'DESTROYED').slice(0, 8).forEach(L => { if (!targetDet.stands.length) return; const r2 = this.applyTitanHit(targetDet, t, { tsm: half, location: L.id, from }); if (r2 && r2.destroyed) S.kills++; });
+              S.notes.push(`the blast spreads to the surrounding areas at ${half}`);
+            }
+          }
+        } else this.specialHit(S, targetDet, t, { need, tsm });
+        (this.buildings || []).forEach(b => { if (!b.collapsed && this.distToRect(b, t.container.x, t.container.y) <= 2) this.eldBuildingSave(b, tsm, S, 'melted by the Nova Cannon'); });
+      }
+    }
+    S.notes.push(`${total} plasma: ${pulse} pulse shot${pulse === 1 ? '' : 's'} (4+, -1)${maxC ? ` and a ${maxC}-counter maximal shot (${T[maxC][0]}+, ${T[maxC][1]})` : ''}`);
+    void P; void F;
+    return { title: `☀️ Nova Cannon (${total} plasma)`, desc: 'D6+3 plasma a turn · pulse shots hit 4+ at -1 · up to 6 counters in one maximal shot (2+ at -6 with all six)' };
+  }
+  ordExplosion(det, stand, cm, need, label) { // a destroyed Ordinatus or Stormblade reactor goes up
+    const x = stand.container.x, y = stand.container.y, R = cm * PX_PER_CM;
+    this.spawnExplosionFX(x, y, R, true);
+    this.log(`💥 <b>${det.name}</b>'s ${label} explodes: everything within ${cm} cm is hit${need ? ` on a ${need}+` : ''} at 0 TSM!`);
+    this.time.delayedCall(350, () => this.detachments.forEach(o => { if (o === det || !o.stands.length || o.embarkedOn) return; o.stands.slice().forEach(s => {
+      if (Phaser.Math.Distance.Between(x, y, s.container.x, s.container.y) > R) return;
+      if (need && Phaser.Math.Between(1, 6) < need) return;
+      if (this.hasHitLocations(o)) { this.applyTitanHit(o, s, { tsm: 0, from: { x, y } }); return; }
+      if (!this.orkSave(o, 0, null)) { if (o.superHeavy) this.applySuperHeavyDamage(o, s, false); else this.removeCasualty(o, s, 0, false); }
+    }); this.checkBreakPoint(o); }));
+  }
+  // ---------- Robots: a program decides their orders each turn ----------
+  isProgRobot(d) { return Boolean(d && d.stands.length && /robot/i.test(d.name || '') && !/tarantula/i.test(d.name || '') && ['IMPERIUM', 'MILITARIS', 'MECHANICUS', 'SQUATS'].includes(d.armyBook)); }
+  robotPrograms() { return { GUNLINE: ['A', 'C', 'C', 'B'], ASSAULT: ['A', 'B', 'B', 'B'], STEADY: ['C', 'C', 'B', 'D'], CAPTURE: ['A', 'B', 'D', 'D'] }; }
+  robotSetup() {
+    this.detachments.filter(d => this.isProgRobot(d) && !(d.cfg && d.cfg.robotProgram)).forEach(d => {
+      const P = this.robotPrograms(), set = (k, quiet) => { d.cfg.robotProgram = P[k]; d.cfg.robotProgramName = k; if (!quiet) this.log(`🤖 <b>${d.name}</b> is programmed: ${this.robotProgramText(P[k])}.`); };
+      set('GUNLINE', true);
+      if (!this.isFactionAI(d.faction) && !window._restoring) this.time.delayedCall(700, () => this.eldChoose(`🤖 Program ${d.name}. Each turn it asks: enemy in charge range? in weapon range? in sight? otherwise?`, [
+        { label: 'Gunline (Charge / FF / FF / Advance)', fn: () => set('GUNLINE') }, { label: 'Assault (Charge / Adv / Adv / Adv)', fn: () => set('ASSAULT') },
+        { label: 'Steady (FF / FF / Adv / Capture)', fn: () => set('STEADY') }, { label: 'Capture (Charge / Adv / Capture / Capture)', fn: () => set('CAPTURE') }]));
+    });
+  }
+  robotProgramText(p) { const N = { A: 'Charge', B: 'Advance', C: 'First Fire', D: 'Capture', E: 'Ignore' }; return ['in charge range', 'in weapon range', 'in sight', 'otherwise'].map((q, i) => `${q} → ${N[p[i]]}`).join(', '); }
+  robotOrders() { // start of the Orders Phase: answer the program's questions
+    this.detachments.filter(d => this.isProgRobot(d) && !d.embarkedOn && !d.inReserve && d.order !== 'FALL_BACK').forEach(d => {
+      const p = (d.cfg && d.cfg.robotProgram) || this.robotPrograms().GUNLINE;
+      const foes = this.detachments.filter(e => e.faction !== d.faction && this.impLive(e));
+      const most = test => d.stands.filter(s => foes.some(e => e.stands.some(t => test(s, t)))).length * 2 > d.stands.length;
+      const dist = (s, t) => Phaser.Math.Distance.Between(s.container.x, s.container.y, t.container.x, t.container.y);
+      const answers = [
+        most((s, t) => dist(s, t) <= this.getEffectiveMoveCm(d) * 2 * PX_PER_CM + 20),
+        most((s, t) => dist(s, t) <= ((d.weapon && d.weapon.rangeCm) || 0) * PX_PER_CM),
+        most((s, t) => this.checkStandLoS(s, t, false, { name: 'sight', rangeCm: 999, dice: 1, toHit: 4, tsm: 0 }).valid),
+        true];
+      let act = null;
+      for (let i = 0; i < 4 && !act; i++) if (answers[i] && p[i] !== 'E') act = p[i];
+      act = act || 'C';
+      const I = { A: ['ROBOT_CHARGE', 'CHARGE'], B: ['ROBOT_ADV', 'ADVANCE'], C: ['ROBOT_FF', 'FIRST_FIRE'], D: ['ROBOT_CAP', 'ADVANCE'] }[act];
+      d.instinct = I[0]; d.order = I[1]; d.orderRevealed = true; this.updateDetachmentBadge(d);
+    });
+  }
+  // ---------- Tarantulas: no Advance orders; on First Fire they fire again in the Advance Fire segment ----------
+  isTarantula(d) { return /tarantula/i.test((d && d.name) || ''); }
+  // ---------- Mole Mortar: ignores shields; a titan or praetorian hit is trapped in the crater on a 6 ----------
+  isMoleMortarWpn(w) { return /mole mortar/i.test((w && w.name) || ''); }
+  moleTrap(d) {
+    if (!d || !d.stands.length || d.craterTrapped || !(d.isTitan || this.hasHitLocations(d) || (d.pinningClass || 1) >= 5)) return;
+    const r = Phaser.Math.Between(1, 6);
+    if (r === 6) { d.craterTrapped = true; this.log(`🕳️ <b>${d.name}</b> is trapped in the Mole Mortar crater (6)! It can still shoot, but must use Charge orders to climb out, firing nothing as it does.`); }
+  }
+  instinctTargets(det) {
+    if (det && det.instinct === 'ROBOT_CAP') { const p = Object.create(det); p.instinct = 'ORK_DSKULL'; return this.instinctTargetsAmCore(p); }
+    return this.instinctTargetsAmCore(det);
+  }
+  amRound3Buttons(det, btns) {
+    if (det && this.isProgRobot(det) && det.cfg && det.cfg.robotProgram && this.phase === 'ORDERS') btns.push(`<span style="font-size:0.64rem;color:#cbd5e1;align-self:center">🤖 Program: ${this.robotProgramText(det.cfg.robotProgram)}</span>`);
+    if (det && det.craterTrapped && this.phase === 'ORDERS') btns.push(`<span style="font-size:0.64rem;color:#fca5a5;align-self:center">🕳️ Trapped in a crater: Charge orders to climb out</span>`);
   }
   applySuperHeavyDamageOrkCore(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
@@ -55691,13 +56026,14 @@ class NetEpicScene extends Phaser.Scene {
               return;
             }
 
-            if (vDet.shields > 0 && this.absorbTitanShield(vDet, vx, vy, barrageStats.tsm)) {
+            if (vDet.shields > 0 && !this.isMoleMortarWpn(activeWpn) && this.absorbTitanShield(vDet, vx, vy, barrageStats.tsm)) {
               saves++;
               saveDiceUI.push({ val: '🛡️', cls: 'die-shield', tip: 'Absorbed by shield' });
               return;
             }
             if (this.hasHitLocations(vDet)) {
               const fcp = this.getDetachmentCenter(firerDet);
+              if (this.isMoleMortarWpn(activeWpn)) this.moleTrap(vDet);
               const tr = this.applyTitanHit(vDet, victimStand, { tsm: barrageStats.tsm, pen: activeWpn.penetrating || 0, template: true, from: fcp, aimed: true });
               if (tr.saved) saves++;
               if (tr.destroyed) kills++;
@@ -55708,7 +56044,7 @@ class NetEpicScene extends Phaser.Scene {
             const doomPen = vDet.doomed ? 1 : 0;
             const facTsm = this.facingArmourTsm(vDet, victimStand, this.getDetachmentCenter(firerDet));
             let neededSave = baseSave - barrageStats.tsm - facTsm + doomPen;
-            if (vDet.fixedSave) neededSave = Math.min(neededSave, vDet.fixedSave + doomPen);
+            { const kf = this.knFixed(vDet, victimStand, this.getDetachmentCenter(firerDet)); if (kf) neededSave = Math.min(neededSave, kf + doomPen); }
             const ffr = this.orkForceField(vDet, victimStand, saveDiceUI); if (ffr === 'fail') neededSave += 1;
             let saved = ffr === 'save' || (saveRoll >= neededSave && neededSave <= 6);
             if (!saved && this.igFrontPlate(vDet, victimStand, this.getDetachmentCenter(firerDet), neededSave, saveDiceUI)) saved = true;
@@ -55855,7 +56191,7 @@ class NetEpicScene extends Phaser.Scene {
               const doomPen = targetDet.doomed ? 1 : 0;
               const facTsm = this.facingArmourTsm(targetDet, victimRef, { x: pair.shooter.container.x, y: pair.shooter.container.y });
               let neededSave = baseSave - curWpn.tsm - facTsm + doomPen;
-              if (targetDet.fixedSave) neededSave = Math.min(neededSave, targetDet.fixedSave + doomPen);
+              { const kf = this.knFixed(targetDet, victimRef, { x: pair.shooter.container.x, y: pair.shooter.container.y }); if (kf) neededSave = Math.min(neededSave, kf + doomPen); }
               const holoSave = this.getHoloFieldSave(targetDet);
               if (holoSave !== null) neededSave = Math.min(neededSave, holoSave);
               const ffr = this.orkForceField(targetDet, victimRef, saveDiceUI); if (ffr === 'fail') neededSave += 1;
@@ -57726,6 +58062,7 @@ class NetEpicScene extends Phaser.Scene {
     if (this.isFactionAI(this.selectedDetachment.faction)) return;
     if (this.isMadboyz(this.selectedDetachment)) { this.log(`🤪 <b>${this.selectedDetachment.name}</b> roll their orders at random when orders are locked.`); return; }
     if (this.isGrots(this.selectedDetachment)) { this.log(`🐀 <b>${this.selectedDetachment.name}</b> copy the orders of the Mob they follow.`); return; }
+    if (orderKey === 'ADVANCE' && this.isTarantula(this.selectedDetachment)) { this.log(`🕷️ <b>${this.selectedDetachment.name}</b> can't be given Advance orders: on First Fire they fire in both fire segments instead.`); return; }
     if (this.selectedDetachment.mimed) { this.log(`🎭 <b>${this.selectedDetachment.name}</b> is confused by the Master Mime and can't take orders.`); return; }
     if (this.selectedDetachment.order === 'FALL_BACK' || this.selectedDetachment.zealous) return;
     if (this.selectedDetachment.deathCompany && orderKey === 'FIRST_FIRE') { this.log(`💀 The <b>Death Company</b> is too frenzied to hold back: Advance or Charge only.`); return; }
@@ -59456,7 +59793,7 @@ class NetEpicScene extends Phaser.Scene {
     const popSuffix = det.poppedUp ? ' 🚀POP-UP' : '';
     const resSuffix = det.inReserve ? ' ☄️RESERVE' : (det.deepStrikeActive ? ' ☄️DROP-ZONE' : '');
     const transSuffix = det.passengerDet ? ` 🚐[${det.passengerDet.stands.length}]` : (det.transportCapacity ? ' 🚐' : '');
-    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : det.instinct === 'AVATAR' ? 'Avatar' : det.instinct === 'WAYSTONE' ? 'Spirit' : /^ORK_/.test(det.instinct) ? 'No Nob' : det.instinct === 'IG_NOCMD' ? 'No orders' : det.instinct === 'IG_WARRIOR' ? 'Charge!' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
+    const synSuffix = det.instinct ? ` 🧠${det.instinct === 'RAMPAGE' ? 'Rampage' : det.instinct === 'HUNT' ? 'Hunt' : det.instinct === 'AVATAR' ? 'Avatar' : det.instinct === 'WAYSTONE' ? 'Spirit' : /^ORK_/.test(det.instinct) ? 'No Nob' : det.instinct === 'IG_NOCMD' ? 'No orders' : det.instinct === 'IG_WARRIOR' ? 'Charge!' : /^ROBOT_/.test(det.instinct) ? 'Program' : 'Nest'}` : (det.synapse ? ' 🧠SYN' : '');
     const rokkitSuffix = (det.weapon && det.weapon.pulsaRokkit) ? ` 🚀${det.rokkitsRemaining || 0}/3` : '';
     const pulsaSuppSuffix = det.suppressedByPulsa ? ' ⚡DISRUPTED' : '';
     const ccSuffix = shieldSuffix + dmgSuffix + popSuffix + resSuffix + transSuffix + synSuffix + rokkitSuffix + pulsaSuppSuffix + (anyGarrisoned ? ' 🏰' : '') + (anyEngaged ? ' ⚔️CC' : '');
@@ -60020,7 +60357,7 @@ class NetEpicScene extends Phaser.Scene {
   hasFriendlyAbilityWithin(det, ability, cm) {
     const rangePx = cm * PX_PER_CM;
     return this.detachments.some(o =>
-      o.faction === det.faction && o.stands.length > 0 && !o.embarkedOn && !o.inReserve && this.hasAbility(o, ability) &&
+      o.faction === det.faction && o.stands.length > 0 && !o.embarkedOn && !o.inReserve && this.hasAbility(o, ability) && !(ability === 'Inspirational' && /knight baron/i.test(o.name || '') && !this.isImpKnight(det)) &&
       (o === det || o.stands.some(os => det.stands.some(ds =>
         Phaser.Math.Distance.Between(os.container.x, os.container.y, ds.container.x, ds.container.y) <= rangePx)))
     );
