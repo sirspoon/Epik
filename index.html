@@ -58855,18 +58855,20 @@ class NetEpicScene extends Phaser.Scene {
       if (this.isDraggingStand) return;
       const p1 = this.input.pointer1, p2 = this.input.pointer2;
       if (p1.isDown && p2.isDown) {
+        // Two fingers: the gesture locks to turning or zooming, whichever starts first, until the fingers lift,
+        // so a twist doesn't also zoom the table (and a pinch doesn't turn it).
         const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-        if (this.lastPinchDist > 0) {
-          cam.setZoom(Phaser.Math.Clamp(cam.zoom + (dist - this.lastPinchDist) * 0.005, 0.35 * DPR, 2.5 * DPR));
-          this.updateZoomLOD();
-          // twisting two fingers turns the table (after a small dead zone, so a plain pinch doesn't turn it)
-          let d = ang - this.lastPinchAng; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
-          if (this._twistOn) this.rotateView(d);
-          else { this._twistAcc = (this._twistAcc || 0) + d; if (Math.abs(this._twistAcc) > 0.14) { this._twistOn = true; this.rotateView(this._twistAcc); } }
-        }
-        this.lastPinchDist = dist; this.lastPinchAng = ang;
+        if (!this._gest) this._gest = { d0: dist, a0: ang, z0: cam.zoom, mode: null, lastA: ang };
+        const G = this._gest;
+        let da = ang - G.a0; da = Math.atan2(Math.sin(da), Math.cos(da));
+        const scale = dist / Math.max(1, G.d0);
+        if (!G.mode) { if (Math.abs(da) > 0.12) { G.mode = 'turn'; G.lastA = G.a0; } else if (Math.abs(Math.log(scale)) > 0.1) { G.mode = 'zoom'; G.d0 = dist; G.z0 = cam.zoom; } }
+        if (G.mode === 'turn') { let d = ang - G.lastA; d = Math.atan2(Math.sin(d), Math.cos(d)); this.rotateView(d); }
+        else if (G.mode === 'zoom') { cam.setZoom(Phaser.Math.Clamp(G.z0 * dist / Math.max(1, G.d0), 0.35 * DPR, 2.5 * DPR)); this.updateZoomLOD(); }
+        G.lastA = ang;
         return;
       }
+      this._gest = null;
       this.lastPinchDist = 0; this._twistOn = false; this._twistAcc = 0;
       if (pointer.isDown) {
         const dx = pointer.x - pointer.prevPosition.x, dy = pointer.y - pointer.prevPosition.y;
