@@ -43301,6 +43301,12 @@ const EldArt2 = (() => {
     for (let k = 0; k < 3; k++) { const x = RR(2, w - 2), y = RR(2, h - 2); g.fillStyle = '#9a958a'; g.beginPath(); g.ellipse(x, y, RR(0.35, 0.6), RR(0.25, 0.45), RR(0, 3), 0, 7); g.fill(); }
     g.restore(); g.lineWidth = 0.5; g.strokeStyle = 'rgba(255,255,255,0.12)'; g.stroke(p);
   }
+  // fill a shape with harlequin diamond motley, then shade it so it still looks rounded
+  function motley(g, path, C, d, x0, y0, x1, y1) {
+    g.save(); g.clip(path); let r = 0;
+    for (let y = y0 - d; y < y1 + d; y += d * 0.7, r++) for (let x = x0 - d + (r % 2) * d / 2, i = 0; x < x1 + d; x += d, i++) { g.fillStyle = C[(i + r * 2) % C.length]; g.beginPath(); g.moveTo(x, y - d * 0.7); g.lineTo(x + d / 2, y); g.lineTo(x, y + d * 0.7); g.lineTo(x - d / 2, y); g.closePath(); g.fill(); }
+    const sh = g.createLinearGradient(x0, y0, x1, y1); sh.addColorStop(0, 'rgba(255,255,255,0.22)'); sh.addColorStop(0.5, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.4)'); g.fillStyle = sh; g.fill(path); g.restore();
+  }
   function line(g, pts, c, w) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); }
 
   // ---------- grav-tank hull (Falcon family): swept wings, raised spine, canopy, glowing engines ----------
@@ -43569,16 +43575,16 @@ const EldArt2 = (() => {
     skyweavers(g, P, w, h, o) {
       seed(w * 7 + h * 2); [[w * 0.32, h * 0.42], [w * 0.7, h * 0.6]].forEach(([x, y]) => { const s = Math.min(w, h) / 11;
         const hull = new Path2D(); hull.moveTo(x, y - 5 * s); hull.bezierCurveTo(x + 1.1 * s, y - 2.6 * s, x + 1 * s, y + 1.5 * s, x + 0.7 * s, y + 4 * s); hull.lineTo(x - 0.7 * s, y + 4 * s); hull.bezierCurveTo(x - 1 * s, y + 1.5 * s, x - 1.1 * s, y - 2.6 * s, x, y - 5 * s); hull.closePath();
-        dropShadow(g, hull, 1.8 * s, 2.6 * s, 0.9, 0.42); shaded(g, hull, '#5a1f2b', x - s, y - 5 * s, x + s, y + 4 * s, 0.35); outline(g, hull, 0.25);
-        [-1, 1].forEach(sd => { const sail = P2([[x + sd * 0.6 * s, y + 0.2 * s], [x + sd * 3.2 * s, y + 2.6 * s], [x + sd * 2.6 * s, y + 3.6 * s], [x + sd * 0.6 * s, y + 2.6 * s]]); g.save(); g.clip(sail); for (let i = -8; i < 8; i++) for (let j = -8; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#1b1b1f' : '#c9301f'; g.fillRect(x + i * 0.6 * s, y + j * 0.6 * s, 0.6 * s, 0.6 * s); } g.restore(); outline(g, sail, 0.18); });
+        const MC = x < w / 2 ? ['#c9301f', '#e3c13b', '#2f8a4a', '#1b1b1f'] : ['#2f5fa8', '#e9e2cf', '#d12a6a', '#1b1b1f']; dropShadow(g, hull, 1.8 * s, 2.6 * s, 0.9, 0.42); motley(g, hull, MC, 0.9 * s, x - 1.2 * s, y - 5 * s, x + 1.2 * s, y + 4 * s); outline(g, hull, 0.25);
+        [-1, 1].forEach(sd => { const sail = P2([[x + sd * 0.6 * s, y + 0.2 * s], [x + sd * 3.2 * s, y + 2.6 * s], [x + sd * 2.6 * s, y + 3.6 * s], [x + sd * 0.6 * s, y + 2.6 * s]]); motley(g, sail, [MC[1], MC[0], MC[3], MC[2]], 0.75 * s, x - 3.5 * s, y, x + 3.5 * s, y + 4 * s); outline(g, sail, 0.18); });
         R_._harlequin(g, P, x, y + 0.2 * s, 0.85 * s, { wpn: false, cape: '#2a2a32', motley: x < w / 2 ? ['#c9301f', '#e3c13b', '#2f8a4a'] : ['#2f5fa8', '#e9e2cf', '#d12a6a'] }); glow(g, x, y + 4.2 * s, 1.4 * s, P.lens, 0.8); });
     },
     // Venom / Starweaver: an open-topped harlequin skimmer with two passengers
     venom(g, P, w, h, o) {
       const cx = w / 2, s = Math.min(w, h) / 10;
       const hull = new Path2D(); hull.moveTo(cx, 0.6); hull.bezierCurveTo(cx + 2.2 * s, h * 0.25, cx + 2.6 * s, h * 0.7, cx + 3.6 * s, h * 0.88); hull.lineTo(cx + 1.2 * s, h - 0.6); hull.lineTo(cx - 1.2 * s, h - 0.6); hull.lineTo(cx - 3.6 * s, h * 0.88); hull.bezierCurveTo(cx - 2.6 * s, h * 0.7, cx - 2.2 * s, h * 0.25, cx, 0.6); hull.closePath();
-      dropShadow(g, hull, 2.4, 3.2, 1.4, 0.42); glow(g, cx + 1, h * 0.65, w * 0.5, P.lens, 0.15); shaded(g, hull, '#4a1a26', 0, 0, w, h, 0.32);
-      g.save(); g.clip(hull); for (let i = -10; i < 10; i++) for (let j = 0; j < 30; j++) { if ((i + j) % 2) continue; g.fillStyle = 'rgba(201,48,31,0.55)'; g.fillRect(cx + i * 1.2 * s, j * 1.2 * s, 1.2 * s, 1.2 * s); } g.restore(); outline(g, hull, 0.3);
+      dropShadow(g, hull, 2.4, 3.2, 1.4, 0.42); glow(g, cx + 1, h * 0.65, w * 0.5, P.lens, 0.15); motley(g, hull, ['#c9301f', '#e3c13b', '#2f5fa8', '#1b1b1f', '#2f8a4a', '#e9e2cf'], 1.3 * s, 0, 0, w, h);
+      outline(g, hull, 0.3);
       const pit = new Path2D(); pit.ellipse(cx, h * 0.55, 1.6 * s, 2.6 * s, 0, 0, 7); g.fillStyle = '#1b1b1f'; g.fill(pit); outline(g, pit, 0.2);
       R_._harlequin(g, P, cx, h * 0.45, 0.9 * s, { wpn: false }); R_._harlequin(g, P, cx, h * 0.66, 0.9 * s, { wpn: false, motley: ['#2f5fa8', '#e9e2cf', '#c9301f'], cape: '#2f8a4a' });
       barrel(g, cx, h * 0.25, h * 0.2, 0.7, '#3a3a40'); line(g, [[cx, h * 0.04], [cx, h * 0.3]], '#e9e2cf', 0.3);
