@@ -43616,6 +43616,101 @@ const EldArt2 = (() => {
       const pl = new Path2D(); pl.moveTo(cx - 0.3 * s, cy - 0.4 * s); pl.bezierCurveTo(cx - 1.1 * s, cy + 1.2 * s, cx - 0.6 * s, cy + 2.6 * s, cx + 0.2 * s, cy + 3.2 * s); pl.bezierCurveTo(cx + 0.6 * s, cy + 2.4 * s, cx + 0.9 * s, cy + 1 * s, cx + 0.3 * s, cy - 0.4 * s); pl.closePath(); shaded(g, pl, '#f4f1ea', cx - s, cy, cx + s, cy + 3 * s, 0.35); outline(g, pl, 0.12);
       const hd = new Path2D(); hd.ellipse(cx, cy - 0.7 * s, 0.75 * s, 1.0 * s, 0, 0, 7); shaded(g, hd, '#4a3330', cx - s, cy - 1.6 * s, cx + s, cy, 0.4); outline(g, hd, 0.18);
       [-1, 1].forEach(sd => { g.fillStyle = '#ffcf4a'; g.beginPath(); g.ellipse(cx + sd * 0.3 * s, cy - 1.3 * s, 0.17 * s, 0.1 * s, sd * 0.4, 0, 7); g.fill(); });
+    },
+    // ---------- batch 3: titans, aircraft, super-heavy grav-tanks ----------
+    // an Eldar titan from above: slender body, long crested head, a fan of holo-field vanes behind, weapon arms forward
+    titan(g, P, w, h, o) {
+      stand(g, w, h, true); const cx = w / 2, cy = h * 0.5, s = Math.min(w, h) / 7.6, arm = o.armour || P.main, sm = o.small ? 0.85 : 1;
+      // holo-field: translucent vanes fanning out behind, shimmering
+      const nv = o.small ? 5 : 7;
+      for (let i = 0; i < nv; i++) { const a = Math.PI / 2 + (i - (nv - 1) / 2) * 0.3, L = (o.small ? 4.2 : 5.4) * s * (1 - Math.abs(i - (nv - 1) / 2) * 0.07);
+        const bx = cx + Math.cos(a) * 0.8 * s, by = cy + 0.6 * s + Math.sin(a) * 0.5 * s, ex = cx + Math.cos(a) * L, ey = cy + 0.6 * s + Math.sin(a) * L;
+        const nx = -Math.sin(a), ny = Math.cos(a), vane = new Path2D(); vane.moveTo(bx - nx * 0.25 * s, by - ny * 0.25 * s); vane.quadraticCurveTo((bx + ex) / 2 - nx * 0.55 * s, (by + ey) / 2 - ny * 0.55 * s, ex, ey); vane.quadraticCurveTo((bx + ex) / 2 + nx * 0.35 * s, (by + ey) / 2 + ny * 0.35 * s, bx + nx * 0.25 * s, by + ny * 0.25 * s); vane.closePath();
+        dropShadow(g, vane, 0.8 * s, 1.0 * s, 0.4, 0.3); const vg = g.createLinearGradient(bx, by, ex, ey); vg.addColorStop(0, arm); vg.addColorStop(0.45, rgba(lift(o.vane || P.lens, 0.1), 0.9)); vg.addColorStop(1, rgba(lift(o.vane || P.lens, 0.6), 0.6)); g.fillStyle = vg; g.fill(vane); outline(g, vane, 0.12, rgba('#000000', 0.5)); }
+      if (o.jets) [-1, 1].forEach(sd => { const j = new Path2D(); j.ellipse(cx + sd * 1.1 * s, cy + 1.6 * s, 0.55 * s, 0.9 * s, 0, 0, 7); shaded(g, j, '#3a3a44', cx - 2 * s, 0, cx + 2 * s, 0, 0.4); outline(g, j, 0.15); glow(g, cx + sd * 1.1 * s, cy + 2.6 * s, 0.9 * s, '#ff9a3a', 0.6); });
+      // weapon arms reaching forward
+      const wpn = (sd, kind) => { const x = cx + sd * 2.1 * s * sm, y = cy - 0.2 * s; line(g, [[cx + sd * 1.3 * s * sm, cy + 0.1 * s], [x, y]], sink(arm, 0.25), 0.7 * s);
+        if (kind === 'sword') { g.save(); g.translate(x, y); g.rotate(sd * 0.15); const bl = new Path2D(); bl.moveTo(-0.3 * s, 0); bl.quadraticCurveTo(-0.6 * s, -3 * s, sd * 0.4 * s, -5.6 * s); bl.quadraticCurveTo(0.45 * s, -2.8 * s, 0.3 * s, 0); bl.closePath(); dropShadow(g, bl, 0.5 * s, 0.7 * s, 0.3, 0.4); shaded(g, bl, '#e6eef2', -0.5 * s, -5 * s, 0.5 * s, 0, 0.45); outline(g, bl, 0.14); g.restore(); }
+        else if (kind === 'lance') { barrel(g, x, y + 0.6 * s, 5.2 * s, 0.7 * s, '#e9dfc4'); glow(g, x, y - 4.7 * s, 1.1 * s, o.glowC || '#c45aff', 0.75); }
+        else if (kind === 'cannon') { barrel(g, x, y + 0.6 * s, 4.6 * s, 1.1 * s, '#e9dfc4'); [1.2, 2.4, 3.4].forEach(t => { g.fillStyle = '#4ade80'; g.beginPath(); g.arc(x, y - t * s, 0.2 * s, 0, 7); g.fill(); }); glow(g, x, y - 4.1 * s, 0.9 * s, P.lens, 0.6); }
+        else { barrel(g, x - 0.35 * s, y + 0.6 * s, 4 * s, 0.45 * s, '#e9dfc4'); barrel(g, x + 0.35 * s, y + 0.6 * s, 4 * s, 0.45 * s, '#e9dfc4'); glow(g, x, y - 3.5 * s, 0.8 * s, P.lens, 0.6); }
+        const pod = new Path2D(); pod.ellipse(x, y + 0.4 * s, 0.7 * s, 1.0 * s, 0, 0, 7); shaded(g, pod, lift(arm, 0.05), x - s, y - s, x + s, y + s, 0.4); outline(g, pod, 0.15); };
+      wpn(-1, o.left || 'pulse'); wpn(1, o.right || 'pulse');
+      // narrow torso and pierced shoulder pads
+      const body = new Path2D(); body.ellipse(cx, cy + 0.4 * s, 1.35 * s * sm, 1.2 * s, 0, 0, 7); dropShadow(g, body, 1.2 * s, 1.6 * s, 0.7, 0.5); shaded(g, body, arm, cx - 1.4 * s, cy - s, cx + 1.4 * s, cy + 1.6 * s, 0.35); outline(g, body, 0.25);
+      [-1, 1].forEach(sd => { const pad = new Path2D(); pad.ellipse(cx + sd * 1.35 * s * sm, cy + 0.15 * s, 0.75 * s, 1.0 * s, sd * 0.3, 0, 7); shaded(g, pad, '#e9e4d4', cx - 2 * s, cy - s, cx + 2 * s, cy + s, 0.4); outline(g, pad, 0.18); g.fillStyle = '#2a2a30'; [-0.35, 0, 0.35].forEach(dy => { g.beginPath(); g.arc(cx + sd * 1.35 * s * sm, cy + 0.15 * s + dy * s, 0.12 * s, 0, 7); g.fill(); }); });
+      gem(g, cx, cy + 0.9 * s, 0.4 * s, '#e0412f');
+      // the long crested head
+      const hd = new Path2D(); hd.moveTo(cx, cy - 2.6 * s); hd.bezierCurveTo(cx + 0.9 * s, cy - 2 * s, cx + 0.8 * s, cy - 0.2 * s, cx + 0.5 * s, cy + 0.2 * s); hd.lineTo(cx - 0.5 * s, cy + 0.2 * s); hd.bezierCurveTo(cx - 0.8 * s, cy - 0.2 * s, cx - 0.9 * s, cy - 2 * s, cx, cy - 2.6 * s); hd.closePath();
+      dropShadow(g, hd, 0.5 * s, 0.7 * s, 0.3, 0.4); shaded(g, hd, o.head || P.light, cx - s, cy - 2.6 * s, cx + s, cy, 0.45); outline(g, hd, 0.18);
+      g.fillStyle = o.crest || P.accent; g.beginPath(); g.ellipse(cx, cy - 1.0 * s, 0.16 * s, 1.4 * s, 0, 0, 7); g.fill();
+      [-1, 1].forEach(sd => { g.fillStyle = P.lens; g.beginPath(); g.ellipse(cx + sd * 0.3 * s, cy - 1.9 * s, 0.16 * s, 0.1 * s, sd * 0.5, 0, 7); g.fill(); });
+      if (o.psychic) glow(g, cx, cy - 1.2 * s, 2.4 * s, '#c45aff', 0.35);
+    },
+    // aircraft, traced from the Aeronautica Imperialis sprues (nose up). Shapes are lists of [x, y] points and
+    // ['q', cx, cy, x, y] / ['c', c1x, c1y, c2x, c2y, x, y] curves in units of s; mirrored for the left side.
+    _shape(cx, cy, s, sd, pts) { const p = new Path2D(), X = x => cx + sd * x * s, Y = y => cy + y * s; pts.forEach((q, i) => { if (q[0] === 'q') p.quadraticCurveTo(X(q[1]), Y(q[2]), X(q[3]), Y(q[4])); else if (q[0] === 'c') p.bezierCurveTo(X(q[1]), Y(q[2]), X(q[3]), Y(q[4]), X(q[5]), Y(q[6])); else if (i) p.lineTo(X(q[0]), Y(q[1])); else p.moveTo(X(q[0]), Y(q[1])); }); p.closePath(); return p; },
+    _fuselage(g, P, cx, cy, s, o = {}) { // slim body with a forked nose
+      const k = o.wide || 1, body = R_._shape(cx, cy, s, 1, [[0, -3.9], [0.32 * k, -5.3], [0.62 * k, -3.6], ['c', 1.0 * k, -1.5, 1.05 * k, 2.2, 0.75 * k, 4.2], [0.4, 4.7], [-0.4, 4.7], [-0.75 * k, 4.2], ['c', -1.05 * k, 2.2, -1.0 * k, -1.5, -0.62 * k, -3.6], [-0.32 * k, -5.3]]);
+      shaded(g, body, lift(P.main, 0.05), cx - s, cy - 5 * s, cx + s, cy + 4 * s, 0.35); outline(g, body, 0.22); sheen(g, body, cx - 0.3 * s, cy - 1.5 * s, 0.35 * s, 2 * s, 0.35);
+      g.strokeStyle = rgba(sink(P.main, 0.55), 0.6); g.lineWidth = 0.1 * s; [-1, 1].forEach(sd => { g.beginPath(); g.moveTo(cx + sd * 0.3 * s, cy - 3.6 * s); g.quadraticCurveTo(cx + sd * 0.75 * k * s, cy, cx + sd * 0.45 * s, cy + 4 * s); g.stroke(); });
+      (o.canopies || [-2.3]).forEach(y0 => { const r = 0.42 * s, y = cy + y0 * s, cv = new Path2D(); cv.ellipse(cx, y, r, r * 2.2, 0, 0, 7); const cg = g.createRadialGradient(cx - r * 0.3, y - r, r * 0.1, cx, y, r * 2.3); cg.addColorStop(0, '#d8ecff'); cg.addColorStop(0.35, '#3f5fa8'); cg.addColorStop(1, '#101a3a'); g.fillStyle = cg; g.fill(cv); g.save(); g.clip(cv); g.strokeStyle = 'rgba(10,15,30,0.6)'; g.lineWidth = 0.08 * s; for (let k2 = -2; k2 <= 2; k2++) { g.beginPath(); g.moveTo(cx - r, y + k2 * r * 0.6); g.lineTo(cx + r, y + k2 * r * 0.6); g.stroke(); } g.restore(); outline(g, cv, 0.15); });
+      [-1, 1].forEach(sd => glow(g, cx + sd * 0.3 * s, cy + 4.9 * s, 0.85 * s, P.lens, 0.85));
+    },
+    _wingPaint(g, P, path, cx, cy, s, ribs) { shaded(g, path, P.main, cx - 6 * s, cy - 5 * s, cx + 6 * s, cy + 4 * s, 0.38); g.save(); g.clip(path); g.strokeStyle = rgba(sink(P.main, 0.6), 0.7); g.lineWidth = 0.12 * s; ribs.forEach(([x1, y1, x2, y2]) => { g.beginPath(); g.moveTo(cx + x1 * s, cy + y1 * s); g.lineTo(cx + x2 * s, cy + y2 * s); g.stroke(); }); g.restore(); outline(g, path, 0.22); },
+    _grille(g, x, y, r, s) { const p = new Path2D(); p.ellipse(x, y, r, r * 1.1, 0, 0, 7); g.fillStyle = '#2a2a30'; g.fill(p); g.save(); g.clip(p); g.strokeStyle = 'rgba(160,160,170,0.7)'; g.lineWidth = 0.09 * s; for (let k = -3; k <= 3; k++) { g.beginPath(); g.moveTo(x + k * r * 0.28, y - r * 1.2); g.lineTo(x + k * r * 0.28, y + r * 1.2); g.stroke(); } g.restore(); g.strokeStyle = 'rgba(0,0,0,0.6)'; g.lineWidth = 0.12 * s; g.stroke(p); },
+    _tailFins(g, P, cx, cy, s, y0, dx) { [-1, 1].forEach(sd => { const f = R_._shape(cx, cy, s, sd, [[dx - 0.25, y0], [dx + 0.15, y0 + 2.6], [dx + 0.45, y0 + 2.3], [dx + 0.35, y0 + 0.3]]); dropShadow(g, f, 0.5 * s, 0.7 * s, 0.25, 0.4); shaded(g, f, lift(P.main, 0.12), cx - 2 * s, 0, cx + 2 * s, 0, 0.4); outline(g, f, 0.15); }); },
+    _stripes(g, P, path, cx, cy, s, lines) { g.save(); g.clip(path); g.strokeStyle = P.trim; lines.forEach(([x1, y1, x2, y2, wd]) => { g.lineWidth = wd * s; g.beginPath(); g.moveTo(cx + x1 * s, cy + y1 * s); g.lineTo(cx + x2 * s, cy + y2 * s); g.stroke(); }); g.restore(); },
+    // planes traced from plan views of the Aeronautica models (nose up, units of s, nose tip at y = -5).
+    // _plan draws one symmetric outline from its right-hand half (a list of points/curves from nose to tail).
+    _plan(cx, cy, s, half) {
+      const p = new Path2D(), X = (x, sd) => cx + sd * x * s, Y = y => cy + y * s, seg = (q, sd) => { if (q[0] === 'q') p.quadraticCurveTo(X(q[1], sd), Y(q[2]), X(q[3], sd), Y(q[4])); else p.lineTo(X(q[0], sd), Y(q[1])); };
+      p.moveTo(X(half[0][0], 1), Y(half[0][1])); half.slice(1).forEach(q => seg(q, 1));
+      const rev = []; for (let i = half.length - 1; i >= 0; i--) { const q = half[i], prev = half[i - 1]; if (!prev) { rev.push([q[0], q[1]]); break; } const end = prev[0] === 'q' ? [prev[3], prev[4]] : [prev[0], prev[1]]; rev.push(q[0] === 'q' ? ['q', q[1], q[2], end[0], end[1]] : end); }
+      // walk back down the left side
+      const lastR = half[half.length - 1], tail = lastR[0] === 'q' ? [lastR[3], lastR[4]] : lastR; p.lineTo(X(tail[0], -1), Y(tail[1]));
+      for (let i = half.length - 1; i >= 1; i--) { const q = half[i], prev = half[i - 1], end = prev[0] === 'q' ? [prev[3], prev[4]] : [prev[0], prev[1]]; if (q[0] === 'q') p.quadraticCurveTo(X(q[1], -1), Y(q[2]), X(end[0], -1), Y(end[1])); else p.lineTo(X(end[0], -1), Y(end[1])); }
+      p.closePath(); return p;
+    },
+    _planPaint(g, P, path, cx, cy, s, o) {
+      dropShadow(g, path, 4, 5.5, 1.8, 0.35); shaded(g, path, P.main, cx - 6 * s, cy - 5 * s, cx + 6 * s, cy + 5 * s, 0.32);
+      g.save(); g.clip(path); g.strokeStyle = P.trim; (o.stripes || []).forEach(([x1, y1, x2, y2, wd]) => [-1, 1].forEach(sd => { g.lineWidth = wd * s; g.beginPath(); g.moveTo(cx + sd * x1 * s, cy + y1 * s); g.lineTo(cx + sd * x2 * s, cy + y2 * s); g.stroke(); }));
+      g.strokeStyle = rgba(sink(P.main, 0.55), 0.55); g.lineWidth = 0.09 * s; (o.panels || []).forEach(pts => [-1, 1].forEach(sd => { g.beginPath(); pts.forEach(([x, y], k) => k ? g.lineTo(cx + sd * x * s, cy + y * s) : g.moveTo(cx + sd * x * s, cy + y * s)); g.stroke(); })); g.restore();
+      outline(g, path, 0.22); sheen(g, path, cx - 0.8 * s, cy - 1.5 * s, 1.2 * s, 2.5 * s, 0.25);
+      (o.gems || []).forEach(([x, y]) => [-1, 1].forEach(sd => gem(g, cx + sd * x * s, cy + y * s, 0.22 * s, '#e0412f')));
+      (o.grilles || []).forEach(([x, y, r]) => [-1, 1].forEach(sd => R_._grille(g, cx + sd * x * s, cy + y * s, r * s, s)));
+      (o.canopies || []).forEach(y0 => { const r = 0.4 * s, y = cy + y0 * s, cv = new Path2D(); cv.ellipse(cx, y, r, r * 1.7, 0, 0, 7); const cg = g.createRadialGradient(cx - 0.1 * s, y - 0.3 * s, 0.05 * s, cx, y, 0.8 * s); cg.addColorStop(0, '#e6faff'); cg.addColorStop(0.4, '#5ec8ff'); cg.addColorStop(1, '#14466a'); g.fillStyle = cg; g.fill(cv); outline(g, cv, 0.14); });
+      (o.guns || []).forEach(([dx, dy, l]) => barrel(g, cx + dx * s, cy + dy * s, l * s, 0.2 * s, '#e9dfc4'));
+      (o.engines || [[0.5, 4.6]]).forEach(([x, y]) => [-1, 1].forEach(sd => glow(g, cx + sd * x * s, cy + y * s, 0.8 * s, P.lens, 0.85)));
+    },
+    nightwing(g, P, w, h, o) { // forked nose, wide body, long wings swept back to sharp tips, twin rear fins
+      const cx = w / 2, cy = h * 0.46, s = Math.min(w, h) / 13.8;
+      const path = R_._plan(cx, cy, s, [[0.0, -5.4], ['q', 0.8, -4.4, 1.4, -2.4], ['q', 1.8, -1.6, 1.9, -0.8], ['q', 4.6, 1.4, 7.0, -0.2], ['q', 5.8, 2.6, 2.2, 2.8], [1.8, 4.6], [1.3, 3.0], ['q', 0.9, 3.6, 0.4, 4.2]]);
+      R_._planPaint(g, P, path, cx, cy, s, { stripes: [[2.2, 0.0, 6.4, 0.6, 0.28], [2.2, 0.7, 6.0, 1.0, 0.28], [2.2, 1.4, 5.4, 1.4, 0.28]], panels: [[[0.4, -4.4], [0.9, -2.2], [1.2, 2.8]], [[2.2, -1.2], [2.3, 1.5]]], gems: [[6.2, 0.4], [1.7, -2.1], [1.6, 2.4]], grilles: [[0.95, -0.4, 0.55]], canopies: [-1.4], guns: [[-0.35, -4.0, 1.1], [0.35, -4.0, 1.1]], engines: [[0.45, 4.6]] });
+    },
+    phoenix(g, P, w, h, o) { // traced point by point from the sprue: forked nose block, narrow waist, a small spike and scallop before each blade, stepped trailing edge, rear lobes
+      const cx = w / 2, cy = h * 0.52, s = Math.min(w, h) / 11.4;
+      const path = R_._plan(cx, cy, s, [[0.0, -3.5], ['q', 0.3, -3.5, 0.3, -3.9], [0.4, -4.75], [0.62, -5.05], ['q', 1.0, -4.4, 1.06, -3.48], [1.06, -2.5], [0.76, -2.39], [0.5, -2.27], [0.5, -0.76], ['q', 0.55, -0.4, 1.06, -0.23], [1.52, -0.1], [1.67, 0.08], ['q', 2.3, 0.4, 2.88, -0.38], ['q', 3.3, -1.0, 3.56, -1.97], [3.83, -2.84], ['q', 4.45, -1.6, 4.5, 0.3], [4.5, 0.87], [3.64, 0.98], [3.18, 0.83], [2.5, 1.06], ['q', 1.9, 1.4, 1.52, 1.97], [1.44, 2.5], [1.06, 3.18], [1.2, 3.7], [0.76, 3.18], [0.08, 2.8]]);
+      R_._planPaint(g, P, path, cx, cy, s, { stripes: [[3.1, -0.4, 4.6, -0.4, 0.3], [3.1, 0.25, 4.6, 0.25, 0.3]], panels: [[[0.75, -4.6], [0.85, -2.6]], [[0.3, -2.2], [0.35, 2.6]], [[3.75, -2.5], [3.75, 0.9]], [[3.3, -1.3], [4.4, -1.3]], [[2.4, 0.5], [3.2, 0.7]], [[1.6, 1.3], [2.4, 1.1]]], gems: [[4.05, 0.6], [1.15, 2.6], [2.9, 0.5]], grilles: [[1.85, 0.75, 0.32]], canopies: [-1.9, -1.0], guns: [], engines: [[0.95, 3.75]] });
+    },
+    vampyre(g, P, w, h, o) { // a wide solid crescent each side, a ribbed arch scooped out behind the forward tip, two rear prongs
+      const cx = w / 2, cy = h * 0.5, s = Math.min(w, h) / 13;
+      const path = R_._plan(cx, cy, s, [[0.0, -3.0], [0.06, -5.3], ['q', 0.9, -4.6, 1.4, -3.3], ['q', 1.55, -2.5, 1.1, -2.0], ['q', 1.25, -1.4, 1.2, -0.7], [1.2, 0.5], ['q', 2.1, 1.25, 2.85, -0.3], [3.05, -1.6], [3.3, -0.35], ['q', 3.8, 0.55, 4.35, -0.5], ['q', 4.9, -1.5, 5.4, -3.6], ['q', 6.4, -2.2, 6.4, -0.2], [6.4, 1.0], ['q', 5.4, 0.85, 4.5, 1.75], [4.25, 2.3], ['q', 3.3, 1.9, 2.4, 3.0], [1.95, 4.0], ['q', 1.6, 3.3, 1.3, 3.4], [1.0, 4.2], [0.85, 5.2], [0.5, 5.2], [0.4, 4.2]]);
+      R_._planPaint(g, P, path, cx, cy, s, { stripes: [[4.2, 0.3, 6.6, -0.6, 0.9]], panels: [[[0.6, -3.6], [1.2, -1.8], [1.2, 3.0]], [[3.0, 1.0], [6.2, 0.8]], [[2.0, 2.0], [4.6, 1.3]], [[4.6, -1.0], [5.8, -2.6]]], gems: [[5.6, -1.6], [3.0, 1.7], [5.2, 1.2], [1.9, 1.3]], canopies: [-1.8, -0.9], guns: [], engines: [[1.0, 4.9]] });
+      // ribbed arches inside the scoops
+      [-1, 1].forEach(sd => { const a = new Path2D(); a.moveTo(cx + sd * 1.35 * s, cy + 0.4 * s); a.quadraticCurveTo(cx + sd * 2.1 * s, cy + 1.0 * s, cx + sd * 2.75 * s, cy - 0.25 * s); a.moveTo(cx + sd * 3.4 * s, cy - 0.25 * s); a.quadraticCurveTo(cx + sd * 3.8 * s, cy + 0.35 * s, cx + sd * 4.25 * s, cy - 0.45 * s); g.strokeStyle = '#2a2a30'; g.lineWidth = 0.5 * s; g.stroke(a); });
+      line(g, [[cx, cy - 2 * s], [cx, cy + 3 * s]], '#3a3a44', 0.3 * s);
+    },
+    // super-heavy grav-tanks on a stretched Falcon hull
+    superGrav(g, P, w, h, o) {
+      const { cx, yy } = gravHull(g, P, w, h, { ...o, deck: o.kind === 'storm' });
+      if (o.kind === 'scorpion') { [-1, 1].forEach(sd => { barrel(g, cx + sd * w * 0.09, yy(0.9), h * 1.0, 1.5, '#ece4cf'); [0.25, 0.5, 0.75].forEach(t => gem(g, cx + sd * w * 0.09, yy(t), 0.45, '#4ade80')); const tip = new Path2D(); tip.ellipse(cx + sd * w * 0.09, yy(-0.08), 1.1, 1.6, 0, 0, 7); shaded(g, tip, '#ece4cf', 0, 0, w, 0, 0.4); outline(g, tip, 0.15); glow(g, cx + sd * w * 0.09, yy(-0.12), 1.8, '#7cffb0', 0.6); }); }
+      else if (o.kind === 'cobra') { barrel(g, cx, yy(0.9), h * 0.95, 2.6, '#2c2c33'); [0.3, 0.5, 0.7].forEach(t => { g.strokeStyle = rgba('#c48bff', 0.85); g.lineWidth = 0.35; g.beginPath(); g.ellipse(cx, yy(t), 1.8, 0.5, 0, 0, 7); g.stroke(); }); glow(g, cx, yy(-0.06), 3.2, '#a35bff', 0.75); const m = new Path2D(); m.ellipse(cx, yy(0.82), w * 0.16, h * 0.12, 0, 0, 7); shaded(g, m, lift(P.main, 0.08), 0, 0, w, h, 0.35); outline(g, m, 0.2); gem(g, cx, yy(0.82), 0.8, '#a35bff'); }
+      else if (o.kind === 'storm') { [-1, 1].forEach(sd => { [[0.05, 0.27], [0.15, 0.36], [0.25, 0.43]].forEach(([t, f], k) => { const bx = cx + sd * f * w, by = yy(t + 0.03), tx = bx + sd * w * (0.24 - k * 0.02), ty2 = by - h * (0.085 - k * 0.008); const fin = new Path2D(); fin.moveTo(bx - sd * 0.5, by + 0.2); fin.bezierCurveTo(bx + sd * w * 0.1, by - h * 0.02, bx + sd * w * 0.2, by - h * 0.03, tx, ty2); fin.lineTo(tx - sd * 0.5, ty2 + 1.3); fin.bezierCurveTo(bx + sd * w * 0.17, by + h * 0.005, bx + sd * w * 0.09, by + h * 0.03, bx + sd * 0.5, by + 1.1); fin.closePath(); shaded(g, fin, '#26262c', bx - 2, ty2, bx + 2, by, 0.45); outline(g, fin, 0.14); gem(g, bx, by + 0.2, 0.45, '#5ee7ff'); }); });
+        g.save(); g.globalCompositeOperation = 'lighter'; const fg = g.createLinearGradient(0, yy(-0.12), 0, yy(0.15)); fg.addColorStop(0, rgba(P.lens, 0.6)); fg.addColorStop(1, rgba(P.lens, 0)); g.fillStyle = fg; g.beginPath(); g.moveTo(cx - w * 0.5, yy(0.1)); g.quadraticCurveTo(cx, yy(-0.2), cx + w * 0.5, yy(0.1)); g.quadraticCurveTo(cx, yy(0.02), cx - w * 0.5, yy(0.1)); g.fill(); g.restore();
+        const ty = yy(0.6); [-1.2, 0, 1.2].forEach(dx => barrel(g, cx + dx, ty, h * 0.25, 0.6, '#3a3a40')); turretDome(g, P, cx, ty, w * 0.1, lift(P.main, 0.1)); }
+      else if (o.kind === 'void') { const ty = yy(0.8); [-1, 0, 1].forEach(k => { const r = new Path2D(); r.rect(cx + k * w * 0.12 - 1.2, ty - h * 0.55, 2.4, h * 0.58); shaded(g, r, '#3a3a44', 0, 0, w, 0, 0.4); outline(g, r, 0.18); for (let i = 0; i < 8; i++) { g.fillStyle = rgba('#c45aff', 0.75); g.fillRect(cx + k * w * 0.12 - 0.7, ty - h * 0.53 + i * h * 0.068, 1.4, 0.55); } }); turretDome(g, P, cx, ty + 1, w * 0.12, lift(P.main, 0.1)); }
+      else { const ty = yy(0.84); barrel(g, cx - 1, ty, h * 0.5, 0.8, P.metal); barrel(g, cx + 1, ty, h * 0.5, 0.8, P.metal); turretDome(g, P, cx, ty, w * 0.13, lift(P.main, 0.1)); gem(g, cx, ty, 0.7, '#e0412f'); }
     }
   };
   function render(kind, P, w, h, o = {}) {
@@ -43628,10 +43723,21 @@ const EldArt2 = (() => {
   const palette = (base, cw) => ({ ...base, ...(CW[cw] || {}) });
   // which new sprite (if any) a card or stand uses; anything not listed keeps its old picture
   function pick(cfg) {
-    if (!cfg || cfg.isTitan) return null;
+    if (!cfg) return null;
     const norm = x => String(x || '').toLowerCase().replace(/[_-]/g, ' ');
     const t = cfg.label ? norm(cfg.label) : norm(`${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''}`), has = (...ws) => ws.some(w => t.includes(w));
-    if (has('exodite', 'exo ', 'knight', 'titan', 'phoenix', 'nightwing', 'vampyre', 'tempest', 'cobra', 'scorpion super', 'storm serpent', 'void spinner')) return null;
+    if (has('exodite', 'exo ', 'knight')) return null;
+    if (has('warlock titan')) return { kind: 'titan', opts: { margin: 10, left: 'lance', right: 'sword', psychic: true, head: '#e9e4d4', crest: '#7a3fc8', glowC: '#c45aff' }, titan: true };
+    if (has('phantom')) return { kind: 'titan', opts: { margin: 10, left: 'cannon', right: 'sword' }, titan: true };
+    if (has('revenant')) return { kind: 'titan', opts: { margin: 10, left: 'pulse', right: 'pulse', jets: true, small: true }, titan: true };
+    if (has('nightwing')) return { kind: 'nightwing', opts: { margin: 7 } };
+    if (has('phoenix')) return { kind: 'phoenix', opts: { margin: 7 } };
+    if (has('vampyre')) return { kind: 'vampyre', opts: { margin: 7 } };
+    if (has('scorpion') && !has('striking')) return { kind: 'superGrav', opts: { kind: 'scorpion' } };
+    if (has('cobra')) return { kind: 'superGrav', opts: { kind: 'cobra' } };
+    if (has('storm serpent')) return { kind: 'superGrav', opts: { kind: 'storm' } };
+    if (has('void spinner')) return { kind: 'superGrav', opts: { kind: 'void' } };
+    if (has('tempest', 'engines of vaul')) return { kind: 'superGrav', opts: { kind: 'tempest' } };
     if (has('avatar')) return { kind: 'avatar', opts: {} };
     if (has('farseer') && has('jetbike')) return { kind: 'jetbikes', opts: { n: 1, seer: { plume: '#e9e2cf' } } };
     if (has('warlock') && has('jetbike')) return { kind: 'jetbikes', opts: { n: 1, seer: { plume: '#c9301f' } } };
