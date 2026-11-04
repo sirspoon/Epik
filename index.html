@@ -41535,6 +41535,17 @@ window.handleImportSaveFile = function(event) {
   event.target.value = '';
 };
 
+// Camera keys: W A S D / arrows move the view, Q / E turn the table, R turns it back
+window._camKeys = new Set();
+window.addEventListener('keydown', (e) => {
+  const el = document.activeElement; if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) { window._camKeys.add(e.code); if (e.code.startsWith('Arrow')) e.preventDefault(); }
+  else if (e.code === 'KeyR' && window.gameScene && window.gameScene.resetViewRotation) window.gameScene.resetViewRotation();
+});
+window.addEventListener('keyup', (e) => window._camKeys.delete(e.code));
+window.addEventListener('blur', () => window._camKeys.clear());
+
 // Keyboard Shortcuts: F5 = Quick Save, F9 = Quick Load, Tab/N = Next Unit, Space = Combat Advance
 window.addEventListener('keydown', (e) => {
   if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
@@ -57562,6 +57573,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    this.keyCamTick(delta);
     this.keepTextUpright();
     if (this._lastCamZoom !== this.cameras.main.zoom) {
       this._lastCamZoom = this.cameras.main.zoom;
@@ -58279,15 +58291,19 @@ class NetEpicScene extends Phaser.Scene {
       if (this.isDraggingStand) return;
       const p1 = this.input.pointer1, p2 = this.input.pointer2;
       if (p1.isDown && p2.isDown) {
-        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
         if (this.lastPinchDist > 0) {
           cam.setZoom(Phaser.Math.Clamp(cam.zoom + (dist - this.lastPinchDist) * 0.005, 0.35 * DPR, 2.5 * DPR));
           this.updateZoomLOD();
+          // twisting two fingers turns the table (after a small dead zone, so a plain pinch doesn't turn it)
+          let d = ang - this.lastPinchAng; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+          if (this._twistOn) this.rotateView(d);
+          else { this._twistAcc = (this._twistAcc || 0) + d; if (Math.abs(this._twistAcc) > 0.14) { this._twistOn = true; this.rotateView(this._twistAcc); } }
         }
-        this.lastPinchDist = dist;
+        this.lastPinchDist = dist; this.lastPinchAng = ang;
         return;
       }
-      this.lastPinchDist = 0;
+      this.lastPinchDist = 0; this._twistOn = false; this._twistAcc = 0;
       if (pointer.isDown) {
         const dx = pointer.x - pointer.prevPosition.x, dy = pointer.y - pointer.prevPosition.y;
         const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
@@ -58304,11 +58320,38 @@ class NetEpicScene extends Phaser.Scene {
 
   applyViewOrientation(force = false) {
     const cam = this.cameras.main;
-    const rot = this.isPortraitView() ? Math.PI / 2 : 0;
-    if (force || cam.rotation !== rot) {
-      cam.setRotation(rot);
+    const base = this.isPortraitView() ? Math.PI / 2 : 0;
+    if (force || this.viewBase !== base) {
+      this.viewBase = base;
+      cam.setRotation(base + (this.viewTwist || 0));
       this.resetCamera();
     }
+  }
+  // Turn the table about the middle of the screen (two-finger twist, or Q / E on a keyboard)
+  rotateView(d) {
+    const cam = this.cameras.main, m = cam.getWorldPoint(cam.width / 2, cam.height / 2);
+    let t = (this.viewTwist || 0) + d; t = Math.atan2(Math.sin(t), Math.cos(t)); this.viewTwist = t;
+    cam.setRotation((this.viewBase || 0) + t); cam.centerOn(m.x, m.y);
+    this.updateCompassButton();
+  }
+  resetViewRotation() {
+    const from = this.viewTwist || 0; if (!from) return;
+    const st = { t: 0 }; this.tweens.add({ targets: st, t: 1, duration: 350, ease: 'Sine.easeInOut', onUpdate: () => this.rotateView(from * (1 - st.t) - (this.viewTwist || 0)), onComplete: () => { this.rotateView(-(this.viewTwist || 0)); } });
+  }
+  // A small compass appears while the table is turned; tapping it turns the table back
+  updateCompassButton() {
+    let b = document.getElementById('view-compass');
+    if (!b) { b = document.createElement('button'); b.id = 'view-compass'; b.title = 'Turn the table back (R)'; b.style.cssText = 'position:fixed; left:10px; top:calc(env(safe-area-inset-top, 0px) + 92px); z-index:60; width:40px; height:40px; border-radius:50%; border:2px solid #334155; background:rgba(15,23,42,0.85); color:#f8fafc; font-size:20px; line-height:1; padding:0; display:none;'; b.innerHTML = '<span style="display:inline-block">⬆</span>'; b.onclick = () => this.resetViewRotation(); document.body.appendChild(b); }
+    const t = this.viewTwist || 0; b.style.display = Math.abs(t) > 0.01 ? 'block' : 'none'; b.firstChild.style.transform = `rotate(${(-t) * 180 / Math.PI}deg)`;
+  }
+  // W A S D / arrow keys move the view, Q / E turn it, R turns it back
+  keyCamTick(dt) {
+    const K = window._camKeys; if (!K || !K.size) return;
+    const cam = this.cameras.main, v = 0.75 * dt; let dx = 0, dy = 0;
+    if (K.has('KeyW') || K.has('ArrowUp')) dy += v; if (K.has('KeyS') || K.has('ArrowDown')) dy -= v;
+    if (K.has('KeyA') || K.has('ArrowLeft')) dx += v; if (K.has('KeyD') || K.has('ArrowRight')) dx -= v;
+    if (dx || dy) { const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation); cam.scrollX -= (c * dx + sn * dy) / cam.zoom * DPR; cam.scrollY -= (-sn * dx + c * dy) / cam.zoom * DPR; }
+    if (K.has('KeyQ')) this.rotateView(-dt * 0.0016); if (K.has('KeyE')) this.rotateView(dt * 0.0016);
   }
 
   // Screen pixels available along the world's X and Y axes (swapped when the camera is turned)
