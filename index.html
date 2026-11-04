@@ -29124,12 +29124,34 @@ const UNIT_CATALOG = {
         "barrageBp": 7,
         "indirect": true,
         "ignoresCover": true,
-        "damagesBuildings": true
+        "damagesBuildings": true,
+        "bpRoll": "D6+4",
+        "minRangeCm": 50,
+        "destroysBuildings": true
       },
       "standsCount": 3,
       "color": 4528643,
       "baseW": 32,
-      "baseH": 36
+      "baseH": 36,
+      "salvos": [
+        {
+          "name": "Super-Heavy Howitzer",
+          "rangeCm": 250,
+          "dice": 7,
+          "toHit": 4,
+          "tsm": -3,
+          "barrage": true,
+          "barrageBp": 7,
+          "indirect": true,
+          "ignoresCover": true,
+          "damagesBuildings": true,
+          "bpRoll": "D6+4",
+          "minRangeCm": 50,
+          "destroysBuildings": true,
+          "id": "goliath"
+        }
+      ],
+      "maxSalvos": 1
     },
     {
       "key": "card_sqt_gyrocopter_wing",
@@ -29175,7 +29197,8 @@ const UNIT_CATALOG = {
           "tsm": 0,
           "id": "gyro_ac"
         }
-      ]
+      ],
+      "fireArcDeg": 360
     },
     {
       "key": "card_sqt_robot_co",
@@ -29636,7 +29659,8 @@ const UNIT_CATALOG = {
           "tsm": 0,
           "id": "gyro_ac"
         }
-      ]
+      ],
+      "fireArcDeg": 360
     },
     {
       "key": "card_sqt_molemortar",
@@ -29725,12 +29749,34 @@ const UNIT_CATALOG = {
         "barrageBp": 7,
         "indirect": true,
         "ignoresCover": true,
-        "damagesBuildings": true
+        "damagesBuildings": true,
+        "bpRoll": "D6+4",
+        "minRangeCm": 50,
+        "destroysBuildings": true
       },
       "standsCount": 1,
       "color": 8736014,
       "baseW": 28,
-      "baseH": 34
+      "baseH": 34,
+      "salvos": [
+        {
+          "name": "Super-Heavy Howitzer",
+          "rangeCm": 250,
+          "dice": 7,
+          "toHit": 4,
+          "tsm": -3,
+          "barrage": true,
+          "barrageBp": 7,
+          "indirect": true,
+          "ignoresCover": true,
+          "damagesBuildings": true,
+          "bpRoll": "D6+4",
+          "minRangeCm": 50,
+          "destroysBuildings": true,
+          "id": "goliath"
+        }
+      ],
+      "maxSalvos": 1
     },
     {
       "key": "card_sqt_colossus",
@@ -29842,7 +29888,9 @@ const UNIT_CATALOG = {
           "tsm": 0,
           "id": "ovl_ac"
         }
-      ]
+      ],
+      "floater": true,
+      "fireArcDeg": 360
     },
     {
       "key": "card_sqt_ancestor",
@@ -30474,7 +30522,8 @@ const UNIT_CATALOG = {
           "tsm": -1,
           "isFlame": true,
           "ignoresCover": true,
-          "id": "sqhw_0"
+          "id": "sqhw_0",
+          "teardropCm": 25
         },
         {
           "name": "Lascannons",
@@ -31068,7 +31117,8 @@ const UNIT_CATALOG = {
           "barrageBp": 4,
           "id": "sqsh_1"
         }
-      ]
+      ],
+      "fireArcDeg": 360
     },
     {
       "key": "card_sqt_war_hawks",
@@ -31099,7 +31149,8 @@ const UNIT_CATALOG = {
       "skimmer": true,
       "specialAbilities": [
         "PD1"
-      ]
+      ],
+      "fireArcDeg": 360
     },
     {
       "key": "card_sqt_zutik_bombers",
@@ -31209,13 +31260,14 @@ const UNIT_CATALOG = {
             "name": "Rad Bomb",
             "rangeCm": 300,
             "dice": 8,
-            "toHit": 4,
+            "toHit": 3,
             "tsm": -1,
             "barrage": true,
             "barrageBp": 8,
             "oneShot": true,
             "indirect": true,
-            "ignoresCover": true
+            "ignoresCover": true,
+            "templateCm": 12
           }
         },
         {
@@ -40155,6 +40207,8 @@ const CHAPTER_PROHIBITED = {
 SW_PROHIBITED.add('card_sm_drop_pods'); // the Wolves have their own pods
 window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
 // Eldar Craftworlds (Eldar book pp. 6-8): each adds its own host and rules; the standard list has none of them
+const SQUAT_CLANS = [['CODEX', 'Any (standard list)'], ['MAKURTU', 'Makurtu Gabe *'], ['ZUTIK', 'Zutik *'], ['COMMERCIAL', 'Commercial World *']];
+const SQUAT_CLAN_PROHIBITED = { MAKURTU: new Set(['card_sqt_gyrocopter_wing', 'card_sqt_air_attack_corps', 'card_sqt_balloons', 'card_sqt_land_raiders', 'card_sqt_rhinos']), ZUTIK: new Set(['card_sqt_slayer_cult', 'card_sqt_thunderfire', 'card_sqt_goliath', 'card_sqt_goliath_battery', 'card_sqt_grudgekeeper', 'card_sqt_robot_squad', 'card_sqt_shortbeards', 'card_sqt_shortbeard_det']), COMMERCIAL: new Set(['card_sqt_ironshield', 'card_sqt_lt_battlecars_spec', 'card_sqt_ancestor_lord', 'card_sqt_fundamentalist', 'card_sqt_slayer_cult', 'card_sqt_hellworm', 'card_sqt_rams', 'card_sqt_balloons']) };
 const ELDAR_CRAFTWORLDS = [['CODEX', 'Any (standard list)'], ['ALAITOC', 'Alaitoc'], ['BIEL_TAN', 'Biel-Tan'], ['IYANDEN', 'Iyanden'], ['SAIM_HANN', 'Saim-Hann'], ['ULTHWE', 'Ulthwe']];
 const ELDAR_CW_PROHIBITED = { IYANDEN: new Set(['card_eld_guardian_host']), SAIM_HANN: new Set(['card_eld_tempest_host', 'card_eld_phantom']) };
 // Ork clan-specific support cards (Ork book p. 5)
@@ -40199,8 +40253,13 @@ window.orkRosterCheck = function(roster) {
   return { errors, freeSpecial };
 };
 const ELD_ASPECT_KEYS = ['card_eld_avengers', 'card_eld_banshees', 'card_eld_scorpions', 'card_eld_dragons', 'card_eld_hawks', 'card_eld_reapers', 'card_eld_warp_spiders', 'card_eld_shining_spears'];
-window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch) || ELDAR_CRAFTWORLDS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
+window.chapterName = function(ch) { const c = SM_CHAPTERS.find(x => x[0] === ch) || ELDAR_CRAFTWORLDS.find(x => x[0] === ch) || SQUAT_CLANS.find(x => x[0] === ch); return c ? c[1].replace(' *', '').replace(' (standard list)', '') : ch; };
 window.cardAllowed = function(side, u) {
+  if (u && (window.sideFaction[side] || side) === 'SQUATS') {
+    const cl = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
+    if (/zutik/i.test(u.name || '') && cl !== 'ZUTIK') return false;
+    return !(SQUAT_CLAN_PROHIBITED[cl] && SQUAT_CLAN_PROHIBITED[cl].has(u.key));
+  }
   if (u && (window.sideFaction[side] || side) === 'ELDAR') {
     const cw = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
     if (u.craftworld && u.craftworld !== cw) return false;
@@ -40387,6 +40446,7 @@ window.getRosterBreakdown = function(side) {
   }
   const notAllowed = roster.map(k => window.findCatalogUnit(k)).filter(u => u && !window.cardAllowed(side, u));
   if (window.gameScene && window.gameScene.chapterRosterErrors) errors.push(...window.gameScene.chapterRosterErrors(side, roster));
+  if (window.gameScene && window.gameScene.sqRosterErrors) errors.push(...window.gameScene.sqRosterErrors(side, roster));
   if (notAllowed.length) errors.push(`${(window.sideFaction[side] || side) === 'ELDAR' ? ((window.sideChapter[side] || 'CODEX') === 'CODEX' ? 'Needs its Craftworld (pick it under the army list)' : `Not allowed for ${window.chapterName(window.sideChapter[side])}`) : `Not allowed in a ${window.chapterName(window.sideChapter[side] || 'CODEX')} army`}: ${[...new Set(notAllowed.map(u => u.cardName || u.name))].join(', ')}.`);
 
   return {
@@ -40552,11 +40612,11 @@ window.renderArmyModal = function() {
     // Space Marines only: which chapter
     const chRow = document.getElementById(`${prefix}-chapter-row`), chSel = document.getElementById(`${prefix}-chapter-select`);
     if (chRow && chSel) {
-      chRow.style.display = (activeBook === 'IMPERIUM' || activeBook === 'ELDAR') ? 'block' : 'none';
-      if (chSel.dataset.book !== activeBook) { chSel.innerHTML = ''; chSel.dataset.book = activeBook; (activeBook === 'ELDAR' ? ELDAR_CRAFTWORLDS : SM_CHAPTERS).forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = activeBook === 'ELDAR' ? `💠 Craftworld: ${n}` : `🛡️ Chapter: ${n}`; chSel.appendChild(o); }); }
+      chRow.style.display = (activeBook === 'IMPERIUM' || activeBook === 'ELDAR' || activeBook === 'SQUATS') ? 'block' : 'none';
+      if (chSel.dataset.book !== activeBook) { chSel.innerHTML = ''; chSel.dataset.book = activeBook; (activeBook === 'ELDAR' ? ELDAR_CRAFTWORLDS : activeBook === 'SQUATS' ? SQUAT_CLANS : SM_CHAPTERS).forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = activeBook === 'ELDAR' ? `💠 Craftworld: ${n}` : activeBook === 'SQUATS' ? `⚒️ Clan: ${n}` : `🛡️ Chapter: ${n}`; chSel.appendChild(o); }); }
       chSel.value = window.sideChapter[side] || 'CODEX';
       chSel.style.borderColor = meta.borderHex;
-      chSel.title = activeBook === 'ELDAR' ? 'Craftworld: adds its own host and special rule' : '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
+      chSel.title = activeBook === 'SQUATS' ? 'Squat clan: its special rules and restrictions (* optional, agree it with your opponent)' : activeBook === 'ELDAR' ? 'Craftworld: adds its own host and special rule' : '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
     }
 
     // Render Compact Card Filter Pills (All, 🏢 Co, 🛡️ Sup, ⚔️ Spc)
@@ -47609,7 +47669,7 @@ class NetEpicScene extends Phaser.Scene {
     this.offBoard = { IMPERIUM: [], ORKS: [] }; this.forceDomes = []; this.impInstallPowers();
     spawnSideCards(impKeys, 'IMPERIUM', impY);
     spawnSideCards(orkKeys, 'ORKS', orkY);
-    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); this.impLegionSetup(); this.sqBodyguardSetup(); this.igSetup(); this.igDeathstrikeSetup(); this.robotSetup(); } catch (e) { console.error(e); }
+    try { this.applyOrkMobz({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSplitSquadrons(); this.orkKustomDraw({ IMPERIUM: impKeys, ORKS: orkKeys }); this.orkSetup(); this.orkCentreNobz(); this.impLegionSetup(); this.sqBodyguardSetup(); this.igSetup(); this.igDeathstrikeSetup(); this.robotSetup(); this.sqClanSetup(); this.trainSetup(); this.sqMechanize(); } catch (e) { console.error(e); }
     this.applyChapterRulesAtSpawn();
     this.applyEldarSetup();
     this.applyCraftworldAtSpawn();
@@ -48584,7 +48644,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // A titan (or praetorian) lost a close combat: the winner picks a location and rolls damage, no scatter or save
-  titanLosesCloseCombat(wDet, wStand, lDet, lStand, margin) {
+  titanLosesCloseCombatSqCore(wDet, wStand, lDet, lStand, margin) {
     if (!this.hasHitLocations(lDet)) return this.applySuperHeavyDamage(lDet, lStand, true);
     const k = wDet.titanState ? this.titanCCKit(wDet) : { dmgBonus: this.knPen(wDet), grab: 0 };
     const st = lDet.titanState, c = this.titanClassOf(lDet);
@@ -48636,7 +48696,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // ===== SPECIAL TITAN WEAPONS (army book rules, see each weapon's `fx` in TITAN_DATA) =====
-  isSalvoFirer(det) { return (det.maxSalvos || 1) > 1 || Boolean(det.titanState && det.salvos && det.salvos.length) || Boolean(det.salvos && det.salvos.some(w => w.modes)); }
+  isSalvoFirer(det) { return (det.maxSalvos || 1) > 1 || Boolean(det.titanState && det.salvos && det.salvos.length) || Boolean(det.salvos && det.salvos.some(w => w.modes || w.bpRoll)); }
   titanMountDown(det, mount) { const c = this.titanClassOf(det), st = det.titanState; if (!c || !st) return false; const L = c.locations.find(x => x.mount === mount); return Boolean(L && st.status[L.id]); }
   titanHasFitting(det, name) { return Boolean(det && det.titanLoadout && Object.entries(det.titanLoadout).some(([m, n]) => n === name && !this.titanMountDown(det, m))); }
   // Fire Control Center: +1 to hit with everything; Observation Turret: +1 against one target a turn
@@ -48745,7 +48805,7 @@ class NetEpicScene extends Phaser.Scene {
     const ffr = this.orkForceField(vDet, stand, S.saveDice);
     if (ffr === 'save') { S.saves++; return; }
     if (ffr === 'fail') ns += 1;
-    const sv = Phaser.Math.Between(1, 6), ok = (ns <= 6 && sv >= ns) || this.igFrontPlate(vDet, stand, S.from, ns, S.saveDice);
+    const sv = Phaser.Math.Between(1, 6), ok = this.isOverlord(vDet) ? this.ovlHit(vDet, stand, o.tsm || 0, S.saveDice) : ((ns <= 6 && sv >= ns) || this.igFrontPlate(vDet, stand, S.from, ns, S.saveDice));
     S.saveDice.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${vDet.name}: save ${ns}+${this.facingNote(facTsm)}` });
     if (ok) { S.saves++; this.spawnFloatingText(vx, vy, `🛡️ SAVED (${sv})`, '#38bdf8', '10px'); return; }
     if (this.tryHealerSave(vDet, stand, S.saveDice)) { S.saves++; return; }
@@ -51122,6 +51182,7 @@ class NetEpicScene extends Phaser.Scene {
     if (firer && this.tourNear(firer)) need += 1; // excessive head banging
     if (target && target.witchSight === this.turn) need += 1;
     if (target && this.orkHas(target, 'AFTABURNAS')) need += 1;
+    if (target && this.sqClanOf(target) === 'ZUTIK' && (target.isFlyer || target.flyer || target.skimmer) && (target.order === 'ADVANCE' || target.order === 'CHARGE')) need += 1; // Zutik: hard to hit
     if (firer && firer.rokkitDaze === this.turn) need += 1; // shaky Supa Rokkit landing
     if (this.eldDoomActive(target)) need = Math.min(need, 3);
     return need;
@@ -51309,6 +51370,7 @@ class NetEpicScene extends Phaser.Scene {
     try { this.orkEndPhase(); } catch (e) { console.error(e); }
     try { this.resolveWebs(); } catch (e) { console.error(e); }
     try { this.engEndPhase(); } catch (e) { console.error(e); }
+    try { this.sqEndPhase(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => { if (d.mimed && d.stands.length && this.testMorale(d, 'shake off the Master Mime')) { d.mimed = false; this.log(`🎭 <b>${d.name}</b> sees through the Master Mime's tricks and takes orders again next turn.`); } });
     this.detachments.forEach(d => {
       d.psychicPowerUsed = false;
@@ -51355,7 +51417,7 @@ class NetEpicScene extends Phaser.Scene {
       if (det.order === 'CHARGE') det.stands.forEach(s => { if (this.isStandEngaged(s) && !s.pinnedAtStart) s.chargedTurn = this.turn; });
       if (det.eldLock && det._eldMovedNow) this.eldReleaseLock(det, 'moves');
       try { this.orkAfterMove(det, det._moveFrom); } catch (e) { console.error(e); }
-      try { this.sqGuardIntercept(det); if (this.isUnderground(det)) { if (det._ugJump != null) { det.jump = det._ugJump; det._ugJump = null; } this.sqUndermine(det); } if (det._eldMovedNow) det._movedTurn = this.turn; if (det.craterTrapped && det._eldMovedNow) { det.craterTrapped = false; det.fired = true; this.log(`🕳️ <b>${det.name}</b> climbs out of the crater, firing nothing this turn.`); } } catch (e) { console.error(e); }
+      try { this.sqGuardIntercept(det); this.ramAfterMove(det, det._moveFrom); if (this.isTrainEngine(det)) { this.trainRecouple(det); this.trainFollow(det); } if (this.isUnderground(det)) { if (det._ugJump != null) { det.jump = det._ugJump; det._ugJump = null; } this.sqUndermine(det); } if (det._eldMovedNow) det._movedTurn = this.turn; if (det.craterTrapped && det._eldMovedNow) { det.craterTrapped = false; det.fired = true; this.log(`🕳️ <b>${det.name}</b> climbs out of the crater, firing nothing this turn.`); } } catch (e) { console.error(e); }
     }
     return r;
   }
@@ -51366,7 +51428,7 @@ class NetEpicScene extends Phaser.Scene {
     try { return this.checkCoherencyCore(det); } finally { det.stands = all; }
   }
   evaluateFireSolution(firerDet, targetDet, isSnapFire = false) {
-    if ((targetDet && targetDet.madState === 'DEAD') || (firerDet && (this.orkMadIdle(firerDet) || this.igReloading(firerDet) || (/ratling/i.test(firerDet.name || '') && firerDet._movedTurn === this.turn)))) return { validPairs: [], isSnapFire, isBarrage: false, templateTargets: [], totalBp: 0, isIndirect: false };
+    if ((targetDet && targetDet.madState === 'DEAD') || (firerDet && (this.orkMadIdle(firerDet) || this.igReloading(firerDet) || (/ratling/i.test(firerDet.name || '') && firerDet._movedTurn === this.turn) || (this.isGoliath(firerDet) && firerDet._movedTurn === this.turn) || this.hwClosed(firerDet) || (/bomb battlecar/i.test(firerDet.name || '') && (this.detachments.find(e => e.id === firerDet.trainOf) || {}).order !== 'FIRST_FIRE')))) return { validPairs: [], isSnapFire, isBarrage: false, templateTargets: [], totalBp: 0, isIndirect: false };
     if (isSnapFire && firerDet) { // weapons that can't snap fire are never offered for it
       const w = this.isSalvoFirer(firerDet) ? this.getSalvoWeapon(firerDet, firerDet.salvosFired || 0) : firerDet.weapon;
       if (w && w.fx && (/multi|missiles|spores|vortex|distortion|lifta|vibro|web|warphunter|wave|prism|shokk|hopsplat|squigs|destrukta|bombrun|manticore|deathstrike|sonic|hellfire|nova/.test(w.fx) || (/teardrop|spinner|woofer/.test(w.fx) && targetDet && targetDet.order !== 'CHARGE')))
@@ -51722,7 +51784,7 @@ class NetEpicScene extends Phaser.Scene {
     const ms = this.phase === 'ORDERS' ? this.mimeSide() : null;
     if (ms && det && det.faction !== ms && det.stands.length) btns.push(`<button class="btn-primary" style="background:#a21caf" onclick="window.gameScene.playMasterMimeSelected()">🎭 Master Mime on ${this.shortName(det.name, 16)} (${this._mimes[ms]})</button>`);
     else if (ms) btns.push(`<span style="font-size:0.66rem;color:#f0abfc;align-self:center">🎭 Master Mime ready (${this._mimes[ms]}): tap an enemy detachment to play it</span>`);
-    try { this.orkExtraButtons(det, btns); this.impExtraButtons(det, btns); this.impRound2Buttons(det, btns); this.amRound3Buttons(det, btns); } catch (e) { console.error(e); }
+    try { this.orkExtraButtons(det, btns); this.impExtraButtons(det, btns); this.impRound2Buttons(det, btns); this.amRound3Buttons(det, btns); this.sqRound4Buttons(det, btns); } catch (e) { console.error(e); }
     if (!btns.length) { if (row) row.style.display = 'none'; return; }
     if (!row) {
       const anchor = document.getElementById(this.phase === 'ORDERS' ? 'orders-controls' : 'movement-controls'); if (!anchor) return;
@@ -51770,11 +51832,13 @@ class NetEpicScene extends Phaser.Scene {
   getEffectiveMoveCm(det) {
     if (det && (this.isLanda(det) || this.isRokkit(det))) return 0; // grounded Landas and Rokkit launchers never move
     if (det && det.craterTrapped && det.order !== 'CHARGE') return 0; // stuck in a Mole Mortar crater
+    if (det && this.isBattlecar(det)) return 0; // battlecars only move with their Engine
     const mv = this.getEffectiveMoveCmCore(det) + this.orkSpeedBonus(det) + this.orkKustomMove(det) + this.impForcedMarch(det); // Mekboy Speedstas: +2D6 cm
     return (det && det.order === 'CHARGE' && (this.eldWarpSpider(det) || this.isTunneler(det))) ? mv / 2 : mv; // no doubling on a charge // their move is a maximum: no doubling on a charge
   }
   isStandPinned(stand) { return stand && stand.detachment && (this.eldWarpSpider(stand.detachment) || this.hitAndRunFree(stand)) ? false : this.isStandPinnedCore(stand); }
   isEligibleInCombatPhase(det) {
+    if (det && this.isOverlord(det) && det.order === 'ADVANCE') { if (this.phase === 'COMBAT_FIRST') return !det.fired && det.stands.length > 0; if (this.phase === 'COMBAT_ADVANCE') return false; } // the Overlord fires in the First Fire segment
     if (det && this.phase === 'COMBAT_ADVANCE' && det._tarAgain === this.turn && !det.fired && det.order === 'FIRST_FIRE' && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Tarantulas fire again
     if (det && this.orkMadIdle(det)) return false;
     if (det && this.phase === 'COMBAT_FIRST' && det.order === 'ADVANCE' && this.eldWarpSpider(det) && !det.fired && det.fofHeld !== this.turn && det.stands.length && det.stands.some(s => !this.isStandEngaged(s))) return true; // Fire on the Fly
@@ -52335,6 +52399,7 @@ class NetEpicScene extends Phaser.Scene {
     const boomS = det && (specificStand || det.stands[det.stands.length - 1]), boomXY = boomS ? { container: { x: boomS.container.x, y: boomS.container.y } } : null;
     const res = this.removeCasualtyOrkCore(det, specificStand, weaponTsm, isMeltdown, opts);
     if (det && boomXY && boomS && !det.stands.includes(boomS)) { try { if (/ordinatus/i.test(det.name || '')) this.ordExplosion(det, boomXY, Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), 0, 'reactor'); else if (/stormblade/i.test(det.name || '')) this.ordExplosion(det, boomXY, Phaser.Math.Between(1, 6), 4, 'plasma reactor'); } catch (e) { console.error(e); } }
+    if (det && !det.stands.length && this.isBattlecar(det)) { try { this.trainCarLost(det); } catch (e) { console.error(e); } }
     if (det && !det.stands.length && this.isSquatLeader(det)) { try { this.sqLeaderLost(det); } catch (e) { console.error(e); } }
     return res;
   }
@@ -52951,7 +53016,7 @@ class NetEpicScene extends Phaser.Scene {
     const dets = {};
     this.detachments.forEach(d => {
       const x = {};
-      ['craterTrapped', 'hellfireLeft', 'plasma', 'plasmaTurn', 'confessorOf', 'reloadTurn', 'colonelTurn', 'undergroundTurn', 'engMission', '_movedTurn', 'cmMode', 'geniusTurn', 'emboldenTurn', 'telepathTurn', 'beaconTurn', 'cancelTurn', 'guidanceTurn', 'healTurn', 'precogTurn', 'sqFlexTurn', 'sqShield', 'legionWaiting', 'legionArrived', 'guardOf', 'guardFury', 'gwUsed', 'turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
+      ['_trainLinked', '_trainShieldBase', 'train', 'trainOf', 'hwClosed', '_openSave', '_zutikVp', '_mech', 'craterTrapped', 'hellfireLeft', 'plasma', 'plasmaTurn', 'confessorOf', 'reloadTurn', 'colonelTurn', 'undergroundTurn', 'engMission', '_movedTurn', 'cmMode', 'geniusTurn', 'emboldenTurn', 'telepathTurn', 'beaconTurn', 'cancelTurn', 'guidanceTurn', 'healTurn', 'precogTurn', 'sqFlexTurn', 'sqShield', 'legionWaiting', 'legionArrived', 'guardOf', 'guardFury', 'gwUsed', 'turretCrushed', 'rokkitTrapped', 'traktorTarget', 'bubbledWid', 'bubbledTurn', 'weirdEnergy', 'madState', '_madBase', '_madTurn', 'tinNext', 'megaWounds', 'grotFollow', 'rokkitLanded', 'landaDown', 'frenzyTurn', 'woofedTurn', 'wraithgate', 'inTransit', 'mimed', 'eldDoomBy', 'eldDoomTarget'].forEach(k => { if (d[k] != null && d[k] !== false) x[k] = d[k]; });
       const kap = d.stands.findIndex(s => s.isKaptin); if (kap >= 0) x.kaptin = kap;
       if (this.isGuard(d) && d._igSetup) x.shq = d.stands.findIndex(s => s.isSHQ);
       const held = d.stands.map((s, i) => s.traktorHeld ? [i, s.traktorHeldUntil, s.traktorHeld] : null).filter(Boolean); if (held.length) x.held = held;
@@ -53136,7 +53201,7 @@ class NetEpicScene extends Phaser.Scene {
   // ---------- Forward Observers and off-board barrages ----------
   isForwardObserver(d) {
     if (!d || !d.stands.length) return false;
-    return this.hasAbility(d, 'Forward Observer') || (/forward observer|observation balloon/i.test(d.name || '') && !(d.transportCapacity > 0) && !/rhino|chimera/i.test(d.name || '')) || d.telepathTurn === this.turn;
+    return this.hasAbility(d, 'Forward Observer') || (/forward observer|observation balloon/i.test(d.name || '') && !(d.transportCapacity > 0) && !/rhino|chimera/i.test(d.name || '')) || d.telepathTurn === this.turn || (/buoy/i.test(d.name || '') && !d.hwClosed);
   }
   impObserverFor(side, p, firer = null) { // a friendly observer free to direct fire at point p
     return this.detachments.find(o => o.faction === side && o !== firer && this.impLive(o) && this.isForwardObserver(o) && !o.fired && !o.stands.some(s => this.isStandEngaged(s)) && o.stands.some(s => this.impPointLoS(s, p)));
@@ -53247,7 +53312,7 @@ class NetEpicScene extends Phaser.Scene {
     if (type === 'TUNNEL') {
       const r = Phaser.Math.Between(1, 6);
       if (r === 1) { this.impBackToReserve(det, 'hits solid bedrock (rolled a 1)'); return; }
-      const cm = Phaser.Math.Between(1, 6) * 10, a = Math.random() * Math.PI * 2;
+      const cm = this.sqBuoyNear(det.faction, c) ? 0 : Phaser.Math.Between(1, 6) * (this.sqClanOf(det) === 'MAKURTU' ? 5 : 10), a = Math.random() * Math.PI * 2; // Makurtu Gabe: half distance; a Buoy car: none
       const p = { x: Phaser.Math.Clamp(c.x + Math.cos(a) * cm * PX_PER_CM, 20, BOARD_W - 20), y: Phaser.Math.Clamp(c.y + Math.sin(a) * cm * PX_PER_CM, 20, BOARD_H - 20) };
       if (this.impBadSpot(det, p.x, p.y)) { this.impBackToReserve(det, `veers ${cm} cm into impassable ground`); return; }
       det.deepStrikeActive = false; det.deepStrikeUsed = true; det.inReserve = false;
@@ -53255,6 +53320,7 @@ class NetEpicScene extends Phaser.Scene {
       offs.forEach(o => { o.s.container.x = o.s.originX = Phaser.Math.Clamp(p.x + o.dx * k, 12, BOARD_W - 12); o.s.container.y = o.s.originY = Phaser.Math.Clamp(p.y + o.dy * k, 12, BOARD_H - 12); });
       this.spawnExplosionFX(p.x, p.y, 30, false);
       this.log(`⛏️ <b>${det.name}</b> bursts out of the ground ${cm} cm from where it aimed.`);
+      if (this.isTrainEngine(det)) this.time.delayedCall(200, () => this.hwSurface(det));
       // surfacing under a building: it saves at minus the tunneller's CAF; the tunneller is hit by the debris
       const hitB = new Set(); det.stands.forEach(s => { const b = this.getBuildingAt(s.container.x, s.container.y); if (b && !b.collapsed) hitB.add(b); });
       hitB.forEach(b => {
@@ -53515,13 +53581,14 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
   impFinishOrders() { // orders locked: grant flexible orders, Legion, Bodyguard fury
-    try { ['IMPERIUM', 'ORKS'].forEach(f => this.aiEngineers(f)); this.igMoveMissiles(); } catch (e) { console.error(e); }
+    try { ['IMPERIUM', 'ORKS'].forEach(f => this.aiEngineers(f)); this.igMoveMissiles(); this.trainOrders(); } catch (e) { console.error(e); }
     this.detachments.forEach(d => {
       if (!d.stands.length || d.embarkedOn) return;
       const pre = this.detachments.some(l => l.faction === d.faction && l.precogTurn === this.turn && this.impLive(l) && this.impNear(l, d, 6));
       if ((pre || d.sqFlexTurn === this.turn) && d.order !== 'FALL_BACK') d.eldFlex = true;
       if (d.guardFury) { d.order = 'CHARGE'; d.orderRevealed = true; this.updateDetachmentBadge(d); }
       if (d.instinct === 'IG_NOCMD') d.moved = true;
+      if (this.isBattlecar(d) && d.trainOf) { const en = this.detachments.find(x => x.id === d.trainOf); if (en && en.inReserve !== d.inReserve) { d.inReserve = en.inReserve; d.stands.forEach(s => s.container.setVisible(!en.inReserve)); } }
       if (this.isTarantula(d) && d.order === 'ADVANCE') { d.order = 'FIRST_FIRE'; this.updateDetachmentBadge(d); }
       if (d.craterTrapped && d.order !== 'CHARGE') d.moved = true;
     });
@@ -53941,6 +54008,9 @@ class NetEpicScene extends Phaser.Scene {
   explainNoShot(f, t) {
     if (this.igReloading(f)) return 'the Manticores are reloading this turn';
     if (f && /ratling/i.test(f.name || '') && f._movedTurn === this.turn) return 'Ratlings may not move and shoot in the same turn';
+    if (this.isGoliath(f) && f._movedTurn === this.turn) return 'the Goliath may not move and fire in the same turn';
+    if (this.hwClosed(f)) return 'its armoured shutters are closed';
+    if (f && /bomb battlecar/i.test(f.name || '')) return 'the rad-bomb can only be fired while the Engine is on First Fire orders';
     return this.explainNoShotIgCore(f, t);
   }
   facingArmourTsm(det, stand, from) {
@@ -54015,7 +54085,9 @@ class NetEpicScene extends Phaser.Scene {
     };
     one(impStand, orkStand); one(orkStand, impStand);
     if (fell) return true;
-    return this.eldarPreStrikeKnCore(impStand, orkStand);
+    const r0 = this.eldarPreStrikeKnCore(impStand, orkStand);
+    if (!r0) [[impStand, orkStand], [orkStand, impStand]].forEach(([a, d]) => { if (a.ramUnder === this.turn && this.isRam(a.detachment) && (d.detachment.pinningClass || 1) >= 3) { this._eldBout.set(d, { ...(this._eldBout.get(d) || {}), cafHalf: true }); this.log(`🐏 <b>${a.detachment.name}</b> strikes from below: ${d.detachment.name}'s CAF is halved.`); } });
+    return r0;
   }
   // ---------- Ordinatus ----------
   ordSonicFx(c) { // Ordinatus Mars: a large teardrop, narrow end towards the Ordinatus; 2+ to hit, a flat 5+ save, shields lose one
@@ -54109,7 +54181,7 @@ class NetEpicScene extends Phaser.Scene {
       set('GUNLINE', true);
       if (!this.isFactionAI(d.faction) && !window._restoring) this.time.delayedCall(700, () => this.eldChoose(`🤖 Program ${d.name}. Each turn it asks: enemy in charge range? in weapon range? in sight? otherwise?`, [
         { label: 'Gunline (Charge / FF / FF / Advance)', fn: () => set('GUNLINE') }, { label: 'Assault (Charge / Adv / Adv / Adv)', fn: () => set('ASSAULT') },
-        { label: 'Steady (FF / FF / Adv / Capture)', fn: () => set('STEADY') }, { label: 'Capture (Charge / Adv / Capture / Capture)', fn: () => set('CAPTURE') }]));
+        { label: 'Steady (FF / FF / Adv / Capture)', fn: () => set('STEADY') }, { label: 'Capture (Charge / Adv / Capture / Capture)', fn: () => set('CAPTURE') }, { label: 'Custom…', fn: () => this.time.delayedCall(60, () => this.robotCustom(d)) }]));
     });
   }
   robotProgramText(p) { const N = { A: 'Charge', B: 'Advance', C: 'First Fire', D: 'Capture', E: 'Ignore' }; return ['in charge range', 'in weapon range', 'in sight', 'otherwise'].map((q, i) => `${q} → ${N[p[i]]}`).join(', '); }
@@ -54147,6 +54219,259 @@ class NetEpicScene extends Phaser.Scene {
   amRound3Buttons(det, btns) {
     if (det && this.isProgRobot(det) && det.cfg && det.cfg.robotProgram && this.phase === 'ORDERS') btns.push(`<span style="font-size:0.64rem;color:#cbd5e1;align-self:center">🤖 Program: ${this.robotProgramText(det.cfg.robotProgram)}</span>`);
     if (det && det.craterTrapped && this.phase === 'ORDERS') btns.push(`<span style="font-size:0.64rem;color:#fca5a5;align-self:center">🕳️ Trapped in a crater: Charge orders to climb out</span>`);
+  }
+  // ===== SQUATS round 4 =====
+  sqClan(side) { return (window.sideFaction[side] || side) === 'SQUATS' ? ((window.sideChapter && window.sideChapter[side]) || 'CODEX') : null; }
+  sqClanOf(d) { return d && this.isSquat(d) ? this.sqClan(d.faction) : null; }
+  isSqCavalry(d) { return Boolean(d && this.isSquat(d) && (d.pinningClass || 1) === 2 && /bike|trike|biker|outrider|cavalry/i.test(d.name || '')); }
+  // Clan set-up at the start of a battle
+  sqClanSetup() {
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      const cl = this.sqClan(side); if (!cl || cl === 'CODEX') return;
+      const mine = this.detachments.filter(d => d.faction === side && this.isSquat(d) && d.stands.length);
+      const notes = [];
+      if (cl === 'MAKURTU') notes.push('Enhanced Close Combat Mastery (infantry re-roll 1s and 2s against Orks, Tyranids and Chaos); tunnellers scatter half distance');
+      if (cl === 'ZUTIK') {
+        mine.filter(d => this.isSqCavalry(d)).forEach(d => { d.hitAndRun = true; });
+        mine.filter(d => (d.superHeavy || d.isTitan) && !d._zutikVp).forEach(d => { d._zutikVp = true; d.vpValue = (d.vpValue || 0) * 2; d.cfg.vpValue = d.vpValue; });
+        notes.push('cavalry Hit & Run; fliers and skimmers -1 to be hit on Advance or Charge; super-heavies give double VP; from turn 3 the enemy scores 5 VP a turn');
+      }
+      if (cl === 'COMMERCIAL') notes.push('infantry only re-roll 1s in close combat, and only against Orks');
+      this.log(`⚒️ <b>${this.getSideName(side)}: ${window.chapterName(cl)}</b> — ${notes.join('; ')}.`);
+    });
+  }
+  sqEndPhase() { // Zutik: poor endurance
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      if (this.sqClan(side) !== 'ZUTIK' || this.turn < 3 || this._zutikVpTurn === this.turn + side) return;
+      this._zutikVpTurn = this.turn + side; const foe = side === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+      this.vp[foe] = (this.vp[foe] || 0) + 5; this.log(`⏳ Zutik's poor endurance: ${this.getSideName(foe)} scores 5 VP this turn.`);
+    });
+  }
+  // Close combat re-rolls by clan: [reroll1s, reroll2s]
+  sqMastery(me, foe) {
+    if (!me || !(me.squatMastery || me.guardFury)) return [false, false];
+    if (me.guardFury) return [true, true];
+    const cl = this.sqClanOf(me), fb = foe && foe.armyBook;
+    if (cl === 'COMMERCIAL') return [fb === 'ORKS', false];
+    if (cl === 'MAKURTU') return [true, ['ORKS', 'TYRANIDS', 'CHAOS'].includes(fb)];
+    return [true, fb === 'ORKS'];
+  }
+  // ---------- Overlord Armored Airship ----------
+  isOverlord(d) { return /overlord/i.test((d && d.name) || '') && this.isSquat(d); }
+  ovlHit(d, stand, tsm, out) { // returns true: the table has dealt with the hit
+    const r = Phaser.Math.Between(1, 6);
+    if (out) out.push({ val: r, cls: r <= 3 ? 'die-pass' : 'die-fail', tip: `${d.name}: 1-3 passes through, 4-5 gondola hit, 6 hull ruptured` });
+    if (r <= 3) { this.spawnFloatingText(stand.container.x, stand.container.y - 10, '💨 PASSES THROUGH', '#cbd5e1', '10px'); return true; }
+    if (r <= 5) {
+      const need = 1 - (tsm || 0), sv = Phaser.Math.Between(1, 6), ok = need <= 6 && sv >= need && sv > 1;
+      if (out) out.push({ val: sv, cls: ok ? 'die-pass' : 'die-fail', tip: `${d.name}: gondola save ${need}+` });
+      if (ok) return true;
+    }
+    this.time.delayedCall(250, () => this.ovlCrash(d, stand, r === 6 ? 'its hull ruptures' : 'its gondola is wrecked'));
+    return true;
+  }
+  ovlCrash(d, stand, why) {
+    if (!d.stands.includes(stand)) return;
+    const cm = Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6) + Phaser.Math.Between(1, 6), a = Math.random() * Math.PI * 2;
+    const p = { x: Phaser.Math.Clamp(stand.container.x + Math.cos(a) * cm * PX_PER_CM, 15, BOARD_W - 15), y: Phaser.Math.Clamp(stand.container.y + Math.sin(a) * cm * PX_PER_CM, 15, BOARD_H - 15) };
+    this.log(`💥 <b>${d.name}</b> goes down — ${why}! It crashes ${cm} cm ${this.getCompassHeading(a)}.`);
+    this.tweens.add({ targets: stand.container, x: p.x, y: p.y, duration: 600 });
+    this.time.delayedCall(650, () => {
+      this.spawnExplosionFX(p.x, p.y, 40, true);
+      const R = (stand.baseRadius || 20) + 6;
+      this.detachments.forEach(o => { if (o === d || !o.stands.length || o.embarkedOn || o.isFlyer || o.flyer) return; o.stands.slice().forEach(s => {
+        if (Phaser.Math.Distance.Between(p.x, p.y, s.container.x, s.container.y) > R + (s.baseRadius || 10)) return;
+        const sv = o.save || 7, rr = Phaser.Math.Between(1, 6);
+        if (this.hasHitLocations(o)) { this.applyTitanHit(o, s, { tsm: 0, from: p }); return; }
+        if (!(sv <= 6 && rr >= sv)) { if (o.superHeavy) this.applySuperHeavyDamage(o, s, false); else this.removeCasualty(o, s, 0, false); }
+      }); this.checkBreakPoint(o); });
+      if (d.stands.includes(stand)) this.removeCasualty(d, stand, 0, true); this.checkBreakPoint(d);
+    });
+  }
+  // ---------- Goliath: can't move and fire ----------
+  isGoliath(d) { return /goliath/i.test((d && d.name) || '') && this.isSquat(d); }
+  // ---------- Rams ----------
+  isRam(d) { return Boolean(d && this.isSquat(d) && /\bram\b/i.test(d.name || '')); }
+  ramAfterMove(det, from) {
+    if (!this.isRam(det) || !from) return;
+    const under = this.isUnderground(det);
+    det.stands.slice().forEach(s => {
+      const f = from.get(s); if (!f) return;
+      const L = Phaser.Math.Distance.Between(f.x, f.y, s.container.x, s.container.y); if (L < 4) return;
+      const ux = (s.container.x - f.x) / L, uy = (s.container.y - f.y) / L;
+      // a building in the way: it saves at -8; the Ram may be hit by debris and stops
+      const b = (this.buildings || []).find(bb => !bb.collapsed && this.lineHitsRect(bb, f.x, f.y, s.container.x, s.container.y, 2));
+      if (b) {
+        const S = { notes: [] }; this.eldBuildingSave(b, -8, S, `rammed by ${det.name}`);
+        const r = Phaser.Math.Between(1, 6);
+        this.log(`🐏 <b>${det.name}</b> smashes into ${b.name}: ${b.collapsed ? 'it comes down' : 'it stands'}${r >= 4 ? ', and debris rains on the Ram' : ''}.`);
+        if (r >= 4) { let k = 0; for (let t = 0; t <= L; t += 4) { if (this.lineHitsRect(b, f.x, f.y, f.x + ux * t, f.y + uy * t, 2)) break; k = t; } this.eldMoveStand(s, f.x + ux * k, f.y + uy * k); if (!this.orkSave(det, -1, null)) this.removeCasualty(det, s, -1, false); }
+      }
+      if (under) return;
+      // on the surface: infantry, cavalry and walkers in the way are crushed on a 4+, otherwise pushed aside
+      this.detachments.forEach(o => { if (o.faction === det.faction || !o.stands.length || o.embarkedOn || (o.pinningClass || 1) > 2 || o.skimmer || o.isFlyer) return;
+        o.stands.slice().forEach(v => {
+          const dx = v.container.x - f.x, dy = v.container.y - f.y, t = dx * ux + dy * uy, n = -dx * uy + dy * ux;
+          if (t <= 0 || t > L + 4 || Math.abs(n) > (v.baseRadius || 10) + (s.baseRadius || 12) - 2) return;
+          if (Phaser.Math.Between(1, 6) >= 4) { this.removeCasualty(o, v, 0, false); this.log(`🐏 <b>${det.name}</b> crushes ${o.name} ${v.label || ''}.`); }
+          else { const side = n >= 0 ? 1 : -1, push = (v.baseRadius || 10) + (s.baseRadius || 12) + 2; this.eldMoveStand(v, f.x + ux * t - uy * side * push, f.y + uy * t + ux * side * push); }
+        }); this.checkBreakPoint(o); });
+    });
+    // an underground charge: the target is struck from below
+    if (under) det.stands.forEach(s => { if (this.isStandEngaged(s)) s.ramUnder = this.turn; });
+  }
+  titanLosesCloseCombat(wDet, wStand, lDet, lStand, margin) {
+    if (this.isRam(wDet) && wStand && wStand.ramUnder === this.turn) {
+      const n = (lDet.isAgile || this.hasAbility(lDet, 'Agile')) ? 1 : Phaser.Math.Between(1, 6);
+      this.log(`🐏 <b>${wDet.name}</b> bursts up beneath ${lDet.name}: ${n} hit${n > 1 ? 's' : ''} to its underside!`);
+      let dead = false;
+      for (let i = 0; i < n && lDet.stands.includes(lStand); i++) dead = this.titanLosesCloseCombatSqCore(wDet, wStand, lDet, lStand, margin) || dead;
+      return dead;
+    }
+    return this.titanLosesCloseCombatSqCore(wDet, wStand, lDet, lStand, margin);
+  }
+  // ---------- Land Trains and Hellworms: the Engine pulls its Battlecars, whose shields it shares ----------
+  isTrainEngine(d) { return Boolean(d && this.isSquat(d) && /land train|hellworm/i.test(d.name || '') && !/battlecar/i.test(d.name || '')); }
+  isBattlecar(d) { return Boolean(d && this.isSquat(d) && (/battlecar/i.test(d.name || '') || /battlecar/i.test(d.companyName || ''))); }
+  carShields(c) { return /fireshield|shield battlecar/i.test(c.name || '') ? 3 : /secondary engine/i.test(c.name || '') ? 2 : 1; }
+  sqSplitCars() { // each battlecar is its own model
+    this.detachments.filter(d => this.isBattlecar(d) && d.stands.length > 1 && !d.passengerDet).forEach(d => {
+      const card = window.findCatalogUnit(d.key || (d.cfg && d.cfg.key)) || d.cfg || {}, subs = card.subDetachments || [];
+      const coId = d.companyCardId || d.id + '_cars';
+      d.stands.forEach((s, i) => {
+        const sub = subs[i] || {};
+        const nd = this.createDetachment({ ...card, ...sub, subDetachments: null, key: card.key, id: `${d.id}_car${i}`, name: sub.name ? `${sub.name}${/hellworm/i.test(card.name || '') ? ' (Hellworm)' : ''}` : `${card.name} ${i + 1}`, faction: d.faction, armyBook: 'SQUATS', standsCount: 1, startX: s.container.x, startY: s.container.y,
+          weapon: sub.weapon || card.weapon, specialAbilities: sub.specialAbilities || card.specialAbilities, companyCardId: coId, companyCardKey: card.key, companyName: card.name, companyBreakPoint: card.breakPoint, companyVpValue: card.vpValue, companyMorale: card.morale, companyTotalStands: d.stands.length, isCompanyDetachment: true });
+        if (nd) { nd.order = d.order; nd.stands.forEach(t => { t.container.x = t.originX = s.container.x; t.container.y = t.originY = s.container.y; }); }
+      });
+      d.stands.forEach(s => s.container.destroy()); d.stands = []; if (d.badge) d.badge.destroy();
+      this.detachments = this.detachments.filter(x => x !== d);
+    });
+  }
+  trainSetup() {
+    try { this.sqSplitCars(); } catch (e) { console.error(e); }
+    this.detachments.filter(e => this.isTrainEngine(e) && e.stands.length).forEach(e => {
+      const hw = /hellworm/i.test(e.name || '');
+      if (!e.train) e.train = (e.cfg && e.cfg.train) || [];
+      const cars = this.detachments.filter(c => c.faction === e.faction && this.isBattlecar(c) && c.stands.length && (hw ? /hellworm/i.test((c.name || '') + ' ' + (c.companyName || '')) : !/hellworm/i.test((c.name || '') + ' ' + (c.companyName || ''))) && (!c.trainOf || c.trainOf === e.id));
+      if (!e._trainLinked) cars.forEach(c => { c.deepStrike = false; if (!e.train.includes(c.id) && !c.cfg.trainOf) { e.train.push(c.id); c.trainOf = e.id; c.cfg.trainOf = e.id; c.cfg.trainOfOrig = e.id; } else if (c.cfg.trainOf === e.id) c.trainOf = e.id; });
+      e.cfg.train = e.train;
+      if (!e._trainShieldBase) e._trainShieldBase = (e.cfg && e.cfg.maxShields) || e.maxShields || 2;
+      this.trainShields(e, !e._trainLinked);
+      this.trainCarProps(e);
+      if (!e._trainLinked && !window._restoring) { this.trainFollow(e); }
+      e._trainLinked = true;
+    });
+  }
+  trainCars(e) { return (e.train || []).map(id => this.detachments.find(d => d.id === id)).filter(c => c && c.stands.length && c.trainOf === e.id); }
+  trainShields(e, fill) {
+    const extra = this.trainCars(e).reduce((a, c) => a + this.carShields(c), 0);
+    e.maxShields = e._trainShieldBase + extra; if (fill) e.shields = e.maxShields; else e.shields = Math.min(e.shields, e.maxShields);
+    this.updateTitanShieldVisuals && this.updateTitanShieldVisuals(e);
+  }
+  trainCarProps(e) { // attached cars share the Engine's void shields
+    this.trainCars(e).forEach(c => {
+      if (c._shieldProxy) return; c._shieldProxy = true;
+      let own = c.shields || 0, ownMax = c.maxShields || 0;
+      const att = () => { const en = this.detachments.find(x => x.id === c.trainOf); return en && en.stands.length ? en : null; };
+      Object.defineProperty(c, 'shields', { get: () => { const en = att(); return en ? en.shields : own; }, set: v => { const en = att(); if (en) en.shields = v; else own = v; }, configurable: true, enumerable: true });
+      Object.defineProperty(c, 'maxShields', { get: () => { const en = att(); return en ? en.maxShields : ownMax; }, set: v => { if (!att()) ownMax = v; }, configurable: true, enumerable: true });
+      c.shieldType = c.shieldType || e.shieldType || 'VOID';
+    });
+  }
+  trainFollow(e) { // cars trail behind the Engine in line
+    const s0 = e.stands[0]; if (!s0) return;
+    const face = s0.facingRad != null ? s0.facingRad : (e.facingRad || 0), back = face + Math.PI;
+    let dist = (s0.baseRadius || 20) + 4;
+    this.trainCars(e).forEach(c => { c.stands.forEach(s => { dist += (s.baseRadius || 16) + 2; this.eldMoveStand(s, s0.container.x + Math.cos(back) * dist, s0.container.y + Math.sin(back) * dist); if (this.setStandFacing) this.setStandFacing(s, face); dist += (s.baseRadius || 16) + 2; }); this.syncEmbarkedPassengers(c); this.updateDetachmentBadgePos(c); });
+  }
+  trainCarLost(c) { // a car is destroyed: the cars behind it are cut loose
+    const e = this.detachments.find(x => x.id === c.trainOf); if (!e) return;
+    const i = (e.train || []).indexOf(c.id); if (i < 0) return;
+    const behind = e.train.slice(i + 1).map(id => this.detachments.find(d => d.id === id)).filter(d => d && d.stands.length);
+    e.train = e.train.slice(0, i); e.cfg.train = e.train; c.trainOf = null;
+    behind.forEach(b => { b.trainOf = null; b.cfg.trainOf = null; b.order = 'FIRST_FIRE'; b.orderRevealed = true; });
+    this.trainShields(e, false);
+    if (behind.length) this.log(`🚂 <b>${c.name}</b> is destroyed: ${behind.length} battlecar${behind.length > 1 ? 's are' : ' is'} cut loose from ${e.name}, and ${behind.length > 1 ? 'their' : 'its'} shields are lost.`);
+  }
+  trainRecouple(e) { // the Engine backs into its loose cars to hook them up again
+    const s0 = e.stands[0]; if (!s0) return;
+    this.detachments.filter(c => c.faction === e.faction && this.isBattlecar(c) && c.stands.length && !c.trainOf && c.cfg.trainOfOrig === e.id && c.stands.some(s => Phaser.Math.Distance.Between(s.container.x, s.container.y, s0.container.x, s0.container.y) <= (s0.baseRadius || 20) + (s.baseRadius || 16) + 30)).forEach(c => {
+      c.trainOf = e.id; c.cfg.trainOf = e.id; e.train.push(c.id); this.log(`🚂 <b>${e.name}</b> hooks up ${c.name} again.`);
+    });
+    this.trainShields(e, false);
+  }
+  hwClosed(c) { return Boolean(c && this.isBattlecar(c) && c.hwClosed); }
+  toggleBattlecar() { const c = this.selectedDetachment; if (!c || !/hellworm/i.test((c.name || '') + ' ' + (c.companyName || '')) || !this.isBattlecar(c) || this.phase !== 'ORDERS') return; this.hwSetClosed(c, !c.hwClosed); this.log(`🛡️ <b>${c.name}</b> ${c.hwClosed ? 'closes its armoured shutters (1+ save, no firing)' : 'opens up (its listed save; it may fire)'}.`); this.updateUI(); }
+  trainOrders() { // orders locked: cars are always on First Fire; attached cars move with the Engine
+    this.detachments.forEach(c => {
+      if (!this.isBattlecar(c) || !c.stands.length) return;
+      if (c.order !== 'FIRST_FIRE') { c.order = 'FIRST_FIRE'; c.orderRevealed = true; this.updateDetachmentBadge(c); }
+      c.moved = true;
+      if (/hellworm/i.test((c.name || '') + ' ' + (c.companyName || '')) && this.isFactionAI(c.faction)) this.hwSetClosed(c, !this.detachments.some(o => o.faction !== c.faction && this.impLive(o) && this.impNear(c, o, 80)));
+    });
+  }
+  sqRound4Buttons(det, btns) {
+    if (det && this.phase === 'ORDERS' && /hellworm/i.test((det.name || '') + ' ' + (det.companyName || '')) && this.isBattlecar(det) && !this.isFactionAI(det.faction)) btns.push(`<button class="btn-primary" style="background:#57534e" onclick="window.gameScene.toggleBattlecar()">${det.hwClosed ? '🛡️ Shutters closed (tap to open)' : '🔓 Open (tap to close)'}</button>`);
+    if (det && this.isBattlecar(det) && det.trainOf && this.phase === 'ORDERS') btns.push(`<span style="font-size:0.64rem;color:#cbd5e1;align-self:center">🚂 Coupled to its Engine: moves with it, always on First Fire</span>`);
+  }
+  // A Hellworm surfacing turns the ground to slag; its cars open on a 2+
+  hwSurface(e) {
+    const s0 = e.stands[0]; if (!s0) return;
+    const p = { x: s0.container.x, y: s0.container.y }, R = BARRAGE_RADIUS_PX;
+    this.spawnExplosionFX(p.x, p.y, R * 1.5, true);
+    let n = 0;
+    this.detachments.forEach(o => { if (o === e || !o.stands.length || o.embarkedOn || o.trainOf === e.id) return; o.stands.slice().forEach(s => {
+      const dd = Phaser.Math.Distance.Between(p.x, p.y, s.container.x, s.container.y); if (dd > R + (s.baseRadius || 10)) return;
+      n++;
+      if (Phaser.Math.Between(1, 6) >= 3) { if (this.hasHitLocations(o)) { this.applyTitanHit(o, s, { tsm: -1, from: p }); } else if (!this.orkSave(o, -1, null)) { if (o.superHeavy) this.applySuperHeavyDamage(o, s, false); else { this.removeCasualty(o, s, -1, false); return; } } }
+      if (o.stands.includes(s) && !o.isTitan) { const k = (R + (s.baseRadius || 10) + 3) / Math.max(1, dd); this.eldMoveStand(s, p.x + (s.container.x - p.x) * k, p.y + (s.container.y - p.y) * k); }
+    }); this.checkBreakPoint(o); });
+    this.log(`🌋 <b>${e.name}</b> bursts out of the ground, turning it to slag${n ? ` — ${n} model${n > 1 ? 's' : ''} caught (hit on 3+ at -1)` : ''}.`);
+    this.trainCars(e).forEach(c => { c.inReserve = false; c.deepStrikeUsed = true; c.deepStrikeActive = false; c.stands.forEach(s => { s.container.setAlpha(1); s.container.setVisible(true); }); const r = Phaser.Math.Between(1, 6); this.hwSetClosed(c, r < 2); });
+    this.trainFollow(e);
+  }
+  // A Buoy car lets other tunnellers surface near it without scattering
+  sqBuoyNear(side, p) { return this.detachments.some(c => c.faction === side && c.stands.length && /buoy/i.test(c.name || '') && !c.hwClosed && c.stands.some(s => Phaser.Math.Distance.Between(s.container.x, s.container.y, p.x, p.y) <= 25 * PX_PER_CM)); }
+  // Robots: a fully custom program
+  robotCustom(d) {
+    const N = [['A', 'Charge'], ['B', 'Advance'], ['C', 'First Fire'], ['D', 'Capture'], ['E', 'Ignore']], Q = ['an enemy is within charge range', 'an enemy is within weapon range', 'an enemy is in sight', 'none of these'], prog = [];
+    const ask = i => {
+      if (i >= 4) { d.cfg.robotProgram = prog; d.cfg.robotProgramName = 'CUSTOM'; this.log(`🤖 <b>${d.name}</b> is programmed: ${this.robotProgramText(prog)}.`); this.updateUI(); return; }
+      this.eldChoose(`🤖 ${d.name} — question ${i + 1} of 4: if ${Q[i]}…`, N.filter(([k]) => !(i === 3 && k === 'E')).map(([k, lab]) => ({ label: lab, fn: () => { prog[i] = k; this.time.delayedCall(60, () => ask(i + 1)); } })));
+    };
+    ask(0);
+  }
+  hwSetClosed(c, v) {
+    if (!c) return; if (c._openSave == null) c._openSave = c.save;
+    c.hwClosed = Boolean(v); c.save = c.hwClosed ? 1 : c._openSave;
+  }
+  // Zutik: Mechanized — characters get a free Rhino; small infantry cards up to two (+1 Break Point)
+  sqMechanize() {
+    ['IMPERIUM', 'ORKS'].forEach(side => {
+      if (this.sqClan(side) !== 'ZUTIK') return;
+      const tpl = window.findCatalogUnit('card_sqt_rhinos'); if (!tpl) return;
+      this.detachments.filter(d => d.faction === side && this.isSquat(d) && d.stands.length && (d.pinningClass || 1) === 1 && !d._mech && !this.detachments.some(t => t.passengerDet === d) &&
+        (d.isCharacter || /warrior|berserker|burner|engineer|expeditioner|stormer|thunderer|bodyguard/i.test(d.name || ''))).forEach(d => {
+        const n = d.isCharacter ? 1 : Math.ceil(d.stands.length / 2); if (n > 2) return;
+        d._mech = true; d.cfg._mech = true;
+        const c = this.getDetachmentCenter(d);
+        const r = this.createDetachment({ ...tpl, id: `${d.id}_zrhino`, faction: side, armyBook: 'SQUATS', name: `Zutik Rhinos (${this.shortName(d.name, 18)})`, standsCount: n, startX: c.x, startY: c.y + (side === 'IMPERIUM' ? 40 : -40), companyCardId: d.companyCardId || null, vpValue: 0, points: 0 });
+        if (!d.isCharacter) { d.breakPoint = (d.breakPoint || 1) + 1; d.cfg.breakPoint = d.breakPoint; }
+        void r;
+      });
+    });
+  }
+  sqRosterErrors(side, roster) {
+    const cl = (window.sideFaction[side] || side) === 'SQUATS' ? ((window.sideChapter && window.sideChapter[side]) || 'CODEX') : null, errs = [];
+    if (!cl || cl === 'CODEX') return errs;
+    const cnt = k => roster.filter(x => x === 'card_sqt_' + k).length, budget = window.sideBudget ? window.sideBudget(side) : 2000, U = k => (window.findCatalogUnit('card_sqt_' + k) || {}).name || k;
+    const maxOne = { MAKURTU: ['colossus', 'cyclops', 'goliath_battery', 'grudgekeeper', 'gyrocopters', 'overlord', 'steel_hawks', 'thunderfire', 'war_hawks'], ZUTIK: ['hearthlord', 'hellfury', 'robot_co', 'land_train'], COMMERCIAL: ['grudgekeeper', 'hearthlord', 'hellfury', 'robot_squad', 'land_train', 'bodyguards', 'bodyguards_exo'] }[cl] || [];
+    maxOne.forEach(k => { if (cnt(k) > 1) errs.push(`${window.chapterName(cl)}: only one ${U(k)}.`); });
+    if (cl === 'MAKURTU' && cnt('colossus') && cnt('robot_co')) errs.push('Makurtu Gabe: a Leviathan or an Ironbreaker Squadron, not both.');
+    if (cl === 'MAKURTU' && cnt('ob_light') + 2 * cnt('ob_heavy') > 2) errs.push('Makurtu Gabe: at most 2 VP of off-board artillery.');
+    if (cl !== 'MAKURTU') ['colossus', 'cyclops'].forEach(k => { if (cnt(k) > Math.max(1, Math.floor(budget / 4000))) errs.push(`${window.chapterName(cl)}: one ${U(k)} per 4,000 points.`); });
+    return errs;
   }
   applySuperHeavyDamageOrkCore(det, stand = null, isCloseCombat = false) {
     if (!det || det.stands.length === 0) return false;
@@ -56048,6 +56373,7 @@ class NetEpicScene extends Phaser.Scene {
             const ffr = this.orkForceField(vDet, victimStand, saveDiceUI); if (ffr === 'fail') neededSave += 1;
             let saved = ffr === 'save' || (saveRoll >= neededSave && neededSave <= 6);
             if (!saved && this.igFrontPlate(vDet, victimStand, this.getDetachmentCenter(firerDet), neededSave, saveDiceUI)) saved = true;
+            if (this.isOverlord(vDet)) saved = this.ovlHit(vDet, victimStand, barrageStats.tsm || 0, saveDiceUI);
 
             if (!saved && this.tryHealerSave(vDet, victimStand, saveDiceUI)) saved = true; // medic / mechanic 5+
 
@@ -56197,6 +56523,7 @@ class NetEpicScene extends Phaser.Scene {
               const ffr = this.orkForceField(targetDet, victimRef, saveDiceUI); if (ffr === 'fail') neededSave += 1;
               let saved = ffr === 'save' || (saveRoll >= neededSave && neededSave <= 6);
               if (!saved && this.igFrontPlate(targetDet, victimRef, { x: pair.shooter.container.x, y: pair.shooter.container.y }, neededSave, saveDiceUI)) saved = true;
+              if (this.isOverlord(targetDet)) saved = this.ovlHit(targetDet, victimRef, curWpn.tsm || 0, saveDiceUI);
 
               if (!saved && this.tryHealerSave(targetDet, victimRef, saveDiceUI)) saved = true; // medic / mechanic 5+
 
@@ -58822,7 +59149,7 @@ class NetEpicScene extends Phaser.Scene {
     const impRolls = [];
     for (let i = 0; i < impDiceCount; i++) {
       let r = Phaser.Math.Between(1, 6);
-      if ((impDet.squatMastery || impDet.guardFury) && (r === 1 || (r === 2 && (orkDet.armyBook === 'ORKS' || impDet.guardFury)))) {
+      if ((m => (r === 1 && m[0]) || (r === 2 && m[1]))(this.sqMastery(impDet, orkDet))) {
         const rr = Phaser.Math.Between(1, 6);
         impRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
         r = rr;
@@ -58850,7 +59177,7 @@ class NetEpicScene extends Phaser.Scene {
     const orkRolls = [];
     for (let i = 0; i < orkDiceCount; i++) {
       let r = Phaser.Math.Between(1, 6);
-      if ((orkDet.squatMastery || orkDet.guardFury) && (r === 1 || (r === 2 && (impDet.armyBook === 'ORKS' || orkDet.guardFury)))) {
+      if ((m => (r === 1 && m[0]) || (r === 2 && m[1]))(this.sqMastery(orkDet, impDet))) {
         const rr = Phaser.Math.Between(1, 6);
         orkRerollNote = ` <span class="log-save">[⚒️ Grudge Re-roll ${r}→${rr}]</span>`;
         r = rr;
@@ -60657,7 +60984,7 @@ class NetEpicScene extends Phaser.Scene {
     window._restoring = true; window._live = null;
     let ok = false;
     try { ok = this.restoreGameStateCore(saveData); } finally { window._restoring = false; }
-    try { this.impInstallPowers(); this.applyEldarSetup(); this.orkSetup(); this.orkRestoreExtra(saveData); this.igSetup(); } catch (e) { console.error(e); }
+    try { this.impInstallPowers(); this.applyEldarSetup(); this.orkSetup(); this.orkRestoreExtra(saveData); this.igSetup(); this.trainSetup(); this.detachments.forEach(d => { if (d.hwClosed) this.hwSetClosed(d, true); }); } catch (e) { console.error(e); }
     if (ok !== false) window.battleActive = true;
     return ok;
   }
