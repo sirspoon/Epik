@@ -55163,7 +55163,29 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
   // a new map or a new battle starts with clean ground
-  loadMapConfig(preset = 'INDUSTRIAL') { this.battleDecals = []; this.smokePlumes = []; const r = this.loadMapConfigPaintCore(preset); try { this.straightenRoads(); } catch (e) { console.error(e); } return r; }
+  loadMapConfig(preset = 'INDUSTRIAL') { this.battleDecals = []; this.smokePlumes = []; const r = this.loadMapConfigPaintCore(preset); try { this.straightenRoads(); this.alignBridgeApproaches(); } catch (e) { console.error(e); } return r; }
+  // Each road leaving a bridge runs straight on in line with the bridge for a short way, so it meets the bridge head on
+  // and any bend comes just before the bridge rather than on it.
+  alignBridgeApproaches() {
+    (this.bridges || []).filter(b => b.x1 != null && !b.isFord).forEach(b => {
+      const L = Math.hypot(b.x2 - b.x1, b.y2 - b.y1) || 1, ux = (b.x2 - b.x1) / L, uy = (b.y2 - b.y1) / L;
+      [[b.x1, b.y1, -1], [b.x2, b.y2, 1]].forEach(([x, y, sd]) => {
+        const dx = ux * sd, dy = uy * sd;
+        (this.roads || []).slice().forEach(r => {
+          const end = Math.hypot(r.x1 - x, r.y1 - y) < 3 ? 1 : (Math.hypot(r.x2 - x, r.y2 - y) < 3 ? 2 : 0); if (!end) return;
+          const fx = end === 1 ? r.x2 : r.x1, fy = end === 1 ? r.y2 : r.y1, rl = Math.hypot(fx - x, fy - y) || 1, dot = ((fx - x) * dx + (fy - y) * dy) / rl;
+          if (dot > 0.999 || dot < 0.3 || rl < 60) return;
+          const w2 = (r.width || 32) / 2, segClear = (x1, y1, x2, y2) => { for (let i = 0; i <= 30; i++) { const px = x1 + (x2 - x1) * i / 30, py = y1 + (y2 - y1) * i / 30;
+              if ((this.woods || []).some(o => Math.hypot(px - o.x, py - o.y) < o.r + w2) || (this.rockAt && this.rockAt(px, py))) return false; }
+            return !(this.buildings || []).some(o => this.lineHitsRect(o, x1, y1, x2, y2, -w2)); };
+          const a = [90, 70, 50, 35].map(v => Math.min(v, rl * 0.4)).find(v => segClear(x, y, x + dx * v, y + dy * v) && segClear(x + dx * v, y + dy * v, fx, fy)); if (!a) return;
+          const nx = Math.round(x + dx * a), ny = Math.round(y + dy * a), nr = { ...r };
+          if (end === 1) { r.x2 = nx; r.y2 = ny; nr.x1 = nx; nr.y1 = ny; } else { r.x1 = nx; r.y1 = ny; nr.x2 = nx; nr.y2 = ny; }
+          r.noLabel = true; this.roads.push(nr);
+        });
+      });
+    });
+  }
   // Main roads drawn as a chain of slightly kinked pieces are pulled onto one straight line where they nearly are one
   // (bridges included, so the bridge lines up with its road). Winding roads, like the mountain pass, are left alone.
   straightenRoads() {
