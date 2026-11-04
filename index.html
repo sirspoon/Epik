@@ -58855,17 +58855,22 @@ class NetEpicScene extends Phaser.Scene {
       if (this.isDraggingStand) return;
       const p1 = this.input.pointer1, p2 = this.input.pointer2;
       if (p1.isDown && p2.isDown) {
-        // Two fingers: the gesture locks to turning or zooming, whichever starts first, until the fingers lift,
-        // so a twist doesn't also zoom the table (and a pinch doesn't turn it).
-        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-        if (!this._gest) this._gest = { d0: dist, a0: ang, z0: cam.zoom, mode: null, lastA: ang };
-        const G = this._gest;
+        // Two fingers: the gesture locks to turning or zooming (whichever the fingers mostly do first) until they lift.
+        // Either way the spot of table under the fingers stays under them, so it turns and zooms about your fingers,
+        // and moving both fingers together drags the table.
+        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), ang = Math.atan2(p2.y - p1.y, p2.x - p1.x), mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        if (!this._gest) this._gest = { d0: dist, a0: ang, z0: cam.zoom, mode: null, lastA: ang, mid };
+        const G = this._gest, Cx = cam.width / 2, Cy = cam.height / 2;
+        const worldAt = (S, r, z) => { const vx = S.x - Cx, vy = S.y - Cy, c = Math.cos(r), sn = Math.sin(r); return { x: cam.scrollX + Cx + (c * vx + sn * vy) / z, y: cam.scrollY + Cy + (-sn * vx + c * vy) / z }; };
+        const W = worldAt(G.mid, cam.rotation, cam.zoom);
         let da = ang - G.a0; da = Math.atan2(Math.sin(da), Math.cos(da));
-        const scale = dist / Math.max(1, G.d0);
-        if (!G.mode) { if (Math.abs(da) > 0.12) { G.mode = 'turn'; G.lastA = G.a0; } else if (Math.abs(Math.log(scale)) > 0.1) { G.mode = 'zoom'; G.d0 = dist; G.z0 = cam.zoom; } }
-        if (G.mode === 'turn') { let d = ang - G.lastA; d = Math.atan2(Math.sin(d), Math.cos(d)); this.rotateView(d); }
+        if (!G.mode) { const twistPx = Math.abs(da) * dist / 2, pinchPx = Math.abs(dist - G.d0) / 2;
+          if (Math.max(twistPx, pinchPx) > 9 * DPR) { if (twistPx >= pinchPx * 0.6) { G.mode = 'turn'; G.lastA = G.a0; } else { G.mode = 'zoom'; G.d0 = dist; G.z0 = cam.zoom; } } }
+        if (G.mode === 'turn') { let d = ang - G.lastA; d = Math.atan2(Math.sin(d), Math.cos(d)); let t = (this.viewTwist || 0) + d; t = Math.atan2(Math.sin(t), Math.cos(t)); this.viewTwist = t; cam.setRotation((this.viewBase || 0) + t); this.updateCompassButton(); }
         else if (G.mode === 'zoom') { cam.setZoom(Phaser.Math.Clamp(G.z0 * dist / Math.max(1, G.d0), 0.35 * DPR, 2.5 * DPR)); this.updateZoomLOD(); }
-        G.lastA = ang;
+        // keep W under the fingers' new midpoint
+        { const r = cam.rotation, z = cam.zoom, vx = mid.x - Cx, vy = mid.y - Cy, c = Math.cos(r), sn = Math.sin(r); cam.scrollX = W.x - Cx - (c * vx + sn * vy) / z; cam.scrollY = W.y - Cy - (-sn * vx + c * vy) / z; }
+        G.lastA = ang; G.mid = mid;
         return;
       }
       this._gest = null;
