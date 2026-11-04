@@ -43274,6 +43274,243 @@ const EpikArt = (() => {
   return { R, PAL, ORK_CLAN, render, RECIPES, FIG, pick };
 })();
 
+// ===== Improved Eldar miniatures: painted top-down sprites (front of the model points up) =====
+const EldArt2 = (() => {
+  const R = 4;
+  let _s = 1; const seed = s => { _s = (Math.abs(Math.floor(s)) % 2147483646) + 1; }; const rnd = () => { _s = (_s * 16807) % 2147483647; return (_s - 1) / 2147483646; }; const RR = (a, b) => a + rnd() * (b - a);
+  const hex = h => { const v = parseInt(h.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
+  const mix = (a, b, t) => { const A = hex(a), B = hex(b); return '#' + A.map((c, i) => Math.round(c + (B[i] - c) * t).toString(16).padStart(2, '0')).join(''); };
+  const lift = (c, t) => mix(c, '#ffffff', t), sink = (c, t) => mix(c, '#000000', t);
+  const rgba = (c, a) => { const [r, g, b] = hex(c); return `rgba(${r},${g},${b},${a})`; };
+  const INK = 'rgba(14,10,8,0.85)';
+  // light comes from the top left, as on the painted battlefield
+  function shaded(g, path, c, x0, y0, x1, y1, k = 0.35) { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, lift(c, k)); gr.addColorStop(0.45, c); gr.addColorStop(1, sink(c, k * 1.1)); g.fillStyle = gr; g.fill(path); }
+  function outline(g, path, w = 0.32, c = INK) { g.lineWidth = w; g.strokeStyle = c; g.stroke(path); }
+  function dropShadow(g, path, dx, dy, blur, a) { g.save(); g.filter = `blur(${blur * R}px)`; g.translate(dx, dy); g.fillStyle = `rgba(0,0,0,${a})`; g.fill(path); g.restore(); }
+  function glow(g, x, y, r, c, a = 0.8) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(1, rgba(c, 0)); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+  function gem(g, x, y, r, c) { glow(g, x, y, r * 2.4, c, 0.45); const gr = g.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r); gr.addColorStop(0, lift(c, 0.75)); gr.addColorStop(0.5, c); gr.addColorStop(1, sink(c, 0.45)); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.lineWidth = 0.18; g.strokeStyle = INK; g.stroke(); g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.arc(x - r * 0.35, y - r * 0.38, r * 0.25, 0, 7); g.fill(); }
+  function sheen(g, path, x, y, rx, ry, a = 0.45) { g.save(); g.clip(path); const gr = g.createRadialGradient(x, y, 0, x, y, Math.max(rx, ry)); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.translate(x, y); g.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry)); g.beginPath(); g.arc(0, 0, Math.max(rx, ry), 0, 7); g.fill(); g.restore(); }
+  const P2 = pts => { const p = new Path2D(); pts.forEach(([x, y], i) => i ? p.lineTo(x, y) : p.moveTo(x, y)); p.closePath(); return p; };
+  function barrel(g, x, y, len, wid, c) { const p = new Path2D(); p.rect(x - wid / 2, y - len, wid, len); shaded(g, p, c, x - wid / 2, 0, x + wid / 2, 0, 0.45); outline(g, p, 0.2); g.fillStyle = sink(c, 0.6); g.fillRect(x - wid * 0.3, y - len - 0.05, wid * 0.6, 0.4); }
+  // a flocked earth stand like the painted miniatures: bevelled edge, soil, grass tufts, a few stones
+  function stand(g, w, h, round) {
+    const p = new Path2D(); if (round) p.ellipse(w / 2, h / 2, w / 2 - 0.3, h / 2 - 0.3, 0, 0, 7); else { const r = 1.6, x = 0.3, y = 0.3, W = w - 0.6, H = h - 0.6; p.moveTo(x + r, y); p.arcTo(x + W, y, x + W, y + H, r); p.arcTo(x + W, y + H, x, y + H, r); p.arcTo(x, y + H, x, y, r); p.arcTo(x, y, x + W, y, r); p.closePath(); }
+    dropShadow(g, p, 0.5, 0.7, 0.5, 0.45); g.fillStyle = '#2a2420'; g.fill(p);
+    g.save(); g.clip(p); g.fillStyle = '#6b5a40'; g.fillRect(0.9, 0.9, w - 1.8, h - 1.8);
+    seed(w * 31 + h * 17); for (let k = 0; k < w * h / 2.2; k++) { const x = RR(1, w - 1), y = RR(1, h - 1); g.fillStyle = rnd() < 0.55 ? rgba(rnd() < 0.5 ? '#4f7a2e' : '#6e9a3c', RR(0.6, 0.95)) : rgba(rnd() < 0.5 ? '#8a7656' : '#4a3d2c', RR(0.5, 0.9)); g.beginPath(); g.arc(x, y, RR(0.18, 0.45), 0, 7); g.fill(); }
+    for (let k = 0; k < 3; k++) { const x = RR(2, w - 2), y = RR(2, h - 2); g.fillStyle = '#9a958a'; g.beginPath(); g.ellipse(x, y, RR(0.35, 0.6), RR(0.25, 0.45), RR(0, 3), 0, 7); g.fill(); }
+    g.restore(); g.lineWidth = 0.5; g.strokeStyle = 'rgba(255,255,255,0.12)'; g.stroke(p);
+  }
+  function line(g, pts, c, w) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); }
+
+  // ---------- grav-tank hull (Falcon family): swept wings, raised spine, canopy, glowing engines ----------
+  // ---------- grav-tank hull: long slim wedge, pale keel, gem canopies along the spine, swept rear wings ----------
+  function gravHull(g, P, w, h, o = {}) {
+    const cx = w / 2, top = 0.3, bot = h - 0.3, yy = t => top + (bot - top) * t, keelC = o.keel || P.keel || '#ece6d2', hullC = o.hull || P.main;
+    // half-width along the hull (fraction of w): sharp nose, slim body, wings flaring near the back
+    const prof = [[0, 0], [0.06, 0.05], [0.3, 0.16], [0.56, 0.21], [0.74, 0.34], [0.84, 0.44], [0.9, 0.42], [0.93, 0.3], [1, 0.24]];
+    const hull = new Path2D(); prof.forEach(([t, hw], i) => i ? hull.lineTo(cx + hw * w, yy(t)) : hull.moveTo(cx, yy(t))); for (let i = prof.length - 1; i >= 1; i--) hull.lineTo(cx - prof[i][1] * w, yy(prof[i][0])); hull.lineTo(cx - 0.06 * w, yy(1.0)); hull.closePath();
+    dropShadow(g, hull, 2.4, 3.4, 1.4, 0.45); glow(g, cx + 1.5, h * 0.62 + 2, Math.min(w, h) * 0.5, P.lens, 0.16);
+    shaded(g, hull, hullC, cx - w * 0.4, 0, cx + w * 0.4, h, 0.3);
+    // wings a shade darker, edged with trim
+    [-1, 1].forEach(sd => { const wing = P2([[cx + sd * w * 0.2, yy(0.6)], [cx + sd * w * 0.43, yy(0.84)], [cx + sd * w * 0.41, yy(0.9)], [cx + sd * w * 0.22, yy(0.88)]]); g.fillStyle = rgba(sink(hullC, 0.3), 0.5); g.fill(wing); line(g, [[cx + sd * w * 0.22, yy(0.62)], [cx + sd * w * 0.42, yy(0.85)]], P.trim, 0.35); });
+    // fine panel lines, the circuit-like detail painted on Eldar hulls
+    g.strokeStyle = rgba(sink(hullC, 0.55), 0.55); g.lineWidth = 0.14; [-1, 1].forEach(sd => { [[0.18, 0.55, 0.08], [0.25, 0.7, 0.13], [0.62, 0.86, 0.3]].forEach(([a, b, o2]) => { g.beginPath(); g.moveTo(cx + sd * w * o2 * 0.8, yy(a)); g.lineTo(cx + sd * w * o2, yy((a + b) / 2)); g.lineTo(cx + sd * w * o2 * 0.85, yy(b)); g.stroke(); }); });
+    outline(g, hull, 0.32); sheen(g, hull, cx - w * 0.1, yy(0.3), w * 0.16, h * 0.28, 0.3);
+    // the pale keel running nose to tail, ending in a blade
+    const kl = P2([[cx, yy(-0.015)], [cx + w * 0.035, yy(0.2)], [cx + w * 0.06, yy(0.85)], [cx + w * 0.02, yy(1.04)], [cx - w * 0.02, yy(1.04)], [cx - w * 0.06, yy(0.85)], [cx - w * 0.035, yy(0.2)]]);
+    shaded(g, kl, keelC, cx - w * 0.06, 0, cx + w * 0.06, 0, 0.28); outline(g, kl, 0.16, rgba('#000000', 0.45));
+    // gem canopies along the spine
+    (o.canopies || [0.2, 0.31]).forEach((t, k) => { const r = w * (k ? 0.065 : 0.075), y = yy(t); const cv = new Path2D(); cv.ellipse(cx, y, r, r * 1.35, 0, 0, 7); const cg = g.createRadialGradient(cx - r * 0.35, y - r * 0.5, r * 0.1, cx, y, r * 1.3); cg.addColorStop(0, '#cfe9ff'); cg.addColorStop(0.35, '#4b7fd6'); cg.addColorStop(1, '#14275a'); g.fillStyle = cg; g.fill(cv); outline(g, cv, 0.18); g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.ellipse(cx - r * 0.35, y - r * 0.55, r * 0.22, r * 0.32, -0.4, 0, 7); g.fill(); });
+    // engines at the rear
+    [-1, 1].forEach(sd => { const ex = cx + sd * w * 0.13, ey = yy(0.985); glow(g, ex, ey + 0.8, 2.2, P.lens, 0.85); g.fillStyle = lift(P.lens, 0.5); g.fillRect(ex - 0.8, ey, 1.6, 0.45); });
+    // red spirit stones on the wings
+    [-1, 1].forEach(sd => gem(g, cx + sd * w * 0.27, yy(0.76), 0.6, o.gem || '#e0412f'));
+    return { cx, yy };
+  }
+  function turretDome(g, P, x, y, r, c) { const p = new Path2D(); p.arc(x, y, r, 0, 7); dropShadow(g, p, 0.5, 0.8, 0.4, 0.4); const gr = g.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.1, x, y, r); gr.addColorStop(0, lift(c, 0.5)); gr.addColorStop(0.6, c); gr.addColorStop(1, sink(c, 0.35)); g.fillStyle = gr; g.fill(p); outline(g, p, 0.25); }
+  const R_ = {
+    falcon(g, P, w, h, o) {
+      const { cx, yy } = gravHull(g, P, w, h, o);
+      const ty = yy(0.55);
+      barrel(g, cx - 0.7, ty, h * 0.3, 0.6, P.metal); barrel(g, cx + 0.7, ty, h * 0.3, 0.6, P.metal);
+      turretDome(g, P, cx, ty, w * 0.12, lift(P.main, 0.1)); gem(g, cx, ty, 0.6, '#e0412f');
+    },
+    prism(g, P, w, h, o) {
+      const { cx, yy } = gravHull(g, P, w, h, o);
+      const ty = yy(0.55), r = w * 0.2;
+      turretDome(g, P, cx, ty + 0.5, r * 0.95, sink(P.main, 0.1));
+      // the great crystal: a faceted hexagonal prism catching the light
+      const pts = [...Array(6)].map((_, i) => [cx + Math.cos(i * Math.PI / 3 - Math.PI / 2) * r * 0.75, ty - 1.2 + Math.sin(i * Math.PI / 3 - Math.PI / 2) * r * 1.05]);
+      glow(g, cx, ty - 1.2, r * 1.8, P.lens, 0.5);
+      pts.forEach((p, i) => { const q = pts[(i + 1) % 6], f = P2([[cx, ty - 1.2], p, q]); const lit = 0.5 + 0.5 * Math.cos(i * Math.PI / 3 + 2.3); g.fillStyle = mix('#2fa8d8', '#f0fcff', lit); g.fill(f); });
+      g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 0.18; pts.forEach(p => { g.beginPath(); g.moveTo(cx, ty - 1.2); g.lineTo(p[0], p[1]); g.stroke(); });
+      outline(g, P2(pts), 0.25, '#0d3a52');
+      g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.arc(cx - r * 0.25, ty - 1.2 - r * 0.45, 0.45, 0, 7); g.fill();
+    },
+    serpent(g, P, w, h, o) {
+      const { cx, yy } = gravHull(g, P, w, h, { ...o, canopies: [0.2] });
+      // energy field projectors on the nose: two vanes with a shimmering field between them
+      [-1, 1].forEach(sd => { const v = P2([[cx + sd * w * 0.08, yy(0.12)], [cx + sd * w * 0.3, yy(-0.03)], [cx + sd * w * 0.32, yy(0.03)], [cx + sd * w * 0.16, yy(0.2)]]); shaded(g, v, sink(P.main, 0.1), 0, 0, w, 0, 0.3); outline(g, v, 0.25); gem(g, cx + sd * w * 0.27, yy(0.02), 0.55, P.lens); });
+      g.save(); g.globalCompositeOperation = 'lighter'; const fg = g.createLinearGradient(0, yy(-0.04), 0, yy(0.08)); fg.addColorStop(0, rgba(P.lens, 0)); fg.addColorStop(0.5, rgba(P.lens, 0.45)); fg.addColorStop(1, rgba(P.lens, 0)); g.fillStyle = fg; g.beginPath(); g.moveTo(cx - w * 0.3, yy(0.0)); g.quadraticCurveTo(cx, yy(-0.09), cx + w * 0.3, yy(0.0)); g.quadraticCurveTo(cx, yy(0.06), cx - w * 0.3, yy(0.0)); g.fill(); g.restore();
+      // troop bay hatch and rear ramp
+      const hb = new Path2D(); hb.rect(cx - w * 0.14, yy(0.6), w * 0.08, h * 0.22); hb.rect(cx + w * 0.06, yy(0.6), w * 0.08, h * 0.22); g.fillStyle = rgba(sink(P.main, 0.35), 0.8); g.fill(hb); outline(g, hb, 0.2); g.strokeStyle = rgba('#000000', 0.35); g.lineWidth = 0.15; 
+      const ty = yy(0.4); barrel(g, cx - 0.6, ty, h * 0.2, 0.6, '#3a3a40'); barrel(g, cx + 0.6, ty, h * 0.2, 0.6, '#3a3a40'); turretDome(g, P, cx, ty, w * 0.11, lift(P.main, 0.1)); gem(g, cx, ty, 0.5, P.lens);
+    },
+    vyper(g, P, w, h, o) {
+      const cx = w / 2, y0 = h * 0.08, y1 = h * 0.92;
+      const hull = new Path2D(); hull.moveTo(cx, y0); hull.bezierCurveTo(cx + w * 0.2, y0 + h * 0.15, cx + w * 0.22, y1 - h * 0.3, cx + w * 0.42, y1 - h * 0.08); hull.lineTo(cx + w * 0.2, y1); hull.lineTo(cx - w * 0.2, y1); hull.lineTo(cx - w * 0.42, y1 - h * 0.08); hull.bezierCurveTo(cx - w * 0.22, y1 - h * 0.3, cx - w * 0.2, y0 + h * 0.15, cx, y0); hull.closePath();
+      dropShadow(g, hull, 2.4, 3.2, 1.4, 0.42); glow(g, cx + 1, h * 0.65, w * 0.5, P.lens, 0.15);
+      shaded(g, hull, P.main, 0, 0, w, h, 0.32); outline(g, hull, 0.33); sheen(g, hull, cx - w * 0.08, h * 0.3, w * 0.15, h * 0.2, 0.3);
+      [-1, 1].forEach(sd => line(g, [[cx + sd * w * 0.12, h * 0.4], [cx + sd * w * 0.36, h * 0.82]], P.trim, 0.4));
+      // pilot in front, gunner behind with the heavy weapon
+      R_._figure(g, P, cx, h * 0.38, 1.25, { body: sink(P.main, 0.15), helm: P.light, crest: P.accent, wpn: false });
+      R_._figure(g, P, cx, h * 0.6, 1.25, { body: sink(P.main, 0.15), helm: P.light, crest: P.accent, wpn: false });
+      barrel(g, cx + 0.2, h * 0.56, h * 0.42, 0.9, '#34343a'); g.fillStyle = '#4a4a52'; g.beginPath(); g.arc(cx + 0.2, h * 0.52, 1.1, 0, 7); g.fill(); outline(g, (() => { const p = new Path2D(); p.arc(cx + 0.2, h * 0.52, 1.1, 0, 7); return p; })(), 0.2);
+      [-1, 1].forEach(sd => glow(g, cx + sd * w * 0.12, y1 + 0.3, 1.8, P.lens, 0.8));
+    },
+    jetbikes(g, P, w, h, o) {
+      seed(w * 7 + h); const pos = [[w * 0.5, h * 0.3], [w * 0.22, h * 0.68], [w * 0.78, h * 0.68]];
+      pos.forEach(([x, y]) => R_._jetbike(g, P, x, y, Math.min(w, h) / 12.5, o));
+    },
+    _jetbike(g, P, x, y, s, o) {
+      const hull = new Path2D(); hull.moveTo(x, y - 5 * s); hull.bezierCurveTo(x + 1.1 * s, y - 3 * s, x + 1.1 * s, y + 1.2 * s, x + 2.2 * s, y + 3.8 * s); hull.lineTo(x + 0.8 * s, y + 3.4 * s); hull.lineTo(x, y + 4.3 * s); hull.lineTo(x - 0.8 * s, y + 3.4 * s); hull.lineTo(x - 2.2 * s, y + 3.8 * s); hull.bezierCurveTo(x - 1.1 * s, y + 1.2 * s, x - 1.1 * s, y - 3 * s, x, y - 5 * s); hull.closePath();
+      dropShadow(g, hull, 1.8 * s, 2.6 * s, 0.9, 0.42); shaded(g, hull, o.hull || P.main, x - 2.6 * s, y - 4.6 * s, x + 2.6 * s, y + 4 * s, 0.32); outline(g, hull, 0.3);
+      line(g, [[x, y - 4.8 * s], [x, y - 1.4 * s]], o.keel || '#ece6d2', 0.45 * s); [-1, 1].forEach(sd => line(g, [[x + sd * 0.9 * s, y + 1.2 * s], [x + sd * 2 * s, y + 3.6 * s]], P.trim, 0.25 * s)); gem(g, x, y - 2.6 * s, 0.32 * s, '#e0412f');
+      // twin guns under the prow, or a laser lance
+      if (o.lance) { barrel(g, x, y - 4 * s, 3.4 * s, 0.35 * s, '#dff6ff'); glow(g, x, y - 7.3 * s, 1.1 * s, P.lens, 0.8); }
+      else { barrel(g, x - 0.7 * s, y - 3.2 * s, 1.6 * s, 0.32 * s, '#34343a'); barrel(g, x + 0.7 * s, y - 3.2 * s, 1.6 * s, 0.32 * s, '#34343a'); }
+      R_._figure(g, P, x, y + 0.2 * s, 0.95 * s, { body: o.riderBody || sink(P.main, 0.2), helm: o.helm || P.light, crest: o.crest || P.accent, wpn: false, plume: o.plume });
+      glow(g, x, y + 4.3 * s, 1.5 * s, P.lens, 0.85);
+    },
+    // ---------- infantry ----------
+    // one Eldar warrior from above: armoured shoulders, ovoid helm with eye lenses and crest, weapon held forward
+    _figure(g, P, x, y, s, o = {}) {
+      g.save(); g.translate(x, y); if (o.rot) g.rotate(o.rot);
+      const body = new Path2D(); body.ellipse(0, 0.35 * s, 1.15 * s, 0.75 * s, 0, 0, 7);
+      dropShadow(g, body, 0.35 * s, 0.5 * s, 0.25, 0.5); shaded(g, body, o.body || P.dark, -s, -s, s, s, 0.3); outline(g, body, 0.18);
+      [-1, 1].forEach(sd => { const pad = new Path2D(); pad.ellipse(sd * 0.85 * s, 0.25 * s, 0.48 * s, 0.6 * s, sd * 0.3, 0, 7); shaded(g, pad, o.pad || o.helm || P.main, -s, -s, s, s, 0.4); outline(g, pad, 0.15); });
+      if (o.wpn !== false) {
+        if (o.wpn === 'sword') { g.save(); g.rotate(-0.25); barrel(g, 0.75 * s, -0.1 * s, 2.3 * s, 0.22 * s, '#dfe9ef'); glow(g, 0.75 * s, -1.6 * s, 0.6 * s, P.lens, 0.5); g.restore(); }
+        else if (o.wpn === 'cannon') { barrel(g, 0.75 * s, 0.1 * s, 2.6 * s, 0.6 * s, '#e9e2cf'); gem(g, 0.75 * s, -0.6 * s, 0.25 * s, '#4ade80'); }
+        else { barrel(g, 0.6 * s, 0.1 * s, 1.9 * s, 0.38 * s, '#2e2e34'); g.fillStyle = '#56565e'; g.beginPath(); g.arc(0.6 * s, -0.3 * s, 0.3 * s, 0, 7); g.fill(); }
+      }
+      if (o.plume) { // a long mane gathered at the crown of the helm, swelling and tapering as it flows back
+        const sw = RR(-0.3, 0.3) * s, mn = new Path2D(); mn.moveTo(-0.18 * s, -0.1 * s);
+        mn.bezierCurveTo(-0.55 * s, 0.6 * s, -0.5 * s + sw * 0.5, 1.4 * s, sw - 0.08 * s, 2.6 * s); mn.lineTo(sw + 0.08 * s, 2.6 * s);
+        mn.bezierCurveTo(0.5 * s + sw * 0.5, 1.4 * s, 0.55 * s, 0.6 * s, 0.18 * s, -0.1 * s); mn.closePath();
+        dropShadow(g, mn, 0.3 * s, 0.45 * s, 0.25, 0.45); shaded(g, mn, o.plume, -0.5 * s, 0, 0.5 * s, 2.2 * s, 0.4); outline(g, mn, 0.09, rgba('#000000', 0.45));
+        g.lineCap = 'round'; [[-0.2, 0.55], [0, 0.5], [0.2, 0.55]].forEach(([k, a]) => { g.strokeStyle = rgba(lift(o.plume, 0.5), a); g.lineWidth = 0.08 * s; g.beginPath(); g.moveTo(k * 0.6 * s, 0.1 * s); g.bezierCurveTo(k * 1.6 * s, 0.8 * s, k * 1.2 * s + sw * 0.5, 1.5 * s, k * 0.4 * s + sw, 2.45 * s); g.stroke(); });
+      }
+      const helm = new Path2D(); helm.ellipse(0, -0.25 * s, 0.62 * s, 0.82 * s, 0, 0, 7);
+      shaded(g, helm, o.helm || P.main, -0.6 * s, -s, 0.6 * s, 0.6 * s, 0.45); outline(g, helm, 0.17);
+      if (o.crest !== false) { const cr = new Path2D(); cr.moveTo(0, -1.05 * s); cr.quadraticCurveTo(0.26 * s, -0.2 * s, 0.1 * s, 0.75 * s); cr.lineTo(-0.1 * s, 0.75 * s); cr.quadraticCurveTo(-0.26 * s, -0.2 * s, 0, -1.05 * s); cr.closePath(); shaded(g, cr, o.crest || P.accent, -0.3 * s, -s, 0.3 * s, s, 0.4); outline(g, cr, 0.1, rgba('#000000', 0.5)); }
+      [-1, 1].forEach(sd => { g.fillStyle = o.eye || P.lens; g.beginPath(); g.ellipse(sd * 0.27 * s, -0.78 * s, 0.17 * s, 0.11 * s, sd * 0.4, 0, 7); g.fill(); });
+      g.fillStyle = 'rgba(255,255,255,0.45)'; g.beginPath(); g.ellipse(-0.22 * s, -0.5 * s, 0.14 * s, 0.25 * s, 0.3, 0, 7); g.fill();
+      g.restore();
+    },
+    squad(g, P, w, h, o) {
+      if (o.guardian) o = { ...o, helm: P.main, pad: P.main, crest: P.accent };
+      stand(g, w, h); seed(w * 13 + h * 7 + (o.n || 5)); const n = o.n || 5;
+      const L = { 3: [[0.27, 0.64], [0.73, 0.64], [0.5, 0.3]], 4: [[0.27, 0.3], [0.73, 0.3], [0.27, 0.73], [0.73, 0.73]], 5: [[0.22, 0.27], [0.78, 0.27], [0.5, 0.5], [0.22, 0.76], [0.78, 0.76]] }[n];
+      const s = Math.min(w, h) / (n >= 5 ? 9.6 : n === 4 ? 8.4 : 7.6) * (o.scale || 1);
+      L.forEach(([px, py], i) => R_._figure(g, P, px * w + RR(-0.6, 0.6), py * h + RR(-0.5, 0.5), s, { ...o, rot: RR(-0.18, 0.18), ...(i === 0 && o.lead ? o.lead : {}) }));
+    },
+    wraith(g, P, w, h, o) { // wraithguard: slim curved armour, swept fins, smooth white egg-shaped heads, dark wraithcannons
+      stand(g, w, h); seed(w * 3 + h); const pos = [[0.27, 0.7], [0.73, 0.7], [0.5, 0.32]], s = Math.min(w, h) / 6, armour = o.armour || P.main, head = '#f4f1ea';
+      pos.forEach(([px, py]) => { const x = px * w, y = py * h; g.save(); g.translate(x, y); g.rotate(RR(-0.12, 0.12));
+        // swept fins rising behind the shoulders
+        [-1, 1].forEach(sd => { const f = new Path2D(); f.moveTo(sd * 0.55 * s, 0.3 * s); f.quadraticCurveTo(sd * 0.95 * s, 0.7 * s, sd * 0.85 * s, 1.35 * s); f.quadraticCurveTo(sd * 0.62 * s, 0.85 * s, sd * 0.32 * s, 0.62 * s); f.closePath(); shaded(g, f, sink(armour, 0.12), -s, 0, s, 2 * s, 0.35); outline(g, f, 0.12); });
+        // slim body and rounded shoulders
+        const body = new Path2D(); body.ellipse(0, 0.3 * s, 0.85 * s, 0.75 * s, 0, 0, 7);
+        dropShadow(g, body, 0.45 * s, 0.6 * s, 0.3, 0.5); shaded(g, body, armour, -s, -s, s, s, 0.32); outline(g, body, 0.15);
+        [-1, 1].forEach(sd => { const pad = new Path2D(); pad.ellipse(sd * 0.72 * s, 0.15 * s, 0.36 * s, 0.5 * s, sd * 0.3, 0, 7); shaded(g, pad, lift(armour, 0.08), -s, -s, s, s, 0.42); outline(g, pad, 0.13); });
+        // wraithcannon held forward in both hands
+        const gun = new Path2D(); gun.rect(0.32 * s, -1.75 * s, 0.4 * s, 1.85 * s); shaded(g, gun, '#2c2c33', 0.3 * s, 0, 0.75 * s, 0, 0.5); outline(g, gun, 0.12);
+        g.fillStyle = '#3d3d46'; g.beginPath(); g.ellipse(0.52 * s, -1.8 * s, 0.3 * s, 0.17 * s, 0, 0, 7); g.fill(); glow(g, 0.52 * s, -1.95 * s, 0.5 * s, '#7cffb0', 0.7);
+        // smooth white egg-shaped head, longer towards the back
+        const hd = new Path2D(); hd.ellipse(0, 0, 0.48 * s, 0.78 * s, 0, 0, 7); const hg = g.createRadialGradient(-0.15 * s, -0.35 * s, 0.05 * s, 0, -0.05 * s, 0.75 * s); hg.addColorStop(0, '#ffffff'); hg.addColorStop(0.55, head); hg.addColorStop(1, '#bdb6a6'); g.fillStyle = hg; g.fill(hd); outline(g, hd, 0.12);
+        g.fillStyle = 'rgba(255,255,255,0.9)'; g.beginPath(); g.ellipse(-0.14 * s, -0.32 * s, 0.1 * s, 0.2 * s, 0.2, 0, 7); g.fill();
+        g.restore(); });
+    },
+    walker(g, P, w, h, o) { // war walker: a two-legged walker; long body, pilot under a curved clear shield, a gun either side
+      stand(g, w, h, true); const cx = w / 2, cy = h * 0.5, s = Math.min(w, h) / 10, arm = P.main;
+      // two legs mid-stride: reverse-jointed, one foot forward and one back
+      [[-1, -1], [1, 1]].forEach(([sd, fw]) => { const hx = cx + sd * 1.2 * s, hy = cy + 0.6 * s, kx = cx + sd * 2.5 * s, ky = cy + 0.6 * s + fw * 1.6 * s, fx = cx + sd * 2.1 * s, fy = cy + 0.6 * s + fw * 3.4 * s;
+        const leg = new Path2D(); leg.moveTo(hx, hy); leg.lineTo(kx, ky); leg.lineTo(fx, fy); g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.filter = `blur(${0.4 * R}px)`; g.translate(0.6 * s, 0.8 * s); g.strokeStyle = 'rgba(0,0,0,0.45)'; g.lineWidth = 0.9 * s; g.stroke(leg); g.restore();
+        g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = sink(arm, 0.5); g.lineWidth = 0.7 * s; g.stroke(leg); g.strokeStyle = sink(arm, 0.2); g.lineWidth = 0.42 * s; g.stroke(leg); g.restore();
+        const ft = new Path2D(); ft.ellipse(fx, fy, 0.38 * s, 0.7 * s, 0, 0, 7); shaded(g, ft, sink(arm, 0.2), fx - s, fy - s, fx + s, fy + s, 0.35); outline(g, ft, 0.15); });
+      // the long body, front up
+      const bd = new Path2D(); bd.moveTo(cx, cy - 2.5 * s); bd.bezierCurveTo(cx + 1.6 * s, cy - 2 * s, cx + 1.75 * s, cy + 1.2 * s, cx + 0.95 * s, cy + 2.2 * s); bd.lineTo(cx, cy + 2.6 * s); bd.lineTo(cx - 0.95 * s, cy + 2.2 * s); bd.bezierCurveTo(cx - 1.75 * s, cy + 1.2 * s, cx - 1.6 * s, cy - 2 * s, cx, cy - 2.5 * s); bd.closePath();
+      dropShadow(g, bd, 0.9 * s, 1.2 * s, 0.5, 0.5); shaded(g, bd, arm, cx - 1.6 * s, cy - 3 * s, cx + 1.6 * s, cy + 3 * s, 0.33); outline(g, bd, 0.25);
+      line(g, [[cx, cy + 0.5 * s], [cx, cy + 2.4 * s]], P.trim, 0.35 * s); gem(g, cx, cy + 1.1 * s, 0.38 * s, '#e0412f');
+      // pilot seated at the front under the curved shield
+      R_._figure(g, P, cx, cy - 1.1 * s, 0.75 * s, { body: sink(arm, 0.3), helm: P.light, crest: P.accent, wpn: false });
+      const sh = new Path2D(); sh.ellipse(cx, cy - 1.25 * s, 1.15 * s, 1.25 * s, 0, 0, 7); g.save(); const sg = g.createLinearGradient(cx - s, cy - 3 * s, cx + s, cy); sg.addColorStop(0, 'rgba(220,245,255,0.55)'); sg.addColorStop(0.5, 'rgba(120,190,230,0.22)'); sg.addColorStop(1, 'rgba(80,140,190,0.3)'); g.fillStyle = sg; g.fill(sh); g.strokeStyle = rgba(sink(arm, 0.4), 0.9); g.lineWidth = 0.3 * s; g.stroke(sh); g.restore();
+      g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.ellipse(cx - 0.45 * s, cy - 1.85 * s, 0.18 * s, 0.4 * s, -0.3, 0, 7); g.fill();
+      // a heavy weapon mounted on each side, pointing forward
+      [-1, 1].forEach(sd => { line(g, [[cx + sd * 1.1 * s, cy - 0.2 * s], [cx + sd * 2.2 * s, cy - 0.4 * s]], sink(arm, 0.3), 0.45 * s); const pod = new Path2D(); pod.ellipse(cx + sd * 2.3 * s, cy + 0.2 * s, 0.5 * s, 0.8 * s, 0, 0, 7); shaded(g, pod, sink(arm, 0.25), cx - 3 * s, 0, cx + 3 * s, 0, 0.35); outline(g, pod, 0.15); barrel(g, cx + sd * 2.3 * s, cy - 0.3 * s, 3 * s, 0.5 * s, '#2e2e34'); });
+      // rear vanes
+      [-1, 1].forEach(sd => { const v = P2([[cx + sd * 0.45 * s, cy + 1.7 * s], [cx + sd * 1.5 * s, cy + 3 * s], [cx + sd * 0.7 * s, cy + 2.6 * s]]); shaded(g, v, sink(arm, 0.15), 0, 0, w, h, 0.3); outline(g, v, 0.12); });
+    },
+    wraithlord(g, P, w, h, o) { // a tall slender wraith construct: long smooth head, spines rising behind, shoulder gun, sword and flamer
+      stand(g, w, h, true); const cx = w / 2, cy = h * 0.54, s = Math.min(w, h) / 9.5, arm = o.armour || P.main, bone = '#f2ead6';
+      // spines rising from the back, seen from above as thin dark blades sweeping backwards
+      [[-0.55, 0], [0.55, 0]].forEach(([dx, a]) => { const bx = cx + dx * s, by = cy + 0.9 * s, ex = cx + dx * 1.5 * s, ey = cy + 3.1 * s; const sp = P2([[bx - 0.32 * s, by], [ex, ey], [bx + 0.32 * s, by]]); dropShadow(g, sp, 0.6 * s, 0.8 * s, 0.3, 0.4); g.fillStyle = '#1e1e24'; g.fill(sp); });
+      // slim arms held out: sword on the right, flamer on the left
+      [-1, 1].forEach(sd => line(g, [[cx + sd * 1.3 * s, cy + 0.2 * s], [cx + sd * 2.5 * s, cy - 0.6 * s]], sink(arm, 0.2), 0.6 * s));
+      g.save(); g.translate(cx + 2.6 * s, cy - 0.8 * s); g.rotate(0.35); const bl = new Path2D(); bl.moveTo(-0.22 * s, 0); bl.quadraticCurveTo(-0.45 * s, -2 * s, 0.1 * s, -3.6 * s); bl.quadraticCurveTo(0.3 * s, -1.8 * s, 0.22 * s, 0); bl.closePath(); dropShadow(g, bl, 0.4 * s, 0.6 * s, 0.25, 0.4); shaded(g, bl, '#dfe7ec', -0.4 * s, -3 * s, 0.4 * s, 0, 0.45); outline(g, bl, 0.12); g.restore();
+      barrel(g, cx - 2.6 * s, cy - 0.4 * s, 1.6 * s, 0.6 * s, '#34343a'); glow(g, cx - 2.6 * s, cy - 2.1 * s, 0.7 * s, '#ff8a2a', 0.6);
+      // narrow torso and rounded shoulders
+      const body = new Path2D(); body.ellipse(cx, cy + 0.4 * s, 1.45 * s, 1.15 * s, 0, 0, 7);
+      dropShadow(g, body, 1.0 * s, 1.4 * s, 0.6, 0.5); shaded(g, body, arm, cx - 1.5 * s, cy - s, cx + 1.5 * s, cy + 1.6 * s, 0.32); outline(g, body, 0.25);
+      [-1, 1].forEach(sd => { const pad = new Path2D(); pad.ellipse(cx + sd * 1.35 * s, cy + 0.1 * s, 0.65 * s, 0.85 * s, sd * 0.3, 0, 7); shaded(g, pad, lift(arm, 0.08), cx - 2 * s, cy - s, cx + 2 * s, cy + s, 0.4); outline(g, pad, 0.2); });
+      gem(g, cx, cy + 0.9 * s, 0.35 * s, '#e0412f');
+      // shoulder-mounted heavy weapon (bright lance) on the right
+      barrel(g, cx + 1.35 * s, cy - 0.3 * s, 3.3 * s, 0.5 * s, '#dff6ff'); const mt = new Path2D(); mt.ellipse(cx + 1.35 * s, cy, 0.45 * s, 0.6 * s, 0, 0, 7); shaded(g, mt, '#45454e', 0, 0, w, h, 0.3); outline(g, mt, 0.12); glow(g, cx + 1.35 * s, cy - 3.7 * s, 0.7 * s, P.lens, 0.7);
+      // the long smooth head
+      const hd = new Path2D(); hd.ellipse(cx, cy - 0.5 * s, 0.62 * s, 1.35 * s, 0, 0, 7); const hg = g.createRadialGradient(cx - 0.2 * s, cy - 1.1 * s, 0.05 * s, cx, cy - 0.5 * s, 1.4 * s); hg.addColorStop(0, '#ffffff'); hg.addColorStop(0.55, o.head || bone); hg.addColorStop(1, sink(o.head || bone, 0.25)); dropShadow(g, hd, 0.5 * s, 0.7 * s, 0.3, 0.4); g.fillStyle = hg; g.fill(hd); outline(g, hd, 0.15);
+      g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.ellipse(cx - 0.2 * s, cy - 1.1 * s, 0.13 * s, 0.35 * s, 0.15, 0, 7); g.fill();
+    }
+  };
+  function render(kind, P, w, h, o = {}) {
+    const M = o.margin || 5, cv = document.createElement('canvas'); cv.width = Math.ceil((w + M * 2) * R); cv.height = Math.ceil((h + M * 2) * R);
+    const g = cv.getContext('2d'); g.scale(R, R); g.translate(M, M); g.lineJoin = 'round'; R_[kind](g, P, w, h, o); return cv;
+  }
+  // craftworld colours (aspect warriors keep their shrine colours whatever the craftworld)
+  const CW = { BIEL_TAN: { main: '#2f8a4a', dark: '#1a5230', light: '#6cc488', trim: '#e9e4d4', accent: '#c9301f' }, SAIM_HANN: { main: '#b8262b', dark: '#6b1216', light: '#e0544f', trim: '#e9e4d4', accent: '#e9e4d4' },
+    ULTHWE: { main: '#2c2c33', dark: '#141418', light: '#5d5d6a', trim: '#d8d2c0', accent: '#e9e4d4' }, ALAITOC: { main: '#2f5fa8', dark: '#16325e', light: '#7aa2dc', trim: '#e3c13b', accent: '#e9e4d4' } };
+  const palette = (base, cw) => ({ ...base, ...(CW[cw] || {}) });
+  // which new sprite (if any) a card or stand uses; anything not listed keeps its old picture
+  function pick(cfg) {
+    if (!cfg || cfg.isCharacter || cfg.isTitan) return null;
+    const norm = x => String(x || '').toLowerCase().replace(/[_-]/g, ' ');
+    const t = cfg.label ? norm(cfg.label) : norm(`${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''}`), has = (...ws) => ws.some(w => t.includes(w));
+    if (has('exarch', 'farseer', 'warlock', 'seer', 'harlequin', 'exodite', 'knight', 'avatar', 'titan', 'eldrad')) return null;
+    if (has('prism')) return { kind: 'prism', opts: {} };
+    if (has('wave serpent') || (has('serpent') && !has('storm'))) return { kind: 'serpent', opts: {} };
+    if (has('falcon', 'peregrine')) return { kind: 'falcon', opts: {} };
+    if (has('vyper')) return { kind: 'vyper', opts: {} };
+    if (has('shining spear')) return { kind: 'jetbikes', opts: { lance: true, hull: '#e9e2cf', helm: '#e9e2cf', crest: '#c9301f', riderBody: '#b8262b' } };
+    if (has('jetbike', 'wind rider', 'windrider')) return { kind: 'jetbikes', opts: {} };
+    if (has('wraithguard', 'wraith host', 'spirit host')) return { kind: 'wraith', opts: {} };
+    if (has('war walker')) return { kind: 'walker', opts: {} };
+    if (has('wraithlord')) return { kind: 'wraithlord', opts: {} };
+    if (has('banshee')) return { kind: 'squad', opts: { n: 4, body: '#d9d0bb', helm: '#b8262b', pad: '#e9e2cf', crest: false, plume: '#c9301f', wpn: 'sword', eye: '#5ee7ff' } };
+    if (has('avenger')) return { kind: 'squad', opts: { n: 4, body: '#1c3576', helm: '#2f5fd0', pad: '#2f5fd0', crest: '#f1ecdf', eye: '#e0412f' } };
+    if (has('striking scorpion', 'scorpions')) return { kind: 'squad', opts: { n: 4, body: '#1f4d27', helm: '#2f7a3a', pad: '#3fa04a', crest: '#e3c13b', wpn: 'sword', eye: '#e0412f' } };
+    if (has('fire dragon', 'dragons')) return { kind: 'squad', opts: { n: 4, body: '#8a1f16', helm: '#c9301f', pad: '#e3762a', crest: '#f8cf73' } };
+    if (has('swooping hawk', 'hawks')) return { kind: 'squad', opts: { n: 4, body: '#3e5a7c', helm: '#5c7fa8', pad: '#9fb7d6', crest: '#e9e2cf' } };
+    if (has('dark reaper', 'reapers')) return { kind: 'squad', opts: { n: 3, body: '#1d1d22', helm: '#2a2a32', pad: '#3a3a44', crest: '#c9301f', wpn: 'cannon', eye: '#e0412f' } };
+    if (has('warp spider', 'spiders')) return { kind: 'squad', opts: { n: 4, body: '#5c1515', helm: '#b8302a', pad: '#7a1f1f', crest: '#e9e2cf' } };
+    if (has('ranger', 'pathfinder')) return { kind: 'squad', opts: { n: 3, body: '#3d5a34', helm: '#4f7046', pad: '#55663e', crest: false } };
+    if (has('black guardian')) return { kind: 'squad', opts: { n: 5, body: '#1a1a1f', helm: '#2c2c33', pad: '#2c2c33', crest: '#e9e4d4' } };
+    if (has('guardian', 'defender') && (cfg.pinningClass || 1) === 1) return { kind: 'squad', opts: { n: 5, body: '#26262c', guardian: true } };
+    return null;
+  }
+  return { R, render, R_, pick, palette, CW };
+})();
+
 // ===== Painted battlefield: textures drawn by code (ground, roads, water, gothic buildings, ruins, battle damage) =====
 const EpikPaint = (() => {
   let _s = 1;
@@ -44188,8 +44425,17 @@ class NetEpicScene extends Phaser.Scene {
     const clanKey = (cfg.armyBook === 'ORKS') ? this.getOrkClan(cfg).toLowerCase() : null;
     const ch = cfg.armyBook === 'IMPERIUM' && cfg.faction && window.sideChapter ? window.sideChapter[cfg.faction] : null;
     if (ch && ch !== 'CODEX') cfg = { ...cfg, palKey: 'SM_' + ch };
-    const art = EpikArt.pick(cfg, clanKey ? EpikArt.ORK_CLAN[clanKey] : null);
     const w = cfg.baseW || 22, h = cfg.baseH || 22;
+    // Eldar: the newer painted miniatures, in the army's craftworld colours
+    if (cfg.armyBook === 'ELDAR' && typeof EldArt2 !== 'undefined') {
+      const a = EldArt2.pick(cfg);
+      if (a) {
+        const cw = (cfg.faction && window.sideChapter && window.sideChapter[cfg.faction]) || 'CODEX', k2 = `eld2|${a.kind}|${cw}|${w}x${h}|${JSON.stringify(a.opts)}`;
+        if (!this.textures.exists(k2)) this.textures.addCanvas(k2, EldArt2.render(a.kind, EldArt2.palette(EpikArt.PAL.ELDAR, cw), w, h, a.opts));
+        return k2;
+      }
+    }
+    const art = EpikArt.pick(cfg, clanKey ? EpikArt.ORK_CLAN[clanKey] : null);
     const key = `art|${art.recipe}|${art.pal}|${w}x${h}|${JSON.stringify(art.opts)}`;
     if (!this.textures.exists(key)) this.textures.addCanvas(key, EpikArt.render(art.recipe, art.pal, w, h, art.opts));
     return key;
