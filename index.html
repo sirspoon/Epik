@@ -889,6 +889,7 @@
 
     <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px; justify-content:space-between;">
       <button onclick="window.resetDefaultOptions()" style="background:#334155; font-size:0.78rem; min-width:auto; padding:6px 12px;">↺ Reset Defaults</button>
+      <button onclick="window.openMapViewer()" class="btn-primary" style="font-size:0.78rem; min-width:auto; padding:6px 12px;">🗺️ View Maps</button>
       <button class="btn-confirm" onclick="window.closeOptionsModal()" style="font-size:0.78rem; min-width:100px; padding:6px 16px;">Done</button>
     </div>
   </div>
@@ -41054,6 +41055,49 @@ window.openOptionsModal = function() {
   window.updateOptionsUI();
   const om = document.getElementById('options-modal');
   if (om) om.style.display = 'flex';
+};
+
+// ===== Map viewer: look round every battlefield from Options, then go back exactly as you were =====
+window.openMapViewer = function() {
+  const sc = window.gameScene; if (!sc || window._mapView) return;
+  const V = window._mapView = { preset: window.mapPreset, snap: null, dom: [], hidden: [] };
+  try { if (window.battleActive) V.snap = sc.serializeGameState('Map viewer'); } catch (e) { console.error(e); }
+  // hide every screen and panel, leaving just the battlefield
+  [...document.body.children].forEach(el => { if (el.id === 'game-container' || el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return; V.dom.push([el, el.style.display]); el.style.display = 'none'; });
+  const hide = o => { if (o && o.visible) { V.hidden.push(o); o.setVisible(false); } };
+  (sc.detachments || []).forEach(d => { d.stands.forEach(st => hide(st.container)); hide(d.badge); });
+  [sc.deployGfx, sc.orkDeployLabel, sc.impDeployLabel, sc.overlayGfx, sc.losGfx].forEach(hide);
+  const bar = document.createElement('div'); bar.id = 'map-viewer-bar';
+  bar.style.cssText = 'position:fixed; left:0; right:0; top:0; z-index:9999; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; padding:calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px; background:rgba(15,23,42,0.92); border-bottom:1px solid #334155; color:#f8fafc; font-size:0.85rem;';
+  const opts = MAP_ORDER.map(k => `<option value="${k}">${MAP_LABELS[k] || k}</option>`).join('');
+  bar.innerHTML = `<button onclick="window.closeMapViewer()" style="padding:6px 12px; font-size:0.8rem; min-width:auto;">⬅ Back to Options</button>
+    <select id="map-viewer-select" onchange="window.mapViewerShow(this.value)" style="padding:6px 8px; font-size:0.85rem; background:#1e293b; color:#f8fafc; border:1px solid #475569; border-radius:6px;">${opts}</select>
+    <button id="map-viewer-reroll" onclick="window.mapViewerShow('RANDOM')" style="padding:6px 10px; font-size:0.8rem; min-width:auto; display:none;">🎲 Another</button>
+    <span style="color:#94a3b8; font-size:0.72rem; width:100%; text-align:center;">Drag to move · pinch or mouse wheel to zoom · twist two fingers or Q / E to turn</span>`;
+  document.body.appendChild(bar);
+  const start = MAP_ORDER.includes(V.preset) ? V.preset : 'INDUSTRIAL'; document.getElementById('map-viewer-select').value = start;
+  window.mapViewerShow(start);
+};
+window.mapViewerShow = function(preset) {
+  const sc = window.gameScene; if (!sc || !window._mapView) return;
+  window.mapPreset = preset;
+  try { sc.loadMapConfig(preset); sc.drawBattlefield(); sc.spawnObjectives(); } catch (e) { console.error(e); }
+  if (sc.viewTwist) sc.rotateView(-sc.viewTwist); sc.resetCamera();
+  const rr = document.getElementById('map-viewer-reroll'); if (rr) rr.style.display = preset === 'RANDOM' ? '' : 'none';
+};
+window.closeMapViewer = function() {
+  const sc = window.gameScene, V = window._mapView; if (!V) return;
+  const bar = document.getElementById('map-viewer-bar'); if (bar) bar.remove();
+  window.mapPreset = V.preset;
+  try {
+    if (V.snap) sc.restoreGameState(V.snap);
+    else { sc.loadMapConfig(V.preset); sc.drawBattlefield(); sc.spawnObjectives(); }
+  } catch (e) { console.error(e); }
+  V.hidden.forEach(o => { if (o && o.scene) o.setVisible(true); });
+  V.dom.forEach(([el, d]) => { el.style.display = d; });
+  window._mapView = null;
+  try { if (sc.viewTwist) sc.rotateView(-sc.viewTwist); sc.resetCamera(); if (sc.drawDeploymentZones) sc.drawDeploymentZones(); if (sc.drawOverlays) sc.drawOverlays(); } catch (e) { console.error(e); }
+  window.openOptionsModal();
 };
 
 window.closeOptionsModal = function() {
