@@ -43496,14 +43496,54 @@ const EpikPaint = (() => {
       ctx.restore(); } });
     ctx.restore();
   }
-  function water(ctx, path, width, kind) {
-    const C = ({ lava: ['#2a1d16', '#7c2d12', '#ea580c', '#fbbf24'], ice: ['#5d6b78', '#6ea7c9', '#a9d6ea', '#e3f3fa'], wadi: ['#4a2c10', '#7a5128', '#9a6b38', '#b98a52'] })[kind] || ['#4a463e', '#2f5367', '#244456', '#1b3647'];
+  // dense points along a polyline with its corners rounded off (for rivers: stones, reeds and foam follow the bank)
+  function filletPoints(pts, r) {
+    if (!pts || pts.length < 2) return pts || []; const out = [{ x: pts[0].x, y: pts[0].y }], n = pts.length;
+    for (let i = 1; i < n - 1; i++) {
+      const a = pts[i - 1], b = pts[i], c = pts[i + 1], la = Math.hypot(b.x - a.x, b.y - a.y) || 1, lc = Math.hypot(c.x - b.x, c.y - b.y) || 1;
+      const u1 = { x: (b.x - a.x) / la, y: (b.y - a.y) / la }, u2 = { x: (c.x - b.x) / lc, y: (c.y - b.y) / lc }, th = Math.acos(Math.max(-1, Math.min(1, u1.x * u2.x + u1.y * u2.y)));
+      if (th < 0.02) { out.push({ x: b.x, y: b.y }); continue; }
+      let t = r * Math.tan(th / 2), rr = r; const tmax = Math.min(la * (i === 1 ? 0.9 : 0.45), lc * (i === n - 2 ? 0.9 : 0.45)); if (t > tmax) { t = tmax; rr = t / Math.tan(th / 2); }
+      const sg = (u1.x * u2.y - u1.y * u2.x) > 0 ? 1 : -1, st = { x: b.x - u1.x * t, y: b.y - u1.y * t }, cen = { x: st.x - u1.y * sg * rr, y: st.y + u1.x * sg * rr }, a0 = Math.atan2(st.y - cen.y, st.x - cen.x), steps = Math.max(2, Math.ceil(th * rr / 8));
+      for (let k = 0; k <= steps; k++) { const an = a0 + sg * th * k / steps; out.push({ x: cen.x + Math.cos(an) * rr, y: cen.y + Math.sin(an) * rr }); }
+    }
+    out.push({ x: pts[n - 1].x, y: pts[n - 1].y });
+    const dense = [out[0]]; for (let i = 1; i < out.length; i++) { const a = out[i - 1], b = out[i], L = Math.hypot(b.x - a.x, b.y - a.y), k = Math.ceil(L / 10); for (let j = 1; j <= k; j++) dense.push({ x: a.x + (b.x - a.x) * j / k, y: a.y + (b.y - a.y) * j / k }); }
+    return dense;
+  }
+  const WATER = {
+    river: { bank: ['#4a3d29', '#6b5a3c'], damp: 'rgba(45,38,25,0.5)', edge: '#3c6466', body: '#2b5262', deep: '#1f4153', deeper: '#173545', stones: ['#77736a', '#8c877c', '#5f5b54'], reeds: true, foam: 'rgba(225,238,236,0.55)', glint: 'rgba(190,220,232,', ripple: true },
+    ice: { bank: ['#d7e0e7', '#eef3f6'], damp: 'rgba(120,140,160,0.35)', edge: '#bfe1ef', body: '#a6d3e6', deep: '#86bdd8', deeper: '#72aecd', stones: ['#8a96a3', '#a8b3bd', '#6b7785'], crack: 'rgba(60,105,140,0.45)', foam: 'rgba(255,255,255,0.8)' },
+    lava: { bank: ['#211c19', '#3a312b'], damp: 'rgba(15,10,8,0.6)', edge: '#4a1a0b', body: '#b8400f', deep: '#ea580c', deeper: '#fbbf24', stones: ['#2e2824', '#3f3731', '#1c1816'], crust: true, glint: 'rgba(255,236,160,' },
+    wadi: { bank: ['#8f6a40', '#a98153'], damp: 'rgba(90,60,30,0.35)', edge: '#a47a49', body: '#b98a55', deep: '#ad7f4c', deeper: '#a47648', stones: ['#8a7a66', '#a39280', '#6f6252'], dry: true }
+  };
+  function water(ctx, pts, width, kind) {
+    const C = WATER[kind] || WATER.river, w = width, path = linePath(pts);
+    // normal at each sample, for things placed along the banks
+    const S = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], L = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { x: p.x, y: p.y, tx: (b.x - a.x) / L, ty: (b.y - a.y) / L }; });
+    seed(Math.round(pts[0].x * 13 + pts[0].y * 7 + w));
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.filter = 'blur(4px)'; ctx.strokeStyle = C[0]; ctx.lineWidth = width + 18; ctx.stroke(path); ctx.filter = 'none';
-    ctx.strokeStyle = C[1]; ctx.lineWidth = width; ctx.stroke(path);
-    ctx.filter = 'blur(6px)'; ctx.strokeStyle = C[2]; ctx.lineWidth = width * 0.7; ctx.stroke(path); ctx.strokeStyle = C[3]; ctx.lineWidth = width * 0.3; ctx.stroke(path); ctx.filter = 'none';
-    if (!kind || kind === 'ice') { ctx.setLineDash([6, 18]); ctx.strokeStyle = kind === 'ice' ? 'rgba(255,255,255,0.45)' : 'rgba(170,210,230,0.28)'; ctx.lineWidth = 1.2; [-0.25, 0.05, 0.3].forEach(() => { ctx.lineDashOffset = R(0, 20); ctx.stroke(path); }); ctx.setLineDash([]); }
-    if (kind === 'lava') { ctx.setLineDash([3, 9]); ctx.strokeStyle = 'rgba(255,240,170,0.7)'; ctx.lineWidth = 2; ctx.stroke(path); ctx.setLineDash([]); }
+    ctx.filter = 'blur(6px)'; ctx.strokeStyle = C.damp; ctx.lineWidth = w + 40; ctx.stroke(path); ctx.filter = 'none';
+    ctx.strokeStyle = pattern(ctx, noiseTile('bank_' + (kind || 'river'), C.bank[0], C.bank[1], 9, 30)); ctx.lineWidth = w + 22; ctx.stroke(path);
+    // stones (and reeds) along both banks
+    S.forEach((p, i) => [-1, 1].forEach(sd => {
+      if (rnd() < 0.55) { const o = w / 2 + R(-1, 9), x = p.x - p.ty * o * sd + p.tx * R(-4, 4), y = p.y + p.tx * o * sd + p.ty * R(-4, 4), r = R(1.2, 3.6); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(x + 0.8, y + 1, r, r * 0.75, R(0, 3), 0, 7); ctx.fill(); ctx.fillStyle = C.stones[Math.floor(rnd() * 3)]; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.75, R(0, 3), 0, 7); ctx.fill(); }
+      if (C.reeds && rnd() < 0.22) { const o = w / 2 + R(4, 12), x = p.x - p.ty * o * sd, y = p.y + p.tx * o * sd; for (let k = 0; k < 5; k++) { ctx.strokeStyle = rnd() < 0.5 ? '#4f6b2a' : '#6f8a3a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + R(-4, 4), y + R(-6, -2)); ctx.stroke(); } }
+    }));
+    // water: shallow edge, then deeper towards the middle
+    ctx.strokeStyle = C.edge; ctx.lineWidth = w + 2; ctx.stroke(path);
+    ctx.filter = 'blur(4px)'; ctx.strokeStyle = C.body; ctx.lineWidth = w - 4; ctx.stroke(path); ctx.filter = 'none';
+    ctx.filter = 'blur(7px)'; ctx.strokeStyle = C.deep; ctx.lineWidth = w * 0.65; ctx.stroke(path); ctx.strokeStyle = C.deeper; ctx.lineWidth = w * 0.3; ctx.stroke(path); ctx.filter = 'none';
+    if (C.ripple) { ctx.globalAlpha = 0.3; ctx.strokeStyle = pattern(ctx, noiseTile('ripple', '#1d3d4c', '#4f7f92', 7, 10)); ctx.lineWidth = w - 8; ctx.stroke(path); ctx.globalAlpha = 1; }
+    if (C.dry) { // a dry bed: pebbles and cracked mud
+      S.forEach(p => { for (let k = 0; k < 3; k++) { const o = R(-w * 0.45, w * 0.45), x = p.x - p.ty * o, y = p.y + p.tx * o, r = R(0.8, 2.4); ctx.fillStyle = C.stones[Math.floor(rnd() * 3)]; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.7, R(0, 3), 0, 7); ctx.fill(); }
+        if (rnd() < 0.3) { let o = R(-w * 0.35, w * 0.35), x = p.x - p.ty * o, y = p.y + p.tx * o; ctx.strokeStyle = 'rgba(90,60,30,0.45)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 4; j++) { x += R(-7, 7); y += R(-7, 7); ctx.lineTo(x, y); } ctx.stroke(); } });
+    }
+    // broken foam where the water meets the bank, and glints on the surface following the current
+    if (C.foam) S.forEach(p => [-1, 1].forEach(sd => { if (rnd() < 0.3) { for (let k = 0; k < 3; k++) { const o = w / 2 - R(0, 6), x = p.x - p.ty * o * sd + p.tx * R(-5, 5), y = p.y + p.tx * o * sd + p.ty * R(-5, 5); ctx.fillStyle = C.foam.replace(/[\d.]+\)$/, R(0.12, 0.35).toFixed(2) + ')'); ctx.beginPath(); ctx.ellipse(x, y, R(1, 3), R(0.6, 1.6), Math.atan2(p.ty, p.tx), 0, 7); ctx.fill(); } } }));
+    if (C.glint) S.forEach(p => { if (rnd() < 0.22) { const o = R(-w * 0.38, w * 0.38), x = p.x - p.ty * o, y = p.y + p.tx * o, l = R(4, 11); ctx.strokeStyle = C.glint + R(0.08, 0.28).toFixed(2) + ')'; ctx.lineWidth = R(0.6, 1.2); ctx.beginPath(); ctx.moveTo(x - p.tx * l / 2, y - p.ty * l / 2); ctx.quadraticCurveTo(x - p.ty * 1.5, y + p.tx * 1.5, x + p.tx * l / 2, y + p.ty * l / 2); ctx.stroke(); } });
+    if (C.crack) S.forEach(p => { if (rnd() < 0.18) { let o = R(-w * 0.4, w * 0.4), x = p.x - p.ty * o, y = p.y + p.tx * o; ctx.strokeStyle = C.crack; ctx.lineWidth = R(0.6, 1.2); ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 4; j++) { x += R(-10, 10); y += R(-10, 10); ctx.lineTo(x, y); } ctx.stroke(); } });
+    if (C.crust) S.forEach(p => { if (rnd() < 0.35) { const o = R(-w * 0.42, w * 0.42), x = p.x - p.ty * o, y = p.y + p.tx * o, r = R(2, 6); ctx.fillStyle = 'rgba(30,22,18,0.75)'; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.6, Math.atan2(p.ty, p.tx), 0, 7); ctx.fill(); } });
     ctx.restore();
   }
   function bridgeRect(ctx, x, y, w, h, ford) {
@@ -43699,7 +43739,7 @@ const EpikPaint = (() => {
     for (let b = 0; b < 9; b++) { const a = b / 9 * 6.283, d = r * R(0.1, 0.35), bx = r + Math.cos(a) * d, by = r + Math.sin(a) * d, rr = r * R(0.45, 0.62); const g = x.createRadialGradient(bx - rr * 0.3, by - rr * 0.35, rr * 0.05, bx, by, rr); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(0.55, 'rgba(225,225,228,0.5)'); g.addColorStop(1, 'rgba(200,200,205,0)'); x.fillStyle = g; x.beginPath(); x.arc(bx, by, rr, 0, 7); x.fill(); }
     return c;
   }
-  return { filletPath, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
+  return { filletPath, filletPoints, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
 })();
 
 try { const o = JSON.parse(localStorage.getItem('netepic_gold_options') || '{}'); if (o.paintedField === false) window.paintedField = false; } catch (e) { }
@@ -54985,6 +55025,8 @@ class NetEpicScene extends Phaser.Scene {
   paintTerrain(ctx, theme) {
     const P = EpikPaint, W = BOARD_W, H = BOARD_H, sd = ({ INDUSTRIAL: 3, RUINED_CITY: 7, SNOW: 11, DESERT: 13, RIVER: 17, FOREST: 19, PASS: 23, HIGHWAY: 29, FORTIFIED: 31, HIVE: 37 })[window.mapPreset] || 5;
     P.ground(ctx, W, H, theme, sd);
+    P.grid(ctx, W, H, 10 * PX_PER_CM);
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.setLineDash([14, 10]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke(); ctx.restore();
     P.seed(sd * 101);
     // a few old shell holes and scorch marks from earlier fighting
     [[240, 420, 16], [470, 760, 13], [690, 380, 18], [820, 740, 15], [1060, 420, 17], [1210, 690, 14], [1390, 430, 16], [1620, 770, 15], [960, 580, 12]].forEach(([x, y, r]) => { if (x < W && y < H) { ctx.globalAlpha = 0.75; P.crater(ctx, x * W / 1850, y * H / 1250, r * 0.8, theme); ctx.globalAlpha = 1; } });
@@ -54999,8 +55041,8 @@ class NetEpicScene extends Phaser.Scene {
     (this.craters || []).forEach(c => { ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot || 0); ctx.scale(1, (c.ry || c.rx) / c.rx); P.seed(c.x * 3 + c.y); P.crater(ctx, 0, 0, c.rx * 0.85, theme); ctx.restore(); });
     const rvKind = theme === 'SNOW' ? 'ice' : (theme === 'DESERT' ? 'wadi' : null);
     (this.rivers || []).forEach(rv => {
-      if (rv.points) P.water(ctx, P.filletPath(rv.points, (rv.width || 160) * 2.2), rv.width || 160, rv.kind || null);
-      else { const p = new Path2D(); p.moveTo(-40, rv.y + rv.h / 2); p.lineTo(W + 40, rv.y + rv.h / 2); P.water(ctx, p, rv.h, rvKind); }
+      if (rv.points) P.water(ctx, P.filletPoints(rv.points, (rv.width || 160) * 2.2), rv.width || 160, rv.kind || rvKind);
+      else P.water(ctx, P.filletPoints([{ x: -40, y: rv.y + rv.h / 2 }, { x: W + 40, y: rv.y + rv.h / 2 }], 1), rv.h, rvKind);
     });
     (this.trenches || []).forEach(t => P.trench(ctx, t.points, t.width || 14));
     P.roads(ctx, this.roads || [], (this.bridges || []).filter(b => b.x1 != null && !b.isFord), theme, W, H);
@@ -55012,8 +55054,6 @@ class NetEpicScene extends Phaser.Scene {
     (this.minefields || []).forEach(m => P.minefield(ctx, this.rectCorners(m)));
     (this.rocks || []).forEach(r => P.rock(ctx, r.points, theme));
     (this.woods || []).forEach(w => P.woods(ctx, w, theme));
-    P.grid(ctx, W, H, 10 * PX_PER_CM);
-    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.setLineDash([14, 10]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke(); ctx.restore();
     P.lightGrade(ctx, W, H);
     ctx.strokeStyle = '#1e1b18'; ctx.lineWidth = 6; ctx.strokeRect(0, 0, W, H);
   }
@@ -55123,7 +55163,35 @@ class NetEpicScene extends Phaser.Scene {
     });
   }
   // a new map or a new battle starts with clean ground
-  loadMapConfig(preset = 'INDUSTRIAL') { this.battleDecals = []; this.smokePlumes = []; return this.loadMapConfigPaintCore(preset); }
+  loadMapConfig(preset = 'INDUSTRIAL') { this.battleDecals = []; this.smokePlumes = []; const r = this.loadMapConfigPaintCore(preset); try { this.straightenRoads(); } catch (e) { console.error(e); } return r; }
+  // Main roads drawn as a chain of slightly kinked pieces are pulled onto one straight line where they nearly are one
+  // (bridges included, so the bridge lines up with its road). Winding roads, like the mountain pass, are left alone.
+  straightenRoads() {
+    const key = p => Math.round(p.x) + ',' + Math.round(p.y);
+    const segs = (this.roads || []).map(r => ({ o: r, a: { x: r.x1, y: r.y1 }, b: { x: r.x2, y: r.y2 }, w: r.width || 32 }))
+      .concat((this.bridges || []).filter(b => b.x1 != null && !b.isFord).map(b => ({ o: b, a: { x: b.x1, y: b.y1 }, b: { x: b.x2, y: b.y2 }, w: 0, bridge: true })));
+    const at = {}; segs.forEach(sg => [sg.a, sg.b].forEach(p => (at[key(p)] = at[key(p)] || []).push(sg)));
+    const far = (sg, p) => key(sg.a) === key(p) ? sg.b : sg.a, dir = (sg, p) => { const q = far(sg, p), L = Math.hypot(q.x - p.x, q.y - p.y) || 1; return { x: (q.x - p.x) / L, y: (q.y - p.y) / L }; };
+    // at each joint, the piece that carries straight on (degree 2, or the most collinear same-width piece at a junction)
+    const onward = (p, cur) => { const list = (at[key(p)] || []).filter(o => o !== cur); if (!list.length) return null; const d0 = dir(cur, p);
+      let best = null, bd = -0.9; list.forEach(o => { const d = dir(o, p), dot = d0.x * d.x + d0.y * d.y; if (dot < bd && (o.bridge || cur.bridge || Math.abs(o.w - cur.w) <= 8)) { bd = dot; best = o; } }); return best; };
+    const used = new Set(), moved = {};
+    segs.forEach(sg => {
+      if (used.has(sg) || sg.bridge) return; used.add(sg); const pts = [sg.a, sg.b], list = [sg];
+      for (let end = 0; end < 2; end++) { let cur = sg, p = end ? pts[pts.length - 1] : pts[0], o;
+        while ((o = onward(p, cur)) && !used.has(o) && onward(p, o) === cur) { used.add(o); list.push(o); const q = far(o, p); if (end) pts.push(q); else pts.unshift(q); cur = o; p = q; } }
+      if (pts.length < 3 || !list.some(x => x.bridge) && list.length < 2) return;
+      const A = pts[0], B = pts[pts.length - 1], L = Math.hypot(B.x - A.x, B.y - A.y) || 1, ux = (B.x - A.x) / L, uy = (B.y - A.y) / L;
+      const proj = p => { const t = (p.x - A.x) * ux + (p.y - A.y) * uy; return { x: A.x + ux * t, y: A.y + uy * t, d: Math.abs((p.x - A.x) * uy - (p.y - A.y) * ux) }; };
+      if (pts.slice(1, -1).some(p => proj(p).d > 90)) return;
+      // a bridge must still start and end on dry land
+      const rv = this.rivers || [], wet = q => rv.some(r => r.points ? r.points.some((a, i) => { const b = r.points[i + 1]; if (!b) return false; const l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2 || 1, t = Math.max(0, Math.min(1, ((q.x - a.x) * (b.x - a.x) + (q.y - a.y) * (b.y - a.y)) / l2)); return Math.hypot(q.x - a.x - t * (b.x - a.x), q.y - a.y - t * (b.y - a.y)) < (r.width || 160) / 2 + 6; }) : (q.y > r.y - 6 && q.y < r.y + r.h + 6));
+      const nw = pts.slice(1, -1).map(proj); if (list.some(x => x.bridge) && nw.some(q => wet(q))) return;
+      pts.slice(1, -1).forEach((p, i) => { moved[key(p)] = { x: Math.round(nw[i].x), y: Math.round(nw[i].y) }; });
+    });
+    if (!Object.keys(moved).length) return;
+    segs.forEach(sg => { const m1 = moved[key(sg.a)], m2 = moved[key(sg.b)]; if (m1) { sg.o.x1 = m1.x; sg.o.y1 = m1.y; } if (m2) { sg.o.x2 = m2.x; sg.o.y2 = m2.y; } });
+  }
   spawnArmyLists(impKeys, orkKeys, useDeploymentPhase = true) { this.battleDecals = []; this.smokePlumes = []; const r = this.spawnArmyListsPaintCore(impKeys, orkKeys, useDeploymentPhase); if (this._fieldImg) this.paintBattlefield(); return r; }
   paintRestore(X) {
     this.battleDecals = (X && X.decals) || []; this.smokePlumes = (X && X.plumes) || [];
