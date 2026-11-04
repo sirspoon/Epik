@@ -869,17 +869,6 @@
         </div>
         <button id="opt-btn-painted" onclick="window.toggleOptionPainted()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
       </div>
-
-      <!-- Table Size Selection -->
-      <div style="background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
-        <div style="font-weight:700; color:#f8fafc; font-size:0.88rem; margin-bottom:4px;">📐 Table</div>
-        <div class="sub-text" style="color:#94a3b8; margin-bottom:8px;">Standard battlefield dimensions for NetEpic miniature combat</div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button id="opt-size-std" onclick="window.setOptionTableSize('STANDARD_6X4')" class="btn-primary" style="flex:1; padding:6px 8px; font-size:0.75rem;">6' × 4' Standard</button>
-          <button id="opt-size-sml" onclick="window.setOptionTableSize('SMALL_4X4')" style="flex:1; padding:6px 8px; font-size:0.75rem; background:#0f172a;">4' × 4' Small</button>
-          <button id="opt-size-lrg" onclick="window.setOptionTableSize('LARGE_8X4')" style="flex:1; padding:6px 8px; font-size:0.75rem; background:#0f172a;">8' × 4' Extended</button>
-        </div>
-      </div>
     </div>
 
     <div class="btn-row" style="border-top:1px solid #334155; padding-top:8px; justify-content:space-between;">
@@ -1005,8 +994,9 @@
           <div style="flex:1; min-width:240px;">
             <div class="setup-label">🤖 Opponent</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:110px;">🤖 vs AI</button>
-              <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="flex:1; min-width:110px;">👥 2 players</button>
+              <button id="ai-mode-ORKS" class="btn-confirm" onclick="window.setAIMode('ORKS')" style="flex:1; min-width:100px;">🤖 vs AI · you are Army 1</button>
+              <button id="ai-mode-IMPERIUM" onclick="window.setAIMode('IMPERIUM')" style="flex:1; min-width:100px;">🤖 vs AI · you are Army 2</button>
+              <button id="ai-mode-NONE" onclick="window.setAIMode('NONE')" style="flex:1; min-width:100px;">👥 2 players</button>
             </div>
           </div>
           <div style="flex:1; min-width:240px;">
@@ -40148,7 +40138,9 @@ window.updateAIModeLabels = function() {
   const southMeta = window.getSideMeta('IMPERIUM');
   const northMeta = window.getSideMeta('ORKS');
   const btnOrks = document.getElementById('ai-mode-ORKS');
-  if (btnOrks) { btnOrks.innerText = '🤖 vs AI'; btnOrks.className = window.aiFaction !== 'NONE' ? 'btn-confirm' : ''; }
+  if (btnOrks) btnOrks.className = window.aiFaction === 'ORKS' ? 'btn-confirm' : '';
+  const btnImp = document.getElementById('ai-mode-IMPERIUM');
+  if (btnImp) btnImp.className = window.aiFaction === 'IMPERIUM' ? 'btn-confirm' : '';
   const btnNone = document.getElementById('ai-mode-NONE');
   if (btnNone) btnNone.className = window.aiFaction === 'NONE' ? 'btn-confirm' : '';
 
@@ -48815,6 +48807,7 @@ class NetEpicScene extends Phaser.Scene {
       this.phase = 'DEPLOYMENT';
       this.groupMoveMode = true; // Default to Group Move ON during Deployment for fast positioning!
       this.autoDeployAIFaction();
+      this.selectedDetachment = this.detachments.find(d => !this.isFactionAI(d.faction) && d.stands.length) || this.selectedDetachment; // start on one of your own units
       const aiNote = window.aiFaction !== 'NONE' ? ` (🤖 <b>${this.getSideName(window.aiFaction)} AI</b> has deployed its forces)` : '';
       this.log(`📍 <b>Deployment Phase: ${southName} vs ${northName}!</b>${aiNote} Drag your units inside your Deployment Zone, 🚐 Embark into Transports, or hold ☄️ Deep Strike units in Orbital Reserve!`);
     } else {
@@ -58213,6 +58206,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    if (this.viewBase !== undefined && this.viewBase !== this.wantedViewBase()) this.applyViewOrientation();
     this.keyCamTick(delta);
     this.keepTextUpright();
     if (this._lastCamZoom !== this.cameras.main.zoom) {
@@ -58637,7 +58631,7 @@ class NetEpicScene extends Phaser.Scene {
 
       if (!this.isFactionAI(clickedDet.faction)) {
         if ((this.phase === 'MOVEMENT' && this.activatingDetachment === clickedDet) ||
-            (this.phase === 'DEPLOYMENT' && clickedDet.faction === this.activePlayer)) {
+            (this.phase === 'DEPLOYMENT' && (clickedDet.faction === this.activePlayer || window.aiFaction !== 'NONE'))) {
           this.startHoldRotateTimer(gameObject.standData, pointer);
         }
       }
@@ -58967,13 +58961,15 @@ class NetEpicScene extends Phaser.Scene {
 
   applyViewOrientation(force = false) {
     const cam = this.cameras.main;
-    const base = this.isPortraitView() ? Math.PI / 2 : 0;
-    if (force || this.viewBase !== base) {
-      this.viewBase = base;
+    const base = this.wantedViewBase(), key = base + (this.isPortraitView() ? 'p' : 'l');
+    if (force || this._viewKey !== key) {
+      this.viewBase = base; this._viewKey = key;
       cam.setRotation(base + (this.viewTwist || 0));
       this.resetCamera();
     }
   }
+  // Your army sets up along the bottom edge: Army 2 (North) players see the table the other way up
+  wantedViewBase() { return window.aiFaction === 'IMPERIUM' ? Math.PI : 0; }
   // Turn the table about the middle of the screen (two-finger twist, or Q / E on a keyboard)
   rotateView(d) {
     const cam = this.cameras.main, m = cam.getWorldPoint(cam.width / 2, cam.height / 2);
