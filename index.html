@@ -43418,11 +43418,11 @@ const EpikPaint = (() => {
     ctx.restore(); ctx.strokeStyle = 'rgba(20,18,15,0.7)'; ctx.lineWidth = 1.5; ctx.stroke(p);
   }
   function track(ctx, pts, w, theme) {
-    const T = THEMES[theme], path = linePath(pts);
+    const T = THEMES[theme], path = filletPath(pts, w * 6);
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.filter = 'blur(3px)'; ctx.strokeStyle = rgba(hex(T.mud[0]), 0.45); ctx.lineWidth = w * 1.3; ctx.stroke(path); ctx.filter = 'none';
     ctx.strokeStyle = pattern(ctx, noiseTile('mud_' + theme, T.mud[0], T.mud[2], 20, 26)); ctx.lineWidth = w; ctx.stroke(path);
-    [-w * 0.2, w * 0.2].forEach(o => { ctx.beginPath(); pts.forEach((q, i) => { const b = pts[Math.min(i + 1, pts.length - 1)], a0 = pts[Math.max(i - 1, 0)], a = Math.atan2(b.y - a0.y, b.x - a0.x), x = q.x - Math.sin(a) * o, y = q.y + Math.cos(a) * o; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.lineWidth = Math.max(1.2, w * 0.09); ctx.strokeStyle = 'rgba(40,30,18,0.4)'; ctx.stroke(); });
+    { const rw = Math.max(1.2, w * 0.09); ctx.strokeStyle = 'rgba(40,30,18,0.4)'; ctx.lineWidth = w * 0.4 + rw; ctx.stroke(path); ctx.strokeStyle = pattern(ctx, noiseTile('mud_' + theme, T.mud[0], T.mud[2], 20, 26)); ctx.lineWidth = w * 0.4 - rw; ctx.stroke(path); }
     seed(pts[0].x * 3 + pts[0].y);
     for (let k = 0; k < pts.length - 1; k++) if (rnd() < 0.5) { const a = pts[k], b = pts[k + 1], t = rnd(), x = mix(a.x, b.x, t), y = mix(a.y, b.y, t); ctx.fillStyle = theme === 'SNOW' ? 'rgba(150,160,170,0.45)' : 'rgba(60,62,58,0.5)'; ctx.beginPath(); ctx.ellipse(x, y, R(4, 9), R(2, 4), Math.atan2(b.y - a.y, b.x - a.x), 0, 7); ctx.fill(); }
     ctx.restore();
@@ -43444,6 +43444,56 @@ const EpikPaint = (() => {
     if (theme === 'SNOW') { ctx.fillStyle = 'rgba(235,240,245,0.55)'; for (let k = 0; k < L / 20; k++) { ctx.beginPath(); ctx.ellipse(R(0, L), rnd() < 0.5 ? -w / 2 + R(0, 5) : w / 2 - R(0, 5), R(6, 16), R(2, 5), 0, 0, 7); ctx.fill(); } }
     ctx.restore();
     ctx.fillStyle = '#aeaca4'; ctx.fillRect(0, -w / 2 - 1.5, L, 1.5); ctx.fillRect(0, w / 2, L, 1.5); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0, -w / 2, L, 1);
+    ctx.restore();
+  }
+  // a polyline with its corners rounded off (radius r, limited so arcs never overlap)
+  function filletPath(pts, r) {
+    const p = new Path2D(); if (!pts || pts.length < 2) return p; p.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length - 1; i++) { const a = pts[i - 1], b = pts[i], c = pts[i + 1], la = Math.hypot(b.x - a.x, b.y - a.y), lc = Math.hypot(c.x - b.x, c.y - b.y);
+      const cross = Math.abs((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x)) / Math.max(1e-6, la * lc), half = Math.asin(Math.min(1, cross)) / 2;
+      const rr = Math.min(r, Math.min(la * (i === 1 ? 0.9 : 0.45), lc * (i === pts.length - 2 ? 0.9 : 0.45)) / Math.max(0.05, Math.tan(half)));
+      if (cross < 0.01 || rr < 1) p.lineTo(b.x, b.y); else p.arcTo(b.x, b.y, c.x, c.y, rr); }
+    p.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y); return p;
+  }
+  // join road pieces (and the bridges they cross) end to end into continuous roads
+  function roadChains(segs) {
+    const key = p => Math.round(p.x / 6) + ',' + Math.round(p.y / 6), deg = {};
+    segs.forEach(sg => [sg.a, sg.b].forEach(p => { deg[key(p)] = (deg[key(p)] || 0) + 1; }));
+    const used = new Set(), chains = [];
+    const next = (p, cur) => deg[key(p)] === 2 ? segs.find(o => o !== cur && !used.has(o) && (key(o.a) === key(p) || key(o.b) === key(p))) : null;
+    segs.forEach(sg => {
+      if (used.has(sg)) return; used.add(sg); let pts = [sg.a, sg.b], list = [sg];
+      for (let end = 0; end < 2; end++) { let cur = sg, p = end ? pts[pts.length - 1] : pts[0], o;
+        while ((o = next(p, cur))) { used.add(o); list.push(o); const q = key(o.a) === key(p) ? o.b : o.a; if (end) pts.push(q); else pts.unshift(q); cur = o; p = q; } }
+      chains.push({ pts, segs: list });
+    });
+    return chains;
+  }
+  function roads(ctx, rds, spans, theme, W, H) {
+    const segs = rds.map(r => ({ a: { x: r.x1, y: r.y1 }, b: { x: r.x2, y: r.y2 }, w: r.width || 32 })).concat(spans.map(b => ({ a: { x: b.x1, y: b.y1 }, b: { x: b.x2, y: b.y2 }, w: 0, bridge: true })));
+    const chains = roadChains(segs).filter(c => c.segs.some(sg => !sg.bridge)).map(c => {
+      const w = Math.max(...c.segs.map(sg => sg.w)), pts = c.pts.map(p => ({ ...p }));
+      // run the road off the table edge so it does not stop short
+      [[0, 1], [pts.length - 1, pts.length - 2]].forEach(([i, j]) => { const p = pts[i], q = pts[j]; if (p.x < 8 || p.y < 8 || p.x > W - 8 || p.y > H - 8) { const L = Math.hypot(p.x - q.x, p.y - q.y) || 1; p.x += (p.x - q.x) / L * 40; p.y += (p.y - q.y) / L * 40; } });
+      return { w, side: Math.max(5, w * 0.22), path: filletPath(pts, w * 5), pts };
+    });
+    ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'butt';
+    const pass = fn => chains.forEach(c => { ctx.save(); fn(c); ctx.stroke(c.path); ctx.restore(); });
+    pass(c => { ctx.strokeStyle = 'rgba(30,26,22,0.35)'; ctx.lineWidth = c.w + c.side * 2 + 6; });
+    pass(c => { ctx.strokeStyle = pattern(ctx, noiseTile('pave', '#85847e', '#97968e', 22)); ctx.lineWidth = c.w + c.side * 2; });
+    pass(c => { ctx.strokeStyle = 'rgba(40,40,38,0.35)'; ctx.lineWidth = c.w + c.side * 2; ctx.setLineDash([1, 9]); });
+    pass(c => { ctx.strokeStyle = '#aeaca4'; ctx.lineWidth = c.w + 3; });
+    pass(c => { ctx.strokeStyle = pattern(ctx, noiseTile('asphalt', '#3a3c3f', '#4a4b4c', 40, 18)); ctx.lineWidth = c.w; ctx.lineCap = 'square'; });
+    pass(c => { ctx.strokeStyle = 'rgba(22,22,24,0.18)'; ctx.lineWidth = c.w * 0.75; });
+    pass(c => { ctx.strokeStyle = pattern(ctx, noiseTile('asphalt', '#3a3c3f', '#4a4b4c', 40, 18)); ctx.lineWidth = c.w * 0.3; ctx.globalAlpha = 0.7; });
+    pass(c => { ctx.strokeStyle = 'rgba(214,190,90,0.45)'; ctx.lineWidth = 1.6; ctx.setLineDash([14, 12]); });
+    // cracks, patches and (in snow) drifts along each road
+    chains.forEach(c => { seed(c.pts[0].x * 7 + c.pts[0].y * 3); for (let i = 0; i < c.pts.length - 1; i++) { const a = c.pts[i], b = c.pts[i + 1], L = Math.hypot(b.x - a.x, b.y - a.y), ang = Math.atan2(b.y - a.y, b.x - a.x), w = c.w;
+      ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(ang);
+      ctx.strokeStyle = 'rgba(12,12,12,0.55)'; ctx.lineWidth = 0.7; for (let k = 0; k < L / 30; k++) { let x = R(w, L - w), y = R(-w / 2 + 3, w / 2 - 3); ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 6; j++) { x += R(-6, 6); y = Math.max(-w / 2 + 2, Math.min(w / 2 - 2, y + R(-4, 4))); ctx.lineTo(x, y); } ctx.stroke(); }
+      for (let k = 0; k < L / 80; k++) { ctx.fillStyle = rnd() < 0.5 ? 'rgba(25,25,27,0.45)' : 'rgba(85,85,82,0.3)'; ctx.fillRect(R(w, Math.max(w, L - w - 18)), R(-w / 2 + 2, w / 2 - 10), R(7, 18), R(5, 8)); }
+      if (theme === 'SNOW') { ctx.fillStyle = 'rgba(235,240,245,0.55)'; for (let k = 0; k < L / 20; k++) { ctx.beginPath(); ctx.ellipse(R(0, L), rnd() < 0.5 ? -w / 2 + R(0, 5) : w / 2 - R(0, 5), R(6, 16), R(2, 5), 0, 0, 7); ctx.fill(); } }
+      ctx.restore(); } });
     ctx.restore();
   }
   function water(ctx, path, width, kind) {
@@ -43649,7 +43699,7 @@ const EpikPaint = (() => {
     for (let b = 0; b < 9; b++) { const a = b / 9 * 6.283, d = r * R(0.1, 0.35), bx = r + Math.cos(a) * d, by = r + Math.sin(a) * d, rr = r * R(0.45, 0.62); const g = x.createRadialGradient(bx - rr * 0.3, by - rr * 0.35, rr * 0.05, bx, by, rr); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(0.55, 'rgba(225,225,228,0.5)'); g.addColorStop(1, 'rgba(200,200,205,0)'); x.fillStyle = g; x.beginPath(); x.arc(bx, by, rr, 0, 7); x.fill(); }
     return c;
   }
-  return { seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
+  return { filletPath, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
 })();
 
 try { const o = JSON.parse(localStorage.getItem('netepic_gold_options') || '{}'); if (o.paintedField === false) window.paintedField = false; } catch (e) { }
@@ -54949,11 +54999,11 @@ class NetEpicScene extends Phaser.Scene {
     (this.craters || []).forEach(c => { ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot || 0); ctx.scale(1, (c.ry || c.rx) / c.rx); P.seed(c.x * 3 + c.y); P.crater(ctx, 0, 0, c.rx * 0.85, theme); ctx.restore(); });
     const rvKind = theme === 'SNOW' ? 'ice' : (theme === 'DESERT' ? 'wadi' : null);
     (this.rivers || []).forEach(rv => {
-      if (rv.points) P.water(ctx, P.linePath(rv.points), rv.width || 160, rv.kind || null);
+      if (rv.points) P.water(ctx, P.filletPath(rv.points, (rv.width || 160) * 2.2), rv.width || 160, rv.kind || null);
       else { const p = new Path2D(); p.moveTo(-40, rv.y + rv.h / 2); p.lineTo(W + 40, rv.y + rv.h / 2); P.water(ctx, p, rv.h, rvKind); }
     });
     (this.trenches || []).forEach(t => P.trench(ctx, t.points, t.width || 14));
-    (this.roads || []).forEach(rd => P.road(ctx, rd, theme));
+    P.roads(ctx, this.roads || [], (this.bridges || []).filter(b => b.x1 != null && !b.isFord), theme, W, H);
     (this.bridges || []).forEach(br => {
       if (br.x1 == null) { P.bridgeRect(ctx, br.x, br.y, br.w, br.h, br.isFord); return; }
       const w = br.width || 50, a = Math.atan2(br.y2 - br.y1, br.x2 - br.x1), L = Math.hypot(br.x2 - br.x1, br.y2 - br.y1);
