@@ -43554,7 +43554,11 @@ const EldArt2 = (() => {
     },
     harlequins(g, P, w, h, o) {
       stand(g, w, h); seed(w * 11 + h * 5 + (o.n || 4)); const n = o.n || 4, L = { 1: [[0.5, 0.48]], 3: [[0.27, 0.64], [0.73, 0.64], [0.5, 0.3]], 4: [[0.27, 0.3], [0.73, 0.3], [0.27, 0.72], [0.73, 0.72]] }[n], s = Math.min(w, h) / (n === 1 ? 5.2 : n === 3 ? 6.6 : 7.6);
-      L.forEach(([px, py]) => R_._harlequin(g, P, px * w + RR(-0.6, 0.6), py * h + RR(-0.5, 0.5), s, { ...o, rot: RR(-0.3, 0.3) }));
+      // every player in a troupe wears their own motley
+      const SCH = [{ motley: ['#c9301f', '#e3c13b', '#2f8a4a'], cape: '#5a1f6b' }, { motley: ['#2f5fa8', '#e9e2cf', '#c9301f'], cape: '#1b1b1f' }, { motley: ['#7a2fbf', '#e3c13b', '#1b1b1f'], cape: '#2f8a4a' }, { motley: ['#2f8a4a', '#e9e2cf', '#d12a6a'], cape: '#2f5fa8' },
+        { motley: ['#e3762a', '#1b1b1f', '#5ee7ff'], cape: '#7a1f1f' }, { motley: ['#d12a6a', '#2a78c8', '#f8cf73'], cape: '#3a2a5a' }];
+      const off = Math.floor(rnd() * SCH.length);
+      L.forEach(([px, py], i) => R_._harlequin(g, P, px * w + RR(-0.6, 0.6), py * h + RR(-0.5, 0.5), s, { ...(o.vary ? SCH[(i + off) % SCH.length] : {}), ...o, rot: RR(-0.3, 0.3) }));
     },
     // Skyweaver: a harlequin jetbike with a chequered sail
     skyweavers(g, P, w, h, o) {
@@ -43562,7 +43566,7 @@ const EldArt2 = (() => {
         const hull = new Path2D(); hull.moveTo(x, y - 5 * s); hull.bezierCurveTo(x + 1.1 * s, y - 2.6 * s, x + 1 * s, y + 1.5 * s, x + 0.7 * s, y + 4 * s); hull.lineTo(x - 0.7 * s, y + 4 * s); hull.bezierCurveTo(x - 1 * s, y + 1.5 * s, x - 1.1 * s, y - 2.6 * s, x, y - 5 * s); hull.closePath();
         dropShadow(g, hull, 1.8 * s, 2.6 * s, 0.9, 0.42); shaded(g, hull, '#5a1f2b', x - s, y - 5 * s, x + s, y + 4 * s, 0.35); outline(g, hull, 0.25);
         [-1, 1].forEach(sd => { const sail = P2([[x + sd * 0.6 * s, y + 0.2 * s], [x + sd * 3.2 * s, y + 2.6 * s], [x + sd * 2.6 * s, y + 3.6 * s], [x + sd * 0.6 * s, y + 2.6 * s]]); g.save(); g.clip(sail); for (let i = -8; i < 8; i++) for (let j = -8; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#1b1b1f' : '#c9301f'; g.fillRect(x + i * 0.6 * s, y + j * 0.6 * s, 0.6 * s, 0.6 * s); } g.restore(); outline(g, sail, 0.18); });
-        R_._harlequin(g, P, x, y + 0.2 * s, 0.85 * s, { wpn: false, cape: '#2a2a32' }); glow(g, x, y + 4.2 * s, 1.4 * s, P.lens, 0.8); });
+        R_._harlequin(g, P, x, y + 0.2 * s, 0.85 * s, { wpn: false, cape: '#2a2a32', motley: x < w / 2 ? ['#c9301f', '#e3c13b', '#2f8a4a'] : ['#2f5fa8', '#e9e2cf', '#d12a6a'] }); glow(g, x, y + 4.2 * s, 1.4 * s, P.lens, 0.8); });
     },
     // Venom / Starweaver: an open-topped harlequin skimmer with two passengers
     venom(g, P, w, h, o) {
@@ -43571,7 +43575,7 @@ const EldArt2 = (() => {
       dropShadow(g, hull, 2.4, 3.2, 1.4, 0.42); glow(g, cx + 1, h * 0.65, w * 0.5, P.lens, 0.15); shaded(g, hull, '#4a1a26', 0, 0, w, h, 0.32);
       g.save(); g.clip(hull); for (let i = -10; i < 10; i++) for (let j = 0; j < 30; j++) { if ((i + j) % 2) continue; g.fillStyle = 'rgba(201,48,31,0.55)'; g.fillRect(cx + i * 1.2 * s, j * 1.2 * s, 1.2 * s, 1.2 * s); } g.restore(); outline(g, hull, 0.3);
       const pit = new Path2D(); pit.ellipse(cx, h * 0.55, 1.6 * s, 2.6 * s, 0, 0, 7); g.fillStyle = '#1b1b1f'; g.fill(pit); outline(g, pit, 0.2);
-      R_._harlequin(g, P, cx, h * 0.45, 0.9 * s, { wpn: false }); R_._harlequin(g, P, cx, h * 0.66, 0.9 * s, { wpn: false, motley: ['#2f5fa8', '#e9e2cf', '#c9301f'] });
+      R_._harlequin(g, P, cx, h * 0.45, 0.9 * s, { wpn: false }); R_._harlequin(g, P, cx, h * 0.66, 0.9 * s, { wpn: false, motley: ['#2f5fa8', '#e9e2cf', '#c9301f'], cape: '#2f8a4a' });
       barrel(g, cx, h * 0.25, h * 0.2, 0.7, '#3a3a40'); line(g, [[cx, h * 0.04], [cx, h * 0.3]], '#e9e2cf', 0.3);
       [-1, 1].forEach(sd => glow(g, cx + sd * 0.9 * s, h - 0.3, 1.8, P.lens, 0.8));
     },
@@ -43632,7 +43636,7 @@ const EldArt2 = (() => {
     if (has('solitaire')) return { kind: 'harlequins', opts: { n: 1, motley: ['#1b1b1f', '#e9e2cf'], cape: '#1b1b1f', crestC: '#c9301f' } };
     if (has('mime')) return { kind: 'harlequins', opts: { n: 4, motley: ['#3a3a44', '#5a5a66'], cape: '#2a2a32', wpn: 'sword' } };
     if (has('harlequin jetbike', 'skyweaver')) return { kind: 'skyweavers', opts: {} };
-    if (has('harlequin', 'troupe', 'masque')) return { kind: 'harlequins', opts: { n: 4, crestC: '#e9e2cf' } };
+    if (has('harlequin', 'troupe', 'masque')) return { kind: 'harlequins', opts: { n: 4, crestC: '#e9e2cf', vary: true } };
     if (has('venom', 'starweaver')) return { kind: 'venom', opts: {} };
     if (has('firestorm')) return { kind: 'firestorm', opts: {} };
     if (has('doomweaver', 'night spinner')) return { kind: 'spinner', opts: {} };
