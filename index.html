@@ -43539,7 +43539,12 @@ const EldArt2 = (() => {
       g.save(); g.translate(x, y); if (o.rot) g.rotate(o.rot);
       if (o.mist) glow(g, 0, 0.3 * s, 2.2 * s, o.mist, 0.4);
       const cape = new Path2D(); cape.moveTo(-0.7 * s, 0); cape.quadraticCurveTo(-1.1 * s, 1.2 * s, -0.3 * s, 1.9 * s); cape.lineTo(0.3 * s, 1.9 * s); cape.quadraticCurveTo(1.1 * s, 1.2 * s, 0.7 * s, 0); cape.closePath();
-      dropShadow(g, cape, 0.35 * s, 0.5 * s, 0.25, 0.45); shaded(g, cape, o.cape || '#5a1f6b', -s, 0, s, 2 * s, 0.35); outline(g, cape, 0.1);
+      dropShadow(g, cape, 0.35 * s, 0.5 * s, 0.25, 0.45); shaded(g, cape, o.cape || '#5a1f6b', -s, 0, s, 2 * s, 0.35);
+      { // diamond motley on the cape too, in the player's own colours
+        const CC = [o.cape || '#5a1f6b', ...(o.motley || ['#c9301f', '#e3c13b', '#2f8a4a']).slice(0, 2)]; g.save(); g.clip(cape);
+        for (let i = -4; i <= 4; i++) for (let j = -1; j < 7; j++) { const dx = i * 0.5 * s + (j % 2) * 0.25 * s, dy = j * 0.36 * s; g.fillStyle = CC[((i + j) % 3 + 3) % 3]; g.beginPath(); g.moveTo(dx, dy - 0.26 * s); g.lineTo(dx + 0.25 * s, dy); g.lineTo(dx, dy + 0.26 * s); g.lineTo(dx - 0.25 * s, dy); g.closePath(); g.fill(); }
+        const cs = g.createLinearGradient(-s, 0, s, 2 * s); cs.addColorStop(0, 'rgba(255,255,255,0.2)'); cs.addColorStop(1, 'rgba(0,0,0,0.4)'); g.fillStyle = cs; g.fill(cape); g.restore(); }
+      outline(g, cape, 0.1);
       const body = new Path2D(); body.ellipse(0, 0.3 * s, 0.9 * s, 0.62 * s, 0, 0, 7); g.save(); g.clip(body);
       const C = o.motley || ['#c9301f', '#e3c13b', '#2f8a4a']; for (let i = -4; i < 4; i++) for (let j = -3; j < 4; j++) { g.fillStyle = C[((i + j) % C.length + C.length) % C.length]; g.beginPath(); const cx = i * 0.42 * s + (j % 2) * 0.21 * s, cy = j * 0.3 * s + 0.3 * s; g.moveTo(cx, cy - 0.22 * s); g.lineTo(cx + 0.21 * s, cy); g.lineTo(cx, cy + 0.22 * s); g.lineTo(cx - 0.21 * s, cy); g.closePath(); g.fill(); }
       const sh = g.createLinearGradient(-s, -s, s, s); sh.addColorStop(0, 'rgba(255,255,255,0.25)'); sh.addColorStop(1, 'rgba(0,0,0,0.35)'); g.fillStyle = sh; g.fill(body); g.restore(); outline(g, body, 0.12);
