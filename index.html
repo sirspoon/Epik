@@ -46325,7 +46325,8 @@ class NetEpicScene extends Phaser.Scene {
     // Pan so the action sits in the middle of the free area, not behind the card
     const dy = (topH - botH) / 2;
     const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
-    if (this.autoCamBlocked()) return;
+    if (this.autoCamBlocked() && (!this.isFactionAI(firerDet.faction) || this.anyFingerDown())) return;
+    if (this.isFactionAI(firerDet.faction)) this._userCamAt = 0;
     cam.pan(midX - (sn * dy) / targetZoom, midY - (c * dy) / targetZoom, 450, 'Sine.easeInOut', true);
     cam.zoomTo(targetZoom, 450, 'Sine.easeInOut', true);
   }
@@ -46475,7 +46476,18 @@ class NetEpicScene extends Phaser.Scene {
   // Combat report card: one compact card docked at the bottom. Rows reveal in quick sequence,
   // casualties play out on the map at the same time, and nothing moves on until the player taps
   // (or the optional Auto timer runs out).
+  // Enemy shots: bring the camera to the action first, then show the report card
   showCombatModal(data, onContinue) {
+    const f = data && data.firerDet;
+    if (f && this.isFactionAI(f.faction) && window.aiFaction !== 'NONE' && document.getElementById('combat-card-modal')) {
+      this.frameShootingAction(f, data.targetDet || null);
+      this.time.delayedCall(550, () => this.showCombatModalCore(data, onContinue));
+      return;
+    }
+    return this.showCombatModalCore(data, onContinue);
+  }
+  anyFingerDown() { return this.input.manager.pointers.some(p => p && p.isDown) || Boolean(this.input.mousePointer && this.input.mousePointer.isDown); }
+  showCombatModalCore(data, onContinue) {
     const modal = document.getElementById('combat-card-modal');
     if (!modal) { if (onContinue) onContinue(); return; }
     this._activeCombatContinue = onContinue;
@@ -58304,7 +58316,7 @@ class NetEpicScene extends Phaser.Scene {
 
   update(time, delta) {
     if (this.viewBase !== undefined && this.viewBase !== this.wantedViewBase()) this.applyViewOrientation();
-    if (!(time < (this._edgeT || 0))) { this._edgeT = time + 200; try { this.updateBuildingEdgeBands(); } catch (e) { console.error(e); } }
+    if (!(time < (this._edgeT || 0))) { this._edgeT = time + 200; if (this.isDraggingStand && !this.anyFingerDown()) this.isDraggingStand = false; try { this.updateBuildingEdgeBands(); } catch (e) { console.error(e); } }
     this.keyCamTick(delta);
     this.keepTextUpright();
     if (this._lastCamZoom !== this.cameras.main.zoom) {
@@ -58712,7 +58724,7 @@ class NetEpicScene extends Phaser.Scene {
     this.rotationGizmoContainer.add([this.gizmoGfx, this.gizmoCenterBtn, this.gizmoText, this.gizmoSubText, this.gizmoModeToggle]);
 
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
-      cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001 * DPR, 0.35 * DPR, 2.5 * DPR));
+      cam.setZoom(Phaser.Math.Clamp(cam.zoom - deltaY * 0.001 * DPR, this.minUserZoom(), 2.5 * DPR));
       this.updateZoomLOD();
     });
 
@@ -58994,7 +59006,7 @@ class NetEpicScene extends Phaser.Scene {
     });
 
     this.input.on('pointerdown', () => { this._gest = null; });
-    this.input.on('pointerup', () => { this._gest = null; });
+    this.input.on('pointerup', () => { this._gest = null; this.time.delayedCall(0, () => { if (this.isDraggingStand && !this.anyFingerDown()) this.isDraggingStand = false; }); });
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       if (this.isRotatingGizmo && this.rotatingStand) {
         const dGizmo = Phaser.Math.Distance.Between(this.rotatingStand.container.x, this.rotatingStand.container.y, pointer.worldX, pointer.worldY);
@@ -59046,7 +59058,7 @@ class NetEpicScene extends Phaser.Scene {
         if (!G.mode) { const twistPx = Math.abs(da) * dist / 2, pinchPx = Math.abs(dist - G.d0) / 2;
           if (Math.max(twistPx, pinchPx) > 9 * DPR) { if (twistPx >= pinchPx * 0.6) { G.mode = 'turn'; G.lastA = G.a0; } else { G.mode = 'zoom'; G.d0 = dist; G.z0 = cam.zoom; } } }
         if (G.mode === 'turn') { let d = ang - G.lastA; d = Math.atan2(Math.sin(d), Math.cos(d)); let t = (this.viewTwist || 0) + d; t = Math.atan2(Math.sin(t), Math.cos(t)); this.viewTwist = t; cam.setRotation((this.viewBase || 0) + t); this.updateCompassButton(); }
-        else if (G.mode === 'zoom') { cam.setZoom(Phaser.Math.Clamp(G.z0 * dist / Math.max(1, G.d0), 0.35 * DPR, 2.5 * DPR)); this.updateZoomLOD(); }
+        else if (G.mode === 'zoom') { cam.setZoom(Phaser.Math.Clamp(G.z0 * dist / Math.max(1, G.d0), G.zMin || (G.zMin = this.minUserZoom()), 2.5 * DPR)); this.updateZoomLOD(); }
         // keep W under the fingers' new midpoint
         { const r = cam.rotation, z = cam.zoom, vx = mid.x - Cx, vy = mid.y - Cy, c = Math.cos(r), sn = Math.sin(r); cam.scrollX = W.x - Cx - (c * vx + sn * vy) / z; cam.scrollY = W.y - Cy - (-sn * vx + c * vy) / z; }
         G.lastA = ang; G.mid = mid;
@@ -59146,6 +59158,13 @@ class NetEpicScene extends Phaser.Scene {
     walk(this.children.list, 0);
   }
 
+  // How far out you can zoom: a bit past the whole table, and never closer than the view you're in now
+  // (the game's own camera can go further out than the old fixed limit, and a pinch then jumped back in)
+  minUserZoom() {
+    const cam = this.cameras.main, turned = Math.abs(Math.sin(cam.rotation)) > 0.5;
+    const fit = Math.min((turned ? cam.height : cam.width) / (BOARD_W + 30), (turned ? cam.width : cam.height) / (BOARD_H + 30));
+    return Math.max(0.12 * DPR, Math.min(0.35 * DPR, fit * 0.8, cam.zoom));
+  }
   resetCamera() {
     const cam = this.cameras.main;
     // Fit the table into the screen area between the top bar and the bottom unit panel
