@@ -50366,6 +50366,44 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // Protection inside a structure: light -1 to hit / +1 CAF, standard -2 / +2, fortification -3 / +3
+  // Units inside a building see out only through edges they are near (core p. 24: "through any edge they touch").
+  // Bunkers and strongholds never block the view of units inside; ruins don't block at all.
+  bldEdgePx() { return 3 * PX_PER_CM; }
+  bldSeesOut(b, p, q) {
+    if (!b || b.type === 'BUNKER' || b.collapsed) return true;
+    const a = this.toLocal(b, p.x, p.y), c = this.toLocal(b, q.x, q.y), dx = c.x - a.x, dy = c.y - a.y;
+    let best = Infinity, gap = null;
+    const tryEdge = (t, g) => { if (t >= 0 && t < best) { best = t; gap = g; } };
+    if (dx < 0) tryEdge((b.x - a.x) / dx, a.x - b.x);
+    if (dx > 0) tryEdge((b.x + b.w - a.x) / dx, b.x + b.w - a.x);
+    if (dy < 0) tryEdge((b.y - a.y) / dy, a.y - b.y);
+    if (dy > 0) tryEdge((b.y + b.h - a.y) / dy, b.y + b.h - a.y);
+    if (gap == null || best >= 1) return true; // looking at something inside the same building
+    return gap <= this.bldEdgePx();
+  }
+  // While moving infantry: shade the band inside each building's walls where they can see out
+  drawBuildingEdgeBands() {
+    const B = (this.buildings || []).filter(b => !b.collapsed && b.type !== 'BUNKER');
+    const key = B.map(b => [b.x, b.y, b.w, b.h, b.rot || 0].join(',')).join('|');
+    if (this._edgeGfx && this._edgeGfx.scene && this._edgeKey === key) return this._edgeGfx;
+    this._edgeKey = key;
+    const g = (this._edgeGfx && this._edgeGfx.scene) ? this._edgeGfx : (this._edgeGfx = this.add.graphics().setDepth(2.55).setVisible(false));
+    g.clear(); const D = this.bldEdgePx();
+    const quad = (b, x, y, w, h) => { if (w > 0 && h > 0) g.fillPoints([[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([px, py]) => this.toWorld(b, px, py)), true); };
+    B.forEach(b => {
+      g.fillStyle(0xbef264, 0.3);
+      if (b.w <= 2 * D || b.h <= 2 * D) { quad(b, b.x, b.y, b.w, b.h); return; }
+      quad(b, b.x, b.y, b.w, D); quad(b, b.x, b.y + b.h - D, b.w, D); quad(b, b.x, b.y + D, D, b.h - 2 * D); quad(b, b.x + b.w - D, b.y + D, D, b.h - 2 * D);
+      g.lineStyle(1.5, 0xbef264, 0.7); g.strokePoints([[b.x + D, b.y + D], [b.x + b.w - D, b.y + D], [b.x + b.w - D, b.y + b.h - D], [b.x + D, b.y + b.h - D]].map(([px, py]) => this.toWorld(b, px, py)), true);
+    });
+    return g;
+  }
+  updateBuildingEdgeBands() {
+    const det = this.activatingDetachment || this.selectedDetachment;
+    const on = !window._mapView && det && det.stands.length && (det.pinningClass || 1) === 1 && !det.embarkedOn && !this.isFactionAI(det.faction) && (this.phase === 'DEPLOYMENT' || this.phase === 'MOVEMENT') && (this.buildings || []).length;
+    if (!on) { if (this._edgeGfx && this._edgeGfx.scene) this._edgeGfx.setVisible(false); return; }
+    this.drawBuildingEdgeBands().setVisible(true);
+  }
   buildingCover(b) { if (!b) return 0; return b.type === 'BUNKER' ? 3 : ((b.type === 'CATHEDRAL' || b.type === 'MANUFACTORUM') ? 2 : 1); }
   standCover(stand) { return this.isStandGarrisoned(stand) ? this.buildingCover(this.getBuildingAt(stand.container.x, stand.container.y)) : this.terrainCover(stand); }
   // Medics (infantry, cavalry) and mechanics (walkers, vehicles, superheavies) within 10 cm: an unmodified 5+ roll
@@ -51654,7 +51692,8 @@ class NetEpicScene extends Phaser.Scene {
       if (!this.isInFireArc(s, p.x, p.y)) { why = 'outside its firing arc'; return false; }
       if (indirect) return true;
       const from = { x: s.container.x, y: s.container.y };
-      const blocked = this.buildings.some(o => o !== b && !o.collapsed && !this.pointInRect(o, from.x, from.y) && this.lineHitsRect(o, from.x, from.y, p.x, p.y)) || this.terrainLosBlock(from, p);
+      const own = this.isStandGarrisoned(s) ? this.getBuildingAt(from.x, from.y) : null;
+      const blocked = (own && own !== b && !this.bldSeesOut(own, from, p)) || this.buildings.some(o => o !== b && !o.collapsed && !this.pointInRect(o, from.x, from.y) && this.lineHitsRect(o, from.x, from.y, p.x, p.y)) || this.terrainLosBlock(from, p);
       if (blocked) { why = 'no line of sight'; return false; }
       return true;
     });
@@ -52883,7 +52922,7 @@ class NetEpicScene extends Phaser.Scene {
   placeGate(x, y) {
     const d = this._gatePlace; this._gatePlace = null; if (!d || !d.stands.length) return;
     const s = d.stands[0], dist = Phaser.Math.Distance.Between(s.container.x, s.container.y, x, y) / PX_PER_CM;
-    const blocked = this.buildings.some(b => !b.collapsed && !this.pointInRect(b, x, y) && this.lineHitsRect(b, s.container.x, s.container.y, x, y)) || (this.terrainLosBlock && this.terrainLosBlock({ x: s.container.x, y: s.container.y }, { x, y }));
+    const blocked = this.buildings.some(b => !b.collapsed && !this.pointInRect(b, x, y) && (this.pointInRect(b, s.container.x, s.container.y) ? !this.bldSeesOut(b, s.container, { x, y }) : this.lineHitsRect(b, s.container.x, s.container.y, x, y))) || (this.terrainLosBlock && this.terrainLosBlock({ x: s.container.x, y: s.container.y }, { x, y }));
     if (dist > 75 || blocked || this.rockAt(x, y)) { this.log(`🌀 The Wraithgate can't open there (${dist > 75 ? 'over 75 cm away' : 'no line of sight or impassable'}).`); this.updateUI(); return; }
     d.wraithgate = { x, y }; this.drawGates();
     this.log(`🌀 <b>${d.name}</b> opens a Wraithgate ${Math.round(dist)} cm away. Eldar infantry, cavalry and walkers within 5 cm of the gate or the Storm Serpent can step through; they come out at the other end next turn.`);
@@ -57319,6 +57358,14 @@ class NetEpicScene extends Phaser.Scene {
 
     const line = new Phaser.Geom.Line(p1.x, p1.y, p2.x, p2.y);
 
+    // 0.5 Inside a building you only see out through the walls you're near (and are only seen through them)
+    { const why = shooterBuilding && !this.bldSeesOut(shooterBuilding, p1, p2) ? `Blocked by ${shooterBuilding.name} (not near the wall facing the target)`
+        : (targetBuilding && targetBuilding !== shooterBuilding && !this.bldSeesOut(targetBuilding, p2, p1) ? `Blocked by ${targetBuilding.name} (target is too far inside)` : null);
+      if (why) {
+        if (canFireIndirect) return { valid: true, indirect: true, reason: `Indirect into ${(targetBuilding || shooterBuilding).name}`, distCm, coverMod: baseCoverMod };
+        return { valid: false, reason: why, distCm, coverMod: 0, indirect: false };
+      } }
+
     // 1. Check Buildings (Block direct LoS unless the shooter or target is Garrisoned inside that specific building!)
     for (const b of this.buildings) {
       if (b === shooterBuilding || b === targetBuilding || b.collapsed) continue; // ruins are rough ground and don't block (core p. 24)
@@ -58257,6 +58304,7 @@ class NetEpicScene extends Phaser.Scene {
 
   update(time, delta) {
     if (this.viewBase !== undefined && this.viewBase !== this.wantedViewBase()) this.applyViewOrientation();
+    if (!(time < (this._edgeT || 0))) { this._edgeT = time + 200; try { this.updateBuildingEdgeBands(); } catch (e) { console.error(e); } }
     this.keyCamTick(delta);
     this.keepTextUpright();
     if (this._lastCamZoom !== this.cameras.main.zoom) {
@@ -61327,7 +61375,8 @@ class NetEpicScene extends Phaser.Scene {
     const g = this._sightGfx || (this._sightGfx = this.make.graphics({ x: 0, y: 0, add: false })); g.clear(); g.fillStyle(0xbef264, 1);
     const N = 120;
     stands.forEach(st => { const p = { x: st.container.x, y: st.container.y, bld: this.getBuildingAt ? this.getBuildingAt(st.container.x, st.container.y) : null }, onHill = (this.hills || []).some(h => this.inEllipse(h, p.x, p.y, 4)), pts = [];
-      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, d = this.sightRay(p, a, maxPx, onHill); pts.push({ x: p.x + Math.cos(a) * d, y: p.y + Math.sin(a) * d }); }
+      const inBld = p.bld && (st.detachment.pinningClass || 1) === 1 ? p.bld : null;
+      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, d = (inBld && !this.bldSeesOut(inBld, p, { x: p.x + Math.cos(a) * maxPx, y: p.y + Math.sin(a) * maxPx })) ? 0 : this.sightRay(p, a, maxPx, onHill); pts.push({ x: p.x + Math.cos(a) * d, y: p.y + Math.sin(a) * d }); }
       g.fillPoints(pts, true); });
     this._sightRT.clear(); this._sightRT.draw(g);
   }
