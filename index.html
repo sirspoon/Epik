@@ -46860,7 +46860,7 @@ class NetEpicScene extends Phaser.Scene {
     }
 
     const center = this.getDetachmentCenter(targetDet);
-    this.panCameraTo(center.x, center.y, 400);
+    this.centerCameraOnUnit(targetDet, 400, true);
     window.sfx.playPip();
 
     const tag = `(${nextIdx + 1}/${idle.length})`;
@@ -59199,10 +59199,25 @@ class NetEpicScene extends Phaser.Scene {
     }
     if (!det) return;
     if (this.phase === 'MOVEMENT' && !this.activatingDetachment) { this.selectedDetachment = det; this.updateUI(); this.drawOverlays(); }
-    const c = this.getDetachmentCenter(det);
-    if (this.autoCamBlocked()) return;
-    if (cam.zoom < 0.75 * DPR) cam.zoomTo(0.9 * DPR, 500, 'Sine.easeInOut', true);
-    cam.pan(Phaser.Math.Clamp(c.x, 50, BOARD_W - 50), Phaser.Math.Clamp(c.y, 50, BOARD_H - 50), 600, 'Sine.easeInOut', true);
+    this.centerCameraOnUnit(det, 600);
+  }
+
+  // Centre a unit in the free part of the screen (between the top bar and the bottom panel), zooming in if far out.
+  // force: the player asked for it (Next button), so it goes even if they just moved the map.
+  centerCameraOnUnit(det, duration = 500, force = false) {
+    if (!det || !det.stands || !det.stands.length) return;
+    if (!force && this.autoCamBlocked() && (this._gest || (this.input.pointer1 && this.input.pointer1.isDown))) return; // mid-gesture: don't fight the fingers
+    const cam = this.cameras.main, c = this.getDetachmentCenter(det);
+    const zoom = cam.zoom < 0.75 * DPR ? 0.9 * DPR : cam.zoom;
+    const topEl = document.getElementById('top-bar'), botEl = document.getElementById('bottom-bar');
+    let topH = 60, botH = 110;
+    if (topEl && topEl.offsetHeight) topH = topEl.getBoundingClientRect().bottom + 4;
+    if (botEl && botEl.offsetHeight) botH = Math.max(60, window.innerHeight - botEl.getBoundingClientRect().top + 4);
+    const dy = (topH - botH) / 2 * DPR, sn = Math.sin(cam.rotation), co = Math.cos(cam.rotation);
+    const tx = Phaser.Math.Clamp(c.x, 50, BOARD_W - 50) - sn * dy / zoom, ty = Phaser.Math.Clamp(c.y, 50, BOARD_H - 50) - co * dy / zoom;
+    this._userCamAt = 0;
+    if (zoom !== cam.zoom) cam.zoomTo(zoom, duration, 'Sine.easeInOut', true);
+    cam.pan(tx, ty, duration, 'Sine.easeInOut', true);
   }
 
   panCameraBetween(p1, p2, duration = 650) {
