@@ -47001,6 +47001,16 @@ class NetEpicScene extends Phaser.Scene {
         this.applyStandFacing(det);
         this.log(this.instinctText(det, 'log'));
         this.updateDetachmentBadge(det); this.drawOverlays();
+        // units on automatic orders can be snap fired at like any other move
+        const paths = new Map(dests.map((d, i) => [d.st, [from[i], { x: d.x, y: d.y }]]));
+        const moved = dests.some((d, i) => Math.hypot(d.x - from[i].x, d.y - from[i].y) > 2);
+        const snap = moved ? (this.snapFirersFor(det).length ? this.snapFirersFor(det) : this.findSnapAlongMove(det, paths)) : null;
+        if (snap) {
+          const wasPending = this.aiTimerPending; this.aiTimerPending = false;
+          this._snapAfter = () => { this.phase = 'MOVEMENT'; this.aiTimerPending = wasPending; this.drawOverlays(); this.updateUI(); next(); };
+          this.triggerSnapFirePrompt(det, snap);
+          return;
+        }
         next();
       } });
     };
@@ -54208,7 +54218,10 @@ class NetEpicScene extends Phaser.Scene {
     if (this.drawGates) this.drawGates();
   }
   serializeGameState(saveName = null) {
-    const s = this.serializeGameStateOrkCore(saveName);
+    // during a snap fire the moving unit stands back at the point it was seen: save it where it actually finished
+    const R = this._snapRestore, held = R ? R.det.stands.map(st => [st, st.container.x, st.container.y]) : null;
+    if (R) R.det.stands.forEach(st => { const p = R.finals.get(st); if (p) { st.container.x = p.x; st.container.y = p.y; } });
+    let s; try { s = this.serializeGameStateOrkCore(saveName); } finally { if (held) held.forEach(([st, x, y]) => { st.container.x = x; st.container.y = y; }); }
     try { if (s) s.orkExtra = this.orkSaveExtra(); } catch (e) { console.error(e); }
     return s;
   }
@@ -60145,6 +60158,7 @@ class NetEpicScene extends Phaser.Scene {
     if (didMove && !wasDeepStriking) this.resolveMinefields(det);
     if (didMove && this.scenarioExit(det)) { det.moved = true; this.finishMovementActivation(); return; }
     if (det.stands.length === 0) { det.moved = true; this.finishMovementActivation(); return; }
+    const movePaths = didMove ? new Map(det.stands.map(s => [s, this.standPath(s)])) : null; // kept for snap fire along the move
     det.stands.forEach(s => { s.originX = s.container.x; s.originY = s.container.y; });
     this.syncEmbarkedPassengers(det);
     det.moved = true;
@@ -60198,6 +60212,9 @@ class NetEpicScene extends Phaser.Scene {
         this.triggerSnapFirePrompt(det, snapCandidates);
         return;
       }
+      // Snap fire happens during the move (p. 19): look back along it for the last point First Fire units could see it
+      const along = this.findSnapAlongMove(det, movePaths);
+      if (along) { this.triggerSnapFirePrompt(det, along); return; }
     }
 
     this.finishMovementActivation();
@@ -60227,6 +60244,33 @@ class NetEpicScene extends Phaser.Scene {
     this.checkAndRunAITurn();
   }
 
+  // First Fire units that could snap fire at a unit somewhere along its move. Ending in close combat with the very
+  // units that would fire (a charge) or out of sight doesn't stop it: the shots happen at the last point on the move
+  // where they could see it, and the survivors then carry on to where they finished.
+  snapFirersFor(det) {
+    const enemySide = det.faction === 'IMPERIUM' ? 'ORKS' : 'IMPERIUM';
+    return this.detachments.filter(d => d.faction === enemySide && d.stands.length > 0 && !d.embarkedOn && !d.inReserve && (d.order === 'FIRST_FIRE' || (this.isCommandUnit(d) && !d.moved && d.order !== 'FALL_BACK')) && !d.fired && this.evaluateFireSolution(d, det, true).validPairs.length > 0);
+  }
+  findSnapAlongMove(det, movePaths) {
+    if (!movePaths || !det.stands.length) return null;
+    const along = (pts, f) => { let L = 0; for (let i = 1; i < pts.length; i++) L += Phaser.Math.Distance.Between(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y); let d = L * f;
+      for (let i = 1; i < pts.length; i++) { const l = Phaser.Math.Distance.Between(pts[i - 1].x, pts[i - 1].y, pts[i].x, pts[i].y); if (d <= l || i === pts.length - 1) { const t = l ? Math.min(1, d / l) : 0; return { x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * t, y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * t }; } d -= l; } return pts[pts.length - 1]; };
+    const finals = new Map(det.stands.map(s => [s, { x: s.container.x, y: s.container.y }]));
+    const place = f => det.stands.forEach(s => { const p = movePaths.get(s); if (p && p.length > 1) { const q = along(p, f); s.container.x = q.x; s.container.y = q.y; } });
+    for (let f = 0.9; f >= -0.001; f -= 0.1) {
+      place(Math.max(0, f)); const c = this.snapFirersFor(det);
+      if (c.length) { this._snapRestore = { det, finals }; this.syncEmbarkedPassengers(det); this.updateDetachmentBadgePos(det); this.log(`⚡ <b>${det.name}</b> is caught by snap fire as it moves into view!`); return c; }
+    }
+    det.stands.forEach(s => { const p = finals.get(s); s.container.x = p.x; s.container.y = p.y; });
+    return null;
+  }
+  // after a snap fire: carry on with whatever move was interrupted
+  afterSnapFire() { const f = this._snapAfter; this._snapAfter = null; if (f) f(); else this.finishMovementActivation(); }
+  finishSnapRestore() {
+    const R = this._snapRestore; this._snapRestore = null; if (!R) return;
+    R.det.stands.forEach(s => { const p = R.finals.get(s); if (p && s.container && s.container.scene) { s.container.x = p.x; s.container.y = p.y; s.originX = p.x; s.originY = p.y; } });
+    this.syncEmbarkedPassengers(R.det); this.updateDetachmentBadgePos(R.det); this.updateDetachmentBadge(R.det);
+  }
   resolveSnapFireChoice(firerId) {
     const prevTarget = this.snapTarget;
     const prevCandidates = this.snapCandidates ? [...this.snapCandidates] : [];
@@ -60278,7 +60322,8 @@ class NetEpicScene extends Phaser.Scene {
             this.losGfx.clear();
             if (prevTarget && prevTarget.stands.length > 0) this.updateDetachmentBadge(prevTarget);
             prevCandidates.forEach(c => { if (c.stands.length > 0) this.updateDetachmentBadge(c); });
-            this.finishMovementActivation();
+            this.finishSnapRestore();
+            this.afterSnapFire();
           }
         });
         return;
@@ -60296,7 +60341,8 @@ class NetEpicScene extends Phaser.Scene {
     this.losGfx.clear();
     if (prevTarget && prevTarget.stands.length > 0) this.updateDetachmentBadge(prevTarget);
     prevCandidates.forEach(c => { if (c.stands.length > 0) this.updateDetachmentBadge(c); });
-    this.finishMovementActivation();
+    this.finishSnapRestore();
+    this.afterSnapFire();
   }
 
   finishMovementActivation() {
