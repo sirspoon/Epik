@@ -861,6 +861,15 @@
         <button id="opt-btn-ambient-fire" onclick="window.toggleOptionAmbientFire()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
       </div>
 
+      <!-- Sight Area Option -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
+        <div>
+          <div style="font-weight:700; color:#f8fafc; font-size:0.88rem;">👁️ Show what units can see</div>
+          <div class="sub-text" style="color:#94a3b8;">Shades in green the ground your selected unit can see, out to its longest weapon range</div>
+        </div>
+        <button id="opt-btn-sight" onclick="window.toggleOptionSight()" class="btn-confirm" style="min-width:90px; padding:6px 12px; font-size:0.78rem;">Enabled</button>
+      </div>
+
       <!-- Painted Battlefield Option -->
       <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 14px; border-radius:8px; border:1px solid #334155;">
         <div>
@@ -41110,6 +41119,8 @@ window.updateOptionsUI = function() {
     btnCam.className = window.aiCamFollow ? 'btn-confirm' : 'btn-primary';
   }
 
+  const btnSight = document.getElementById('opt-btn-sight');
+  if (btnSight) { btnSight.innerText = (window.showSightArea !== false) ? 'Enabled' : 'Off'; btnSight.className = (window.showSightArea !== false) ? 'btn-confirm' : 'btn-warn'; }
   const btnPaint = document.getElementById('opt-btn-painted');
   if (btnPaint) {
     btnPaint.innerText = (window.paintedField !== false) ? 'Enabled' : 'Simple';
@@ -41194,6 +41205,11 @@ window.toggleOptionAmbientFire = function() {
   window.saveCurrentOptions();
 };
 
+window.toggleOptionSight = function() {
+  window.showSightArea = window.showSightArea === false;
+  window.updateOptionsUI(); window.saveCurrentOptions();
+  const sc = window.gameScene; if (sc && sc.drawOverlays) sc.drawOverlays();
+};
 window.toggleOptionPainted = function() {
   window.paintedField = window.paintedField === false;
   window.updateOptionsUI();
@@ -41234,6 +41250,7 @@ window.saveCurrentOptions = function() {
       aiCamFollow: window.aiCamFollow,
       ambientBattlefieldFire: window.ambientBattlefieldFire,
       paintedField: window.paintedField !== false,
+      showSightArea: window.showSightArea !== false,
       tableSize: window.tableSize,
       mapPreset: window.mapPreset
     }));
@@ -41251,6 +41268,7 @@ window.loadSavedOptions = function() {
       if (opts.aiCamFollow !== undefined) window.aiCamFollow = Boolean(opts.aiCamFollow);
       if (opts.ambientBattlefieldFire !== undefined) window.ambientBattlefieldFire = Boolean(opts.ambientBattlefieldFire);
       if (opts.paintedField !== undefined) window.paintedField = Boolean(opts.paintedField);
+      if (opts.showSightArea !== undefined) window.showSightArea = Boolean(opts.showSightArea);
       if (opts.tableSize) window.tableSize = opts.tableSize;
       if (opts.mapPreset) window.mapPreset = opts.mapPreset;
     }
@@ -41565,6 +41583,16 @@ window.handleImportSaveFile = function(event) {
   });
   event.target.value = '';
 };
+
+// A finger lifted over a pop-up (like the combat card) never tells the game it went up, leaving a 'ghost' finger down:
+// every later drag then counted as a two-finger pinch or twist. Keep the game's pointers in step with the real touches.
+['touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, (e) => {
+  const sc = window.gameScene; if (!sc || !sc.input) return;
+  const live = new Set([...e.touches].map(t => t.identifier));
+  [sc.input.pointer1, sc.input.pointer2].forEach(p => { if (p && p.isDown && p.wasTouch && !live.has(p.identifier)) { p.isDown = false; p.buttons = 0; p.primaryDown = false; } });
+  if (e.touches.length < 2) sc._gest = null;
+}, true));
+window.addEventListener('blur', () => { const sc = window.gameScene; if (sc && sc.input) { [sc.input.pointer1, sc.input.pointer2].forEach(p => { if (p) { p.isDown = false; p.buttons = 0; } }); sc._gest = null; } });
 
 // Camera keys: W A S D / arrows move the view, Q / E turn the table, R turns it back
 window._camKeys = new Set();
@@ -46297,6 +46325,7 @@ class NetEpicScene extends Phaser.Scene {
     // Pan so the action sits in the middle of the free area, not behind the card
     const dy = (topH - botH) / 2;
     const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
+    if (this.autoCamBlocked()) return;
     cam.pan(midX - (sn * dy) / targetZoom, midY - (c * dy) / targetZoom, 450, 'Sine.easeInOut', true);
     cam.zoomTo(targetZoom, 450, 'Sine.easeInOut', true);
   }
@@ -58650,7 +58679,15 @@ class NetEpicScene extends Phaser.Scene {
       this.lastClickTime = now;
       this.lastClickedDet = clickedDet;
 
-      // In Combat Phase: if we already have an active friendly firing detachment, clicking an enemy selects it as Target!
+      // In Combat Phase with a firer chosen: a tap counts for the enemy under the finger even when a friendly stand's touch
+      // area overlaps it, and only a tap squarely on another of your own units switches the firer to it.
+      if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') && this.activatingDetachment && clickedDet.faction === this.activePlayer && clickedDet !== this.activatingDetachment) {
+        const wx = pointer.worldX, wy = pointer.worldY; let enemy = null, best = 1e9;
+        this.detachments.forEach(d => { if (d.faction === this.activePlayer || !d.stands.length || d.embarkedOn || d.inReserve) return; d.stands.forEach(st => { const dd = Phaser.Math.Distance.Between(wx, wy, st.container.x, st.container.y); if (dd <= (st.baseRadius || 12) + 8 && dd < best) { best = dd; enemy = d; } }); });
+        const onStand = Phaser.Math.Distance.Between(wx, wy, gameObject.x, gameObject.y) <= (gameObject.standData.baseRadius || 12) * 0.9;
+        if (enemy && !(onStand && best > Phaser.Math.Distance.Between(wx, wy, gameObject.x, gameObject.y))) { this.targetDetachment = enemy; this.drawOverlays(); this.updateUI(); return; }
+        if (!onStand) return;
+      }
       if ((this.phase === 'COMBAT_FIRST' || this.phase === 'COMBAT_ADVANCE') &&
           this.activatingDetachment && clickedDet.faction !== this.activePlayer) {
         this.targetDetachment = clickedDet;
@@ -58895,6 +58932,8 @@ class NetEpicScene extends Phaser.Scene {
       if ((!currentlyOver || currentlyOver.length === 0) && pointer.getDistance() < 10 && pointer.getDuration() < 600) this.handleBoardTap(pointer.worldX, pointer.worldY);
     });
 
+    this.input.on('pointerdown', () => { this._gest = null; });
+    this.input.on('pointerup', () => { this._gest = null; });
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       if (this.isRotatingGizmo && this.rotatingStand) {
         const dGizmo = Phaser.Math.Distance.Between(this.rotatingStand.container.x, this.rotatingStand.container.y, pointer.worldX, pointer.worldY);
@@ -58939,6 +58978,7 @@ class NetEpicScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y), ang = Math.atan2(p2.y - p1.y, p2.x - p1.x), mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
         if (!this._gest) this._gest = { d0: dist, a0: ang, z0: cam.zoom, mode: null, lastA: ang, mid };
         const G = this._gest, Cx = cam.width / 2, Cy = cam.height / 2;
+        this.userMovedCamera();
         const worldAt = (S, r, z) => { const vx = S.x - Cx, vy = S.y - Cy, c = Math.cos(r), sn = Math.sin(r); return { x: cam.scrollX + Cx + (c * vx + sn * vy) / z, y: cam.scrollY + Cy + (-sn * vx + c * vy) / z }; };
         const W = worldAt(G.mid, cam.rotation, cam.zoom);
         let da = ang - G.a0; da = Math.atan2(Math.sin(da), Math.cos(da));
@@ -58955,6 +58995,7 @@ class NetEpicScene extends Phaser.Scene {
       this.lastPinchDist = 0; this._twistOn = false; this._twistAcc = 0;
       if (pointer.isDown) {
         const dx = pointer.x - pointer.prevPosition.x, dy = pointer.y - pointer.prevPosition.y;
+        if (Math.abs(dx) + Math.abs(dy) > 1) this.userMovedCamera();
         const c = Math.cos(cam.rotation), sn = Math.sin(cam.rotation);
         cam.scrollX -= (c * dx + sn * dy) / cam.zoom;
         cam.scrollY -= (-sn * dx + c * dy) / cam.zoom;
@@ -58976,6 +59017,15 @@ class NetEpicScene extends Phaser.Scene {
       this.resetCamera();
     }
   }
+  // The player is moving the view: stop any automatic camera move at once, and hold off new ones for a few seconds,
+  // so the game never fights a pinch, twist or drag (this was what left the view stuck zoomed or turning in fire phases)
+  userMovedCamera() {
+    this._userCamAt = Date.now(); const cam = this.cameras.main;
+    if (cam.panEffect && cam.panEffect.isRunning) cam.panEffect.reset();
+    if (cam.zoomEffect && cam.zoomEffect.isRunning) cam.zoomEffect.reset();
+    if (this._twistTween) { this._twistTween.stop(); this._twistTween = null; }
+  }
+  autoCamBlocked() { return Date.now() - (this._userCamAt || 0) < 4000; }
   // Your army sets up along the bottom edge: Army 2 (North) players see the table the other way up
   wantedViewBase() { return window.aiFaction === 'IMPERIUM' ? Math.PI : 0; }
   // Turn the table about the middle of the screen (two-finger twist, or Q / E on a keyboard)
@@ -58987,7 +59037,7 @@ class NetEpicScene extends Phaser.Scene {
   }
   resetViewRotation() {
     const from = this.viewTwist || 0; if (!from) return;
-    const st = { t: 0 }; this.tweens.add({ targets: st, t: 1, duration: 350, ease: 'Sine.easeInOut', onUpdate: () => this.rotateView(from * (1 - st.t) - (this.viewTwist || 0)), onComplete: () => { this.rotateView(-(this.viewTwist || 0)); } });
+    const st = { t: 0 }; this._twistTween = this.tweens.add({ targets: st, t: 1, duration: 350, ease: 'Sine.easeInOut', onUpdate: () => this.rotateView(from * (1 - st.t) - (this.viewTwist || 0)), onComplete: () => { this.rotateView(-(this.viewTwist || 0)); } });
   }
   // A small compass appears while the table is turned; tapping it turns the table back
   updateCompassButton() {
@@ -59064,6 +59114,7 @@ class NetEpicScene extends Phaser.Scene {
     const cam = this.cameras.main;
     const tx = Phaser.Math.Clamp(x, 50, BOARD_W - 50);
     const ty = Phaser.Math.Clamp(y, 50, BOARD_H - 50);
+    if (this.autoCamBlocked()) return;
     cam.pan(tx, ty, duration, 'Sine.easeInOut', true);
   }
 
@@ -59088,6 +59139,7 @@ class NetEpicScene extends Phaser.Scene {
     if (!det) return;
     if (this.phase === 'MOVEMENT' && !this.activatingDetachment) { this.selectedDetachment = det; this.updateUI(); this.drawOverlays(); }
     const c = this.getDetachmentCenter(det);
+    if (this.autoCamBlocked()) return;
     if (cam.zoom < 0.75 * DPR) cam.zoomTo(0.9 * DPR, 500, 'Sine.easeInOut', true);
     cam.pan(Phaser.Math.Clamp(c.x, 50, BOARD_W - 50), Phaser.Math.Clamp(c.y, 50, BOARD_H - 50), 600, 'Sine.easeInOut', true);
   }
@@ -60444,6 +60496,7 @@ class NetEpicScene extends Phaser.Scene {
     const midY = Phaser.Math.Clamp((p1.y + p2.y) / 2, 50, BOARD_H - 50);
 
     const cam = this.cameras.main;
+    if (this.autoCamBlocked()) return;
     cam.pan(midX, midY, duration, 'Sine.easeInOut', true);
     if (cam.zoom < 0.95 * DPR) {
       cam.zoomTo(1.15 * DPR, duration, 'Sine.easeInOut', true);
@@ -61197,7 +61250,43 @@ class NetEpicScene extends Phaser.Scene {
     return visited.size === stands.length;
   }
 
-  drawOverlays() {
+  // ---- what the selected unit can see: a soft green area out to its longest weapon range, cut off by terrain ----
+  detSightRangeCm(det) {
+    const r = [det.weapon && det.weapon.rangeCm, ...(det.salvos || []).map(w => w && w.rangeCm), ...det.stands.map(s => s.weapon && s.weapon.rangeCm)].filter(v => v > 0 && v < 400);
+    return Math.min(150, r.length ? Math.max(...r) : 50);
+  }
+  sightRay(p, a, maxPx, onHill) {
+    const dx = Math.cos(a), dy = Math.sin(a), step = 5; let woods = 0, inHill = null;
+    for (let t = step; t <= maxPx; t += step) {
+      const x = p.x + dx * t, y = p.y + dy * t;
+      if (x < 0 || y < 0 || x > BOARD_W || y > BOARD_H) return t;
+      for (const b of this.buildings) if (!b.collapsed && b !== p.bld && this.pointInRect(b, x, y)) return t;
+      for (const r of (this.rocks || [])) if (this.inPoly(r.points, x, y)) return t;
+      for (const sc of (this.smokeClouds || [])) if ((x - sc.x) ** 2 + (y - sc.y) ** 2 <= sc.r * sc.r) return t;
+      if (!onHill) { const h = (this.hills || []).find(q => this.inEllipse(q, x, y)); if (h) inHill = h; else if (inHill) return t; }
+      if ((this.woods || []).some(w => (x - w.x) ** 2 + (y - w.y) ** 2 <= w.r * w.r) || (this.inCrops && this.inCrops(x, y))) { woods += step; if (woods > 2 * PX_PER_CM) return t; }
+    }
+    return maxPx;
+  }
+  drawSightArea() {
+    const on = window.showSightArea !== false && !window._mapView;
+    const det = this.activatingDetachment || this.selectedDetachment;
+    const show = on && det && det.stands.length && !det.embarkedOn && !det.inReserve && !this.isFactionAI(det.faction) && !this.isDraggingStand && ['DEPLOYMENT', 'ORDERS', 'MOVEMENT', 'COMBAT_FIRST', 'COMBAT_ADVANCE'].includes(this.phase);
+    if (!show) { if (this._sightRT) this._sightRT.setVisible(false); return; }
+    const maxPx = this.detSightRangeCm(det) * PX_PER_CM, stands = det.stands.length > 8 ? det.stands.filter((_, i) => i % Math.ceil(det.stands.length / 8) === 0) : det.stands;
+    const key = [det.id, maxPx, BOARD_W, BOARD_H, (this.smokeClouds || []).length, ...stands.map(s => Math.round(s.container.x) + ',' + Math.round(s.container.y))].join('|');
+    if (!this._sightRT || !this._sightRT.scene || this._sightRT.width !== BOARD_W || this._sightRT.height !== BOARD_H) { if (this._sightRT) this._sightRT.destroy(); this._sightRT = this.add.renderTexture(0, 0, BOARD_W, BOARD_H).setOrigin(0, 0).setDepth(2.5).setAlpha(0.32); this._sightKey = null; }
+    this._sightRT.setVisible(true);
+    if (key === this._sightKey) return; this._sightKey = key;
+    const g = this._sightGfx || (this._sightGfx = this.make.graphics({ x: 0, y: 0, add: false })); g.clear(); g.fillStyle(0xbef264, 1);
+    const N = 120;
+    stands.forEach(st => { const p = { x: st.container.x, y: st.container.y, bld: this.getBuildingAt ? this.getBuildingAt(st.container.x, st.container.y) : null }, onHill = (this.hills || []).some(h => this.inEllipse(h, p.x, p.y, 4)), pts = [];
+      for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, d = this.sightRay(p, a, maxPx, onHill); pts.push({ x: p.x + Math.cos(a) * d, y: p.y + Math.sin(a) * d }); }
+      g.fillPoints(pts, true); });
+    this._sightRT.clear(); this._sightRT.draw(g);
+  }
+  drawOverlays() { this.drawOverlaysSightCore(); try { this.drawSightArea(); } catch (e) { console.error(e); } }
+  drawOverlaysSightCore() {
     this.drawOverlaysCore();
     const b = this.targetBuildingMode && this.targetBuildingObj;
     if (b && this.overlayGfx) { const g = this.overlayGfx; g.lineStyle(4, 0xef4444, 0.95); g.strokePoints(this.rectCorners(b, 6), true); g.lineStyle(1.5, 0xfde047, 0.9); g.strokePoints(this.rectCorners(b, 11), true); }
