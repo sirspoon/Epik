@@ -43881,7 +43881,15 @@ const EpikPaint = (() => {
     ctx.restore();
   }
   // ---------- shading helpers ----------
-  function softShadow(ctx, path, dx, dy, blur, a) { ctx.save(); ctx.translate(dx, dy); ctx.filter = `blur(${blur}px)`; ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fill(path); ctx.restore(); }
+  // Soft (blurred) drawing without ctx.filter: a filter makes the browser copy the WHOLE canvas for every shape, which on a
+  // big table runs phones (and even desktops) out of memory. Instead the shape is drawn far off the canvas and only its
+  // blurred shadow, shifted back into place, lands on it.
+  function blurred(ctx, blur, color, draw) {
+    ctx.save(); const m = ctx.getTransform(), sc = Math.hypot(m.a, m.b) || 1, OFF = 20000;
+    ctx.shadowColor = color; ctx.shadowBlur = blur * 2 * sc; ctx.shadowOffsetX = m.a * OFF; ctx.shadowOffsetY = m.b * OFF;
+    ctx.translate(-OFF, 0); ctx.fillStyle = '#000'; ctx.strokeStyle = '#000'; draw(); ctx.restore();
+  }
+  function softShadow(ctx, path, dx, dy, blur, a) { blurred(ctx, blur, `rgba(0,0,0,${a})`, () => { ctx.translate(dx, dy); ctx.fill(path); }); }
   const polyPath = pts => { const p = new Path2D(); pts.forEach((q, i) => i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y)); p.closePath(); return p; };
   const linePath = pts => { const p = new Path2D(); pts.forEach((q, i) => i ? p.lineTo(q.x, q.y) : p.moveTo(q.x, q.y)); return p; };
 
@@ -43973,7 +43981,7 @@ const EpikPaint = (() => {
   function track(ctx, pts, w, theme) {
     const T = THEMES[theme], path = filletPath(pts, w * 6);
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.filter = 'blur(3px)'; ctx.strokeStyle = rgba(hex(T.mud[0]), 0.45); ctx.lineWidth = w * 1.3; ctx.stroke(path); ctx.filter = 'none';
+    blurred(ctx, 3, rgba(hex(T.mud[0]), 0.45), () => { ctx.lineWidth = w * 1.3; ctx.stroke(path); });
     ctx.strokeStyle = pattern(ctx, noiseTile('mud_' + theme, T.mud[0], T.mud[2], 20, 26)); ctx.lineWidth = w; ctx.stroke(path);
     { const rw = Math.max(1.2, w * 0.09); ctx.strokeStyle = 'rgba(40,30,18,0.4)'; ctx.lineWidth = w * 0.4 + rw; ctx.stroke(path); ctx.strokeStyle = pattern(ctx, noiseTile('mud_' + theme, T.mud[0], T.mud[2], 20, 26)); ctx.lineWidth = w * 0.4 - rw; ctx.stroke(path); }
     seed(pts[0].x * 3 + pts[0].y);
@@ -43989,7 +43997,7 @@ const EpikPaint = (() => {
     ctx.strokeStyle = 'rgba(40,40,38,0.35)'; ctx.lineWidth = 0.8; for (let t = 0; t < L; t += 10) { ctx.beginPath(); ctx.moveTo(t, -w / 2 - side); ctx.lineTo(t, -w / 2); ctx.moveTo(t + 5, w / 2); ctx.lineTo(t + 5, w / 2 + side); ctx.stroke(); }
     // ferrocrete carriageway
     ctx.fillStyle = pattern(ctx, noiseTile('asphalt', '#3a3c3f', '#4a4b4c', 40, 18)); ctx.fillRect(0, -w / 2, L, w);
-    ctx.save(); ctx.beginPath(); ctx.rect(0, -w / 2, L, w); ctx.clip(); ctx.filter = 'blur(3px)'; ctx.fillStyle = 'rgba(22,22,24,0.32)'; [-w * 0.27, w * 0.27].forEach(o => ctx.fillRect(0, o - w * 0.07, L, w * 0.14)); ctx.filter = 'none';
+    ctx.save(); ctx.beginPath(); ctx.rect(0, -w / 2, L, w); ctx.clip(); blurred(ctx, 3, 'rgba(22,22,24,0.32)', () => [-w * 0.27, w * 0.27].forEach(o => ctx.fillRect(0, o - w * 0.07, L, w * 0.14)));
     seed(rd.x1 * 7 + rd.y1 * 3 + rd.x2);
     for (let t = 0; t < L; t += 26) { ctx.fillStyle = `rgba(214,190,90,${R(0.12, 0.55)})`; ctx.fillRect(t, -0.8, 14 * R(0.5, 1), 1.6); }
     ctx.strokeStyle = 'rgba(12,12,12,0.55)'; ctx.lineWidth = 0.7; for (let k = 0; k < L / 30; k++) { let x = R(0, L), y = R(-w / 2, w / 2); ctx.beginPath(); ctx.moveTo(x, y); for (let j = 0; j < 6; j++) { x += R(-6, 6); y += R(-4, 4); ctx.lineTo(x, y); } ctx.stroke(); }
@@ -44076,7 +44084,7 @@ const EpikPaint = (() => {
     const S = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], L = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { x: p.x, y: p.y, tx: (b.x - a.x) / L, ty: (b.y - a.y) / L }; });
     seed(Math.round(pts[0].x * 13 + pts[0].y * 7 + w));
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.filter = 'blur(6px)'; ctx.strokeStyle = C.damp; ctx.lineWidth = w + 40; ctx.stroke(path); ctx.filter = 'none';
+    blurred(ctx, 6, C.damp, () => { ctx.lineWidth = w + 40; ctx.stroke(path); });
     ctx.strokeStyle = pattern(ctx, noiseTile('bank_' + (kind || 'river'), C.bank[0], C.bank[1], 9, 30)); ctx.lineWidth = w + 22; ctx.stroke(path);
     // stones (and reeds) along both banks
     S.forEach((p, i) => [-1, 1].forEach(sd => {
@@ -44085,8 +44093,8 @@ const EpikPaint = (() => {
     }));
     // water: shallow edge, then deeper towards the middle
     ctx.strokeStyle = C.edge; ctx.lineWidth = w + 2; ctx.stroke(path);
-    ctx.filter = 'blur(4px)'; ctx.strokeStyle = C.body; ctx.lineWidth = w - 4; ctx.stroke(path); ctx.filter = 'none';
-    ctx.filter = 'blur(7px)'; ctx.strokeStyle = C.deep; ctx.lineWidth = w * 0.65; ctx.stroke(path); ctx.strokeStyle = C.deeper; ctx.lineWidth = w * 0.3; ctx.stroke(path); ctx.filter = 'none';
+    blurred(ctx, 4, C.body, () => { ctx.lineWidth = w - 4; ctx.stroke(path); });
+    blurred(ctx, 7, C.deep, () => { ctx.lineWidth = w * 0.65; ctx.stroke(path); }); blurred(ctx, 7, C.deeper, () => { ctx.lineWidth = w * 0.3; ctx.stroke(path); });
     if (C.ripple) { ctx.globalAlpha = 0.3; ctx.strokeStyle = pattern(ctx, noiseTile('ripple', '#1d3d4c', '#4f7f92', 7, 10)); ctx.lineWidth = w - 8; ctx.stroke(path); ctx.globalAlpha = 1; }
     if (C.dry) { // a dry bed: pebbles and cracked mud
       S.forEach(p => { for (let k = 0; k < 3; k++) { const o = R(-w * 0.45, w * 0.45), x = p.x - p.ty * o, y = p.y + p.tx * o, r = R(0.8, 2.4); ctx.fillStyle = C.stones[Math.floor(rnd() * 3)]; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.7, R(0, 3), 0, 7); ctx.fill(); }
@@ -44147,7 +44155,7 @@ const EpikPaint = (() => {
   function wreck(ctx, x, y, a, s, big) {
     { const g = ctx.createRadialGradient(x, y, 0, x, y, 22 * s); g.addColorStop(0, 'rgba(18,14,10,0.65)'); g.addColorStop(0.6, 'rgba(30,24,16,0.3)'); g.addColorStop(1, 'rgba(30,24,16,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 22 * s, 0, 7); ctx.fill(); }
     ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.scale(s * 0.45, s * 0.45);
-    ctx.save(); ctx.translate(4, 5); ctx.filter = 'blur(3px)'; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-24, -17, 48, 34); ctx.restore();
+    blurred(ctx, 3, 'rgba(0,0,0,0.5)', () => ctx.fillRect(-20, -12, 48, 34));
     const trk = (x0, y0, len, rot = 0) => { ctx.save(); ctx.translate(x0, y0); ctx.rotate(rot); ctx.fillStyle = '#211d1a'; ctx.fillRect(0, 0, len, 7); ctx.fillStyle = '#3b342e'; for (let t = 1; t < len; t += 3) ctx.fillRect(t, 0.8, 1.6, 5.4); ctx.restore(); };
     trk(-24, -17, 47); if (rnd() < 0.5) trk(-20, 19, 30, 0.22); else trk(-24, 10, 47);
     const g = ctx.createLinearGradient(-22, -12, 22, 12); g.addColorStop(0, '#6a5442'); g.addColorStop(0.4, '#43362b'); g.addColorStop(1, '#221b16'); ctx.fillStyle = g; ctx.fillRect(-22, -11, 44, 23);
@@ -44286,7 +44294,7 @@ const EpikPaint = (() => {
     ctx.fillStyle = 'rgba(200,205,210,0.18)'; for (let x = 0; x < W; x += 40) for (let y = 0; y < H; y += 40) { ctx.fillRect(x + 3, y + 3, 1.5, 1.5); ctx.fillRect(x + 35, y + 3, 1.5, 1.5); ctx.fillRect(x + 3, y + 35, 1.5, 1.5); ctx.fillRect(x + 35, y + 35, 1.5, 1.5); }
     ctx.restore();
   }
-  function shadowed(ctx, path, dx = 4, dy = 5) { ctx.save(); ctx.translate(dx, dy); ctx.filter = 'blur(2px)'; ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill(path); ctx.restore(); }
+  function shadowed(ctx, path, dx = 4, dy = 5) { blurred(ctx, 2, 'rgba(0,0,0,0.45)', () => { ctx.translate(dx, dy); ctx.fill(path); }); }
   function disc(ctx, x, y, r, c1, c2) { const p = new Path2D(); p.arc(x, y, r, 0, 7); shadowed(ctx, p, r * 0.3, r * 0.4); const g = ctx.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.05, x, y, r); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fill(p); ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1; ctx.stroke(p); }
   function hiveProp(ctx, x, y, r, kind, a) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
