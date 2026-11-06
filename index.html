@@ -41586,13 +41586,16 @@ window.handleImportSaveFile = function(event) {
 
 // A finger lifted over a pop-up (like the combat card) never tells the game it went up, leaving a 'ghost' finger down:
 // every later drag then counted as a two-finger pinch or twist. Keep the game's pointers in step with the real touches.
-['touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, (e) => {
-  const sc = window.gameScene; if (!sc || !sc.input) return;
+// A pointer also has to be marked inactive, or Phaser keeps that finger slot taken and ignores the next finger
+// (a pinch then never sees its second finger, so you can't zoom or turn). Checked again whenever a touch starts.
+const syncTouchPointers = (e) => {
+  const sc = window.gameScene; if (!sc || !sc.input || !sc.input.manager) return;
   const live = new Set([...e.touches].map(t => t.identifier));
-  [sc.input.pointer1, sc.input.pointer2].forEach(p => { if (p && p.isDown && p.wasTouch && !live.has(p.identifier)) { p.isDown = false; p.buttons = 0; p.primaryDown = false; } });
+  sc.input.manager.pointers.forEach(p => { if (p && p.wasTouch && (p.isDown || p.active) && !live.has(p.identifier)) { p.isDown = false; p.active = false; p.buttons = 0; p.primaryDown = false; } });
   if (e.touches.length < 2) sc._gest = null;
-}, true));
-window.addEventListener('blur', () => { const sc = window.gameScene; if (sc && sc.input) { [sc.input.pointer1, sc.input.pointer2].forEach(p => { if (p) { p.isDown = false; p.buttons = 0; } }); sc._gest = null; } });
+};
+['touchstart', 'touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, syncTouchPointers, true));
+window.addEventListener('blur', () => { const sc = window.gameScene; if (sc && sc.input) { sc.input.manager.pointers.forEach(p => { if (p && p.wasTouch) { p.isDown = false; p.active = false; p.buttons = 0; } }); sc._gest = null; } });
 
 // Camera keys: W A S D / arrows move the view, Q / E turn the table, R turns it back
 window._camKeys = new Set();
