@@ -1016,6 +1016,22 @@
               <div style="font-size:1.3rem;">✴️</div>
               <div style="font-weight:700; color:#f8fafc;">Chaos Wastes</div>
             </div>
+            <div id="map-card-ORK_CRASHSITE" class="preset-card" onclick="window.setMapPreset('ORK_CRASHSITE')" title="Da Big Rok, the great crashed Ork ship, with a camp in its shadow.">
+              <div style="font-size:1.3rem;">🚀</div>
+              <div style="font-weight:700; color:#f8fafc;">Ork Crash Site</div>
+            </div>
+            <div id="map-card-ORK_POWERSTATION" class="preset-card" onclick="window.setMapPreset('ORK_POWERSTATION')" title="A crackling Mek generator fed by four pylons.">
+              <div style="font-size:1.3rem;">⚡</div>
+              <div style="font-weight:700; color:#f8fafc;">Mek Power Station</div>
+            </div>
+            <div id="map-card-ELDAR_RUINS" class="preset-card" onclick="window.setMapPreset('ELDAR_RUINS')" title="Overgrown temples, fallen spires and a webway gate.">
+              <div style="font-size:1.3rem;">🏛️</div>
+              <div style="font-weight:700; color:#f8fafc;">Eldar Ruins</div>
+            </div>
+            <div id="map-card-IMPERIAL_OUTPOST" class="preset-card" onclick="window.setMapPreset('IMPERIAL_OUTPOST')" title="An abandoned, shell-scarred Imperial outpost.">
+              <div style="font-size:1.3rem;">🦅</div>
+              <div style="font-weight:700; color:#f8fafc;">Imperial Outpost</div>
+            </div>
             <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')" title="Procedurally generated terrain with mixed cover.">
               <div style="font-size:1.3rem;">🎲</div>
               <div style="font-weight:700; color:#f8fafc;">Randomized</div>
@@ -39965,6 +39981,10 @@ const MAP_LABELS = {
   EXODITE_STEPPE: '🌾 Saurian Steppe',
   EXODITE_JUNGLE: '🌴 Maiden Jungle',
   CHAOS_WASTES: '✴️ Chaos Wastes',
+  ORK_CRASHSITE: '🚀 Ork Crash Site',
+  ORK_POWERSTATION: '⚡ Mek Power Station',
+  ELDAR_RUINS: '🏛️ Ancient Eldar Ruins',
+  IMPERIAL_OUTPOST: '🦅 Abandoned Imperial Outpost',
   RANDOM: '🎲 Randomized'
 };
 // ===== SCENARIOS (from the campaign supplements, converted to NetEpic): North (defender) v South (attacker) =====
@@ -40133,7 +40153,7 @@ window.renderCampaignModal = function() {
   const pb = m.querySelector('#camp-player-book'), eb = m.querySelector('#camp-enemy-book');
   if (pb) pb.value = window.sideFaction.IMPERIUM || 'IMPERIUM'; if (eb) eb.value = window.sideFaction.ORKS || 'ORKS';
 };
-const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'EXODITE_PLAINS', 'EXODITE_STEPPE', 'EXODITE_SETTLEMENT', 'EXODITE_JUNGLE', 'ORK_JUNKTOWN', 'CHAOS_WASTES', 'RANDOM'];
+const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'EXODITE_PLAINS', 'EXODITE_STEPPE', 'EXODITE_SETTLEMENT', 'EXODITE_JUNGLE', 'ORK_JUNKTOWN', 'ORK_CRASHSITE', 'ORK_POWERSTATION', 'ELDAR_RUINS', 'IMPERIAL_OUTPOST', 'CHAOS_WASTES', 'RANDOM'];
 
 // A battle in progress keeps its map: it can only be changed by setting up a new battle
 window.battleActive = false;
@@ -43912,7 +43932,7 @@ const EpikPaint = (() => {
     CHAOS: { ground: ['#dcd6da', '#e8e4e8', '#b9acb6', '#cbc2ca'], mud: ['#5a3a3a', '#6e4a48', '#8a6a66'], tree: ['#1b2a22', '#273b2e', '#3f5547', '#d7dfdd'], rock: ['#2a2228', '#3e3238', '#5e4e58'], wall: '#5a4e56', roof: '#3a3238', stone: '#6a5e66' },
     PASS: { ground: ['#5d6b4a', '#6b7a52', '#7d7a5a', '#4f5e3f'], mud: ['#5a4d3a', '#6e604a', '#8a7b60'], tree: ['#24391f', '#33502a', '#4b6e3a', '#6a8c4f'], rock: ['#3f3f46', '#57534e', '#78716c'], wall: '#7d7a72', roof: '#56595e', stone: '#827d73' }
   };
-  const themeFor = preset => ({ SNOW: 'SNOW', DESERT: 'DESERT', HIGHWAY: 'DESERT', RUINED_CITY: 'CITY', HIVE: 'CITY', PASS: 'PASS', EXODITE_PLAINS: 'EXODITE', EXODITE_SETTLEMENT: 'EXODITE', ORK_JUNKTOWN: 'JUNK', EXODITE_STEPPE: 'EXODITE', EXODITE_JUNGLE: 'JUNGLE', CHAOS_WASTES: 'CHAOS' })[preset] || 'GRASS';
+  const themeFor = preset => ({ SNOW: 'SNOW', DESERT: 'DESERT', HIGHWAY: 'DESERT', RUINED_CITY: 'CITY', HIVE: 'CITY', PASS: 'PASS', EXODITE_PLAINS: 'EXODITE', EXODITE_SETTLEMENT: 'EXODITE', ORK_JUNKTOWN: 'JUNK', EXODITE_STEPPE: 'EXODITE', EXODITE_JUNGLE: 'JUNGLE', CHAOS_WASTES: 'CHAOS', ORK_CRASHSITE: 'JUNK', ORK_POWERSTATION: 'JUNK', ELDAR_RUINS: 'EXODITE' })[preset] || 'GRASS';
 
   // ---------- tiled patterns (cached) ----------
   const _pat = {};
@@ -44617,8 +44637,64 @@ const EpikPaint = (() => {
     const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(110,20,140,0.45)'); g.addColorStop(0.55, 'rgba(160,40,180,0.22)'); g.addColorStop(1, 'rgba(160,40,180,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
     ctx.strokeStyle = 'rgba(190,60,200,0.45)'; ctx.lineCap = 'round'; for (let k = 0; k < 9; k++) { let a = R(0, 6.28), px = x, py = y, wdt = 2.2; ctx.beginPath(); ctx.moveTo(px, py); for (let s2 = 0; s2 < 7; s2++) { a += R(-0.5, 0.5); px += Math.cos(a) * r * 0.13; py += Math.sin(a) * r * 0.13; ctx.lineTo(px, py); } ctx.lineWidth = wdt; ctx.stroke(); } }
   function spikePole(ctx, x, y) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(x + 7, y + 4, 9, 2.5, 0.4, 0, 7); ctx.fill(); ctx.fillStyle = '#1c1618'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 7); ctx.fill(); skull(ctx, x, y - 1, 2.6); ctx.fillStyle = '#7f1d1d'; ctx.fillRect(x - 5, y + 3, 10, 1.6); }
-  const ELDAR_BUILDINGS = { WRAITHBONE_TOWER: wraithboneTower, EXODITE_HALL: exoditeHall, WEBWAY_GATE: webwayGate, MEGALITH: megalith, ORK_SHACK: orkShack, ORK_FORT: orkFort, MEK_WORKSHOP: mekWorkshop, WRAITHBONE_WALL: wraithboneWall, WRAITHBONE_BASTION: wraithboneBastion, GARGANT_WIP: gargantWIP, ELDAR_RUIN: eldarRuin, CHAOS_SHRINE: chaosShrine, CHAOS_OBELISK: chaosObelisk };
-  const ROUND_BUILDINGS = new Set(['WRAITHBONE_TOWER', 'EXODITE_HALL', 'WEBWAY_GATE', 'MEGALITH', 'ORK_FORT', 'WRAITHBONE_WALL', 'WRAITHBONE_BASTION', 'ELDAR_RUIN', 'CHAOS_SHRINE', 'CHAOS_OBELISK']);
+  function crashedShip(ctx, w, h) { // Da Big Rok: a huge riveted Ork hulk lying broken in its own furrow, engines still smouldering
+    const L = w / 2, T = h / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(10, 14, L * 1.02, T * 1.05, 0, 0, 7); ctx.fill();
+    const hull = new Path2D(); hull.moveTo(-L, -T * 0.55); hull.lineTo(-L * 0.7, -T); hull.lineTo(L * 0.55, -T * 0.95); hull.lineTo(L * 0.85, -T * 0.5); hull.lineTo(L, 0); hull.lineTo(L * 0.85, T * 0.5); hull.lineTo(L * 0.55, T * 0.95); hull.lineTo(-L * 0.7, T); hull.lineTo(-L, T * 0.55); hull.closePath();
+    const g = ctx.createLinearGradient(0, -T, 0, T); g.addColorStop(0, '#8a8178'); g.addColorStop(0.5, '#5f574f'); g.addColorStop(1, '#2e2924'); ctx.fillStyle = g; ctx.fill(hull);
+    ctx.save(); ctx.clip(hull); seed(w * 7 + h);
+    for (let x = -L; x < L; x += 26) for (let y = -T; y < T; y += 20) if (rnd() < 0.5) { ctx.globalAlpha = 0.55; sheet(ctx, x + R(-4, 4), y + R(-3, 3), R(20, 30), R(14, 20), RUST[Math.floor(rnd() * RUST.length)]); ctx.globalAlpha = 1; }
+    ctx.strokeStyle = 'rgba(20,16,12,0.7)'; ctx.lineWidth = 1.2; for (let x = -L + 20; x < L; x += 22) { ctx.beginPath(); ctx.moveTo(x, -T); ctx.lineTo(x + 6, T); ctx.stroke(); }
+    ctx.fillStyle = '#e8c48a'; for (let x = -L + 10; x < L; x += 11) { ctx.beginPath(); ctx.arc(x, -T * 0.62, 1.1, 0, 7); ctx.arc(x, T * 0.62, 1.1, 0, 7); ctx.fill(); }
+    ctx.fillStyle = 'rgba(15,10,8,0.85)'; ctx.beginPath(); ctx.moveTo(-L * 0.1, -T); ctx.lineTo(L * 0.05, -T * 0.2); ctx.lineTo(L * 0.2, -T * 0.55); ctx.lineTo(L * 0.28, -T); ctx.closePath(); ctx.fill(); // torn open
+    ctx.strokeStyle = '#6b5a48'; ctx.lineWidth = 2; for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.moveTo(-L * 0.05 + k * L * 0.06, -T); ctx.lineTo(-L * 0.02 + k * L * 0.06, -T * 0.45); ctx.stroke(); }
+    ctx.restore(); ctx.strokeStyle = 'rgba(255,220,170,0.25)'; ctx.lineWidth = 1.5; ctx.stroke(hull);
+    ctx.fillStyle = '#7f1d1d'; ctx.beginPath(); ctx.moveTo(L, -T * 0.25); ctx.lineTo(L * 1.18, 0); ctx.lineTo(L, T * 0.25); ctx.closePath(); ctx.fill(); // red prow ram
+    ctx.fillStyle = '#d6c7a0'; for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(L * 1.02, k * T * 0.1); ctx.lineTo(L * 1.1, k * T * 0.1 + T * 0.04); ctx.lineTo(L * 1.02, k * T * 0.1 + T * 0.08); ctx.fill(); }
+    ctx.save(); ctx.translate(L * 0.25, T * 0.2); orkGlyph(ctx, 0, 0, T * 0.6, '#c2410c'); ctx.restore();
+    [[-L * 0.4, -T * 0.55], [-L * 0.1, T * 0.6], [L * 0.45, -T * 0.6]].forEach(([x, y]) => { ctx.fillStyle = '#3a3330'; ctx.fillRect(x - 9, y - 9, 18, 18); ctx.fillStyle = '#1a1714'; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); });
+    [-1, 1].forEach(sd => { const y = sd * T * 0.5; ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.ellipse(-L * 1.02, y, T * 0.2, T * 0.32, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#0c0a09'; ctx.beginPath(); ctx.ellipse(-L * 1.04, y, T * 0.12, T * 0.22, 0, 0, 7); ctx.fill();
+      const fg = ctx.createRadialGradient(-L * 1.06, y, 0, -L * 1.06, y, T * 0.5); fg.addColorStop(0, 'rgba(255,190,80,0.9)'); fg.addColorStop(0.5, 'rgba(249,115,22,0.45)'); fg.addColorStop(1, 'rgba(249,115,22,0)'); ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(-L * 1.06, y, T * 0.5, 0, 7); ctx.fill(); });
+  }
+  function mekGenerator(ctx, w, h) { // a Mek power plant: a ring of crackling coils round a glowing reactor drum, cables everywhere
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.arc(8, 10, r, 0, 7); ctx.fill();
+    ctx.fillStyle = pattern(ctx, noiseTile('genyard', '#2a241e', '#3e342a', 9, 24)); ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+    ctx.lineWidth = r * 0.08; ctx.strokeStyle = '#e8b923'; ctx.beginPath(); ctx.arc(0, 0, r * 0.94, 0, 7); ctx.stroke(); ctx.strokeStyle = '#151210'; ctx.setLineDash([r * 0.12, r * 0.12]); ctx.beginPath(); ctx.arc(0, 0, r * 0.94, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = '#151210'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r * 0.98, 0, 7); ctx.stroke();
+    ctx.strokeStyle = '#1a1714'; ctx.lineWidth = 2.5; for (let k = 0; k < 10; k++) { const a = R(0, 6.28); ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(Math.cos(a + 0.5) * r * 0.4, Math.sin(a + 0.5) * r * 0.4, Math.cos(a - 0.3) * r * 0.7, Math.sin(a - 0.3) * r * 0.7, Math.cos(a) * r * 0.95, Math.sin(a) * r * 0.95); ctx.stroke(); }
+    for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283 + 0.3, x = Math.cos(a) * r * 0.66, y = Math.sin(a) * r * 0.66; // coils
+      ctx.fillStyle = '#4a4440'; ctx.beginPath(); ctx.arc(x, y, r * 0.16, 0, 7); ctx.fill(); ctx.strokeStyle = '#c2410c'; ctx.lineWidth = 2; for (let q = 0.06; q < 0.16; q += 0.035) { ctx.beginPath(); ctx.arc(x, y, r * q, 0, 7); ctx.stroke(); }
+      ctx.fillStyle = '#e8c48a'; ctx.beginPath(); ctx.arc(x, y, r * 0.04, 0, 7); ctx.fill(); }
+    const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.4); rg.addColorStop(0, '#fffbe0'); rg.addColorStop(0.35, '#fde047'); rg.addColorStop(0.8, 'rgba(132,204,22,0.6)'); rg.addColorStop(1, 'rgba(132,204,22,0)'); ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, r * 0.4, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#2a2420'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, r * 0.22, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(253,224,71,0.95)'; ctx.lineWidth = 1.3; for (let k = 0; k < 6; k++) { const a0 = k / 6 * 6.283 + 0.3, a1 = a0 + 6.283 / 6; let x = Math.cos(a0) * r * 0.66, y = Math.sin(a0) * r * 0.66; const x1 = Math.cos(a1) * r * 0.66, y1 = Math.sin(a1) * r * 0.66; ctx.beginPath(); ctx.moveTo(x, y); for (let s = 1; s <= 5; s++) ctx.lineTo(mix(x, x1, s / 5) + R(-5, 5), mix(y, y1, s / 5) + R(-5, 5)); ctx.stroke(); }
+  }
+  function mekPylon(ctx, w, h) { // a crude lattice pylon topped with a lightning ball
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.save(); ctx.rotate(0.7); ctx.fillRect(0, -r * 0.2, r * 2.4, r * 0.4); ctx.restore();
+    ctx.strokeStyle = '#3a3330'; ctx.lineWidth = 2.5; ctx.strokeRect(-r * 0.7, -r * 0.7, r * 1.4, r * 1.4); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.7); ctx.lineTo(r * 0.7, r * 0.7); ctx.moveTo(r * 0.7, -r * 0.7); ctx.lineTo(-r * 0.7, r * 0.7); ctx.stroke();
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, 'rgba(255,255,220,1)'); g.addColorStop(0.3, 'rgba(253,224,71,0.85)'); g.addColorStop(1, 'rgba(253,224,71,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,250,200,0.9)'; ctx.lineWidth = 1; for (let k = 0; k < 4; k++) { let a = R(0, 6.28), x = 0, y = 0; ctx.beginPath(); ctx.moveTo(0, 0); for (let s = 0; s < 4; s++) { a += R(-0.6, 0.6); x += Math.cos(a) * r * 0.3; y += Math.sin(a) * r * 0.3; ctx.lineTo(x, y); } ctx.stroke(); }
+  }
+  function brokenSpire(ctx, w, h) { // a toppled wraithbone spire: the stump and the long fallen shaft broken in sections
+    const L = w / 2, T = h / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(6, 8, L, T, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = ivory(ctx, -L * 0.75, 0, T * 1.1); ctx.beginPath(); ctx.arc(-L * 0.75, 0, T * 0.95, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(110,98,76,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#5a4e40'; ctx.beginPath(); ctx.arc(-L * 0.75, 0, T * 0.45, 0, 7); ctx.fill();
+    [[-0.5, 0.05], [-0.1, -0.02], [0.32, 0.06], [0.7, -0.04]].forEach(([x0, rot], i) => { ctx.save(); ctx.translate(L * x0 + L * 0.18, 0); ctx.rotate(rot); const len = L * 0.36, wd = T * (0.8 - i * 0.12);
+      const g = ctx.createLinearGradient(0, -wd, 0, wd); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.5, '#e2d8bf'); g.addColorStop(1, '#9e9276'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-len / 2, -wd); ctx.lineTo(len / 2, -wd * 0.9); ctx.lineTo(len / 2, wd * 0.9); ctx.lineTo(-len / 2, wd); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(130,116,88,0.55)'; ctx.lineWidth = 0.8; for (let t = -len / 2 + 4; t < len / 2; t += 6) { ctx.beginPath(); ctx.moveTo(t, -wd); ctx.lineTo(t + 2, wd); ctx.stroke(); } ctx.fillStyle = 'rgba(52,190,140,0.7)'; ctx.fillRect(-len / 2, -1, len, 2); ctx.restore(); });
+    ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(L * 0.98, 0, T * 0.22, 0, 7); ctx.fill();
+    for (let k = 0; k < 14; k++) { ctx.fillStyle = rnd() < 0.5 ? 'rgba(60,110,50,0.7)' : 'rgba(200,190,160,0.8)'; ctx.beginPath(); ctx.ellipse(R(-L, L), R(-T, T) * 1.3, R(2, 5), R(1.5, 3), R(0, 3), 0, 7); ctx.fill(); }
+  }
+  function landingPad(ctx, x, y, r) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(x + 4, y + 5, r, 0, 7); ctx.fill(); ctx.fillStyle = pattern(ctx, noiseTile('padcrete', '#6e6a62', '#7f7a70', 12, 20)); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(234,179,8,0.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, r * 0.85, 0, 7); ctx.stroke(); ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x - r * 0.35, y - r * 0.4); ctx.lineTo(x - r * 0.35, y + r * 0.4); ctx.moveTo(x + r * 0.35, y - r * 0.4); ctx.lineTo(x + r * 0.35, y + r * 0.4); ctx.moveTo(x - r * 0.35, y); ctx.lineTo(x + r * 0.35, y); ctx.stroke();
+    for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283; ctx.fillStyle = k % 2 ? '#7f1d1d' : '#facc15'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * r * 0.95, y + Math.sin(a) * r * 0.95, 2.5, 0, 7); ctx.fill(); }
+    for (let k = 0; k < 10; k++) { ctx.fillStyle = 'rgba(70,110,40,0.55)'; ctx.beginPath(); ctx.ellipse(x + R(-r, r) * 0.8, y + R(-r, r) * 0.8, R(3, 8), R(2, 5), R(0, 3), 0, 7); ctx.fill(); } ctx.strokeStyle = 'rgba(20,20,20,0.45)'; ctx.lineWidth = 1; for (let k = 0; k < 5; k++) { let px = x + R(-r, r) * 0.6, py = y + R(-r, r) * 0.6; ctx.beginPath(); ctx.moveTo(px, py); for (let s = 0; s < 4; s++) { px += R(-10, 10); py += R(-10, 10); ctx.lineTo(px, py); } ctx.stroke(); } }
+  function sandbags(ctx, pts) { for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], L = Math.hypot(b.x - a.x, b.y - a.y), ang = Math.atan2(b.y - a.y, b.x - a.x); ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(ang); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(2, -2, L, 9); for (let t = 0; t < L; t += 7) for (let row = 0; row < 2; row++) { ctx.fillStyle = rnd() < 0.5 ? '#8a7a5a' : '#9a8a68'; ctx.beginPath(); ctx.ellipse(t + 3.5 + row * 3, -2 + row * 4, 3.6, 2.2, 0, 0, 7); ctx.fill(); } ctx.restore(); } }
+  const ELDAR_BUILDINGS = { WRAITHBONE_TOWER: wraithboneTower, EXODITE_HALL: exoditeHall, WEBWAY_GATE: webwayGate, MEGALITH: megalith, ORK_SHACK: orkShack, ORK_FORT: orkFort, MEK_WORKSHOP: mekWorkshop, WRAITHBONE_WALL: wraithboneWall, WRAITHBONE_BASTION: wraithboneBastion, GARGANT_WIP: gargantWIP, ELDAR_RUIN: eldarRuin, CHAOS_SHRINE: chaosShrine, CHAOS_OBELISK: chaosObelisk, CRASHED_SHIP: crashedShip, MEK_GENERATOR: mekGenerator, MEK_PYLON: mekPylon, BROKEN_SPIRE: brokenSpire };
+  const ROUND_BUILDINGS = new Set(['WRAITHBONE_TOWER', 'EXODITE_HALL', 'WEBWAY_GATE', 'MEGALITH', 'ORK_FORT', 'WRAITHBONE_WALL', 'WRAITHBONE_BASTION', 'ELDAR_RUIN', 'CHAOS_SHRINE', 'CHAOS_OBELISK', 'CRASHED_SHIP', 'MEK_GENERATOR', 'MEK_PYLON', 'BROKEN_SPIRE']);
   // ---------- small scenery for the Exodite and Ork maps (looks only) ----------
   function flowerPatch(ctx, x, y, r) { const cols = ['#f0abfc', '#c4b5fd', '#fde68a', '#93c5fd', '#fda4af']; const c = cols[Math.floor(rnd() * cols.length)]; for (let k = 0; k < r * 3; k++) { const a = R(0, 7), d = Math.sqrt(rnd()) * r; ctx.fillStyle = rnd() < 0.7 ? c : 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, R(0.7, 1.5), 0, 7); ctx.fill(); } }
   function grassTuft(ctx, x, y, s) { for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + R(-0.7, 0.7); ctx.strokeStyle = rnd() < 0.5 ? 'rgba(170,160,80,0.75)' : 'rgba(110,130,60,0.75)'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.cos(a) * s * 0.5, y + Math.sin(a) * s * 0.5, x + Math.cos(a) * s, y + Math.sin(a) * s); ctx.stroke(); } }
@@ -44645,7 +44721,7 @@ const EpikPaint = (() => {
     for (let b = 0; b < 9; b++) { const a = b / 9 * 6.283, d = r * R(0.1, 0.35), bx = r + Math.cos(a) * d, by = r + Math.sin(a) * d, rr = r * R(0.45, 0.62); const g = x.createRadialGradient(bx - rr * 0.3, by - rr * 0.35, rr * 0.05, bx, by, rr); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(0.55, 'rgba(225,225,228,0.5)'); g.addColorStop(1, 'rgba(200,200,205,0)'); x.fillStyle = g; x.beginPath(); x.arc(bx, by, rr, 0, 7); x.fill(); }
     return c;
   }
-  return { corruption, crystals, deadTree, fern, bigLeaf, skull, bloodStain, warpCrack, spikePole, setTheme, flowerPatch, grassTuft, saurianBones, scrapPile, tyreStack, oilSlick, glyphTotem, barrels, hivePlates, hiveProp, ruinProp, filletPath, filletPoints, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
+  return { landingPad, sandbags, corruption, crystals, deadTree, fern, bigLeaf, skull, bloodStain, warpCrack, spikePole, setTheme, flowerPatch, grassTuft, saurianBones, scrapPile, tyreStack, oilSlick, glyphTotem, barrels, hivePlates, hiveProp, ruinProp, filletPath, filletPoints, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
 })();
 
 try { const o = JSON.parse(localStorage.getItem('netepic_gold_options') || '{}'); if (o.paintedField === false) window.paintedField = false; } catch (e) { }
@@ -45595,6 +45671,7 @@ class NetEpicScene extends Phaser.Scene {
       else { b.siMax = 1; b.save = 6; }
       b.siDamage = 0;
       b.collapsed = false;
+      if (b.collapsedStart) { b.collapsed = true; b.siDamage = b.siMax; } else if (b.startDamage) b.siDamage = Math.min(b.siMax - 1, b.startDamage);
     });
     this.applyScenarioToMap();
   }
@@ -51256,7 +51333,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // ===== MAPS =====
-  mapTheme() { const p = window.mapPreset; return ({ HIGHWAY: 'DESERT', HIVE: 'RUINED_CITY', ORK_JUNKTOWN: 'DESERT', CHAOS_WASTES: 'SNOW', EXODITE_JUNGLE: 'FOREST' })[p] || p; }
+  mapTheme() { const p = window.mapPreset; return ({ HIGHWAY: 'DESERT', HIVE: 'RUINED_CITY', ORK_JUNKTOWN: 'DESERT', ORK_CRASHSITE: 'DESERT', ORK_POWERSTATION: 'DESERT', CHAOS_WASTES: 'SNOW', EXODITE_JUNGLE: 'FOREST' })[p] || p; }
   // Bridge across a winding river at x, square to the river
   bridgeAt(rv, x, len, width, name, isFord = false) {
     const P = rv.points; let i = 0; while (i < P.length - 2 && P[i + 1].x < x) i++;
@@ -51269,7 +51346,7 @@ class NetEpicScene extends Phaser.Scene {
 
   // ===== Tor Elianth campaign maps: Exodite grasslands, an Exodite settlement and an Ork junk town =====
   loadEldarMap(preset, scaleX, scaleY) {
-    if (!['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES'].includes(preset)) return false;
+    if (!['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES', 'ORK_CRASHSITE', 'ORK_POWERSTATION', 'ELDAR_RUINS', 'IMPERIAL_OUTPOST'].includes(preset)) return false;
     const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) }), Ps = arr => arr.map(([x, y]) => P(x, y));
     const B = (type, name, cx, cy, w, h, rot = 0) => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h, rot, type, name });
     const E = o => ({ ...o, x: X(o.x), y: Y(o.y) }), W = (x, y, r) => ({ x: X(x), y: Y(y), r });
@@ -51357,6 +51434,53 @@ class NetEpicScene extends Phaser.Scene {
       this.craters = [E({ x: 760, y: 360, rx: 22 }), E({ x: 1120, y: 420, rx: 20 }), E({ x: 1000, y: 960, rx: 24 })];
       this.objectives = [O(1, 'Shrine of Slaanesh', 925, 430), O(2, 'Corrupted Mound', 1000, 780), O(3, 'Crystal Field', 1380, 640), O(4, 'Ruined Watchtower', 1200, 1020), O(5, 'Chaos Redoubt', 650, 1020)];
       flank('West Wastes', 'East Wastes');
+    } else if (preset === 'ORK_CRASHSITE') {
+      // Da Big Rok: the great Ork ship lies broken at the end of its own impact furrow, a camp grown up in its shadow
+      this.dirtTracks = [trail([[0, 130], [300, 230], [600, 360], [850, 470]], 'Impact Furrow', 70), trail([[0, 1000], [450, 960], [900, 900], [1300, 960], [1850, 930]], 'Loot Track', 20), trail([[1180, 760], [1300, 960]], 'Loot Track', 16)];
+      this.buildings = [B('CRASHED_SHIP', 'Da Big Rok', 1150, 560, 520, 190, 0.38), B('MEK_WORKSHOP', 'Salvage Shop', 650, 780, 170, 115, -0.2), B('ORK_FORT', 'Boss Camp', 1560, 900, 240, 180),
+        ...[[880, 720, 85, 58, 0.3], [1000, 820, 80, 55, -0.2], [1380, 760, 90, 60, 0.15], [1460, 500, 85, 58, -0.35], [820, 960, 80, 55, 0.2], [1700, 640, 80, 55, -0.1]].map(([x, y, w, h, r]) => ({ ...B('ORK_SHACK', 'Ork Shack', x, y, w, h, r), noLabel: true }))];
+      this.hills = [E({ x: 430, y: 160, rx: 260, ry: 40, rot: 0.35, kind: 'ridge', name: 'Spoil Bank' }), E({ x: 560, y: 470, rx: 230, ry: 38, rot: 0.42, kind: 'ridge', name: 'Spoil Bank' }), E({ x: 300, y: 1100, rx: 160, ry: 70, rot: -0.2, name: 'Scorched Hill' }), E({ x: 1650, y: 200, rx: 160, ry: 70, rot: 0.2, name: 'Smoke Hill' })];
+      const heap = (cx, cy, r, sd) => { const pts = []; let q = sd; const rr = () => (q = (q * 16807) % 2147483647) / 2147483647; for (let k = 0; k < 11; k++) { const a = k / 11 * 6.283 + rr() * 0.3, d = r * (0.65 + rr() * 0.5); pts.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.8]); } return { name: 'Wreckage', points: Ps(pts), noLabel: true }; };
+      this.rocks = [heap(900, 300, 60, 5), heap(1350, 300, 55, 9), heap(1720, 420, 50, 13), heap(560, 640, 55, 17), heap(1180, 1120, 65, 21), heap(160, 760, 55, 29)];
+      this.craters = [E({ x: 760, y: 420, rx: 34 }), E({ x: 420, y: 300, rx: 26 }), E({ x: 980, y: 380, rx: 28 }), E({ x: 1100, y: 980, rx: 22 }), E({ x: 300, y: 600, rx: 22 }), E({ x: 1500, y: 300, rx: 24 })];
+      this.objectives = [O(1, 'Da Big Rok', 1150, 560), O(2, 'Impact Crater', 760, 420), O(3, 'Salvage Shop', 650, 780), O(4, 'Boss Camp', 1560, 900), O(5, 'Smoke Hill', 1650, 200)];
+      flank('West Furrow', 'East Wreckage');
+    } else if (preset === 'ORK_POWERSTATION') {
+      // A Mek power station: a crackling generator in the middle, pylons feeding it, Mek shops and junk barricades
+      this.dirtTracks = [trail([[0, 620], [700, 620]], 'Cable Road', 20), trail([[1150, 620], [1850, 620]], 'Cable Road', 20), trail([[925, 0], [925, 400]], 'Grot Track', 16), trail([[925, 840], [925, 1250]], 'Grot Track', 16)];
+      this.buildings = [B('MEK_GENERATOR', 'Da Big Zzapper', 925, 620, 230, 230), ...[[600, 330], [1250, 330], [600, 910], [1250, 910]].map(([x, y], i) => B('MEK_PYLON', `Pylon ${'ABCD'[i]}`, x, y, 60, 60)),
+        B('MEK_WORKSHOP', 'Big Mek\'s Lab', 330, 330, 180, 120, 0.15), B('MEK_WORKSHOP', 'Grot Coil-Works', 1520, 910, 180, 120, -0.15),
+        ...[[300, 880, 85, 58, 0.25], [1550, 340, 85, 58, -0.25], [180, 560, 80, 55, -0.1], [1680, 700, 80, 55, 0.1], [780, 1080, 80, 55, 0.3], [1080, 160, 80, 55, -0.3]].map(([x, y, w, h, r]) => ({ ...B('ORK_SHACK', 'Ork Shack', x, y, w, h, r), noLabel: true }))];
+      const heap = (cx, cy, r, sd) => { const pts = []; let q = sd; const rr = () => (q = (q * 16807) % 2147483647) / 2147483647; for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283 + rr() * 0.3, d = r * (0.65 + rr() * 0.5); pts.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.7]); } return { name: 'Junk Barricade', points: Ps(pts), noLabel: true }; };
+      this.rocks = [heap(760, 470, 45, 3), heap(1090, 780, 45, 7), heap(400, 620, 50, 11), heap(1450, 620, 50, 19), heap(1700, 1120, 60, 23), heap(150, 140, 60, 31)];
+      this.hills = [E({ x: 925, y: 1150, rx: 240, ry: 45, rot: 0, kind: 'ridge', name: 'Slag Ridge' }), E({ x: 925, y: 110, rx: 240, ry: 45, rot: 0, kind: 'ridge', name: 'Ash Ridge' })];
+      this.craters = [E({ x: 500, y: 760, rx: 22 }), E({ x: 1350, y: 480, rx: 22 }), E({ x: 1200, y: 1060, rx: 20 })];
+      this.objectives = [O(1, 'Da Big Zzapper', 925, 620), O(2, 'Pylon A', 600, 330), O(3, 'Pylon D', 1250, 910), O(4, 'Big Mek\'s Lab', 330, 330), O(5, 'Grot Coil-Works', 1520, 910)];
+      flank('West Coils', 'East Coils');
+    } else if (preset === 'ELDAR_RUINS') {
+      // Ancient Eldar ruins: fallen spires and broken temples round a plaza with a webway gate, half swallowed by the grass
+      this.dirtTracks = [trail([[925, 620], [925, 0]], 'Processional Way', 18), trail([[925, 620], [925, 1250]], 'Processional Way', 18), trail([[0, 620], [925, 620], [1850, 620]], 'Processional Way', 18)];
+      this.buildings = [B('WEBWAY_GATE', 'Webway Gate of the Ashen Veil', 925, 620, 140, 140), B('ELDAR_RUIN', 'Temple of Asuryan', 560, 360, 220, 170, 0.2), B('ELDAR_RUIN', 'Temple of Isha', 1300, 880, 220, 170, -0.15),
+        B('BROKEN_SPIRE', 'Fallen Spire', 1300, 340, 300, 70, -0.35), B('BROKEN_SPIRE', 'Fallen Spire', 520, 920, 280, 66, 0.3), B('MEGALITH', 'Bonesinger Circle', 1580, 600, 140, 140),
+        B('WRAITHBONE_TOWER', 'Last Standing Spire', 300, 620, 90, 90), B('ELDAR_RUIN', 'Broken Shrine', 925, 260, 140, 110), B('ELDAR_RUIN', 'Broken Shrine', 925, 990, 140, 110, 0.4)];
+      this.hills = [E({ x: 200, y: 200, rx: 150, ry: 80, rot: 0.2, name: 'Barrow Hill' }), E({ x: 1680, y: 1080, rx: 150, ry: 80, rot: -0.2, name: 'Barrow Hill' })];
+      this.woods = [W(150, 1050, 90), W(1720, 180, 90), W(1150, 120, 60), W(700, 1150, 60), W(1580, 360, 55), W(280, 860, 55)];
+      this.objectives = [O(1, 'Webway Gate', 925, 620), O(2, 'Temple of Asuryan', 560, 360), O(3, 'Temple of Isha', 1300, 880), O(4, 'Bonesinger Circle', 1580, 600), O(5, 'Last Standing Spire', 300, 620)];
+      flank('West Ruins', 'East Ruins');
+    } else if (preset === 'IMPERIAL_OUTPOST') {
+      // An abandoned Imperial outpost: shell-scarred bunkers and habs behind sandbags, an overgrown landing pad and old trenches
+      this.roads = [...this.roadPath(Ps([[925, 0], [925, 1250]]), 32, 'Outpost Road (+5cm Move)'), ...this.roadPath(Ps([[925, 620], [1850, 620]]), 28, 'Supply Spur (+5cm Move)')];
+      this.buildings = [{ ...B('BUNKER', 'North Gate Bunker', 780, 330, 130, 95), startDamage: 1 }, { ...B('BUNKER', 'South Gate Bunker', 1080, 900, 130, 95), startDamage: 2 },
+        { ...B('HAB_BLOCK', 'Barracks', 640, 640, 170, 110, 0.05), startDamage: 1 }, { ...B('HAB_BLOCK', 'Officers\' Quarters', 1180, 420, 150, 100), collapsedStart: true },
+        { ...B('MANUFACTORUM', 'Motor Pool', 1250, 790, 180, 120, -0.05), startDamage: 1 }, { ...B('SILO', 'Promethium Store', 560, 930, 130, 100), startDamage: 0 },
+        { ...B('CATHEDRAL', 'Outpost Chapel', 1500, 280, 160, 115, 0.1), collapsedStart: true }, B('BUNKER', 'Lookout Bunker', 300, 300, 110, 85, 0.3)];
+      this.trenches = [{ points: Ps([[420, 180], [560, 230], [700, 200], [860, 230]]), width: 14, name: 'Old Trench' }, { points: Ps([[990, 1060], [1150, 1020], [1300, 1050], [1460, 1010]]), width: 14, name: 'Old Trench' }];
+      this.minefields = [{ x: X(1550) - 90, y: Y(1050) - 50, w: 180, h: 100, rot: 0.1, name: 'Old Minefield' }];
+      this.hills = [E({ x: 300, y: 300, rx: 140, ry: 80, rot: 0.2, name: 'Lookout Hill' }), E({ x: 1650, y: 900, rx: 150, ry: 75, rot: -0.2, name: 'Signal Hill' })];
+      this.woods = [W(160, 1050, 90), W(1720, 140, 80), W(350, 760, 70), W(1550, 560, 65), W(150, 520, 55)];
+      this.craters = [E({ x: 860, y: 520, rx: 26 }), E({ x: 1000, y: 700, rx: 22 }), E({ x: 760, y: 820, rx: 20 }), E({ x: 1350, y: 560, rx: 24 }), E({ x: 450, y: 450, rx: 20 })];
+      this.objectives = [O(1, 'Landing Pad', 720, 480), O(2, 'Barracks', 640, 640), O(3, 'Motor Pool', 1250, 790), O(4, 'Lookout Hill', 300, 300), O(5, 'Outpost Chapel', 1500, 280)];
+      flank('West Perimeter', 'East Perimeter');
     } else if (preset === 'ORK_JUNKTOWN') {
       // An Ork junk town: a scrap fort in the middle, Mek shops, shanty shacks, scrap heaps, squig pens and muddy tracks
       this.dirtTracks = [trail([[0, 640], [380, 610], [770, 570]], 'Da Main Drag', 24), trail([[1080, 570], [1480, 610], [1850, 650]], 'Da Main Drag', 24),
@@ -51385,12 +51509,41 @@ class NetEpicScene extends Phaser.Scene {
       && !(this.woods || []).some(w => Math.hypot(x - w.x, y - w.y) < w.r + r) && !(this.objectives || []).some(o => Math.hypot(x - o.x, y - o.y) < r + 26)
       && !(this.rivers || []).some(rv => near(rv.points, x, y, (rv.width || 100) / 2 + r + 10)) && !(this.dirtTracks || []).some(t => near(t.points, x, y, (t.width || 14) / 2 + r + 4))
       && !(this.rocks || []).some(k => this.rockAt && this.rockAt(x, y)) && !(this.fields || []).some(f => x > f.x - r && x < f.x + f.w + r && y > f.y - r && y < f.y + f.h + r);
+    const X0 = v => v * BOARD_W / (185 * PX_PER_CM), Y0 = v => v * BOARD_H / (125 * PX_PER_CM);
     const tries = (n, r, fn) => { for (let k = 0, made = 0; k < n * 6 && made < n; k++) { const x = P.R(0, BOARD_W), y = P.R(0, BOARD_H); if (clear(x, y, r)) { fn(x, y); made++; } } };
     if (mp === 'EXODITE_JUNGLE') {
       tries(90, 10, (x, y) => P.fern(ctx, x, y, P.R(6, 11)));
       tries(40, 14, (x, y) => P.bigLeaf(ctx, x, y, P.R(7, 12), P.R(0, 6.28)));
       tries(30, 8, (x, y) => P.flowerPatch(ctx, x, y, P.R(4, 8)));
       tries(14, 16, (x, y) => P.tree(ctx, x, y, P.R(12, 18), P.rnd() < 0.5 ? ['#2a1a40', '#4a2a6a', '#7a4aa0', '#b98ad8'] : ['#0f3a3a', '#1a5a5a', '#2a8a7a', '#7ad0b0']));
+      return;
+    }
+    if (mp === 'ORK_CRASHSITE' || mp === 'ORK_POWERSTATION') {
+      if (mp === 'ORK_POWERSTATION') { const gen = (this.buildings || []).find(b => b.type === 'MEK_GENERATOR'), c = gen && this.bCenter(gen); (this.buildings || []).filter(b => b.type === 'MEK_PYLON').forEach(pb => { const q = this.bCenter(pb); ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(q.x + 3, q.y + 4); ctx.quadraticCurveTo((q.x + c.x) / 2 + 30, (q.y + c.y) / 2 + 30, c.x + 3, c.y + 4); ctx.stroke(); ctx.strokeStyle = '#1a1714'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.quadraticCurveTo((q.x + c.x) / 2 + 30, (q.y + c.y) / 2 + 30, c.x, c.y); ctx.stroke(); }); }
+      else { const sh = (this.buildings || []).find(b => b.type === 'CRASHED_SHIP'); if (sh) { const c = this.bCenter(sh); P.scorch(ctx, c.x, c.y, 320); P.scorch(ctx, c.x - 380, c.y - 150, 160); } }
+      tries(22, 20, (x, y) => P.scrapPile(ctx, x, y, P.R(10, 20)));
+      tries(14, 16, (x, y) => P.oilSlick(ctx, x, y, P.R(8, 18)));
+      tries(10, 10, (x, y) => P.tyreStack(ctx, x, y));
+      tries(10, 14, (x, y) => P.barrels(ctx, x, y));
+      tries(6, 24, (x, y) => P.wreck(ctx, x, y, P.R(0, 6.28), P.R(0.8, 1.2), false));
+      tries(8, 8, (x, y) => P.glyphTotem(ctx, x, y));
+      return;
+    }
+    if (mp === 'ELDAR_RUINS') {
+      tries(50, 8, (x, y) => P.flowerPatch(ctx, x, y, P.R(5, 9)));
+      tries(110, 4, (x, y) => P.grassTuft(ctx, x, y, P.R(5, 9)));
+      tries(26, 10, (x, y) => P.rubble(ctx, x, y, P.R(8, 14), 14, ['#ddd5bf', '#c9c0a8', '#b8b09a', '#9a9480']));
+      tries(10, 16, (x, y) => P.tree(ctx, x, y, P.R(10, 15), ['#1e4a3e', '#2d6a52', '#4f8f6a', '#9ad08a']));
+      return;
+    }
+    if (mp === 'IMPERIAL_OUTPOST') {
+      P.landingPad(ctx, X0(720), Y0(480), 72);
+      P.sandbags(ctx, [[690, 240], [690, 390]].map(([x, y]) => ({ x: X0(x), y: Y0(y) }))); P.sandbags(ctx, [[1160, 820], [1160, 980]].map(([x, y]) => ({ x: X0(x), y: Y0(y) })));
+      P.sandbags(ctx, [[480, 780], [620, 820], [760, 780]].map(([x, y]) => ({ x: X0(x), y: Y0(y) })));
+      tries(10, 20, (x, y) => P.rubble(ctx, x, y, P.R(10, 18), 24));
+      tries(6, 24, (x, y) => P.wreck(ctx, x, y, P.R(0, 6.28), P.R(0.9, 1.2), false));
+      tries(70, 4, (x, y) => P.grassTuft(ctx, x, y, P.R(5, 9)));
+      tries(8, 10, (x, y) => P.barrels(ctx, x, y));
       return;
     }
     if (mp === 'CHAOS_WASTES') {
@@ -56163,7 +56316,7 @@ class NetEpicScene extends Phaser.Scene {
     (this.buildings || []).forEach(b => { if (b._gfx) b._gfx.setVisible(false); try { this.paintBuilding(b); } catch (e) { console.error(e); } });
   }
   paintTerrain(ctx, theme) {
-    const P = EpikPaint, W = BOARD_W, H = BOARD_H, sd = ({ INDUSTRIAL: 3, RUINED_CITY: 7, SNOW: 11, DESERT: 13, RIVER: 17, FOREST: 19, PASS: 23, HIGHWAY: 29, FORTIFIED: 31, HIVE: 37, EXODITE_PLAINS: 41, EXODITE_SETTLEMENT: 43, ORK_JUNKTOWN: 47, EXODITE_STEPPE: 53, EXODITE_JUNGLE: 59, CHAOS_WASTES: 61 })[window.mapPreset] || 5;
+    const P = EpikPaint, W = BOARD_W, H = BOARD_H, sd = ({ INDUSTRIAL: 3, RUINED_CITY: 7, SNOW: 11, DESERT: 13, RIVER: 17, FOREST: 19, PASS: 23, HIGHWAY: 29, FORTIFIED: 31, HIVE: 37, EXODITE_PLAINS: 41, EXODITE_SETTLEMENT: 43, ORK_JUNKTOWN: 47, EXODITE_STEPPE: 53, EXODITE_JUNGLE: 59, CHAOS_WASTES: 61, ORK_CRASHSITE: 67, ORK_POWERSTATION: 71, ELDAR_RUINS: 73, IMPERIAL_OUTPOST: 79 })[window.mapPreset] || 5;
     P.setTheme(theme); P.ground(ctx, W, H, theme, sd);
     if (window.mapPreset === 'HIVE') P.hivePlates(ctx, W, H);
     P.grid(ctx, W, H, 10 * PX_PER_CM);
@@ -56196,7 +56349,7 @@ class NetEpicScene extends Phaser.Scene {
     (this.rocks || []).forEach(r => P.rock(ctx, r.points, theme));
     (this.woods || []).forEach(w => P.woods(ctx, w, theme));
     if (window.mapPreset === 'HIVE' || window.mapPreset === 'RUINED_CITY') this.paintCityDressing(ctx, window.mapPreset === 'HIVE');
-    if (['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES'].includes(window.mapPreset)) this.paintEldarDressing(ctx);
+    if (['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES', 'ORK_CRASHSITE', 'ORK_POWERSTATION', 'ELDAR_RUINS', 'IMPERIAL_OUTPOST'].includes(window.mapPreset)) this.paintEldarDressing(ctx);
     P.lightGrade(ctx, W, H);
     ctx.strokeStyle = '#1e1b18'; ctx.lineWidth = 6; ctx.strokeRect(0, 0, W, H);
   }
