@@ -992,6 +992,30 @@
               <div style="font-size:1.3rem;">🏙️</div>
               <div style="font-weight:700; color:#f8fafc;">Hive Complex</div>
             </div>
+            <div id="map-card-EXODITE_PLAINS" class="preset-card" onclick="window.setMapPreset('EXODITE_PLAINS')" title="Maiden-world grassland with a silver stream, standing stones and a webway gate.">
+              <div style="font-size:1.3rem;">🐉</div>
+              <div style="font-weight:700; color:#f8fafc;">Dragon Plains</div>
+            </div>
+            <div id="map-card-EXODITE_STEPPE" class="preset-card" onclick="window.setMapPreset('EXODITE_STEPPE')" title="Wide open grassland with ridges, a herders&#39; camp and a giant dragon skull.">
+              <div style="font-size:1.3rem;">🌾</div>
+              <div style="font-weight:700; color:#f8fafc;">Saurian Steppe</div>
+            </div>
+            <div id="map-card-EXODITE_SETTLEMENT" class="preset-card" onclick="window.setMapPreset('EXODITE_SETTLEMENT')" title="A walled Exodite settlement in open grassland: halls, spires and a webway plaza.">
+              <div style="font-size:1.3rem;">🏡</div>
+              <div style="font-weight:700; color:#f8fafc;">Exodite Settlement</div>
+            </div>
+            <div id="map-card-EXODITE_JUNGLE" class="preset-card" onclick="window.setMapPreset('EXODITE_JUNGLE')" title="Dense jungle with trails, a river, an overgrown temple and a hidden webway gate.">
+              <div style="font-size:1.3rem;">🌴</div>
+              <div style="font-weight:700; color:#f8fafc;">Maiden Jungle</div>
+            </div>
+            <div id="map-card-ORK_JUNKTOWN" class="preset-card" onclick="window.setMapPreset('ORK_JUNKTOWN')" title="Da Boss Fort, Mek shops, shacks, scrap heaps and a gargant yard.">
+              <div style="font-size:1.3rem;">🛖</div>
+              <div style="font-weight:700; color:#f8fafc;">Ork Junk Town</div>
+            </div>
+            <div id="map-card-CHAOS_WASTES" class="preset-card" onclick="window.setMapPreset('CHAOS_WASTES')" title="Snowfields blighted by Slaanesh round a corrupted shrine.">
+              <div style="font-size:1.3rem;">✴️</div>
+              <div style="font-weight:700; color:#f8fafc;">Chaos Wastes</div>
+            </div>
             <div id="map-card-RANDOM" class="preset-card" onclick="window.setMapPreset('RANDOM')" title="Procedurally generated terrain with mixed cover.">
               <div style="font-size:1.3rem;">🎲</div>
               <div style="font-weight:700; color:#f8fafc;">Randomized</div>
@@ -39935,6 +39959,12 @@ const MAP_LABELS = {
   HIGHWAY: '🛣️ Desert Highway',
   FORTIFIED: '🪖 Fortified Line',
   HIVE: '🏙️ Hive Complex',
+  EXODITE_PLAINS: '🐉 Dragon Plains',
+  EXODITE_SETTLEMENT: '🏡 Exodite Settlement',
+  ORK_JUNKTOWN: '🛖 Ork Junk Town',
+  EXODITE_STEPPE: '🌾 Saurian Steppe',
+  EXODITE_JUNGLE: '🌴 Maiden Jungle',
+  CHAOS_WASTES: '✴️ Chaos Wastes',
   RANDOM: '🎲 Randomized'
 };
 // ===== SCENARIOS (from the campaign supplements, converted to NetEpic): North (defender) v South (attacker) =====
@@ -40103,7 +40133,7 @@ window.renderCampaignModal = function() {
   const pb = m.querySelector('#camp-player-book'), eb = m.querySelector('#camp-enemy-book');
   if (pb) pb.value = window.sideFaction.IMPERIUM || 'IMPERIUM'; if (eb) eb.value = window.sideFaction.ORKS || 'ORKS';
 };
-const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'RANDOM'];
+const MAP_ORDER = ['INDUSTRIAL', 'RUINED_CITY', 'SNOW', 'DESERT', 'RIVER', 'FOREST', 'PASS', 'HIGHWAY', 'FORTIFIED', 'HIVE', 'EXODITE_PLAINS', 'EXODITE_STEPPE', 'EXODITE_SETTLEMENT', 'EXODITE_JUNGLE', 'ORK_JUNKTOWN', 'CHAOS_WASTES', 'RANDOM'];
 
 // A battle in progress keeps its map: it can only be changed by setting up a new battle
 window.battleActive = false;
@@ -43876,9 +43906,13 @@ const EpikPaint = (() => {
     CITY: { ground: ['#5d5a52', '#67645b', '#71675a', '#524f48'], mud: ['#3d3a35', '#55524b', '#6f6a60'], tree: ['#2e2a24', '#3e3a33', '#56504a', '#6f6a5f'], rock: ['#44403c', '#57534e', '#78716c'], wall: '#77716a', roof: '#4d5257', stone: '#7d776d' },
     SNOW: { ground: ['#e6eaee', '#f0f2f4', '#d2d8df', '#dde3ea'], mud: ['#7d776d', '#8d877d', '#a39d92'], tree: ['#1b2a22', '#273b2e', '#3f5547', '#d7dfdd'], rock: ['#475569', '#64748b', '#94a3b8'], wall: '#8c8f94', roof: '#c8ced4', stone: '#9aa0a6' },
     DESERT: { ground: ['#b8925a', '#c7a46a', '#a37a45', '#d4b47c'], mud: ['#8a6438', '#a27a48', '#bf9862'], tree: ['#5a4a2a', '#6f5c34', '#8a7445', '#a89060'], rock: ['#7c4a2a', '#a0623a', '#c4895a'], wall: '#b08a5a', roof: '#8a6f55', stone: '#b59872' },
+    EXODITE: { ground: ['#8f9c4a', '#a8a656', '#9a8cab', '#6e8a46'], mud: ['#a89c7a', '#c2b590', '#d8cca6'], tree: ['#1e4a3e', '#2d6a52', '#4f8f6a', '#9ad08a'], rock: ['#cfc6ae', '#e6dec8', '#f4efe0'], wall: '#d9d0b8', roof: '#e8e0c8', stone: '#cfc6ae' },
+    JUNK: { ground: ['#6b4a2e', '#7a5634', '#8a6a48', '#4f3a28'], mud: ['#3e3226', '#54443a', '#6e5a48'], tree: ['#3a3424', '#4b4430', '#5f573c', '#7a7050'], rock: ['#4a4038', '#6b5a48', '#8a7a62'], wall: '#6e5240', roof: '#7a5a40', stone: '#7d6a56' },
+    JUNGLE: { ground: ['#2f5a34', '#3c6a3c', '#4a5a2e', '#24462c'], mud: ['#4a3a24', '#5e4a2e', '#7a6440'], tree: ['#123a2c', '#1e5a3e', '#2f7a50', '#6aa860'], rock: ['#3e4a3a', '#56604c', '#7a826a'], wall: '#9a9480', roof: '#7a7a6a', stone: '#8a8670' },
+    CHAOS: { ground: ['#dcd6da', '#e8e4e8', '#b9acb6', '#cbc2ca'], mud: ['#5a3a3a', '#6e4a48', '#8a6a66'], tree: ['#1b2a22', '#273b2e', '#3f5547', '#d7dfdd'], rock: ['#2a2228', '#3e3238', '#5e4e58'], wall: '#5a4e56', roof: '#3a3238', stone: '#6a5e66' },
     PASS: { ground: ['#5d6b4a', '#6b7a52', '#7d7a5a', '#4f5e3f'], mud: ['#5a4d3a', '#6e604a', '#8a7b60'], tree: ['#24391f', '#33502a', '#4b6e3a', '#6a8c4f'], rock: ['#3f3f46', '#57534e', '#78716c'], wall: '#7d7a72', roof: '#56595e', stone: '#827d73' }
   };
-  const themeFor = preset => ({ SNOW: 'SNOW', DESERT: 'DESERT', HIGHWAY: 'DESERT', RUINED_CITY: 'CITY', HIVE: 'CITY', PASS: 'PASS' })[preset] || 'GRASS';
+  const themeFor = preset => ({ SNOW: 'SNOW', DESERT: 'DESERT', HIGHWAY: 'DESERT', RUINED_CITY: 'CITY', HIVE: 'CITY', PASS: 'PASS', EXODITE_PLAINS: 'EXODITE', EXODITE_SETTLEMENT: 'EXODITE', ORK_JUNKTOWN: 'JUNK', EXODITE_STEPPE: 'EXODITE', EXODITE_JUNGLE: 'JUNGLE', CHAOS_WASTES: 'CHAOS' })[preset] || 'GRASS';
 
   // ---------- tiled patterns (cached) ----------
   const _pat = {};
@@ -43905,10 +43939,10 @@ const EpikPaint = (() => {
     lx.putImageData(img, 0, 0);
     ctx.save(); ctx.imageSmoothingEnabled = true; ctx.drawImage(low, 0, 0, W, H);
     // fine grain on top (blades of grass, grit, snow sparkle)
-    const g = tile('grain_' + theme, 192, (x, S) => { const im = x.createImageData(S, S), dd = im.data; for (let y = 0; y < S; y++) for (let i = 0; i < S; i++) { const f = (N3(i / 1.2 + y / 6, y / 1.1) - 0.5) * 2, k = (y * S + i) * 4, v = f > 0 ? 255 : 0; dd[k] = v; dd[k + 1] = v; dd[k + 2] = v; dd[k + 3] = Math.abs(f) * (theme === 'SNOW' ? 40 : 70); } x.putImageData(im, 0, 0); });
-    ctx.globalCompositeOperation = theme === 'SNOW' ? 'source-over' : 'soft-light'; ctx.fillStyle = pattern(ctx, g); ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
+    const g = tile('grain_' + theme, 192, (x, S) => { const im = x.createImageData(S, S), dd = im.data; for (let y = 0; y < S; y++) for (let i = 0; i < S; i++) { const f = (N3(i / 1.2 + y / 6, y / 1.1) - 0.5) * 2, k = (y * S + i) * 4, v = f > 0 ? 255 : 0; dd[k] = v; dd[k + 1] = v; dd[k + 2] = v; dd[k + 3] = Math.abs(f) * (theme === 'SNOW' || theme === 'CHAOS' ? 40 : 70); } x.putImageData(im, 0, 0); });
+    ctx.globalCompositeOperation = theme === 'SNOW' || theme === 'CHAOS' ? 'source-over' : 'soft-light'; ctx.fillStyle = pattern(ctx, g); ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
     seed(sd);
-    for (let k = 0; k < W * H / 1400; k++) { const x = R(0, W), y = R(0, H), r = R(0.8, 2.2); ctx.fillStyle = theme === 'SNOW' ? `rgba(120,130,140,${R(0.08, 0.2)})` : (rnd() < 0.7 ? `rgba(20,25,10,${R(0.12, 0.3)})` : `rgba(210,205,180,${R(0.15, 0.4)})`); ctx.beginPath(); ctx.ellipse(x, y, r, r * R(0.5, 1), R(0, 3), 0, 7); ctx.fill(); }
+    for (let k = 0; k < W * H / 1400; k++) { const x = R(0, W), y = R(0, H), r = R(0.8, 2.2); ctx.fillStyle = theme === 'SNOW' || theme === 'CHAOS' ? `rgba(120,130,140,${R(0.08, 0.2)})` : (rnd() < 0.7 ? `rgba(20,25,10,${R(0.12, 0.3)})` : `rgba(210,205,180,${R(0.15, 0.4)})`); ctx.beginPath(); ctx.ellipse(x, y, r, r * R(0.5, 1), R(0, 3), 0, 7); ctx.fill(); }
     ctx.restore();
   }
   // ---------- shading helpers ----------
@@ -43939,7 +43973,7 @@ const EpikPaint = (() => {
   }
   function field(ctx, poly, theme, boundary) {
     const p = polyPath(poly), T = THEMES[theme];
-    ctx.save(); ctx.clip(p); ctx.globalAlpha = 0.8; ctx.fillStyle = pattern(ctx, noiseTile('field_' + theme, theme === 'SNOW' ? '#d7dadc' : '#7a6a48', theme === 'SNOW' ? '#e4e6e8' : '#8b7a52', 25)); ctx.fill(p); ctx.globalAlpha = 1;
+    ctx.save(); ctx.clip(p); ctx.globalAlpha = 0.8; ctx.fillStyle = pattern(ctx, noiseTile('field_' + theme, theme === 'SNOW' ? '#d7dadc' : theme === 'EXODITE' ? '#5f8a4a' : theme === 'JUNK' ? '#4a3a28' : '#7a6a48', theme === 'SNOW' ? '#e4e6e8' : theme === 'EXODITE' ? '#8f7aa8' : theme === 'JUNK' ? '#5e4a34' : '#8b7a52', 25)); ctx.fill(p); ctx.globalAlpha = 1;
     const b = poly.reduce((a, q) => ({ x0: Math.min(a.x0, q.x), y0: Math.min(a.y0, q.y), x1: Math.max(a.x1, q.x), y1: Math.max(a.y1, q.y) }), { x0: 1e9, y0: 1e9, x1: -1e9, y1: -1e9 });
     ctx.strokeStyle = theme === 'SNOW' ? 'rgba(120,120,110,0.25)' : 'rgba(60,45,25,0.45)'; ctx.lineWidth = 2; for (let k = b.x0 - (b.y1 - b.y0); k < b.x1; k += 7) { ctx.beginPath(); ctx.moveTo(k, b.y0); ctx.lineTo(k + (b.y1 - b.y0) * 0.25, b.y1); ctx.stroke(); }
     ctx.restore();
@@ -43979,19 +44013,25 @@ const EpikPaint = (() => {
     ctx.fillStyle = '#1f1914'; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); ctx.restore();
   }
   function hedge(ctx, pts, w, theme) {
-    const pal = theme === 'SNOW' ? ['#24331f', '#33472c', '#4c6142', '#dfe5e2'] : ['#233c18', '#33531f', '#4a7430', '#6c9a45'];
+    const pal = theme === 'SNOW' ? ['#24331f', '#33472c', '#4c6142', '#dfe5e2'] : theme === 'EXODITE' ? ['#1e4a3e', '#2d6a52', '#5b8f6a', '#c9a6e8'] : ['#233c18', '#33531f', '#4a7430', '#6c9a45'];
     for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], L = Math.hypot(b.x - a.x, b.y - a.y); for (let t = 0; t < L; t += w * 0.6) tree(ctx, mix(a.x, b.x, t / L) + R(-1.5, 1.5), mix(a.y, b.y, t / L) + R(-1.5, 1.5), w * R(0.7, 1), pal); }
   }
   function woods(ctx, w, theme) {
     const T = THEMES[theme];
     // leaf litter / undergrowth under the canopy
-    ctx.save(); const g = ctx.createRadialGradient(w.x, w.y, w.r * 0.2, w.x, w.y, w.r * 1.05); g.addColorStop(0, ({ SNOW: 'rgba(200,210,220,0.5)', DESERT: 'rgba(130,90,45,0.35)', CITY: 'rgba(40,36,32,0.45)' })[theme] || 'rgba(40,50,20,0.55)'); g.addColorStop(1, 'rgba(40,50,20,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(w.x, w.y, w.r * 1.05, 0, 7); ctx.fill(); ctx.restore();
+    ctx.save(); const g = ctx.createRadialGradient(w.x, w.y, w.r * 0.2, w.x, w.y, w.r * 1.05); g.addColorStop(0, ({ JUNGLE: 'rgba(10,30,15,0.6)', CHAOS: 'rgba(180,170,180,0.5)', SNOW: 'rgba(200,210,220,0.5)', DESERT: 'rgba(130,90,45,0.35)', CITY: 'rgba(40,36,32,0.45)' })[theme] || 'rgba(40,50,20,0.55)'); g.addColorStop(1, 'rgba(40,50,20,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(w.x, w.y, w.r * 1.05, 0, 7); ctx.fill(); ctx.restore();
     seed(w.x * 7 + w.y * 13);
     const n = Math.floor(w.r * w.r / 260) + 4;
     const spots = []; for (let k = 0; k < n; k++) { const a = R(0, 7), d = Math.sqrt(rnd()) * w.r * 0.82; spots.push([w.x + Math.cos(a) * d, w.y + Math.sin(a) * d]); }
     spots.sort((a, b) => a[1] - b[1]);
     if (theme === 'DESERT') { spots.slice(0, Math.max(3, n / 4)).forEach(([x, y]) => rockSpire(ctx, x, y, R(10, 22), T)); return; }
+    if (theme === 'JUNK') { rubble(ctx, w.x, w.y, w.r * 0.7, Math.floor(w.r * 2), ['#5a4632', '#6b4a2e', '#4a4038', '#3e3226']); spots.slice(0, Math.max(3, n / 3)).forEach(([x, y]) => deadTree(ctx, x, y, R(12, 22))); return; }
     if (theme === 'CITY') { rubble(ctx, w.x, w.y, w.r * 0.8, Math.floor(w.r * 3), ['#6e6a62', '#7f7a70', '#55524b', '#5e4636']); spots.slice(0, Math.max(3, n / 3)).forEach(([x, y]) => deadTree(ctx, x, y, R(12, 22))); return; }
+    if (theme === 'JUNGLE') { const P2 = [T.tree, ['#123a2c', '#1e5a3e', '#2f7a50', '#6aa860'], ['#2a1a40', '#4a2a6a', '#7a4aa0', '#b98ad8'], ['#0f3a3a', '#1a5a5a', '#2a8a7a', '#7ad0b0'], ['#2a3a10', '#3e5a1a', '#5f8a2a', '#a8c860']];
+      for (let k = 0; k < n * 0.6; k++) { const a = R(0, 7), d = Math.sqrt(rnd()) * w.r * 0.95; fern(ctx, w.x + Math.cos(a) * d, w.y + Math.sin(a) * d, R(5, 9)); }
+      spots.forEach(([x, y]) => tree(ctx, x, y, R(15, 27), P2[Math.floor(rnd() * P2.length)]));
+      for (let k = 0; k < n * 0.25; k++) { const a = R(0, 7), d = Math.sqrt(rnd()) * w.r * 0.9; ctx.fillStyle = ['#f0abfc', '#fbbf24', '#fb7185'][Math.floor(rnd() * 3)]; ctx.beginPath(); ctx.arc(w.x + Math.cos(a) * d, w.y + Math.sin(a) * d, R(1, 2), 0, 7); ctx.fill(); } return; }
+    if (theme === 'CHAOS') { spots.forEach(([x, y]) => rnd() < 0.3 ? deadTree(ctx, x, y, R(12, 20)) : pine(ctx, x, y, R(11, 18))); return; }
     spots.forEach(([x, y]) => theme === 'SNOW' ? pine(ctx, x, y, R(11, 19)) : tree(ctx, x, y, R(12, 22), T.tree));
   }
   function rockSpire(ctx, x, y, r, T) {
@@ -44001,6 +44041,18 @@ const EpikPaint = (() => {
     ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.moveTo(x + R(-r, r) * 0.5, y + R(-r, r) * 0.5); ctx.lineTo(x + R(-r, r) * 0.8, y + R(-r, r) * 0.8); ctx.stroke(); }
   }
   function rock(ctx, pts, theme) {
+    if (theme === 'JUNK') { const p = polyPath(pts), cx = pts.reduce((a, q) => a + q.x, 0) / pts.length, cy = pts.reduce((a, q) => a + q.y, 0) / pts.length, r = Math.max(...pts.map(q => Math.hypot(q.x - cx, q.y - cy)));
+      const inside = (x, y) => { let c = false; for (let i = 0, k = pts.length - 1; i < pts.length; k = i++) { const a = pts[i], b = pts[k]; if ((a.y > y) !== (b.y > y) && x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; };
+      softShadow(ctx, p, 10, 13, 8, 0.55); ctx.save(); ctx.clip(p); ctx.fillStyle = pattern(ctx, noiseTile('scrapbase', '#2e241c', '#4a3a2a', 8, 30)); ctx.fill(p); ctx.restore(); seed(cx * 3 + cy);
+      const pick = () => { for (let t = 0; t < 12; t++) { const x = cx + R(-r, r), y = cy + R(-r, r); if (inside(x, y)) return [x, y]; } return [cx, cy]; };
+      for (let L = 0; L < 3; L++) { // layers of tilted sheets, piling higher towards the middle
+        for (let k = 0; k < r * (0.9 - L * 0.25); k++) { const [x, y] = pick(), dc = Math.hypot(x - cx, y - cy) / r; if (L && dc > 1 - L * 0.3) continue;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(R(0, 3.14)); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-R(6, 12) + 2, -R(3, 6) + 3, R(12, 24), R(6, 12)); sheet(ctx, -R(6, 12), -R(3, 6), R(12, 24), R(6, 12), RUST[Math.floor(rnd() * RUST.length)]); ctx.restore(); } }
+      for (let k = 0; k < r / 10; k++) { const [x, y] = pick(), a = R(0, 3.14), l = R(r * 0.4, r * 0.9); ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(-l / 2 + 2, 1, l, 4); ctx.fillStyle = '#4a4440'; ctx.fillRect(-l / 2, -2, l, 4); ctx.fillStyle = '#6e6660'; ctx.fillRect(-l / 2, -2, l, 1.2); for (let t = -l / 2 + 4; t < l / 2; t += 7) { ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.arc(t, 0, 0.9, 0, 7); ctx.fill(); } ctx.restore(); }
+      for (let k = 0; k < r / 14; k++) { const [x, y] = pick(); ctx.fillStyle = '#16130f'; ctx.beginPath(); ctx.arc(x, y, 5.5, 0, 7); ctx.fill(); ctx.fillStyle = '#3e3630'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 7); ctx.fill(); }
+      if (r > 45) { const [x, y] = pick(); wreck(ctx, x, y, R(0, 6.28), 0.9, true); }
+      for (let k = 0; k < r / 9; k++) { const [x, y] = pick(); ctx.save(); ctx.translate(x, y); ctx.rotate(R(0, 3)); ctx.strokeStyle = '#2a2420'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-R(4, 9), 0); ctx.lineTo(R(4, 9), R(-3, 3)); ctx.stroke(); ctx.restore(); }
+      rubble(ctx, cx, cy, r * 0.95, Math.floor(r * 1.2), ['#6b4a2e', '#7a3e1d', '#5e5a50', '#8a6a3a']); return; }
     const T = THEMES[theme], p = polyPath(pts), cx = pts.reduce((a, q) => a + q.x, 0) / pts.length, cy = pts.reduce((a, q) => a + q.y, 0) / pts.length;
     softShadow(ctx, p, 9, 11, 6, 0.5);
     ctx.save(); ctx.clip(p); ctx.fillStyle = pattern(ctx, noiseTile('rock_' + theme, T.rock[0], T.rock[1], 14, 30)); ctx.fill(p);
@@ -44011,6 +44063,10 @@ const EpikPaint = (() => {
   }
   function track(ctx, pts, w, theme) {
     const T = THEMES[theme], path = filletPath(pts, w * 6);
+    if (theme === 'EXODITE') { ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      blurred(ctx, 5, 'rgba(225,215,180,0.35)', () => { ctx.lineWidth = w * 1.6; ctx.stroke(path); });
+      ctx.globalAlpha = 0.85; ctx.strokeStyle = pattern(ctx, noiseTile('expath', '#cbbf98', '#e4dab8', 10, 18)); ctx.lineWidth = w * 0.85; ctx.stroke(path);
+      ctx.globalAlpha = 0.5; ctx.strokeStyle = 'rgba(120,150,80,0.6)'; ctx.setLineDash([2, 9]); ctx.lineWidth = w * 0.5; ctx.stroke(path); ctx.setLineDash([]); ctx.restore(); return; }
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     blurred(ctx, 3, rgba(hex(T.mud[0]), 0.45), () => { ctx.lineWidth = w * 1.3; ctx.stroke(path); });
     ctx.strokeStyle = pattern(ctx, noiseTile('mud_' + theme, T.mud[0], T.mud[2], 20, 26)); ctx.lineWidth = w; ctx.stroke(path);
@@ -44138,7 +44194,12 @@ const EpikPaint = (() => {
     if (C.crust) S.forEach(p => { if (rnd() < 0.35) { const o = R(-w * 0.42, w * 0.42), x = p.x - p.ty * o, y = p.y + p.tx * o, r = R(2, 6); ctx.fillStyle = 'rgba(30,22,18,0.75)'; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.6, Math.atan2(p.ty, p.tx), 0, 7); ctx.fill(); } });
     ctx.restore();
   }
+  let curTheme = 'GRASS'; const setTheme = t => { curTheme = t; };
   function bridgeRect(ctx, x, y, w, h, ford) {
+    if (!ford && curTheme === 'EXODITE') { const vert = h > w; ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + 5, y + 6, w, h);
+      const g = vert ? ctx.createLinearGradient(x, 0, x + w, 0) : ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.5, '#e6dcc4'); g.addColorStop(1, '#a89c80'); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(52,160,120,0.8)'; ctx.lineWidth = 2; if (vert) { ctx.beginPath(); ctx.moveTo(x + 4, y); ctx.lineTo(x + 4, y + h); ctx.moveTo(x + w - 4, y); ctx.lineTo(x + w - 4, y + h); ctx.stroke(); } else { ctx.beginPath(); ctx.moveTo(x, y + 4); ctx.lineTo(x + w, y + 4); ctx.moveTo(x, y + h - 4); ctx.lineTo(x + w, y + h - 4); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(130,116,88,0.5)'; ctx.lineWidth = 1; for (let t = 10; t < (vert ? h : w); t += 12) { ctx.beginPath(); if (vert) { ctx.moveTo(x + 6, y + t); ctx.quadraticCurveTo(x + w / 2, y + t - 4, x + w - 6, y + t); } else { ctx.moveTo(x + t, y + 6); ctx.quadraticCurveTo(x + t - 4, y + h / 2, x + t, y + h - 6); } ctx.stroke(); } return; }
     if (ford) { ctx.fillStyle = 'rgba(120,180,200,0.35)'; ctx.fillRect(x, y, w, h); seed(x + y); for (let fy = y + 6; fy < y + h - 4; fy += 10) for (let fx = x + 6; fx < x + w - 4; fx += 12) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(fx + 1.5, fy + 1.5, R(3, 5), R(2.5, 4), 0, 0, 7); ctx.fill(); ctx.fillStyle = '#8a857c'; ctx.beginPath(); ctx.ellipse(fx, fy, R(3, 5), R(2.5, 4), 0, 0, 7); ctx.fill(); } return; }
     ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(x + 6, y + 6, w, h);
     ctx.fillStyle = pattern(ctx, noiseTile('bridge', '#7d786f', '#8f897e', 16)); ctx.fillRect(x, y, w, h);
@@ -44365,11 +44426,216 @@ const EpikPaint = (() => {
     else { scorch(ctx, 0, 0, r * 0.9); wreck(ctx, 0, 0, rnd() * 6, 0.9, false); }
     ctx.restore();
   }
+  // ---------- Exodite and Ork buildings (top-down, drawn about the building's centre) ----------
+  function ivory(ctx, x0, y0, r, warm) { const g = ctx.createRadialGradient(x0 - r * 0.35, y0 - r * 0.4, r * 0.05, x0, y0, r); g.addColorStop(0, '#fffdf4'); g.addColorStop(0.55, warm ? '#e8dcc0' : '#e2dccb'); g.addColorStop(1, '#a89c80'); return g; }
+  function wraithboneTower(ctx, w, h) { // a soaring Exodite spire seen from above: fluted tiers, petal buttresses, a crystal crown
+    const r = Math.min(w, h) / 2;
+    { const g = ctx.createRadialGradient(r * 0.5, r * 0.55, 0, r * 0.5, r * 0.55, r * 1.6); g.addColorStop(0, 'rgba(0,0,0,0.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(r * 0.55, r * 0.6, r * 1.5, r * 1.1, 0.6, 0, 7); ctx.fill(); }
+    ctx.fillStyle = 'rgba(214,206,186,0.85)'; ctx.beginPath(); ctx.arc(0, 0, r * 0.98, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(120,110,90,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = 'rgba(52,160,120,0.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, r * 0.9, 0, 7); ctx.stroke();
+    for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283 + 0.3; ctx.save(); ctx.rotate(a); // petal buttresses curving out
+      ctx.fillStyle = ivory(ctx, r * 0.5, 0, r * 0.5); ctx.beginPath(); ctx.moveTo(r * 0.2, -r * 0.08); ctx.quadraticCurveTo(r * 0.75, -r * 0.22, r * 0.92, 0); ctx.quadraticCurveTo(r * 0.75, r * 0.12, r * 0.2, r * 0.08); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(130,118,92,0.6)'; ctx.lineWidth = 0.8; ctx.stroke(); ctx.restore(); }
+    [0.62, 0.46, 0.32].forEach((k, i) => { ctx.fillStyle = ivory(ctx, 0, 0, r * k, i % 2); ctx.beginPath(); ctx.arc(0, 0, r * k, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(120,108,84,0.55)'; ctx.lineWidth = 1; ctx.stroke(); });
+    ctx.strokeStyle = 'rgba(140,128,100,0.55)'; ctx.lineWidth = 0.9; for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r * 0.12, Math.sin(a) * r * 0.12); ctx.quadraticCurveTo(Math.cos(a + 0.5) * r * 0.4, Math.sin(a + 0.5) * r * 0.4, Math.cos(a + 0.7) * r * 0.62, Math.sin(a + 0.7) * r * 0.62); ctx.stroke(); }
+    { const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.5); g.addColorStop(0, 'rgba(110,255,200,0.55)'); g.addColorStop(1, 'rgba(110,255,200,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#34d399'; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283; ctx.lineTo(Math.cos(a) * r * 0.13, Math.sin(a) * r * 0.13); } ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.arc(-r * 0.04, -r * 0.04, r * 0.04, 0, 7); ctx.fill();
+  }
+  function exoditeHall(ctx, w, h) { // a long ribbed wraithbone dome with side domes and green-gold trim
+    const rx = w / 2 * 0.94, ry = h / 2 * 0.82;
+    ctx.fillStyle = 'rgba(205,196,172,0.9)'; ctx.beginPath(); ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(52,160,120,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+    const g = ctx.createLinearGradient(0, -ry, 0, ry); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.45, '#e6dcc4'); g.addColorStop(1, '#9e9276'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.clip(); ctx.strokeStyle = 'rgba(130,116,88,0.55)'; ctx.lineWidth = 1;
+    for (let x = -rx; x <= rx; x += Math.max(8, w / 12)) { ctx.beginPath(); ctx.moveTo(x, -ry); ctx.quadraticCurveTo(x * 0.85, 0, x, ry); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,255,250,0.6)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-rx * 0.9, -ry * 0.12); ctx.lineTo(rx * 0.9, -ry * 0.12); ctx.stroke(); ctx.restore();
+    [-1, 1].forEach(sd => { const cx = sd * rx * 0.86; ctx.fillStyle = ivory(ctx, cx, 0, ry * 0.55); ctx.beginPath(); ctx.arc(cx, 0, ry * 0.5, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(120,108,84,0.6)'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = '#c9a227'; ctx.beginPath(); ctx.arc(cx, 0, ry * 0.12, 0, 7); ctx.fill(); });
+    ctx.fillStyle = '#2f9e78'; [-0.4, 0, 0.4].forEach(t => { ctx.beginPath(); ctx.ellipse(rx * t, ry * 0.86, 4, 2.4, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(rx * t, -ry * 0.86, 4, 2.4, 0, 0, 7); ctx.fill(); });
+  }
+  function webwayGate(ctx, w, h) { // a horned wraithbone arch on a rune-ringed plinth, the portal swirling inside
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(r * 0.12, r * 0.15, r * 0.98, r * 0.92, 0, 0, 7); ctx.fill();
+    const pg = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r); pg.addColorStop(0, '#d8d2c2'); pg.addColorStop(1, '#8f8878'); ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(0, 0, r * 0.95, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(80,72,60,0.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, r * 0.95, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, r * 0.78, 0, 7); ctx.stroke();
+    ctx.fillStyle = 'rgba(70,200,170,0.75)'; for (let k = 0; k < 18; k++) { const a = k / 18 * 6.283; ctx.save(); ctx.rotate(a); ctx.fillRect(r * 0.82, -1.2, r * 0.09, 2.4); ctx.beginPath(); ctx.arc(r * 0.865, -3, 1.2, 0, 7); ctx.fill(); ctx.restore(); }
+    const sw = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.66); sw.addColorStop(0, 'rgba(255,240,255,0.95)'); sw.addColorStop(0.3, 'rgba(192,132,252,0.9)'); sw.addColorStop(0.75, 'rgba(76,29,149,0.85)'); sw.addColorStop(1, 'rgba(30,10,60,0.7)');
+    ctx.fillStyle = sw; ctx.beginPath(); ctx.arc(0, 0, r * 0.64, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(240,220,255,0.55)'; ctx.lineWidth = 1.4; for (let k = 0; k < 3; k++) { ctx.beginPath(); for (let a = 0; a < 9; a += 0.2) { const rr = r * 0.06 * a; ctx.lineTo(Math.cos(a + k * 2.09) * rr, Math.sin(a + k * 2.09) * rr); } ctx.stroke(); }
+    [-1, 1].forEach(sd => { ctx.save(); ctx.scale(sd, 1); // the two curved horns of the arch
+      const g = ctx.createLinearGradient(r * 0.3, -r, r * 0.9, r); g.addColorStop(0, '#fffdf4'); g.addColorStop(1, '#a89c80'); ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(r * 0.12, -r * 0.86); ctx.quadraticCurveTo(r * 0.98, -r * 0.7, r * 0.82, r * 0.5); ctx.lineTo(r * 0.62, r * 0.62); ctx.quadraticCurveTo(r * 0.74, -r * 0.42, r * 0.06, -r * 0.7); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(110,98,76,0.7)'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(r * 0.72, r * 0.52, r * 0.07, 0, 7); ctx.fill(); ctx.restore(); });
+    ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.moveTo(0, -r * 0.92); ctx.lineTo(r * 0.07, -r * 0.8); ctx.lineTo(0, -r * 0.68); ctx.lineTo(-r * 0.07, -r * 0.8); ctx.closePath(); ctx.fill();
+  }
+  function megalith(ctx, w, h) { // a ring of tall standing stones round an altar with a spirit crystal
+    const rx = w / 2 * 0.8, ry = h / 2 * 0.8;
+    ctx.fillStyle = 'rgba(70,90,40,0.25)'; ctx.beginPath(); ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(200,190,150,0.35)'; ctx.lineWidth = 2; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.ellipse(0, 0, rx * 0.72, ry * 0.72, 0, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    const n = Math.max(7, Math.round((w + h) / 26));
+    for (let k = 0; k < n; k++) { const a = k / n * 6.283 + 0.2, x = Math.cos(a) * rx, y = Math.sin(a) * ry, s = R(7, 11), t = R(4, 6);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a + Math.PI / 2 + R(-0.25, 0.25));
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(-s / 2 + 3, -t / 2 + 4, s, t * 2.6);
+      const g = ctx.createLinearGradient(-s / 2, 0, s / 2, 0); g.addColorStop(0, '#a49fb0'); g.addColorStop(1, '#5e586a'); ctx.fillStyle = g; ctx.fillRect(-s / 2, -t / 2, s, t);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(-s / 2, -t / 2, s, 1.4); ctx.fillStyle = 'rgba(90,200,160,0.55)'; ctx.fillRect(-1, -t / 2 + 1, 2, t - 2); ctx.restore(); }
+    ctx.fillStyle = '#8c8698'; ctx.fillRect(-9, -6, 18, 12); ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(-9, -6, 18, 2);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 22); g.addColorStop(0, 'rgba(120,255,210,0.7)'); g.addColorStop(1, 'rgba(120,255,210,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 22, 0, 7); ctx.fill();
+    ctx.fillStyle = '#5eead4'; ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(4, 0); ctx.lineTo(0, 7); ctx.lineTo(-4, 0); ctx.closePath(); ctx.fill();
+  }
+  const RUST = ['#7a3e1d', '#8a4a24', '#5e5a50', '#6b6b5e', '#4f5e3a', '#8a6a3a', '#6e2f1f', '#55504a'];
+  function sheet(ctx, x, y, sw, sh, col) { ctx.fillStyle = col; ctx.fillRect(x, y, sw, sh); ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.7; for (let t = x + 2; t < x + sw; t += 3) { ctx.beginPath(); ctx.moveTo(t, y); ctx.lineTo(t, y + sh); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(255,230,190,0.14)'; ctx.fillRect(x, y, sw, 1.5); for (let k = 0; k < 3; k++) { ctx.fillStyle = `rgba(${R(140, 190)},${R(60, 90)},${R(20, 40)},${R(0.25, 0.5)})`; ctx.beginPath(); ctx.ellipse(x + R(0, sw), y + R(0, sh), R(1.5, 4), R(1, 3), 0, 0, 7); ctx.fill(); } }
+  function orkGlyph(ctx, x, y, s, col = '#b91c1c') { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y - s * 0.15, s * 0.5, Math.PI * 0.85, Math.PI * 2.15); ctx.lineTo(x + s * 0.32, y + s * 0.5); ctx.lineTo(x - s * 0.32, y + s * 0.5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#1c1410'; ctx.beginPath(); ctx.arc(x - s * 0.2, y - s * 0.12, s * 0.13, 0, 7); ctx.arc(x + s * 0.2, y - s * 0.12, s * 0.13, 0, 7); ctx.fill(); }
+  function orkShack(ctx, w, h) { // a lean-to of mismatched corrugated sheets, a glyph daubed on the roof and a stove pipe
+    const n = Math.max(3, Math.round(w / 18));
+    for (let k = 0; k < n; k++) { const x = -w / 2 + k * (w / n) + R(-2, 2), sw = w / n + R(2, 6), y = -h / 2 + R(-3, 3), sh = h + R(-6, 2); ctx.save(); ctx.translate(x + sw / 2, 0); ctx.rotate(R(-0.06, 0.06)); sheet(ctx, -sw / 2, y, sw, sh, RUST[Math.floor(rnd() * RUST.length)]); ctx.restore(); }
+    ctx.fillStyle = 'rgba(30,22,16,0.6)'; ctx.fillRect(-w / 2, -1, w, 2);
+    orkGlyph(ctx, R(-w * 0.2, w * 0.2), R(-h * 0.15, h * 0.15), Math.min(w, h) * 0.32);
+    ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.arc(w * 0.32, -h * 0.28, 3.5, 0, 7); ctx.fill(); ctx.fillStyle = '#0f0c0a'; ctx.beginPath(); ctx.arc(w * 0.32, -h * 0.28, 2, 0, 7); ctx.fill();
+    ctx.fillStyle = '#c9a227'; for (let k = 0; k < 6; k++) { ctx.beginPath(); ctx.arc(R(-w / 2, w / 2), R(-h / 2, h / 2), 0.8, 0, 7); ctx.fill(); }
+  }
+  function orkFort(ctx, w, h) { // jagged scrap walls with spiked gun towers, a muddy yard, huts and a toothed gate
+    const pts = []; for (let k = 0; k < 12; k++) { const a = k / 12 * 6.283, rr = 0.92 + R(-0.06, 0.04); pts.push({ x: Math.cos(a) * w / 2 * rr, y: Math.sin(a) * h / 2 * rr }); }
+    const wall = polyPath(pts);
+    ctx.fillStyle = pattern(ctx, noiseTile('fortyard', '#4a3826', '#6b5236', 14, 26)); ctx.fill(wall);
+    for (let k = 0; k < 4; k++) { const x = R(-w * 0.25, w * 0.25), y = R(-h * 0.22, h * 0.22); ctx.save(); ctx.translate(x, y); ctx.rotate(R(-0.4, 0.4)); orkShack(ctx, R(34, 50), R(24, 34)); ctx.restore(); }
+    ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 13; ctx.stroke(wall);
+    ctx.strokeStyle = pattern(ctx, noiseTile('scrapwall', '#5a3a22', '#8a6a46', 6, 40)); ctx.lineWidth = 10; ctx.stroke(wall);
+    ctx.strokeStyle = 'rgba(255,220,170,0.25)'; ctx.lineWidth = 1.2; ctx.stroke(wall);
+    pts.forEach((p, i) => { if (i % 3) return; ctx.save(); ctx.translate(p.x, p.y); // spiked tower
+      ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(-9, -7, 20, 20); sheet(ctx, -10, -10, 20, 20, RUST[i % RUST.length]);
+      ctx.fillStyle = '#2a2420'; for (let s = 0; s < 6; s++) { const a = s / 6 * 6.283; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 9, Math.sin(a) * 9); ctx.lineTo(Math.cos(a + 0.2) * 16, Math.sin(a + 0.2) * 16); ctx.lineTo(Math.cos(a + 0.45) * 9, Math.sin(a + 0.45) * 9); ctx.fill(); }
+      ctx.fillStyle = '#1c1410'; ctx.fillRect(-2, -12, 4, 6); ctx.restore(); });
+    ctx.save(); ctx.translate(-w / 2 * 0.92, 0); ctx.fillStyle = '#3a2a1e'; ctx.fillRect(-6, -16, 12, 32); ctx.fillStyle = '#d6c7a0'; for (let t = -14; t < 16; t += 5) { ctx.beginPath(); ctx.moveTo(-6, t); ctx.lineTo(-11, t + 2.5); ctx.lineTo(-6, t + 5); ctx.fill(); } ctx.restore();
+    ctx.strokeStyle = '#3a2a1e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(w * 0.1, -h * 0.05); ctx.lineTo(w * 0.1, -h * 0.32); ctx.stroke(); ctx.fillStyle = '#b91c1c'; ctx.beginPath(); ctx.moveTo(w * 0.1, -h * 0.32); ctx.lineTo(w * 0.22, -h * 0.28); ctx.lineTo(w * 0.1, -h * 0.22); ctx.fill(); orkGlyph(ctx, w * 0.15, -h * 0.27, 6, '#f6d58e');
+  }
+  function mekWorkshop(ctx, w, h) { // a crude sawtooth shed with hazard stripes, a crane jib and a glowing furnace
+    ctx.fillStyle = '#1f1a16'; ctx.fillRect(-w / 2, -h / 2, w, h);
+    const n = Math.max(3, Math.round(w / 26)); for (let k = 0; k < n; k++) { const x = -w / 2 + k * w / n; sheet(ctx, x + 1, -h / 2 + 4, w / n - 2, h - 8, RUST[(k * 3) % RUST.length]); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + w / n - 4, -h / 2 + 4, 3, h - 8); }
+    ctx.save(); ctx.beginPath(); ctx.rect(-w / 2, -h / 2, w, h); ctx.rect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8); ctx.clip('evenodd'); for (let t = -w; t < w + h; t += 10) { ctx.fillStyle = (t / 10) % 2 ? '#e8b923' : '#151210'; ctx.beginPath(); ctx.moveTo(-w / 2 + t, -h / 2); ctx.lineTo(-w / 2 + t + 5, -h / 2); ctx.lineTo(-w / 2 + t + 5 - h, h / 2); ctx.lineTo(-w / 2 + t - h, h / 2); ctx.fill(); } ctx.restore();
+    { const g = ctx.createRadialGradient(-w * 0.28, h * 0.12, 0, -w * 0.28, h * 0.12, 22); g.addColorStop(0, 'rgba(255,190,80,0.95)'); g.addColorStop(0.4, 'rgba(249,115,22,0.6)'); g.addColorStop(1, 'rgba(249,115,22,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(-w * 0.28, h * 0.12, 22, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.arc(w * 0.3, -h * 0.22, 7, 0, 7); ctx.fill(); ctx.fillStyle = '#0c0a09'; ctx.beginPath(); ctx.arc(w * 0.3, -h * 0.22, 4, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#e8b923'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(w * 0.05, h * 0.3); ctx.lineTo(w * 0.62, h * 0.62); ctx.stroke(); ctx.strokeStyle = '#151210'; ctx.lineWidth = 1; for (let t = 0; t < 1; t += 0.12) { const x = mix(w * 0.05, w * 0.62, t), y = mix(h * 0.3, h * 0.62, t); ctx.beginPath(); ctx.moveTo(x - 2, y + 2); ctx.lineTo(x + 2, y - 2); ctx.stroke(); }
+    ctx.strokeStyle = '#3a3330'; ctx.beginPath(); ctx.moveTo(w * 0.62, h * 0.62); ctx.lineTo(w * 0.62, h * 0.8); ctx.stroke(); orkGlyph(ctx, 0, -h * 0.05, Math.min(w, h) * 0.3, '#f6d58e');
+  }
+  function wraithboneWall(ctx, w, h) { // a curving wraithbone rampart: ribbed, with leaf-shaped finials and green rune bands
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-w / 2 + 4, -h / 2 + 6, w, h);
+    const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.5, '#e2d8bf'); g.addColorStop(1, '#9e9276');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-w / 2, -h / 2 + 3); ctx.quadraticCurveTo(0, -h / 2 - 3, w / 2, -h / 2 + 3); ctx.lineTo(w / 2, h / 2 - 2); ctx.quadraticCurveTo(0, h / 2 + 2, -w / 2, h / 2 - 2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(110,98,76,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = 'rgba(130,116,88,0.55)'; for (let x = -w / 2 + 8; x < w / 2; x += 9) { ctx.beginPath(); ctx.moveTo(x, -h / 2 + 2); ctx.quadraticCurveTo(x + 2, 0, x, h / 2 - 2); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(52,190,140,0.75)'; ctx.fillRect(-w / 2 + 3, -1, w - 6, 2);
+    for (let x = -w / 2 + 12; x < w / 2 - 6; x += 30) { ctx.fillStyle = ivory(ctx, x, 0, h * 0.8); ctx.beginPath(); ctx.moveTo(x, -h * 0.85); ctx.quadraticCurveTo(x + h * 0.5, 0, x, h * 0.85); ctx.quadraticCurveTo(x - h * 0.5, 0, x, -h * 0.85); ctx.fill(); ctx.strokeStyle = 'rgba(110,98,76,0.6)'; ctx.stroke(); ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(x, 0, 1.8, 0, 7); ctx.fill(); }
+  }
+  function wraithboneBastion(ctx, w, h) { // an Exodite strongpoint: a low shell of curved wraithbone plates, firing slits and a spirit-stone crown
+    const rx = w / 2, ry = h / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.beginPath(); ctx.ellipse(6, 8, rx, ry, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8f8670'; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.fill();
+    for (let k = 0; k < 8; k++) { const a0 = k / 8 * 6.283, a1 = a0 + 6.283 / 8; ctx.fillStyle = ivory(ctx, Math.cos(a0 + 0.4) * rx * 0.5, Math.sin(a0 + 0.4) * ry * 0.5, Math.max(rx, ry), k % 2);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.ellipse(0, 0, rx * 0.96, ry * 0.96, 0, a0 + 0.03, a1 - 0.03); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(110,98,76,0.6)'; ctx.lineWidth = 1; ctx.stroke(); }
+    ctx.fillStyle = '#1b1712'; for (let k = 0; k < 6; k++) { const a = Math.PI * 0.15 + k / 5 * Math.PI * 0.7; ctx.save(); ctx.translate(Math.cos(a) * rx * 0.86, Math.sin(a) * ry * 0.86); ctx.rotate(a + Math.PI / 2); ctx.fillRect(-4, -1.2, 8, 2.4); ctx.restore(); }
+    ctx.fillStyle = ivory(ctx, 0, 0, Math.min(rx, ry) * 0.5); ctx.beginPath(); ctx.ellipse(0, 0, rx * 0.42, ry * 0.42, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(52,160,120,0.8)'; ctx.lineWidth = 1.6; ctx.stroke();
+    const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.min(rx, ry) * 0.5); gg.addColorStop(0, 'rgba(110,255,200,0.7)'); gg.addColorStop(1, 'rgba(110,255,200,0)'); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, 0, Math.min(rx, ry) * 0.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(4, 0); ctx.lineTo(0, 6); ctx.lineTo(-4, 0); ctx.closePath(); ctx.fill();
+  }
+  function gargantWIP(ctx, w, h) { // a half-built gargant in its scaffold: pot-bellied hull half plated, exposed ribs, a crane and piles of plates
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = pattern(ctx, noiseTile('gyard', '#3a2e24', '#54443a', 10, 26)); ctx.fillRect(-w / 2, -h / 2, w, h);
+    for (let k = 0; k < 6; k++) { ctx.save(); ctx.translate(R(-w / 2, w / 2) * 0.85, R(-h / 2, h / 2) * 0.85); ctx.rotate(R(0, 3)); for (let j = 0; j < 4; j++) sheet(ctx, -10 + j * 2, -6 + j * 2, 20, 12, RUST[Math.floor(rnd() * RUST.length)]); ctx.restore(); }
+    { const g = ctx.createRadialGradient(r * 0.2, r * 0.25, 0, r * 0.2, r * 0.25, r * 0.95); g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(r * 0.2, r * 0.25, r * 0.95, 0, 7); ctx.fill(); }
+    const hr = r * 0.6;
+    ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.arc(0, 0, hr, 0, 7); ctx.fill(); // the dark inside of the hull
+    ctx.strokeStyle = '#6b5a48'; ctx.lineWidth = 3; for (let k = 0; k < 12; k++) { const a = k / 12 * 6.283; ctx.beginPath(); ctx.moveTo(Math.cos(a) * hr * 0.25, Math.sin(a) * hr * 0.25); ctx.lineTo(Math.cos(a) * hr, Math.sin(a) * hr); ctx.stroke(); }
+    ctx.lineWidth = 2.4; [0.45, 0.75, 1].forEach(k => { ctx.beginPath(); ctx.arc(0, 0, hr * k, 0, 7); ctx.stroke(); });
+    ctx.save(); ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, hr * 1.02, Math.PI * 0.55, Math.PI * 1.75); ctx.closePath(); ctx.clip(); // finished half: riveted plates
+    for (let a = 0; a < 6.283; a += 0.42) for (let k = 0.3; k < 1.02; k += 0.24) { ctx.save(); ctx.rotate(a); sheet(ctx, hr * k - 2, -hr * 0.13, hr * 0.26, hr * 0.27, RUST[Math.floor(rnd() * RUST.length)]); ctx.restore(); }
+    ctx.restore();
+    ctx.fillStyle = '#e8c48a'; for (let a = Math.PI * 0.6; a < Math.PI * 1.7; a += 0.18) { ctx.beginPath(); ctx.arc(Math.cos(a) * hr * 0.93, Math.sin(a) * hr * 0.93, 1.1, 0, 7); ctx.fill(); }
+    ctx.save(); ctx.translate(0, -hr * 0.82); ctx.fillStyle = '#5a4a3e'; ctx.beginPath(); ctx.moveTo(-hr * 0.35, 0); ctx.lineTo(hr * 0.35, 0); ctx.lineTo(hr * 0.22, -hr * 0.42); ctx.lineTo(-hr * 0.22, -hr * 0.42); ctx.closePath(); ctx.fill(); // unfinished head
+    ctx.fillStyle = '#b91c1c'; ctx.beginPath(); ctx.moveTo(-hr * 0.16, -hr * 0.42); ctx.lineTo(0, -hr * 0.6); ctx.lineTo(hr * 0.16, -hr * 0.42); ctx.fill(); ctx.fillStyle = '#f6d58e'; ctx.fillRect(-hr * 0.12, -hr * 0.25, hr * 0.08, hr * 0.06); ctx.fillRect(hr * 0.04, -hr * 0.25, hr * 0.08, hr * 0.06); ctx.restore();
+    ctx.strokeStyle = '#4a4038'; ctx.lineWidth = 3; ctx.strokeRect(-r * 0.86, -r * 0.86, r * 1.72, r * 1.72); // scaffold
+    ctx.lineWidth = 1.4; for (let t = -0.86; t < 0.86; t += 0.29) { [[t, -0.86, t + 0.29, -0.7], [t, 0.86, t + 0.29, 0.7], [-0.86, t, -0.7, t + 0.29], [0.86, t, 0.7, t + 0.29]].forEach(([a, b, c, d]) => { ctx.beginPath(); ctx.moveTo(a * r, b * r); ctx.lineTo(c * r, d * r); ctx.stroke(); }); }
+    ctx.strokeStyle = '#e8b923'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(r * 0.86, r * 0.86); ctx.lineTo(-r * 0.15, -r * 0.35); ctx.stroke(); // crane jib
+    ctx.strokeStyle = '#151210'; ctx.lineWidth = 1; for (let t = 0; t < 1; t += 0.08) { const x = mix(r * 0.86, -r * 0.15, t), y = mix(r * 0.86, -r * 0.35, t); ctx.beginPath(); ctx.moveTo(x - 2.5, y + 2.5); ctx.lineTo(x + 2.5, y - 2.5); ctx.stroke(); }
+    ctx.fillStyle = '#2a2420'; ctx.fillRect(r * 0.78, r * 0.78, 16, 16); ctx.strokeStyle = '#8a8a80'; ctx.beginPath(); ctx.moveTo(-r * 0.15, -r * 0.35); ctx.lineTo(-r * 0.15, -r * 0.12); ctx.stroke(); sheet(ctx, -r * 0.24, -r * 0.12, r * 0.18, r * 0.12, '#7a3e1d');
+    for (let k = 0; k < 6; k++) { const a = R(0, 6.28), d = R(hr * 0.3, hr), x = Math.cos(a) * d, y = Math.sin(a) * d; const g = ctx.createRadialGradient(x, y, 0, x, y, 7); g.addColorStop(0, 'rgba(255,240,180,0.95)'); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fill(); }
+  }
+  function eldarRuin(ctx, w, h) { // an overgrown Eldar temple: a broken wraithbone dome, fallen arches and pillars, moss and vines
+    const rx = w / 2, ry = h / 2;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(6, 8, rx, ry, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = pattern(ctx, noiseTile('ruinfloor', '#9a9480', '#b8b29c', 9, 24)); ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(80,72,60,0.4)'; ctx.lineWidth = 1; for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.ellipse(0, 0, rx * k / 4, ry * k / 4, 0, 0, 7); ctx.stroke(); }
+    ctx.save(); ctx.beginPath(); ctx.ellipse(0, 0, rx * 0.62, ry * 0.62, 0, Math.PI * 0.9, Math.PI * 2.1); ctx.lineTo(0, 0); ctx.closePath(); ctx.clip(); // what is left of the dome
+    const g = ctx.createRadialGradient(-rx * 0.2, -ry * 0.3, 2, 0, 0, rx * 0.62); g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#a89c80'); ctx.fillStyle = g; ctx.fillRect(-rx, -ry, w, h);
+    ctx.strokeStyle = 'rgba(130,116,88,0.55)'; for (let a = 0; a < 6.3; a += 0.35) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * rx * 0.62, Math.sin(a) * ry * 0.62); ctx.stroke(); } ctx.restore();
+    ctx.strokeStyle = 'rgba(60,50,40,0.7)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-rx * 0.6, ry * 0.05); for (let k = 0; k < 8; k++) ctx.lineTo(-rx * 0.6 + k * rx * 0.17, ry * (0.05 + (k % 2 ? 0.08 : -0.05))); ctx.stroke();
+    for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283, x = Math.cos(a) * rx * 0.86, y = Math.sin(a) * ry * 0.86; if (rnd() < 0.3) { ctx.save(); ctx.translate(x, y); ctx.rotate(a + R(-1, 1)); ctx.fillStyle = '#c9c0a8'; ctx.fillRect(-2, 0, 4, R(12, 20)); ctx.restore(); continue; }
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.arc(x + 2, y + 3, 5, 0, 7); ctx.fill(); ctx.fillStyle = '#ddd5bf'; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); ctx.fillStyle = '#a69e88'; ctx.beginPath(); ctx.arc(x + 1, y + 1, 2.6, 0, 7); ctx.fill(); }
+    for (let k = 0; k < 22; k++) { const a = R(0, 6.28), d = Math.sqrt(rnd()) * 0.95; ctx.fillStyle = rnd() < 0.5 ? 'rgba(60,110,50,0.75)' : 'rgba(40,90,60,0.7)'; ctx.beginPath(); ctx.ellipse(Math.cos(a) * rx * d, Math.sin(a) * ry * d, R(3, 8), R(2, 5), R(0, 3), 0, 7); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(40,90,40,0.8)'; ctx.lineWidth = 1.2; for (let k = 0; k < 6; k++) { let x = R(-rx, rx) * 0.8, y = R(-ry, ry) * 0.8; ctx.beginPath(); ctx.moveTo(x, y); for (let s = 0; s < 6; s++) { x += R(-10, 10); y += R(-8, 8); ctx.lineTo(x, y); } ctx.stroke(); }
+    const sg = ctx.createRadialGradient(0, 0, 0, 0, 0, 14); sg.addColorStop(0, 'rgba(110,255,200,0.6)'); sg.addColorStop(1, 'rgba(110,255,200,0)'); ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(0, 0, 14, 0, 7); ctx.fill(); ctx.fillStyle = '#5eead4'; ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(3, 0); ctx.lineTo(0, 5); ctx.lineTo(-3, 0); ctx.closePath(); ctx.fill();
+  }
+  function chaosStar(ctx, r, col, lw) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round'; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); ctx.stroke(); ctx.save(); ctx.translate(Math.cos(a) * r, Math.sin(a) * r); ctx.rotate(a); ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(lw * 1.6, 0); ctx.lineTo(-lw, -lw * 1.4); ctx.lineTo(-lw, lw * 1.4); ctx.closePath(); ctx.fill(); ctx.restore(); } ctx.beginPath(); ctx.arc(0, 0, r * 0.28, 0, 7); ctx.stroke(); }
+  function slaaneshMark(ctx, r, col, lw) { // the Mark of Slaanesh: a circle with a crossed tail below and curling horns above
+    ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, -r * 0.12, r * 0.42, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, r * 0.3); ctx.lineTo(0, r * 0.95); ctx.moveTo(-r * 0.28, r * 0.66); ctx.lineTo(r * 0.28, r * 0.66); ctx.stroke();
+    [-1, 1].forEach(sd => { ctx.beginPath(); ctx.moveTo(sd * r * 0.25, -r * 0.5); ctx.quadraticCurveTo(sd * r * 0.75, -r * 0.75, sd * r * 0.5, -r * 1.05); ctx.stroke(); });
+  }
+  function crystals(ctx, x, y, s) { for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + R(-1, 1), l = s * R(0.6, 1.2); ctx.save(); ctx.translate(x + R(-s, s) * 0.3, y + R(-s, s) * 0.3); ctx.rotate(a);
+      ctx.fillStyle = 'rgba(40,10,40,0.35)'; ctx.beginPath(); ctx.moveTo(2, 2); ctx.lineTo(l + 2, 2 + l * 0.15); ctx.lineTo(2, 2 + l * 0.3); ctx.fill();
+      const g = ctx.createLinearGradient(0, -l * 0.15, 0, l * 0.15); g.addColorStop(0, '#fbcfe8'); g.addColorStop(0.5, '#e879f9'); g.addColorStop(1, '#7e22ce'); ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(0, -l * 0.14); ctx.lineTo(l, 0); ctx.lineTo(0, l * 0.14); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(255,240,255,0.6)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(l, 0); ctx.stroke(); ctx.restore(); } }
+  function chaosShrine(ctx, w, h) { // a shrine of Slaanesh: an octagon of violet stone ringed by curved horns, the Mark of Slaanesh glowing at its heart, crystals and silks
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = 'rgba(30,0,30,0.45)'; ctx.beginPath(); for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283 + 0.39; ctx.lineTo(Math.cos(a) * r * 0.9 + 6, Math.sin(a) * r * 0.9 + 8); } ctx.fill();
+    const oct = new Path2D(); for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283 + 0.39; oct.lineTo(Math.cos(a) * r * 0.9, Math.sin(a) * r * 0.9); } oct.closePath();
+    ctx.fillStyle = pattern(ctx, noiseTile('slaanstone', '#3b1a4a', '#5b2a6a', 7, 30)); ctx.fill(oct); ctx.strokeStyle = '#f0abfc'; ctx.lineWidth = 2; ctx.stroke(oct);
+    ctx.save(); ctx.clip(oct); ctx.strokeStyle = 'rgba(244,114,182,0.35)'; ctx.lineWidth = 1.2; for (let k = 0; k < 7; k++) { ctx.beginPath(); for (let a = 0; a < 7; a += 0.2) { const rr = r * (0.15 + k * 0.11) + Math.sin(a * 3 + k) * 4; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.stroke(); } ctx.restore();
+    const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.85); gl.addColorStop(0, 'rgba(244,114,182,0.75)'); gl.addColorStop(0.5, 'rgba(192,38,211,0.35)'); gl.addColorStop(1, 'rgba(126,34,206,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, 0, r * 0.85, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(30,5,35,0.85)'; ctx.beginPath(); ctx.arc(0, 0, r * 0.42, 0, 7); ctx.fill(); ctx.strokeStyle = '#e879f9'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.save(); ctx.translate(0, r * 0.02); slaaneshMark(ctx, r * 0.34, 'rgba(255,200,240,0.95)', 2.6); ctx.restore();
+    for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283 + 0.5; crystals(ctx, Math.cos(a) * r * 0.66, Math.sin(a) * r * 0.66, r * 0.16); }
+    ctx.strokeStyle = 'rgba(236,72,153,0.7)'; ctx.lineWidth = 2; for (let k = 0; k < 4; k++) { const a = k / 4 * 6.283 + 0.8; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r * 0.45, Math.sin(a) * r * 0.45); ctx.bezierCurveTo(Math.cos(a + 0.4) * r * 0.6, Math.sin(a + 0.4) * r * 0.6, Math.cos(a - 0.3) * r * 0.75, Math.sin(a - 0.3) * r * 0.75, Math.cos(a + 0.2) * r * 0.88, Math.sin(a + 0.2) * r * 0.88); ctx.stroke(); }
+    for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283, x = Math.cos(a) * r * 0.98, y = Math.sin(a) * r * 0.98; ctx.save(); ctx.translate(x, y); ctx.rotate(a); // curling horns
+      ctx.fillStyle = 'rgba(30,0,30,0.4)'; ctx.beginPath(); ctx.moveTo(3, 5); ctx.quadraticCurveTo(14, 2, 18, 9); ctx.quadraticCurveTo(12, 8, 3, 10); ctx.fill();
+      const g = ctx.createLinearGradient(0, -3, 16, 3); g.addColorStop(0, '#2a1030'); g.addColorStop(1, '#c084fc'); ctx.fillStyle = g; const sd = k % 2 ? 1 : -1;
+      ctx.beginPath(); ctx.moveTo(-3, -3.2); ctx.quadraticCurveTo(10, -3, 15, sd * 6); ctx.quadraticCurveTo(9, sd * 1, -3, 3.2); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  }
+  function chaosObelisk(ctx, w, h) { // a tall black obelisk seen from above, burning runes down its faces and a long shadow on the snow
+    const r = Math.min(w, h) / 2;
+    ctx.fillStyle = 'rgba(30,10,20,0.45)'; ctx.save(); ctx.rotate(0.7); ctx.fillRect(0, -r * 0.35, r * 2.6, r * 0.7); ctx.restore();
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 1.4); g.addColorStop(0, 'rgba(168,85,247,0.4)'); g.addColorStop(1, 'rgba(120,20,80,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r * 1.4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3a2e36'; ctx.beginPath(); ctx.moveTo(-r * 0.7, -r * 0.7); ctx.lineTo(r * 0.7, -r * 0.7); ctx.lineTo(r * 0.7, r * 0.7); ctx.lineTo(-r * 0.7, r * 0.7); ctx.closePath(); ctx.fill();
+    [['#2a2026', [[-0.7, -0.7], [0.7, -0.7], [0, 0]]], ['#4a3c44', [[0.7, -0.7], [0.7, 0.7], [0, 0]]], ['#1c1418', [[0.7, 0.7], [-0.7, 0.7], [0, 0]]], ['#352a32', [[-0.7, 0.7], [-0.7, -0.7], [0, 0]]]].forEach(([c, p]) => { ctx.fillStyle = c; ctx.beginPath(); p.forEach(([x, y], i) => i ? ctx.lineTo(x * r, y * r) : ctx.moveTo(x * r, y * r)); ctx.closePath(); ctx.fill(); });
+    ctx.strokeStyle = 'rgba(244,114,182,0.9)'; ctx.lineWidth = 1.2; for (let k = 0; k < 4; k++) { ctx.save(); ctx.rotate(k * Math.PI / 2); for (let t = 0.15; t < 0.6; t += 0.15) { ctx.beginPath(); ctx.moveTo(-r * 0.12, -r * (0.7 - t)); ctx.lineTo(0, -r * (0.75 - t)); ctx.lineTo(r * 0.12, -r * (0.7 - t)); ctx.stroke(); } ctx.restore(); }
+    ctx.save(); slaaneshMark(ctx, r * 0.22, '#fbcfe8', 1.1); ctx.restore();
+  }
+  function fern(ctx, x, y, s) { for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283 + R(-0.3, 0.3); ctx.strokeStyle = rnd() < 0.5 ? 'rgba(60,130,70,0.85)' : 'rgba(40,110,80,0.85)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.cos(a + 0.4) * s * 0.6, y + Math.sin(a + 0.4) * s * 0.6, x + Math.cos(a) * s, y + Math.sin(a) * s); ctx.stroke(); } }
+  function bigLeaf(ctx, x, y, s, a) { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(2, 2, s, s * 0.45, 0, 0, 7); ctx.fill(); const g = ctx.createLinearGradient(-s, 0, s, 0); g.addColorStop(0, '#1f5a3a'); g.addColorStop(1, '#3f8f5a'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s, s * 0.45, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(200,240,190,0.35)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-s, 0); ctx.lineTo(s, 0); ctx.stroke(); ctx.restore(); }
+  function skull(ctx, x, y, s) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.arc(x + 1, y + 1.2, s, 0, 7); ctx.fill(); ctx.fillStyle = '#ece4d0'; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill(); ctx.fillStyle = '#2a2024'; ctx.beginPath(); ctx.arc(x - s * 0.35, y - s * 0.1, s * 0.25, 0, 7); ctx.arc(x + s * 0.35, y - s * 0.1, s * 0.25, 0, 7); ctx.fill(); }
+  function bloodStain(ctx, x, y, r) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(126,34,206,0.6)'); g.addColorStop(0.6, 'rgba(192,38,211,0.3)'); g.addColorStop(1, 'rgba(192,38,211,0)'); ctx.fillStyle = g; ctx.beginPath(); for (let k = 0; k < 12; k++) { const a = k / 12 * 6.283, rr = r * R(0.6, 1.1); ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8); } ctx.fill(); }
+  function warpCrack(ctx, x, y, l) { ctx.save(); ctx.translate(x, y); ctx.rotate(R(0, 3)); ctx.strokeStyle = 'rgba(168,85,247,0.35)'; ctx.lineWidth = 5; const pts = [[0, 0]]; for (let k = 1; k < 6; k++) pts.push([k * l / 5, R(-5, 5)]); const draw = () => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); }; draw(); ctx.strokeStyle = 'rgba(250,200,255,0.85)'; ctx.lineWidth = 1.2; draw(); ctx.restore(); }
+  function corruption(ctx, x, y, r) { // a spreading purple blight: a soft stain with branching veins
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(110,20,140,0.45)'); g.addColorStop(0.55, 'rgba(160,40,180,0.22)'); g.addColorStop(1, 'rgba(160,40,180,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(190,60,200,0.45)'; ctx.lineCap = 'round'; for (let k = 0; k < 9; k++) { let a = R(0, 6.28), px = x, py = y, wdt = 2.2; ctx.beginPath(); ctx.moveTo(px, py); for (let s2 = 0; s2 < 7; s2++) { a += R(-0.5, 0.5); px += Math.cos(a) * r * 0.13; py += Math.sin(a) * r * 0.13; ctx.lineTo(px, py); } ctx.lineWidth = wdt; ctx.stroke(); } }
+  function spikePole(ctx, x, y) { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(x + 7, y + 4, 9, 2.5, 0.4, 0, 7); ctx.fill(); ctx.fillStyle = '#1c1618'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 7); ctx.fill(); skull(ctx, x, y - 1, 2.6); ctx.fillStyle = '#7f1d1d'; ctx.fillRect(x - 5, y + 3, 10, 1.6); }
+  const ELDAR_BUILDINGS = { WRAITHBONE_TOWER: wraithboneTower, EXODITE_HALL: exoditeHall, WEBWAY_GATE: webwayGate, MEGALITH: megalith, ORK_SHACK: orkShack, ORK_FORT: orkFort, MEK_WORKSHOP: mekWorkshop, WRAITHBONE_WALL: wraithboneWall, WRAITHBONE_BASTION: wraithboneBastion, GARGANT_WIP: gargantWIP, ELDAR_RUIN: eldarRuin, CHAOS_SHRINE: chaosShrine, CHAOS_OBELISK: chaosObelisk };
+  const ROUND_BUILDINGS = new Set(['WRAITHBONE_TOWER', 'EXODITE_HALL', 'WEBWAY_GATE', 'MEGALITH', 'ORK_FORT', 'WRAITHBONE_WALL', 'WRAITHBONE_BASTION', 'ELDAR_RUIN', 'CHAOS_SHRINE', 'CHAOS_OBELISK']);
+  // ---------- small scenery for the Exodite and Ork maps (looks only) ----------
+  function flowerPatch(ctx, x, y, r) { const cols = ['#f0abfc', '#c4b5fd', '#fde68a', '#93c5fd', '#fda4af']; const c = cols[Math.floor(rnd() * cols.length)]; for (let k = 0; k < r * 3; k++) { const a = R(0, 7), d = Math.sqrt(rnd()) * r; ctx.fillStyle = rnd() < 0.7 ? c : 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, R(0.7, 1.5), 0, 7); ctx.fill(); } }
+  function grassTuft(ctx, x, y, s) { for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + R(-0.7, 0.7); ctx.strokeStyle = rnd() < 0.5 ? 'rgba(170,160,80,0.75)' : 'rgba(110,130,60,0.75)'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.cos(a) * s * 0.5, y + Math.sin(a) * s * 0.5, x + Math.cos(a) * s, y + Math.sin(a) * s); ctx.stroke(); } }
+  function saurianBones(ctx, x, y, s, a) { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 2.2 * s; ctx.beginPath(); ctx.moveTo(-26 * s + 2, 2); ctx.quadraticCurveTo(0, -6 * s + 2, 30 * s + 2, 2); ctx.stroke();
+    ctx.strokeStyle = '#ece4cc'; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(-26 * s, 0); ctx.quadraticCurveTo(0, -6 * s, 30 * s, 0); ctx.stroke(); ctx.lineWidth = 1.3 * s;
+    for (let k = -3; k <= 4; k++) { const x0 = k * 5 * s, y0 = -3.6 * s; [-1, 1].forEach(sd => { ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x0 + sd * 2 * s, y0 + sd * 8 * s, x0 + sd * 1 * s, y0 + sd * 13 * s); ctx.stroke(); }); }
+    ctx.fillStyle = '#ece4cc'; ctx.beginPath(); ctx.ellipse(34 * s, 1, 7 * s, 4 * s, 0.2, 0, 7); ctx.fill(); ctx.fillStyle = '#4a4436'; ctx.beginPath(); ctx.arc(35 * s, 0, 1.4 * s, 0, 7); ctx.fill(); ctx.restore(); }
+  function scrapPile(ctx, x, y, r) { rubble(ctx, x, y, r, Math.floor(r * 2.2), ['#6b4a2e', '#7a3e1d', '#5e5a50', '#8a6a3a', '#4a4038']); for (let k = 0; k < r / 4; k++) { ctx.save(); ctx.translate(x + R(-r, r) * 0.6, y + R(-r, r) * 0.5); ctx.rotate(R(0, 3)); sheet(ctx, -R(4, 8), -R(2, 4), R(8, 16), R(4, 8), RUST[Math.floor(rnd() * RUST.length)]); ctx.restore(); } }
+  function tyreStack(ctx, x, y) { for (let k = 0; k < 3; k++) { const px = x + R(-6, 6), py = y + R(-5, 5); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(px + 1.5, py + 2, 6, 0, 7); ctx.fill(); ctx.fillStyle = '#1a1714'; ctx.beginPath(); ctx.arc(px, py, 6, 0, 7); ctx.fill(); ctx.fillStyle = '#4a4038'; ctx.beginPath(); ctx.arc(px, py, 2.6, 0, 7); ctx.fill(); } }
+  function oilSlick(ctx, x, y, r) { const g = ctx.createRadialGradient(x - r * 0.2, y - r * 0.2, 0, x, y, r); g.addColorStop(0, 'rgba(20,16,24,0.85)'); g.addColorStop(0.7, 'rgba(30,24,30,0.6)'); g.addColorStop(1, 'rgba(30,24,30,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.65, R(0, 3), 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(120,180,200,0.25)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.ellipse(x - r * 0.2, y - r * 0.1, r * 0.4, r * 0.2, 0.4, 0, 7); ctx.stroke(); }
+  function glyphTotem(ctx, x, y) { ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x + 6, y + 4, 8, 3, 0.4, 0, 7); ctx.fill(); ctx.fillStyle = '#3a2a1e'; ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill(); orkGlyph(ctx, x, y - 1, 9, '#d9c7a0'); ctx.fillStyle = '#b91c1c'; ctx.fillRect(x - 6, y + 3, 12, 2); }
+  function barrels(ctx, x, y) { for (let k = 0; k < 4; k++) { const px = x + (k % 2) * 7, py = y + Math.floor(k / 2) * 7; ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(px + 1.2, py + 1.5, 3.4, 0, 7); ctx.fill(); ctx.fillStyle = rnd() < 0.5 ? '#8a2a1a' : '#5a5a4a'; ctx.beginPath(); ctx.arc(px, py, 3.4, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(255,220,160,0.4)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(px, py, 2.2, 0, 7); ctx.stroke(); } }
   function building(ctx, b, theme) {
     const T = THEMES[theme], w = b.w, h = b.h; seed((b.x | 0) * 31 + (b.y | 0) * 17 + (b.w | 0));
     if (b.collapsed) { ruin(ctx, w, h, b.type); return; }
-    { const p = new Path2D(); p.rect(-w / 2, -h / 2, w, h); softShadow(ctx, p, Math.min(14, w * 0.07), Math.min(16, h * 0.08), 6, 0.55); }
-    ({ CATHEDRAL: cathedral, MANUFACTORUM: manufactorum, BUNKER: bunker, SILO: silo })[b.type] ? ({ CATHEDRAL: cathedral, MANUFACTORUM: manufactorum, BUNKER: bunker, SILO: silo })[b.type](ctx, w, h, T) : hab(ctx, w, h, T);
+    if (!ROUND_BUILDINGS.has(b.type)) { const p = new Path2D(); p.rect(-w / 2, -h / 2, w, h); softShadow(ctx, p, Math.min(14, w * 0.07), Math.min(16, h * 0.08), 6, 0.55); }
+    if (ELDAR_BUILDINGS[b.type]) ELDAR_BUILDINGS[b.type](ctx, w, h, T); else ({ CATHEDRAL: cathedral, MANUFACTORUM: manufactorum, BUNKER: bunker, SILO: silo })[b.type] ? ({ CATHEDRAL: cathedral, MANUFACTORUM: manufactorum, BUNKER: bunker, SILO: silo })[b.type](ctx, w, h, T) : hab(ctx, w, h, T);
     if (theme === 'SNOW') { ctx.fillStyle = 'rgba(240,244,248,0.55)'; for (let k = 0; k < 12; k++) { ctx.beginPath(); ctx.ellipse(R(-w / 2, w / 2), R(-h / 2, h / 2), R(5, 16), R(3, 9), R(0, 3), 0, 7); ctx.fill(); } }
     const dmg = b.siDamage || 0; if (dmg > 0) damage(ctx, w, h, Math.min(4, dmg));
   }
@@ -44379,7 +44645,7 @@ const EpikPaint = (() => {
     for (let b = 0; b < 9; b++) { const a = b / 9 * 6.283, d = r * R(0.1, 0.35), bx = r + Math.cos(a) * d, by = r + Math.sin(a) * d, rr = r * R(0.45, 0.62); const g = x.createRadialGradient(bx - rr * 0.3, by - rr * 0.35, rr * 0.05, bx, by, rr); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(0.55, 'rgba(225,225,228,0.5)'); g.addColorStop(1, 'rgba(200,200,205,0)'); x.fillStyle = g; x.beginPath(); x.arc(bx, by, rr, 0, 7); x.fill(); }
     return c;
   }
-  return { hivePlates, hiveProp, ruinProp, filletPath, filletPoints, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
+  return { corruption, crystals, deadTree, fern, bigLeaf, skull, bloodStain, warpCrack, spikePole, setTheme, flowerPatch, grassTuft, saurianBones, scrapPile, tyreStack, oilSlick, glyphTotem, barrels, hivePlates, hiveProp, ruinProp, filletPath, filletPoints, roads, seed, rnd, R, THEMES, themeFor, canvas, ground, hill, field, crops, stoneWall, tree, pine, woods, rock, track, road, water, bridgeRect, trench, minefield, grid, lightGrade, crater, scorch, rubble, wreck, titanWreck, building, puff, linePath };
 })();
 
 try { const o = JSON.parse(localStorage.getItem('netepic_gold_options') || '{}'); if (o.paintedField === false) window.paintedField = false; } catch (e) { }
@@ -44888,6 +45154,8 @@ class NetEpicScene extends Phaser.Scene {
 
     if (this.loadCityMap(preset, scaleX, scaleY)) {
       // city maps built from districts
+    } else if (this.loadEldarMap(preset, scaleX, scaleY)) {
+      // the Tor Elianth campaign maps
     } else if (this.loadExtraMap(preset, scaleX, scaleY)) {
       // new and rebuilt maps (rivers that wind, turned buildings, hills, rock...)
     } else if (preset === 'INDUSTRIAL') {
@@ -46272,6 +46540,7 @@ class NetEpicScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(4);
     b.labelObj = lbl;
     this.terrainLabels.push(this.styleMapLabel(lbl));
+    if (b.noLabel) lbl.setVisible(false); // scenery that explains itself (shacks, wall sections)
   }
 
   // Map labels: small, no box, outlined so they read on any terrain without hiding units
@@ -50792,7 +51061,7 @@ class NetEpicScene extends Phaser.Scene {
       g.lineStyle(1.5, 0x1c1917, 0.7);
       r.points.forEach((p, i) => { if (i % 2) g.lineBetween(cx + (p.x - cx) * 0.25, cy + (p.y - cy) * 0.25, cx + (p.x - cx) * 0.8, cy + (p.y - cy) * 0.8); });
       g.lineStyle(2.5, 0x1c1917, 0.85); g.strokePoints(r.points, true);
-      this.addTerrainLabel({ x: cx, y: cy }, `🪨 ${r.name || 'Impassable rock'}`);
+      if (!r.noLabel) this.addTerrainLabel({ x: cx, y: cy }, `🪨 ${r.name || 'Impassable rock'}`);
     });
     // Trenches: dug line with sandbags either side
     (this.trenches || []).forEach(t => {
@@ -50987,7 +51256,7 @@ class NetEpicScene extends Phaser.Scene {
   }
 
   // ===== MAPS =====
-  mapTheme() { const p = window.mapPreset; return ({ HIGHWAY: 'DESERT', HIVE: 'RUINED_CITY' })[p] || p; }
+  mapTheme() { const p = window.mapPreset; return ({ HIGHWAY: 'DESERT', HIVE: 'RUINED_CITY', ORK_JUNKTOWN: 'DESERT', CHAOS_WASTES: 'SNOW', EXODITE_JUNGLE: 'FOREST' })[p] || p; }
   // Bridge across a winding river at x, square to the river
   bridgeAt(rv, x, len, width, name, isFord = false) {
     const P = rv.points; let i = 0; while (i < P.length - 2 && P[i + 1].x < x) i++;
@@ -50998,6 +51267,162 @@ class NetEpicScene extends Phaser.Scene {
   // Road through a list of points, drawn as joined segments with one label
   roadPath(pts, width, name) { return pts.slice(0, -1).map((p, i) => ({ x1: p.x, y1: p.y, x2: pts[i + 1].x, y2: pts[i + 1].y, width, name, cap: true, noLabel: i !== Math.floor((pts.length - 1) / 2) })); }
 
+  // ===== Tor Elianth campaign maps: Exodite grasslands, an Exodite settlement and an Ork junk town =====
+  loadEldarMap(preset, scaleX, scaleY) {
+    if (!['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES'].includes(preset)) return false;
+    const X = v => Math.round(v * scaleX), Y = v => Math.round(v * scaleY), P = (x, y) => ({ x: X(x), y: Y(y) }), Ps = arr => arr.map(([x, y]) => P(x, y));
+    const B = (type, name, cx, cy, w, h, rot = 0) => ({ x: X(cx) - w / 2, y: Y(cy) - h / 2, w, h, rot, type, name });
+    const E = o => ({ ...o, x: X(o.x), y: Y(o.y) }), W = (x, y, r) => ({ x: X(x), y: Y(y), r });
+    const O = (id, name, x, y) => ({ id, name: `Obj #${id} (${name})`, x: X(x), y: Y(y), owner: 'NEUTRAL' });
+    const flank = (w, e) => { if (scaleX > 1.15) this.objectives.push(O(6, w, 120, 625), O(7, e, 1730, 625)); };
+    const rv = (pts, width, name, kind) => ({ points: Ps(pts), width, name, kind });
+    const mid = br => ({ x: Math.round((br.x1 + br.x2) / 2), y: Math.round((br.y1 + br.y2) / 2) });
+    const trail = (pts, name, width = 18) => ({ points: Ps(pts), width, name });
+    if (preset === 'EXODITE_PLAINS') {
+      // Rolling golden grassland of a maiden world: herd trails, a silver stream with fords, old standing stones and a webway gate
+      const stream = rv([[0, 830], [260, 780], [520, 850], [800, 770], [1060, 815], [1330, 720], [1600, 760], [1850, 690]], 70, 'Silverthread Stream');
+      this.rivers = [stream];
+      const f1 = this.bridgeAt(stream, X(430), 150, 64, "Herders' Ford", true), f2 = this.bridgeAt(stream, X(920), 150, 52, 'Wraithbone Span'), f3 = this.bridgeAt(stream, X(1480), 150, 64, 'Saurian Ford', true);
+      this.bridges = [f1, f2, f3];
+      this.dirtTracks = [trail([[0, 520], [380, 470], [880, 560], [1320, 500], [1850, 430]], 'Great Herd Trail', 20), trail([[880, 560], [900, 700], [mid(f2).x / scaleX, mid(f2).y / scaleY]], 'Shrine Path', 14),
+        trail([[mid(f2).x / scaleX, mid(f2).y / scaleY], [940, 1000], [1000, 1250]], 'Shrine Path', 14), trail([[300, 1250], [380, 1020], [mid(f1).x / scaleX, mid(f1).y / scaleY]], 'Drover Trail', 14)];
+      this.buildings = [B('MEGALITH', 'The Great Megaliths', 880, 400, 180, 180), B('WEBWAY_GATE', 'Webway Gate', 1520, 300, 120, 120),
+        B('WRAITHBONE_TOWER', "Herders' Waystation", 260, 1010, 90, 90), B('EXODITE_HALL', 'Nomad Longhall', 1320, 1070, 180, 100, -0.15), B('MEGALITH', 'Old Standing Stones', 280, 560, 120, 120)];
+      this.hills = [E({ x: 470, y: 260, rx: 180, ry: 90, rot: 0.2, name: 'Grazing Knoll' }), E({ x: 1430, y: 900, rx: 190, ry: 75, rot: -0.3, name: 'Saurian Rise' }), E({ x: 1080, y: 200, rx: 230, ry: 45, rot: 0.08, kind: 'ridge', name: 'Windcrest Ridge' })];
+      this.woods = [W(130, 230, 80), W(700, 1060, 90), W(1720, 540, 85), W(1130, 590, 70), W(640, 640, 58), W(1760, 1120, 70)];
+      this.rocks = [{ name: 'Dragonbone Outcrop', points: Ps([[1180, 1000], [1240, 975], [1270, 1030], [1210, 1060]]) }];
+      this.objectives = [O(1, 'Great Megaliths', 880, 400), O(2, 'Webway Gate', 1520, 300), { ...O(3, "Herders' Ford", 0, 0), ...mid(f1) }, O(4, 'Grazing Knoll', 470, 260), O(5, 'Nomad Longhall', 1320, 1070)];
+      flank('West Grassland', 'East Grassland');
+    } else if (preset === 'EXODITE_SETTLEMENT') {
+      // An Exodite settlement round a webway plaza: wraithbone spires, domed halls, moonflower gardens and a spring with a bridge
+      // a compact walled settlement: open ground all round before the attackers reach the ramparts
+      const C = [925, 600], RX = 445, RY = 340, CY = 612;
+      this.dirtTracks = [trail([C, [800, 530], [730, 470]], 'Spirit Way', 14), trail([C, [1050, 530], [1120, 470]], 'Spirit Way', 14), trail([C, [925, 440]], 'Shrine Walk', 14),
+        trail([C, [925, 740], [925, 1250]], 'Hall Avenue', 18), trail([[780, 690], [740, 770]], 'Weavers\' Path', 12), trail([[1070, 690], [1110, 770]], 'Seers\' Path', 12),
+        trail([[0, 610], [520, 610], [800, 560]], 'West Road', 16), trail([[1850, 610], [1330, 610], [1050, 560]], 'East Road', 16)];
+      this.buildings = [B('WEBWAY_GATE', 'Settlement Webway Gate', 925, 600, 120, 120), B('EXODITE_HALL', 'Great Hall of the Herd-Lords', 925, 740, 190, 100),
+        B('MEGALITH', 'World Spirit Shrine', 925, 430, 120, 120), B('WRAITHBONE_TOWER', 'Spirit Tower of Dawn', 805, 525, 76, 76), B('WRAITHBONE_TOWER', 'Spirit Tower of Dusk', 1045, 525, 76, 76),
+        B('WRAITHBONE_TOWER', 'Watch Spire', 775, 680, 64, 64), B('WRAITHBONE_TOWER', 'Song Spire', 1075, 680, 64, 64),
+        B('EXODITE_HALL', 'Bonesingers\' Hall', 720, 455, 140, 80, 0.35), B('EXODITE_HALL', 'Dragon-Riders\' Hall', 1130, 455, 140, 80, -0.35),
+        B('EXODITE_HALL', 'Weavers\' Hall', 735, 785, 130, 76, -0.25), B('EXODITE_HALL', 'Seers\' Hall', 1115, 785, 130, 76, 0.25)];
+      // the ring of ramparts: eight bastions, walls between them, gates open to the west, east and south
+      const ring = [22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5].map(d => d * Math.PI / 180), at = a => [925 + RX * Math.cos(a), CY + RY * Math.sin(a)];
+      const bName = ['East Bastion', 'South Gate East', 'South Gate West', 'West Bastion', 'West Gate North', 'Northwest Bastion', 'Northeast Bastion', 'East Gate North'];
+      ring.forEach((a, n) => { const [x, y] = at(a); this.buildings.push({ ...B('WRAITHBONE_BASTION', bName[n], x, y, 92, 68, a - Math.PI / 2), noLabel: true }); });
+      [[0, 1], [2, 3], [4, 5], [5, 6], [6, 7]].forEach(([a, b]) => { const [x1, y1] = at(ring[a]), [x2, y2] = at(ring[b]), L = Math.hypot(x2 - x1, y2 - y1) - 92;
+        this.buildings.push({ ...B('WRAITHBONE_WALL', 'Rampart', (x1 + x2) / 2, (y1 + y2) / 2, L, 20, Math.atan2(y2 - y1, x2 - x1)), noLabel: true }); });
+      this.fields = [{ x: X(170), y: Y(330), w: 200, h: 140, boundary: 'HEDGE', name: 'Moonflower Fields' }, { x: X(1480), y: Y(330), w: 200, h: 140, boundary: 'HEDGE', name: 'Starfruit Orchard' }];
+      this.woods = [W(130, 120, 80), W(1720, 120, 80), W(560, 130, 55), W(1290, 130, 55), W(200, 850, 70), W(1650, 850, 70), W(500, 1040, 55), W(1350, 1040, 55)];
+      this.hills = [E({ x: 925, y: 440, rx: 120, ry: 75, rot: 0, name: 'Shrine Hill' }), E({ x: 170, y: 1140, rx: 160, ry: 75, rot: 0.15, name: 'Western Downs' }),
+        E({ x: 1680, y: 1140, rx: 160, ry: 75, rot: -0.15, name: 'Eastern Downs' }), E({ x: 925, y: 120, rx: 220, ry: 45, rot: 0, kind: 'ridge', name: 'North Ridge' })];
+      const sg = at(ring[2]), wb = at(ring[3]);
+      this.objectives = [O(1, 'Webway Plaza', 925, 600), O(2, 'Great Hall', 925, 740), O(3, 'World Spirit Shrine', 925, 430), O(4, 'South Gate', sg[0], sg[1]), O(5, 'West Bastion', wb[0], wb[1])];
+      flank('West Gardens', 'East Orchard');
+    } else if (preset === 'EXODITE_STEPPE') {
+      // The Saurian Steppe: wide open grassland, long ridges, a giant dragon skull, a herders' camp and an old stone circle
+      this.dirtTracks = [trail([[0, 380], [460, 420], [900, 360], [1400, 430], [1850, 400]], 'Migration Trail', 22), trail([[0, 900], [520, 860], [1000, 920], [1500, 860], [1850, 880]], 'Migration Trail', 22),
+        trail([[900, 360], [930, 620], [1000, 920]], 'Herders\' Path', 14)];
+      this.buildings = [B('EXODITE_HALL', 'Herders\' Longhall', 900, 620, 170, 96, 0.1), B('WRAITHBONE_TOWER', 'Herders\' Waystone', 1050, 560, 70, 70), B('EXODITE_HALL', 'Drovers\' Hall', 780, 700, 130, 76, -0.4),
+        B('MEGALITH', 'Ring of the Ancients', 300, 620, 150, 150), B('WRAITHBONE_TOWER', 'Lonely Spire', 1560, 630, 80, 80)];
+      this.hills = [E({ x: 500, y: 220, rx: 260, ry: 55, rot: 0.08, kind: 'ridge', name: 'Long Ridge' }), E({ x: 1350, y: 1050, rx: 260, ry: 55, rot: -0.06, kind: 'ridge', name: 'Far Ridge' }),
+        E({ x: 1350, y: 240, rx: 160, ry: 80, rot: 0.2, name: 'Grazing Hill' }), E({ x: 450, y: 1040, rx: 150, ry: 80, rot: -0.2, name: 'Saurian Hill' }), E({ x: 1250, y: 640, rx: 110, ry: 60, rot: 0, name: 'Watch Knoll' })];
+      this.rocks = [{ name: 'Dragon Skull', points: Ps([[600, 480], [640, 450], [700, 440], [760, 455], [800, 480], [770, 500], [790, 525], [730, 520], [690, 540], [640, 525]]) }, { name: 'Dragonbone Rocks', points: Ps([[1150, 820], [1210, 800], [1240, 850], [1180, 875]]) }];
+      this.woods = [W(130, 160, 70), W(1720, 1110, 70), W(1700, 220, 60), W(160, 1100, 60), W(1060, 260, 50), W(720, 1000, 50)];
+      this.objectives = [O(1, 'Herders\' Camp', 900, 620), O(2, 'Ring of the Ancients', 300, 620), O(3, 'Lonely Spire', 1560, 630), O(4, 'Grazing Hill', 1350, 240), O(5, 'Saurian Hill', 450, 1040)];
+      flank('West Steppe', 'East Steppe');
+    } else if (preset === 'EXODITE_JUNGLE') {
+      // A maiden-world jungle: dense canopy cut by trails, a winding river with a ford and a wraithbone bridge, a ruined temple and a hidden webway gate
+      const river = rv([[0, 300], [300, 360], [560, 290], [820, 380], [1000, 470], [1150, 640], [1300, 760], [1550, 820], [1850, 790]], 80, 'Jade River');
+      this.rivers = [river];
+      const f1 = this.bridgeAt(river, X(420), 150, 64, 'Vine Ford', true), b1 = this.bridgeAt(river, X(1240), 150, 54, 'Wraithbone Bridge');
+      this.bridges = [f1, b1];
+      this.dirtTracks = [trail([[925, 1250], [900, 980], [760, 760], [700, 600]], 'Temple Trail', 16), trail([[700, 600], [mid(f1).x / scaleX, mid(f1).y / scaleY]], 'Temple Trail', 16), trail([[mid(f1).x / scaleX, mid(f1).y / scaleY], [480, 120], [520, 0]], 'Temple Trail', 16),
+        trail([[700, 600], [1000, 650], [mid(b1).x / scaleX, mid(b1).y / scaleY]], 'Gate Trail', 14), trail([[mid(b1).x / scaleX, mid(b1).y / scaleY], [1420, 520], [1500, 300]], 'Gate Trail', 14), trail([[0, 900], [400, 870], [760, 760]], 'Hunters\' Trail', 12)];
+      this.buildings = [B('ELDAR_RUIN', 'Overgrown Temple', 700, 600, 210, 170), B('WEBWAY_GATE', 'Hidden Webway Gate', 1500, 300, 110, 110), B('MEGALITH', 'Vine-choked Stones', 300, 1050, 120, 120), B('ELDAR_RUIN', 'Fallen Shrine', 1450, 1050, 140, 110, 0.3)];
+      this.woods = [W(150, 150, 120), W(800, 150, 110), W(1150, 230, 120), W(1750, 150, 110), W(260, 600, 125), W(450, 420, 80), W(1000, 840, 110), W(1250, 470, 95),
+        W(1700, 520, 115), W(140, 950, 90), W(600, 1100, 115), W(1150, 1120, 100), W(1700, 1080, 110), W(1450, 680, 70), W(950, 380, 70), W(520, 820, 80)];
+      this.hills = [E({ x: 1000, y: 1000, rx: 120, ry: 70, rot: 0.3, name: 'Mossy Knoll' }), E({ x: 1650, y: 330, rx: 130, ry: 70, rot: -0.2, name: 'Gate Rise' })];
+      this.objectives = [O(1, 'Overgrown Temple', 700, 600), O(2, 'Hidden Webway Gate', 1500, 300), { ...O(3, 'Vine Ford', 0, 0), ...mid(f1) }, O(4, 'Vine-choked Stones', 300, 1050), O(5, 'Fallen Shrine', 1450, 1050)];
+      flank('West Canopy', 'East Canopy');
+    } else if (preset === 'CHAOS_WASTES') {
+      // Snowy Chaos wastes: a frozen chasm, a blood-stained shrine of the Dark Gods, obelisks, a ruined Eldar watchtower and Chaos trenches
+      this.dirtTracks = [trail([[925, 0], [920, 300], [925, 430]], 'Path of Skulls', 16), trail([[925, 430], [700, 600], [520, 820], [420, 1000], [380, 1250]], 'Path of Skulls', 16),
+        trail([[925, 430], [1200, 600], [1400, 800], [1450, 1000], [1500, 1250]], 'Sledge Track', 14)];
+      this.buildings = [B('CHAOS_SHRINE', 'Shrine of Slaanesh', 925, 430, 190, 190), B('CHAOS_OBELISK', 'Obelisk of Torment', 520, 300, 70, 70), B('CHAOS_OBELISK', 'Obelisk of Woe', 1330, 300, 70, 70),
+        B('ELDAR_RUIN', 'Ruined Eldar Watchtower', 1200, 1000, 140, 120, 0.2), B('BUNKER', 'Chaos Redoubt', 650, 1020, 130, 90, 0.2)];
+      this.trenches = [{ points: Ps([[680, 560], [800, 590], [925, 600], [1050, 590], [1170, 560]]), width: 14, name: 'Chaos Trench' }];
+      this.hills = [E({ x: 1000, y: 780, rx: 150, ry: 70, rot: 0.1, name: 'Corrupted Mound' }), E({ x: 250, y: 300, rx: 170, ry: 80, rot: 0.2, name: 'Frost Barrow' }), E({ x: 1600, y: 1050, rx: 170, ry: 80, rot: -0.2, name: 'Ice Hill' }), E({ x: 925, y: 1130, rx: 240, ry: 45, rot: 0, kind: 'ridge', name: 'Rimefang Ridge' })];
+      this.rocks = [{ name: 'Ice Spires', points: Ps([[620, 740], [660, 705], [692, 722], [726, 712], [732, 772], [686, 796], [644, 782]]) }, { name: 'Ice Spires', points: Ps([[1550, 390], [1590, 350], [1625, 372], [1665, 360], [1672, 420], [1630, 455], [1585, 440]]) }, { name: 'Ice Spires', points: Ps([[245, 550], [285, 515], [318, 532], [352, 522], [358, 585], [310, 608], [268, 594]]) }];
+      this.woods = [W(130, 130, 80), W(1720, 130, 80), W(1750, 520, 70), W(120, 1100, 75), W(1100, 160, 60), W(260, 900, 60)];
+      this.craters = [E({ x: 760, y: 360, rx: 22 }), E({ x: 1120, y: 420, rx: 20 }), E({ x: 1000, y: 960, rx: 24 })];
+      this.objectives = [O(1, 'Shrine of Slaanesh', 925, 430), O(2, 'Corrupted Mound', 1000, 780), O(3, 'Crystal Field', 1380, 640), O(4, 'Ruined Watchtower', 1200, 1020), O(5, 'Chaos Redoubt', 650, 1020)];
+      flank('West Wastes', 'East Wastes');
+    } else if (preset === 'ORK_JUNKTOWN') {
+      // An Ork junk town: a scrap fort in the middle, Mek shops, shanty shacks, scrap heaps, squig pens and muddy tracks
+      this.dirtTracks = [trail([[0, 640], [380, 610], [770, 570]], 'Da Main Drag', 24), trail([[1080, 570], [1480, 610], [1850, 650]], 'Da Main Drag', 24),
+        trail([[925, 690], [900, 960], [960, 1250]], 'Skrapyard Rut', 20), trail([[925, 440], [990, 210], [910, 0]], 'Norf Track', 20), trail([[380, 610], [440, 820], [400, 1250]], 'Smelta Lane', 16), trail([[1480, 610], [1400, 380], [1450, 0]], 'Mek Lane', 16)];
+      this.buildings = [B('ORK_FORT', 'Da Boss Fort', 925, 565, 300, 220), B('MEK_WORKSHOP', 'Big Mek\'s Shop', 1380, 390, 190, 130, 0.12), B('MEK_WORKSHOP', 'Grot Smelta', 470, 840, 170, 120, -0.18),
+        ...[[540, 430, 90, 60, 0.3], [600, 290, 80, 55, -0.2], [330, 470, 85, 58, 0.1], [1290, 800, 95, 62, -0.25], [1460, 850, 80, 55, 0.35], [1350, 960, 90, 60, 0.15], [700, 960, 85, 58, -0.3],
+          [820, 1040, 80, 55, 0.2], [1100, 960, 95, 62, -0.1], [1620, 300, 85, 58, 0.25], [230, 720, 80, 55, -0.35], [1400, 1110, 90, 60, 0.1], [1170, 260, 80, 55, 0.4]].map(([x, y, w, h, r]) => ({ ...B('ORK_SHACK', 'Ork Shack', x, y, w, h, r), noLabel: true }))];
+      this.fields = [{ x: X(170), y: Y(190), w: 300, h: 180, boundary: 'WALL', name: 'Squig Pens' }];
+      this.buildings.push(B('GARGANT_WIP', 'Gargant Yard', 1610, 975, 230, 230));
+      const heap = (cx, cy, r, sd) => { const pts = []; let q = sd; const rr = () => (q = (q * 16807) % 2147483647) / 2147483647; for (let k = 0; k < 11; k++) { const a = k / 11 * 6.283 + rr() * 0.3, d = r * (0.65 + rr() * 0.5); pts.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d * 0.8]); } return { name: 'Scrap Heap', points: Ps(pts), noLabel: true }; };
+      this.rocks = [heap(705, 435, 85, 11), heap(1150, 760, 64, 23), heap(1235, 1150, 68, 37), heap(300, 1060, 75, 41), heap(140, 1150, 60, 53), heap(1750, 160, 70, 67), heap(1700, 700, 55, 71)];
+      this.hills = [E({ x: 1450, y: 160, rx: 170, ry: 80, rot: 0.2, name: 'Slag Hill' }), E({ x: 570, y: 1160, rx: 140, ry: 70, rot: -0.2, name: 'Ash Mound' }),
+        E({ x: 700, y: 180, rx: 200, ry: 42, rot: -0.1, kind: 'ridge', name: 'Spoil Ridge' }), E({ x: 1060, y: 1170, rx: 130, ry: 60, rot: 0.1, name: 'Burnt Hill' })];
+      this.craters = [E({ x: 600, y: 600, rx: 24 }), E({ x: 1240, y: 520, rx: 22 }), E({ x: 860, y: 260, rx: 20 }), E({ x: 1000, y: 880, rx: 26 }), E({ x: 300, y: 300, rx: 18 })];
+      this.objectives = [O(1, 'Da Boss Fort', 925, 565), O(2, 'Big Mek\'s Shop', 1380, 390), O(3, 'Grot Smelta', 470, 840), O(4, 'Squig Pens', 320, 280), O(5, 'Gargant Yard', 1610, 975)];
+      flank('West Shanties', 'East Shanties');
+    }
+    return true;
+  }
+  // scenery scattered between the features (looks only)
+  paintEldarDressing(ctx) {
+    const P = EpikPaint, mp = window.mapPreset, junk = mp === 'ORK_JUNKTOWN'; P.seed(({ ORK_JUNKTOWN: 6161, EXODITE_SETTLEMENT: 5151, EXODITE_STEPPE: 7171, EXODITE_JUNGLE: 8181, CHAOS_WASTES: 9191 })[mp] || 4141);
+    const segD = (x, y, a, b) => { const l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2 || 1, t = Math.max(0, Math.min(1, ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / l2)); return Math.hypot(x - a.x - t * (b.x - a.x), y - a.y - t * (b.y - a.y)); };
+    const near = (pts, x, y, w) => (pts || []).some((a, i) => pts[i + 1] && segD(x, y, a, pts[i + 1]) < w);
+    const clear = (x, y, r) => x > r && y > r && x < BOARD_W - r && y < BOARD_H - r && !(this.buildings || []).some(b => this.distToRect(b, x, y) < r + 10)
+      && !(this.woods || []).some(w => Math.hypot(x - w.x, y - w.y) < w.r + r) && !(this.objectives || []).some(o => Math.hypot(x - o.x, y - o.y) < r + 26)
+      && !(this.rivers || []).some(rv => near(rv.points, x, y, (rv.width || 100) / 2 + r + 10)) && !(this.dirtTracks || []).some(t => near(t.points, x, y, (t.width || 14) / 2 + r + 4))
+      && !(this.rocks || []).some(k => this.rockAt && this.rockAt(x, y)) && !(this.fields || []).some(f => x > f.x - r && x < f.x + f.w + r && y > f.y - r && y < f.y + f.h + r);
+    const tries = (n, r, fn) => { for (let k = 0, made = 0; k < n * 6 && made < n; k++) { const x = P.R(0, BOARD_W), y = P.R(0, BOARD_H); if (clear(x, y, r)) { fn(x, y); made++; } } };
+    if (mp === 'EXODITE_JUNGLE') {
+      tries(90, 10, (x, y) => P.fern(ctx, x, y, P.R(6, 11)));
+      tries(40, 14, (x, y) => P.bigLeaf(ctx, x, y, P.R(7, 12), P.R(0, 6.28)));
+      tries(30, 8, (x, y) => P.flowerPatch(ctx, x, y, P.R(4, 8)));
+      tries(14, 16, (x, y) => P.tree(ctx, x, y, P.R(12, 18), P.rnd() < 0.5 ? ['#2a1a40', '#4a2a6a', '#7a4aa0', '#b98ad8'] : ['#0f3a3a', '#1a5a5a', '#2a8a7a', '#7ad0b0']));
+      return;
+    }
+    if (mp === 'CHAOS_WASTES') {
+      { const sh = (this.buildings || []).find(b => b.type === 'CHAOS_SHRINE'); if (sh) { const c = this.bCenter(sh); P.corruption(ctx, c.x, c.y, 260); P.corruption(ctx, c.x - 120, c.y + 160, 120); P.corruption(ctx, c.x + 140, c.y + 120, 110); } }
+      tries(8, 50, (x, y) => P.corruption(ctx, x, y, P.R(45, 90)));
+      tries(12, 14, (x, y) => P.crystals(ctx, x, y, P.R(8, 13)));
+      { const o = (this.objectives || []).find(q => /Crystal Field/.test(q.name)); if (o) for (let k = 0; k < 9; k++) P.crystals(ctx, o.x + P.R(-70, 70), o.y + P.R(-50, 50), P.R(9, 15)); }
+      tries(16, 16, (x, y) => P.bloodStain(ctx, x, y, P.R(8, 18)));
+      tries(10, 30, (x, y) => P.warpCrack(ctx, x, y, P.R(25, 55)));
+      tries(30, 6, (x, y) => P.skull(ctx, x, y, P.R(2, 3.4)));
+      tries(14, 10, (x, y) => P.spikePole(ctx, x, y));
+      tries(6, 18, (x, y) => P.deadTree(ctx, x, y, P.R(12, 18)));
+      tries(5, 24, (x, y) => P.wreck(ctx, x, y, P.R(0, 6.28), P.R(0.8, 1.1), false));
+      tries(40, 6, (x, y) => { ctx.fillStyle = 'rgba(120,130,150,0.22)'; ctx.beginPath(); ctx.ellipse(x, y, P.R(6, 14), P.R(2, 4), -0.3, 0, 7); ctx.fill(); });
+      return;
+    }
+    if (junk) {
+      tries(26, 22, (x, y) => P.scrapPile(ctx, x, y, P.R(10, 20)));
+      tries(14, 10, (x, y) => P.tyreStack(ctx, x, y));
+      tries(16, 16, (x, y) => P.oilSlick(ctx, x, y, P.R(8, 18)));
+      tries(10, 14, (x, y) => P.barrels(ctx, x, y));
+      tries(8, 24, (x, y) => P.wreck(ctx, x, y, P.R(0, 6.28), P.R(0.8, 1.2), false));
+      tries(10, 8, (x, y) => P.glyphTotem(ctx, x, y));
+      tries(40, 4, (x, y) => { ctx.strokeStyle = 'rgba(40,28,18,0.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + P.R(-14, 14), y + P.R(-6, 6)); ctx.stroke(); });
+    } else {
+      tries(60, 8, (x, y) => P.flowerPatch(ctx, x, y, P.R(5, 10)));
+      tries(140, 4, (x, y) => P.grassTuft(ctx, x, y, P.R(5, 9)));
+      tries(12, 6, (x, y) => { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x + 2, y + 2, 5, 3.5, 0, 0, 7); ctx.fill(); ctx.fillStyle = P.rnd() < 0.5 ? '#8a8396' : '#a39cad'; ctx.beginPath(); ctx.ellipse(x, y, 5, 3.6, P.R(0, 3), 0, 7); ctx.fill(); });
+      if (window.mapPreset === 'EXODITE_PLAINS') { tries(3, 40, (x, y) => P.saurianBones(ctx, x, y, P.R(0.9, 1.3), P.R(0, 6.28))); tries(10, 16, (x, y) => P.tree(ctx, x, y, P.R(11, 17), P.rnd() < 0.5 ? ['#3b1f5a', '#5b2f7a', '#8b5cb5', '#c9a6e8'] : ['#5a4a14', '#8a7420', '#c4a83a', '#f0d978'])); }
+      else tries(10, 14, (x, y) => P.tree(ctx, x, y, P.R(10, 15), ['#1e4a3e', '#2d6a52', '#4f8f6a', '#9ad08a']));
+    }
+  }
   loadExtraMap(preset, scaleX, scaleY) {
     const MAPS = ['RIVER', 'SNOW', 'DESERT', 'PASS', 'HIGHWAY', 'FORTIFIED'];
     if (!MAPS.includes(preset)) return false;
@@ -55738,14 +56163,14 @@ class NetEpicScene extends Phaser.Scene {
     (this.buildings || []).forEach(b => { if (b._gfx) b._gfx.setVisible(false); try { this.paintBuilding(b); } catch (e) { console.error(e); } });
   }
   paintTerrain(ctx, theme) {
-    const P = EpikPaint, W = BOARD_W, H = BOARD_H, sd = ({ INDUSTRIAL: 3, RUINED_CITY: 7, SNOW: 11, DESERT: 13, RIVER: 17, FOREST: 19, PASS: 23, HIGHWAY: 29, FORTIFIED: 31, HIVE: 37 })[window.mapPreset] || 5;
-    P.ground(ctx, W, H, theme, sd);
+    const P = EpikPaint, W = BOARD_W, H = BOARD_H, sd = ({ INDUSTRIAL: 3, RUINED_CITY: 7, SNOW: 11, DESERT: 13, RIVER: 17, FOREST: 19, PASS: 23, HIGHWAY: 29, FORTIFIED: 31, HIVE: 37, EXODITE_PLAINS: 41, EXODITE_SETTLEMENT: 43, ORK_JUNKTOWN: 47, EXODITE_STEPPE: 53, EXODITE_JUNGLE: 59, CHAOS_WASTES: 61 })[window.mapPreset] || 5;
+    P.setTheme(theme); P.ground(ctx, W, H, theme, sd);
     if (window.mapPreset === 'HIVE') P.hivePlates(ctx, W, H);
     P.grid(ctx, W, H, 10 * PX_PER_CM);
     ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.setLineDash([14, 10]); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke(); ctx.restore();
     P.seed(sd * 101);
     // a few old shell holes and scorch marks from earlier fighting
-    [[240, 420, 16], [470, 760, 13], [690, 380, 18], [820, 740, 15], [1060, 420, 17], [1210, 690, 14], [1390, 430, 16], [1620, 770, 15], [960, 580, 12]].forEach(([x, y, r]) => { if (x < W && y < H) { ctx.globalAlpha = 0.75; P.crater(ctx, x * W / 1850, y * H / 1250, r * 0.8, theme); ctx.globalAlpha = 1; } });
+    if (theme !== 'EXODITE' && theme !== 'JUNGLE') [[240, 420, 16], [470, 760, 13], [690, 380, 18], [820, 740, 15], [1060, 420, 17], [1210, 690, 14], [1390, 430, 16], [1620, 770, 15], [960, 580, 12]].forEach(([x, y, r]) => { if (x < W && y < H) { ctx.globalAlpha = 0.75; P.crater(ctx, x * W / 1850, y * H / 1250, r * 0.8, theme); ctx.globalAlpha = 1; } });
     (this.hills || []).forEach(h => { const co = Math.cos(h.rot || 0), si = Math.sin(h.rot || 0); P.hill(ctx, this.ellipsePts(h, 48, 0, 0.06), h.x, h.y, theme, h.kind === 'ridge' ? [{ x: h.x - co * h.rx * 0.8, y: h.y - si * h.rx * 0.8 }, { x: h.x + co * h.rx * 0.8, y: h.y + si * h.rx * 0.8 }] : null); });
     (this.fields || []).forEach(f => {
       const poly = [{ x: f.x, y: f.y }, { x: f.x + f.w, y: f.y }, { x: f.x + f.w, y: f.y + f.h }, { x: f.x, y: f.y + f.h }];
@@ -55755,7 +56180,7 @@ class NetEpicScene extends Phaser.Scene {
     (this.crops || []).forEach(c => { const poly = this.rectCorners(c), rows = []; for (let yy = c.y + 5; yy < c.y + c.h; yy += 6) rows.push([this.toWorld(c, c.x + 2, yy), this.toWorld(c, c.x + c.w - 2, yy)]); P.crops(ctx, poly, rows); });
     (this.dirtTracks || []).forEach(dt => { if ((dt.points || []).length >= 2) P.track(ctx, dt.points, dt.width || 14, theme); });
     (this.craters || []).forEach(c => { ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot || 0); ctx.scale(1, (c.ry || c.rx) / c.rx); P.seed(c.x * 3 + c.y); P.crater(ctx, 0, 0, c.rx * 0.85, theme); ctx.restore(); });
-    const rvKind = theme === 'SNOW' ? 'ice' : (theme === 'DESERT' ? 'wadi' : null);
+    const rvKind = theme === 'SNOW' || theme === 'CHAOS' ? 'ice' : (theme === 'DESERT' ? 'wadi' : null);
     (this.rivers || []).forEach(rv => {
       if (rv.points) P.water(ctx, P.filletPoints(rv.points, (rv.width || 160) * 2.2), rv.width || 160, rv.kind || rvKind);
       else P.water(ctx, P.filletPoints([{ x: -40, y: rv.y + rv.h / 2 }, { x: W + 40, y: rv.y + rv.h / 2 }], 1), rv.h, rvKind);
@@ -55771,6 +56196,7 @@ class NetEpicScene extends Phaser.Scene {
     (this.rocks || []).forEach(r => P.rock(ctx, r.points, theme));
     (this.woods || []).forEach(w => P.woods(ctx, w, theme));
     if (window.mapPreset === 'HIVE' || window.mapPreset === 'RUINED_CITY') this.paintCityDressing(ctx, window.mapPreset === 'HIVE');
+    if (['EXODITE_PLAINS', 'EXODITE_SETTLEMENT', 'ORK_JUNKTOWN', 'EXODITE_STEPPE', 'EXODITE_JUNGLE', 'CHAOS_WASTES'].includes(window.mapPreset)) this.paintEldarDressing(ctx);
     P.lightGrade(ctx, W, H);
     ctx.strokeStyle = '#1e1b18'; ctx.lineWidth = 6; ctx.strokeRect(0, 0, W, H);
   }
