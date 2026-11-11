@@ -40265,7 +40265,7 @@ window.sideChapter = { IMPERIUM: 'CODEX', ORKS: 'CODEX' };
 // Eldar Craftworlds (Eldar book pp. 6-8): each adds its own host and rules; the standard list has none of them
 const SQUAT_CLANS = [['CODEX', 'Any (standard list)'], ['MAKURTU', 'Makurtu Gabe *'], ['ZUTIK', 'Zutik *'], ['COMMERCIAL', 'Commercial World *']];
 const SQUAT_CLAN_PROHIBITED = { MAKURTU: new Set(['card_sqt_gyrocopter_wing', 'card_sqt_air_attack_corps', 'card_sqt_balloons', 'card_sqt_land_raiders', 'card_sqt_rhinos']), ZUTIK: new Set(['card_sqt_slayer_cult', 'card_sqt_thunderfire', 'card_sqt_goliath', 'card_sqt_goliath_battery', 'card_sqt_grudgekeeper', 'card_sqt_robot_squad', 'card_sqt_shortbeards', 'card_sqt_shortbeard_det']), COMMERCIAL: new Set(['card_sqt_ironshield', 'card_sqt_lt_battlecars_spec', 'card_sqt_ancestor_lord', 'card_sqt_fundamentalist', 'card_sqt_slayer_cult', 'card_sqt_hellworm', 'card_sqt_rams', 'card_sqt_balloons']) };
-const ELDAR_CRAFTWORLDS = [['CODEX', 'Any (standard list)'], ['ALAITOC', 'Alaitoc'], ['BIEL_TAN', 'Biel-Tan'], ['IYANDEN', 'Iyanden'], ['SAIM_HANN', 'Saim-Hann'], ['ULTHWE', 'Ulthwe']];
+const ELDAR_CRAFTWORLDS = [['CODEX', 'Any (standard list)'], ['ALAITOC', 'Alaitoc'], ['BIEL_TAN', 'Biel-Tan'], ['IYANDEN', 'Iyanden'], ['SAIM_HANN', 'Saim-Hann'], ['ULTHWE', 'Ulthwe'], ['EXODITE', 'Exodites (maiden world)']];
 const ELDAR_CW_PROHIBITED = { IYANDEN: new Set(['card_eld_guardian_host']), SAIM_HANN: new Set(['card_eld_tempest_host', 'card_eld_phantom']) };
 // Ork clan-specific support cards (Ork book p. 5)
 window.ORK_CLAN_CARDS = { card_ork_gutrippa: 'GOFF', card_ork_lungbursta: 'GOFF', card_ork_bowelburna: 'EVIL_SUNZ', card_ork_gobsmasha: 'EVIL_SUNZ', card_ork_spleenrippa: 'EVIL_SUNZ', card_ork_nobz_warbikes: 'EVIL_SUNZ',
@@ -40318,6 +40318,9 @@ window.cardAllowed = function(side, u) {
   }
   if (u && (window.sideFaction[side] || side) === 'ELDAR') {
     const cw = (window.sideChapter && window.sideChapter[side]) || 'CODEX';
+    // the Exodites are their own army list: only their cards, and they are kept out of the craftworld lists
+    const exo = /^card_eld_exo_/.test(u.key || '');
+    if (cw === 'EXODITE' || exo) return cw === 'EXODITE' && exo;
     if (u.craftworld && u.craftworld !== cw) return false;
     return !(ELDAR_CW_PROHIBITED[cw] && ELDAR_CW_PROHIBITED[cw].has(u.key));
   }
@@ -40669,7 +40672,7 @@ window.renderArmyModal = function() {
     const chRow = document.getElementById(`${prefix}-chapter-row`), chSel = document.getElementById(`${prefix}-chapter-select`);
     if (chRow && chSel) {
       chRow.style.display = (activeBook === 'IMPERIUM' || activeBook === 'ELDAR' || activeBook === 'SQUATS') ? 'block' : 'none';
-      if (chSel.dataset.book !== activeBook) { chSel.innerHTML = ''; chSel.dataset.book = activeBook; (activeBook === 'ELDAR' ? ELDAR_CRAFTWORLDS : activeBook === 'SQUATS' ? SQUAT_CLANS : SM_CHAPTERS).forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = activeBook === 'ELDAR' ? `💠 Craftworld: ${n}` : activeBook === 'SQUATS' ? `⚒️ Clan: ${n}` : `🛡️ Chapter: ${n}`; chSel.appendChild(o); }); }
+      if (chSel.dataset.book !== activeBook) { chSel.innerHTML = ''; chSel.dataset.book = activeBook; (activeBook === 'ELDAR' ? ELDAR_CRAFTWORLDS : activeBook === 'SQUATS' ? SQUAT_CLANS : SM_CHAPTERS).forEach(([k, n]) => { const o = document.createElement('option'); o.value = k; o.innerText = activeBook === 'ELDAR' ? (k === 'EXODITE' ? `🦕 ${n}` : `💠 Craftworld: ${n}`) : activeBook === 'SQUATS' ? `⚒️ Clan: ${n}` : `🛡️ Chapter: ${n}`; chSel.appendChild(o); }); }
       chSel.value = window.sideChapter[side] || 'CODEX';
       chSel.style.borderColor = meta.borderHex;
       chSel.title = activeBook === 'SQUATS' ? 'Squat clan: its special rules and restrictions (* optional, agree it with your opponent)' : activeBook === 'ELDAR' ? 'Craftworld: adds its own host and special rule' : '* optional chapter in the army book (not fully playtested: agree it with your opponent)';
@@ -43489,10 +43492,14 @@ const EldArt2 = (() => {
         g.strokeStyle = rgba(sink(B.wingC || C, 0.5), 0.7); g.lineWidth = 0.22 * s; for (let k = 0; k <= tips; k++) { const t = k / tips; g.beginPath(); g.moveTo(sd * bw * 0.5, -bl * 0.45); g.lineTo(sd * (bw + ws * (1 - t * 0.85)), -bl * 0.55 + bl * 1.3 * t); g.stroke(); } });
       const all = new Path2D(); all.addPath(body); if (tl > 0) all.addPath(tail);
       dropShadow(g, all, 0.8 * s, 1.1 * s, 0.45, 0.45);
-      // legs
-      const legs = B.legs === 2 ? [[1, bl * 0.3]] : B.legs === 0 ? [] : [[1, -bl * 0.45], [1, bl * 0.45]];
-      legs.forEach(([, ly]) => [-1, 1].forEach(sd => { const lg = new Path2D(), lx = sd * bw * 0.92, len = (B.legL || 0.9) * s; lg.ellipse(lx + sd * len * 0.45, ly, len * 0.7, (B.legW || 0.42) * s, sd * 0.5, 0, 7); shaded(g, lg, D, lx - len, ly - len, lx + len, ly + len, 0.3); outline(g, lg, 0.14);
-        g.strokeStyle = '#e8e0c8'; g.lineWidth = 0.13 * s; for (let k = -1; k <= 1; k++) { const fx = lx + sd * len * 1.05, fy = ly + k * 0.22 * s; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + sd * 0.35 * s, fy + k * 0.12 * s - 0.15 * s); g.stroke(); } }));
+      // legs: a thigh reaching out from the body, a shin bending back under it, and a clawed foot
+      const legs = B.legs === 2 ? [[bl * 0.25, 1]] : B.legs === 0 ? [] : [[-bl * 0.5, -1], [bl * 0.45, 1]];
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      legs.forEach(([ly, fb]) => [-1, 1].forEach(sd => { const len = (B.legL || 0.9) * s, wd = (B.legW || 0.42) * s * 1.15, hx = sd * bw * 0.7, kx = sd * (bw + len * 0.75), ky = ly + fb * len * 0.15, fx = sd * (bw + len * 0.45), fy = ly + fb * len * 0.85;
+        const draw = (c, w2, dx, dy) => { g.strokeStyle = c; g.lineWidth = w2; g.beginPath(); g.moveTo(hx + dx, ly + dy); g.lineTo(kx + dx, ky + dy); g.lineTo(fx + dx, fy + dy); g.stroke(); };
+        draw('rgba(0,0,0,0.35)', wd * 1.05, 0.35 * s, 0.5 * s); draw(INK, wd + 0.3, 0, 0); draw(D, wd, 0, 0); draw(rgba(lift(C, 0.25), 0.55), wd * 0.35, -0.08 * s, -0.08 * s);
+        const ft = new Path2D(); ft.ellipse(fx, fy, wd * 0.75, wd * 0.6, 0, 0, 7); shaded(g, ft, D, fx - wd, fy - wd, fx + wd, fy + wd, 0.3); outline(g, ft, 0.12);
+        g.strokeStyle = '#ece4cc'; g.lineWidth = 0.12 * s; for (let k = -1; k <= 1; k++) { const a = (fb < 0 ? -Math.PI / 2 : Math.PI / 2) * 0 + Math.atan2(fy - ky, fx - kx) + k * 0.45; g.beginPath(); g.moveTo(fx + Math.cos(a) * wd * 0.6, fy + Math.sin(a) * wd * 0.6); g.lineTo(fx + Math.cos(a) * wd * 1.25, fy + Math.sin(a) * wd * 1.25); g.stroke(); } }));
       if (tl > 0) { shaded(g, tail, C, -tw, bl, tw, bl + tl, 0.3); outline(g, tail, 0.16); }
       shaded(g, body, C, -bw, -bl, bw, bl, 0.35); outline(g, body, 0.18);
       // markings
@@ -43521,6 +43528,38 @@ const EldArt2 = (() => {
       if (B.beak) { g.fillStyle = '#d9c9a0'; g.beginPath(); g.moveTo(-hw * 0.3, hy - hl * 0.5); g.lineTo(0, hy - hl * 0.75 - B.beak * s); g.lineTo(hw * 0.3, hy - hl * 0.5); g.fill(); g.fillStyle = B.crestC || '#c9301f'; g.beginPath(); g.moveTo(-0.15 * s, hy + hl * 0.2); g.lineTo(0, hy + hl * 0.2 + 1.1 * s); g.lineTo(0.15 * s, hy + hl * 0.2); g.fill(); }
       if (B.fire) { glow(g, 0, hy - hl * 0.9, 1.4 * s, '#ff8a2a', 0.85); glow(g, 0, hy - hl * 1.5, 0.9 * s, '#ffd27a', 0.7); }
       [-1, 1].forEach(sd => { g.fillStyle = B.eye || '#f5d04a'; g.beginPath(); g.ellipse(sd * hw * 0.42, hy - hl * 0.12, 0.13 * s, 0.09 * s, sd * 0.4, 0, 7); g.fill(); });
+      g.restore();
+    },
+    // a furred beast from above: shaggy outline, paws tucked at the corners, a mammal head (bear, wolf, great cat)
+    _mammal(g, P, x, y, s, M) {
+      g.save(); g.translate(x, y); if (M.rot) g.rotate(M.rot); seed(M.seed || 5);
+      const C = M.col, D = sink(C, 0.4), bw = M.bw * s, bl = M.bl * s, fuzz = (k, rx, ry, cx = 0, cy = 0, amp = 0.12) => { const p = new Path2D(); for (let i = 0; i <= 48; i++) { const a = i / 48 * 6.283, r = 1 + (i % 2 ? amp : -amp * 0.4) * (M.shag ?? 1); const px = cx + Math.cos(a) * rx * r, py = cy + Math.sin(a) * ry * r; i ? p.lineTo(px, py) : p.moveTo(px, py); } p.closePath(); return p; };
+      // tail
+      if (M.tail === 'bushy') { const t = new Path2D(); t.moveTo(-bw * 0.35, bl * 0.8); t.bezierCurveTo(-bw * 0.6, bl + 1.2 * s, 0.4 * s, bl + 2.2 * s, 0.6 * s, bl + 2.6 * s); t.bezierCurveTo(0.9 * s, bl + 1.6 * s, bw * 0.55, bl + 0.9 * s, bw * 0.35, bl * 0.8); t.closePath(); dropShadow(g, t, 0.4 * s, 0.6 * s, 0.4, 0.4); shaded(g, t, C, -bw, bl, bw, bl + 2.6 * s, 0.35); outline(g, t, 0.15); g.fillStyle = rgba(lift(C, 0.55), 0.8); g.beginPath(); g.ellipse(0.55 * s, bl + 2.3 * s, 0.3 * s, 0.4 * s, 0.3, 0, 7); g.fill(); }
+      else if (M.tail === 'long') { g.lineCap = 'round'; const tp = [[0, bl * 0.9], [0.4 * s, bl + 1 * s], [-0.3 * s, bl + 2 * s], [0.5 * s, bl + 3 * s]]; [['rgba(0,0,0,0.35)', 0.75, 0.4], [INK, 0.62, 0], [C, 0.5, 0]].forEach(([c, w2, o]) => { g.strokeStyle = c; g.lineWidth = w2 * s; g.beginPath(); tp.forEach(([a, b2], i) => i ? g.lineTo(a + o * s, b2 + o * s) : g.moveTo(a + o * s, b2 + o * s)); g.stroke(); }); if (M.stripes) { g.strokeStyle = M.stripes; g.lineWidth = 0.18 * s; [1.3, 1.9, 2.5].forEach(t => { g.beginPath(); g.arc(0.1 * s, bl + t * s, 0.28 * s, 0, 3.14); g.stroke(); }); } }
+      // paws, just showing beyond the body at the four corners
+      [[-0.62, -1], [0.62, 1]].forEach(([ly, fb]) => [-1, 1].forEach(sd => { const px = sd * bw * 0.92, py = ly * bl, pp = new Path2D(); pp.ellipse(px, py + fb * 0.15 * s, (M.paw || 0.45) * s, (M.paw || 0.45) * s * 1.25, 0, 0, 7); dropShadow(g, pp, 0.3 * s, 0.45 * s, 0.3, 0.4); shaded(g, pp, D, px - s, py - s, px + s, py + s, 0.3); outline(g, pp, 0.12);
+        g.strokeStyle = '#ece4cc'; g.lineWidth = 0.1 * s; for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(px + k * 0.18 * s, py - fb * 0.1 * s + (fb < 0 ? -0.5 : 0.5) * s * (M.paw || 0.45) * 2.2); g.lineTo(px + k * 0.22 * s, py + (fb < 0 ? -0.75 : 0.75) * s * (M.paw || 0.45) * 2.2); g.stroke(); } }));
+      // body: shoulders broader than the hips
+      const body = fuzz(1, bw, bl, 0, 0, 0.06); dropShadow(g, body, 0.6 * s, 0.9 * s, 0.45, 0.45); shaded(g, body, C, -bw, -bl, bw, bl, 0.35); outline(g, body, 0.16);
+      const sh = fuzz(1, bw * 1.08, bl * 0.42, 0, -bl * 0.45, 0.08); shaded(g, sh, lift(C, 0.05), -bw, -bl, bw, 0, 0.35);
+      g.save(); g.clip(body); g.strokeStyle = rgba(sink(C, 0.5), 0.45); g.lineWidth = 0.09 * s; for (let k = 0; k < 70; k++) { const fx = RR(-bw, bw), fy = RR(-bl, bl); g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + RR(-0.08, 0.08) * s, fy + RR(0.25, 0.45) * s); g.stroke(); }
+      g.strokeStyle = rgba(lift(C, 0.4), 0.35); for (let k = 0; k < 40; k++) { const fx = RR(-bw, bw * 0.3), fy = RR(-bl, bl * 0.4); g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + RR(-0.05, 0.05) * s, fy + 0.3 * s); g.stroke(); }
+      if (M.stripes) { g.strokeStyle = M.stripes; g.lineWidth = 0.28 * s; g.lineCap = 'round'; for (let t = -bl * 0.75; t < bl * 0.9; t += 0.62 * s) [-1, 1].forEach(sd => { g.beginPath(); g.moveTo(sd * 0.1 * s, t); g.quadraticCurveTo(sd * bw * 0.5, t + 0.25 * s, sd * bw * 0.95, t + 0.05 * s); g.stroke(); }); }
+      if (M.saddle) { g.fillStyle = rgba(M.saddle, 0.55); g.beginPath(); g.ellipse(0, bl * 0.05, bw * 0.55, bl * 0.65, 0, 0, 7); g.fill(); }
+      g.restore();
+      if (M.hump) { const hp = fuzz(1, bw * 0.7, bl * 0.3, 0, -bl * 0.5, 0.1); shaded(g, hp, lift(C, 0.12), -bw, -bl, bw, 0, 0.4); }
+      // head
+      const hy = -bl - M.headL * s * (M.head === 'bear' ? 0.1 : 0.35), hw = M.headW * s, hl = M.headL * s;
+      if (M.head === 'wolf') { [-1, 1].forEach(sd => { const ear = new Path2D(); ear.moveTo(sd * hw * 0.15, hy + hl * 0.05); ear.lineTo(sd * hw * 0.7, hy - hl * 0.05); ear.lineTo(sd * hw * 0.62, hy + hl * 0.5); ear.closePath(); shaded(g, ear, D, -hw, hy - hl, hw, hy + hl, 0.3); outline(g, ear, 0.1); });
+        const hd = new Path2D(); hd.moveTo(0, hy - hl * 0.95); hd.bezierCurveTo(hw * 0.35, hy - hl * 0.8, hw * 0.75, hy - hl * 0.1, hw * 0.7, hy + hl * 0.35); hd.quadraticCurveTo(0, hy + hl * 0.6, -hw * 0.7, hy + hl * 0.35); hd.bezierCurveTo(-hw * 0.75, hy - hl * 0.1, -hw * 0.35, hy - hl * 0.8, 0, hy - hl * 0.95); hd.closePath(); shaded(g, hd, C, -hw, hy - hl, hw, hy + hl, 0.4); outline(g, hd, 0.15);
+        g.fillStyle = rgba(lift(C, 0.45), 0.7); g.beginPath(); g.ellipse(0, hy - hl * 0.5, hw * 0.22, hl * 0.35, 0, 0, 7); g.fill(); g.fillStyle = '#1a1410'; g.beginPath(); g.ellipse(0, hy - hl * 0.9, hw * 0.13, hl * 0.07, 0, 0, 7); g.fill(); }
+      else { const round = M.head === 'bear', hd = fuzz(1, hw * 0.75, hl * 0.48, 0, hy, round ? 0.06 : 0.02); [-1, 1].forEach(sd => { const ear = new Path2D(); if (round) ear.arc(sd * hw * 0.58, hy + hl * 0.15, hw * 0.22, 0, 7); else { ear.moveTo(sd * hw * 0.3, hy - hl * 0.05); ear.quadraticCurveTo(sd * hw * 0.8, hy - hl * 0.15, sd * hw * 0.72, hy + hl * 0.3); ear.closePath(); } shaded(g, ear, D, -hw, hy - hl, hw, hy + hl, 0.3); outline(g, ear, 0.1); });
+        shaded(g, hd, M.headC || C, -hw, hy - hl, hw, hy + hl, 0.4); outline(g, hd, 0.15);
+        const mz = new Path2D(); mz.ellipse(0, hy - hl * 0.38, hw * (round ? 0.36 : 0.32), hl * (round ? 0.28 : 0.2), 0, 0, 7); shaded(g, mz, M.muzzle || lift(C, 0.3), -hw, hy - hl, hw, hy, 0.3); outline(g, mz, 0.1);
+        g.fillStyle = '#1a1410'; g.beginPath(); g.ellipse(0, hy - hl * (round ? 0.6 : 0.52), hw * 0.14, hl * 0.07, 0, 0, 7); g.fill();
+        if (M.stripes) { g.strokeStyle = M.stripes; g.lineWidth = 0.14 * s; [-1, 1].forEach(sd => [0, 0.18].forEach(o => { g.beginPath(); g.moveTo(sd * hw * 0.12, hy + hl * (0.05 + o)); g.lineTo(sd * hw * 0.5, hy + hl * (o - 0.05)); g.stroke(); })); } }
+      [-1, 1].forEach(sd => { g.fillStyle = M.eye || '#f5d04a'; g.beginPath(); g.ellipse(sd * hw * 0.26, hy - hl * (M.head === 'wolf' ? 0.25 : 0.12), 0.11 * s, 0.07 * s, sd * 0.4, 0, 7); g.fill(); });
       g.restore();
     },
     // an Exodite in a hooded cloak: the cloak spreading behind, a bone helm, a long rifle or lance
@@ -43554,7 +43593,7 @@ const EldArt2 = (() => {
       stand(g, w, h, o.round); seed(w * 11 + h * 5 + (o.n || 1)); const n = o.n || 1, B = { ...EXO_BEASTS[o.beast || 'raptor'], ...(o.B || {}) };
       const pos = { 1: [[0.5, 0.56, 0]], 2: [[0.3, 0.6, -0.08], [0.72, 0.48, 0.08]], 3: [[0.5, 0.36, 0], [0.24, 0.7, -0.06], [0.76, 0.7, 0.06]] }[n];
       const s = Math.min(w, h * 0.72) / ({ 1: 6.2, 2: 8.6, 3: 10.2 }[n]) * (B.k || 1) * (o.scale || 1);
-      pos.forEach(([px, py, r], i) => { const x = px * w, y = py * h; R_._beast(g, P, x, y, s, { ...B, rot: r, seed: i * 17 + w });
+      pos.forEach(([px, py, r], i) => { const x = px * w, y = py * h; (B.mammal ? R_._mammal : R_._beast)(g, P, x, y, s, { ...B, rot: r, seed: i * 17 + w });
         if (o.riders !== 0) { const rs = s * (B.riderS || 0.62); g.save(); g.translate(x, y); g.rotate(r); R_._exo(g, P, 0, -(B.bl || 2) * s * (B.riderAt ?? 0.25), rs, { wpn: o.wpn || 'lance', cloak: o.cloak, trimCloak: o.trim || P.accent, crest: o.crest, ...(i === 0 && o.lead ? o.lead : {}) }); g.restore(); } });
       if (o.howdah) R_._howdah(g, P, w / 2, h * 0.56, s, B, o);
     },
@@ -43570,7 +43609,7 @@ const EldArt2 = (() => {
     beasts(g, P, w, h, o) { // a pack of beasts, sometimes with their handler
       stand(g, w, h); seed(w * 9 + h * 3); const B = EXO_BEASTS[o.beast], n = o.n || 2;
       const pos = { 1: [[0.5, 0.55, 0]], 2: [[0.3, 0.55, -0.15], [0.7, 0.5, 0.15]], 3: [[0.5, 0.33, 0], [0.25, 0.7, -0.2], [0.75, 0.7, 0.2]] }[n], s = Math.min(w, h * 0.72) / ({ 1: 6, 2: 8.2, 3: 9.6 }[n]);
-      pos.forEach(([px, py, r], i) => R_._beast(g, P, px * w, py * h, s * (B.k || 1), { ...B, rot: r, seed: i * 23 + w }));
+      pos.forEach(([px, py, r], i) => (B.mammal ? R_._mammal : R_._beast)(g, P, px * w, py * h, s * (B.k || 1), { ...B, rot: r, seed: i * 23 + w }));
       if (o.handler) R_._exo(g, P, w * 0.5, h * 0.84, s * 0.75, { wpn: 'whip' });
     },
     exoSerpent(g, P, w, h, o) { // a great serpent coiling across the stand with a rider at its shoulders
@@ -43978,12 +44017,12 @@ const EldArt2 = (() => {
     swamp: { col: '#3e5a3a', mark: 'spots', markC: '#1e2e1c', legs: 4, bw: 1.35, bl: 2.2, tail: 2.8, tw: 0.7, neck: 0.6, headL: 1.4, headW: 0.75, ridge: true, ridgeC: '#6a8a3a', riderS: 0.6 },
     sky: { col: '#5a7aa8', wingC: '#8aa6d0', mark: 'scales', legs: 4, bw: 1.05, bl: 1.8, tail: 2.6, neck: 1, headL: 1.1, headW: 0.6, wings: 2.6, horns: true, riderS: 0.58, k: 0.82 },
     warriorDragon: { col: '#6a4a7a', mark: 'stripes', markC: '#3a2048', legs: 4, bw: 1.25, bl: 2, tail: 2.6, neck: 1, headL: 1.2, headW: 0.7, horns: true, ridge: true, ridgeC: '#e3c13b', riderS: 0.6 },
-    tigerbeast: { col: '#c8862a', mark: 'stripes', markC: '#1a1410', legs: 4, bw: 1.2, bl: 1.9, tail: 2.6, tw: 0.25, tsw: 1.1, neck: 0.3, headL: 1.2, headW: 0.85, head: 'feline', legL: 0.8, eye: '#a6f04a', riderS: 0.6 },
+    tigerbeast: { mammal: true, col: '#c8862a', stripes: 'rgba(26,20,16,0.85)', muzzle: '#f1e2c4', shag: 0.3, bw: 1.15, bl: 1.9, tail: 'long', headL: 1.35, headW: 1.25, head: 'cat', paw: 0.42, eye: '#a6f04a', riderS: 0.6, riderAt: 0.15 },
     hellbender: { col: '#7a4a2a', mark: 'spots', markC: '#e3a83b', legs: 4, bw: 1.6, bl: 2, tail: 2.2, tw: 0.8, neck: 0, headL: 1.4, headW: 1.2, head: 'salamander', legL: 1, legW: 0.5, riderS: 0.55, riderAt: 0.05 },
     pterosaur: { col: '#8a6a5a', wingC: '#b0806a', mark: 'spots', legs: 0, bw: 0.7, bl: 1.3, tail: 0.6, tw: 0.4, neck: 0.8, neckW: 0.35, headL: 0.9, headW: 0.45, beak: 1.2, wings: 3.4, riderS: 0.55, k: 0.8 },
     pteraraptor: { col: '#6a5a7a', wingC: '#9a86b0', mark: 'spots', legs: 0, bw: 0.6, bl: 1.1, tail: 1.4, neck: 0.6, neckW: 0.3, headL: 0.8, headW: 0.4, beak: 0.8, wings: 2.6, k: 0.85 },
-    bear: { col: '#4a3428', belly: '#6a5040', mark: 'fur', legs: 4, bw: 1.5, bl: 1.9, tail: 0, neck: 0.5, neckW: 0.9, headL: 1.5, headW: 1.15, headC: '#5a4232', head: 'bear', legL: 1.1, legW: 0.75, eye: '#f5d04a', k: 0.9 },
-    wolf: { col: '#8a8a90', mark: 'fur', legs: 4, bw: 0.95, bl: 1.8, tail: 1.6, tw: 0.4, tsw: 0.9, neck: 0.4, headL: 1.2, headW: 0.65, head: 'wolf', legL: 0.8, eye: '#f5d04a' },
+    bear: { mammal: true, col: '#5a4030', headC: '#644a38', muzzle: '#a08060', bw: 1.6, bl: 2, hump: true, tail: 'none', headL: 2, headW: 2.1, head: 'bear', paw: 0.66, shag: 1.6, eye: '#1a1410', k: 0.95 },
+    wolf: { mammal: true, col: '#7e8088', saddle: '#3a3a40', bw: 0.95, bl: 1.75, tail: 'bushy', headL: 1.9, headW: 1.2, head: 'wolf', paw: 0.36, eye: '#f5d04a' },
     serpent: { col: '#4a7a5a', markC: '#c9a227' },
     sauropod: { col: '#7a7a5a', mark: 'spots', legs: 4, bw: 1.8, bl: 2.4, tail: 3.2, tw: 0.6, neck: 2.6, neckW: 0.55, headL: 0.9, headW: 0.55, legL: 0.9, legW: 0.7, k: 0.72 },
     carnosaur: { col: '#6a3a2a', mark: 'stripes', markC: '#2a140c', legs: 2, bw: 1.6, bl: 2.3, tail: 3.2, neck: 0.8, neckW: 0.8, headL: 2, headW: 1.15, legL: 1.1, legW: 0.6, ridge: true, ridgeC: '#c9a227', eye: '#ff6a2a', k: 0.75 },
@@ -44020,6 +44059,7 @@ const EldArt2 = (() => {
     if (has('dragon warrior')) return { kind: 'rider', opts: { beast: 'warriorDragon', n: 2, wpn: 'rifle' } };
     if (has('baron')) return { kind: 'rider', opts: { beast: 'dragonKnight', n: 1, lead: { wpn: 'banner', crest: '#e3c13b', cloak: '#6a2a2a' } } };
     if (has('dragon knight', 'dragoon')) return { kind: 'rider', opts: { beast: 'dragonKnight', n: 2 } };
+    if (has('pteraraptor')) return { kind: 'beasts', opts: { margin: 7, beast: 'pteraraptor', n: 2 } };
     if (has('raptor', 'mounted pathfinder')) return { kind: 'rider', opts: { beast: 'raptor', n: 3, wpn: has('pathfinder') ? 'rifle' : 'lance' } };
     // beast packs and their handlers
     if (has('cave bear')) return { kind: 'beasts', opts: { beast: 'bear', n: 1 } };
@@ -44063,7 +44103,7 @@ const EldArt2 = (() => {
     if (!cfg) return null;
     const norm = x => String(x || '').toLowerCase().replace(/[_-]/g, ' ');
     const t = cfg.label ? norm(cfg.label) : norm(`${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''}`), has = (...ws) => ws.some(w => t.includes(w));
-    if (has('exodite', 'exo ', 'knight') || /card_eld_(exo|.*knight)|knight host/.test(`${cfg.key || ''} ${(cfg.name || '').toLowerCase()}`)) { const t2 = norm(`${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''} ${cfg.label || ''}`), lbl = norm(cfg.label || ''), has2 = (...ws) => ws.some(w => (/^(beastmaster|spirit priest|baron|dragoon|hull)$/.test(lbl) ? lbl : t2).includes(w)); const r = exoPick(t2, cfg, has2); if (r) r.exo = true; return r; }
+    if (has('exodite', 'exo ', 'knight') || /card_eld_(exo|.*knight)|knight host/.test(`${cfg.key || ''} ${(cfg.name || '').toLowerCase()}`)) { const t2 = norm(`${cfg.key || ''} ${cfg.name || ''} ${cfg.subName || ''} ${cfg.label || ''}`), lbl = norm(cfg.label || ''), has2 = (...ws) => ws.some(w => (/^(beastmaster|spirit priest|baron|dragoon)$/.test(lbl) ? lbl : t2).includes(w)); const r = exoPick(t2, cfg, has2); if (r) r.exo = true; return r; }
     if (has('warlock titan')) return { kind: 'titan', opts: { margin: 10, left: 'lance', right: 'sword', psychic: true, head: '#e9e4d4', crest: '#7a3fc8', glowC: '#c45aff' }, titan: true };
     if (has('phantom')) return { kind: 'titan', opts: { margin: 10, left: 'cannon', right: 'sword' }, titan: true };
     if (has('revenant')) return { kind: 'titan', opts: { margin: 10, left: 'pulse', right: 'pulse', jets: true, small: true }, titan: true };
