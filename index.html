@@ -41644,7 +41644,10 @@ const syncTouchPointers = (e) => {
   sc.input.manager.pointers.forEach(p => { if (p && p.wasTouch && (p.isDown || p.active) && !live.has(p.identifier)) { p.isDown = false; p.active = false; p.buttons = 0; p.primaryDown = false; } });
   if (e.touches.length < 2) sc._gest = null;
 };
-['touchstart', 'touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, syncTouchPointers, true));
+// A new touch frees stale slots first (so Phaser has a slot for it); a lifted finger is only tidied up after Phaser has
+// handled the lift itself, or Phaser never sees it end and thinks the stand is still held (taps and drags then stop working)
+window.addEventListener('touchstart', syncTouchPointers, true);
+['touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, (e) => { const live = { touches: [...e.touches] }; setTimeout(() => syncTouchPointers(live), 0); }, true));
 window.addEventListener('blur', () => { const sc = window.gameScene; if (sc && sc.input) { sc.input.manager.pointers.forEach(p => { if (p && p.wasTouch) { p.isDown = false; p.active = false; p.buttons = 0; } }); sc._gest = null; } });
 
 // Camera keys: W A S D / arrows move the view, Q / E turn the table, R turns it back
